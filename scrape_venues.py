@@ -67,69 +67,62 @@ def fetch(url):
     return r.text
 
 # ---- Mammoth NW (roselandpdx.com) --------------------------------------------
-# Strategy: find every <a> whose href contains /event/ AND whose text ends with a
-# weekday+date ("... Fri, Jun 05"). That anchor is the event header. Then walk its
-# surrounding container text for "Show: N pm", the /venue/ link, and the etix link.
-DATE_TAIL = re.compile(r'(Mon|Tue|Wed|Thu|Fri|Sat|Sun),\s+([A-Z][a-z]{2})\s+(\d{1,2})\s*$')
+# On the live page each event has SEPARATE links: one whose text is just the date
+# ("Fri, Jun 05") and another whose text is the title. We trigger on the date-link,
+# then find the title-link within the same event block.
+DATE_ONLY = re.compile(r'^(Mon|Tue|Wed|Thu|Fri|Sat|Sun),\s+([A-Z][a-z]{2})\s+(\d{1,2})$')
 
 def parse_mammoth(html, today):
     soup = BeautifulSoup(html, "html.parser")
     shows = []
-    seen_urls = set()
+    seen = set()
     for a in soup.find_all("a", href=True):
         if "/event/" not in a["href"]:
             continue
-        text = clean(a.get_text())
-        m = DATE_TAIL.search(text)
+        txt = clean(a.get_text())
+        m = DATE_ONLY.match(txt)
         if not m:
             continue
-        # this is an event header anchor
         url = a["href"].split("?")[0]
-        title = clean(text[:m.start()])
-        if not title or url in seen_urls:
+        if url in seen:
             continue
-        seen_urls.add(url)
+        seen.add(url)
         mon = MONTHS[m.group(2)]; day = int(m.group(3))
         date = f"{infer_year(mon, today)}-{mon:02d}-{day:02d}"
 
-        # Walk forward through siblings/containers to gather details for this event.
-        # Collect a text window: from this anchor up to the next event header.
-        window_text, support, venue, tix = [], "", "Roseland Theater", url
-        node = a
-        steps = 0
-        cur = a.parent
-        # Gather the text of the enclosing block + following blocks until next /event/ date anchor
         block = a.find_parent(["article", "div", "li"]) or a.parent
-        block_text = clean(block.get_text(" "))
-        sm = re.search(r'Show:\s*([\d:]+\s*[ap]m)', block_text, re.I)
-        if sm:
-            tix_time = to_time(sm.group(1))
-        else:
-            tix_time = ""
-        # support act: an <h4> within the block
+        # title = the other /event/ link in this block that isn't a date or "More Info"
+        title = ""
+        for la in block.find_all("a", href=True):
+            if "/event/" not in la["href"]:
+                continue
+            lt = clean(la.get_text())
+            if not lt or lt.lower() == "more info" or DATE_ONLY.match(lt):
+                continue
+            title = lt
+            break
+        if not title:
+            continue
+
         h4 = block.find("h4")
-        if h4:
-            support = clean(h4.get_text()).removeprefix("with ").strip()
-        # venue: a /venue/ link in the block
+        support = clean(h4.get_text()).removeprefix("with ").strip() if h4 else ""
+        btext = clean(block.get_text(" "))
+        sm = re.search(r'Show:\s*([\d:]+\s*[ap]m)', btext, re.I)
+        showtime = to_time(sm.group(1)) if sm else ""
+        venue = "Roseland Theater"
         vlink = block.find("a", href=re.compile(r'/venue/'))
-        if vlink:
-            vname = clean(vlink.get_text())
-            if vname in VENUE_INFO:
-                venue = vname
-        # ticket link: etix
+        if vlink and clean(vlink.get_text()) in VENUE_INFO:
+            venue = clean(vlink.get_text())
         tlink = block.find("a", href=re.compile(r'etix\.com'))
-        if tlink:
-            tix = tlink["href"]
+        tix = tlink["href"] if tlink else url
         nb, addr = VENUE_INFO.get(venue, ("Portland", ""))
         full = f"{title} (w/ {support})" if support else title
         shows.append({"title": full, "venue": venue, "neighborhood": nb,
-                      "address": addr, "date": date, "time": tix_time, "venueUrl": tix})
+                      "address": addr, "date": date, "time": showtime, "venueUrl": tix})
     if not shows:
-        # Diagnostics: tell us what the live HTML actually contained.
         ev_links = [a for a in soup.find_all("a", href=True) if "/event/" in a["href"]]
-        print(f"    [debug] page length={len(html)} chars, "
-              f"event-links found={len(ev_links)}")
-        for a in ev_links[:5]:
+        print(f"    [debug] page length={len(html)} chars, event-links found={len(ev_links)}")
+        for a in ev_links[:6]:
             print(f"    [debug] link text={clean(a.get_text())!r}")
     return shows
 
