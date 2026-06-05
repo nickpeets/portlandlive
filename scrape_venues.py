@@ -26,6 +26,18 @@ MONTHS = {m: i for i, m in enumerate(
     ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"], 1)}
 HORIZON_DAYS = 90
 
+MONTHS_FULL = {m: i for i, m in enumerate(
+    ["January","February","March","April","May","June","July",
+     "August","September","October","November","December"], 1)}
+
+# Venues identifiable by their etix URL slug (Mississippi Studios site lists both
+# Mississippi Studios and Polaris Hall; Revolution Hall shares the same network).
+VENUE_BY_SLUG = {
+    "mississippi-studios": "Mississippi Studios",
+    "polaris-hall": "Polaris Hall",
+    "revolution-hall": "Revolution Hall",
+}
+
 VENUE_INFO = {
     "Roseland Theater": ("Old Town/Chinatown", "8 NW 6th Ave"),
     "Peter's Room (Roseland)": ("Old Town/Chinatown", "8 NW 6th Ave"),
@@ -35,6 +47,7 @@ VENUE_INFO = {
     "Crystal Ballroom": ("Downtown", "1332 W Burnside St"),
     "Wonder Ballroom": ("Eliot/Boise", "128 NE Russell St"),
     "Revolution Hall": ("Buckman", "1300 SE Stark St"),
+    "Polaris Hall": ("Overlook/N Portland", "635 N Killingsworth Ct"),
     "Mississippi Studios": ("Boise/Mississippi", "3939 N Mississippi Ave"),
     "Holocene": ("Central Eastside", "1001 SE Morrison St"),
     "Dante's": ("Old Town/Chinatown", "350 W Burnside St"),
@@ -196,7 +209,65 @@ def parse_dantes(html, today):
                       "address": addr, "date": date, "time": showtime, "venueUrl": tix})
     return shows
 
+
+# ---- Mississippi Studios + Polaris Hall (mississippistudios.com) --------------
+# One page lists both venues (and sometimes Revolution Hall). The etix ticket URL
+# slug (...-portland-<venue>) is the reliable venue signal. Date comes from the
+# "Weekday, Month D, YYYY" headings above each event.
+MS_DATE_HDR = re.compile(r'(?:Mon|Tues|Wednes|Thurs|Fri|Satur|Sun)day,\s+([A-Z][a-z]+)\s+(\d{1,2}),\s+(\d{4})')
+
+def _venue_from_etix(url):
+    for slug, name in VENUE_BY_SLUG.items():
+        if slug in url:
+            return name
+    return None
+
+def parse_msstudios(html, today):
+    soup = BeautifulSoup(html, "html.parser")
+    shows = []
+    seen = set()
+    cur_date = None
+    # Walk headings and content in document order.
+    for el in soup.find_all(["h5", "h2", "h4", "p", "div"]):
+        t = clean(el.get_text())
+        if el.name == "h5":
+            m = MS_DATE_HDR.search(t)
+            if m and m.group(1) in MONTHS_FULL:
+                cur_date = f"{int(m.group(3))}-{MONTHS_FULL[m.group(1)]:02d}-{int(m.group(2)):02d}"
+            continue
+        if el.name == "h2":
+            a = el.find("a", href=True)
+            if not a or "etix.com" not in (a.get("href") or ""):
+                continue
+            url = a["href"]
+            venue = _venue_from_etix(url)
+            if not venue or not cur_date:
+                continue
+            key = (url, cur_date)
+            if key in seen:
+                continue
+            seen.add(key)
+            title = re.sub(r'^SOLD OUT:\s*', '', clean(a.get_text()))
+            # show time + support from following siblings until next h2/h5
+            support, showtime = "", ""
+            for sib in el.find_all_next(["h2", "h5", "h4", "div", "p"], limit=8):
+                if sib.name in ("h2", "h5"):
+                    break
+                st = clean(sib.get_text())
+                if sib.name == "h4" and not support:
+                    support = st
+                sm = re.search(r'Show:\s*([\d:]+\s*[AP]M)', st, re.I)
+                if sm and not showtime:
+                    showtime = to_time(sm.group(1))
+            nb, addr = VENUE_INFO.get(venue, ("Portland", ""))
+            full = f"{title} (w/ {support})" if support else title
+            shows.append({"title": full, "venue": venue, "neighborhood": nb,
+                          "address": addr, "date": cur_date, "time": showtime, "venueUrl": url})
+    return shows
+
 SOURCES = [
+    {"name": "Mississippi/Polaris", "parser": parse_msstudios,
+     "urls": ["https://mississippistudios.com/"]},
     {"name": "Mammoth NW", "parser": parse_mammoth,
      "urls": ["https://roselandpdx.com/events/"]},
     {"name": "Dante's", "parser": parse_dantes,
