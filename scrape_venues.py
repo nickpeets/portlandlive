@@ -48,7 +48,8 @@ VENUE_INFO = {
 }
 
 def clean(s):
-    return re.sub(r"\s+", " ", (s or "")).strip()
+    s = (s or "").replace("\u00a0", " ").replace("\u2009", " ").replace("\u202f", " ")
+    return re.sub(r"\s+", " ", s).strip()
 
 def to_time(s):
     m = re.search(r'(\d{1,2})(?::(\d{2}))?\s*([ap])m', s, re.I)
@@ -70,7 +71,13 @@ def fetch(url):
 # On the live page each event has SEPARATE links: one whose text is just the date
 # ("Fri, Jun 05") and another whose text is the title. We trigger on the date-link,
 # then find the title-link within the same event block.
-DATE_ONLY = re.compile(r'^(Mon|Tue|Wed|Thu|Fri|Sat|Sun),\s+([A-Z][a-z]{2})\s+(\d{1,2})$')
+DATE_ONLY = re.compile(r'(Mon|Tue|Wed|Thu|Fri|Sat|Sun),\s+([A-Z][a-z]{2})\s+(\d{1,2})')
+
+def date_link_match(text):
+    """True only when the link text is essentially just a date (<= 16 chars),
+    so titles containing a date don't trigger."""
+    t = clean(text)
+    return DATE_ONLY.search(t) if len(t) <= 16 else None
 
 def parse_mammoth(html, today):
     soup = BeautifulSoup(html, "html.parser")
@@ -80,7 +87,7 @@ def parse_mammoth(html, today):
         if "/event/" not in a["href"]:
             continue
         txt = clean(a.get_text())
-        m = DATE_ONLY.match(txt)
+        m = date_link_match(txt)
         if not m:
             continue
         url = a["href"].split("?")[0]
@@ -97,7 +104,7 @@ def parse_mammoth(html, today):
             if "/event/" not in la["href"]:
                 continue
             lt = clean(la.get_text())
-            if not lt or lt.lower() == "more info" or DATE_ONLY.match(lt):
+            if not lt or lt.lower() == "more info" or date_link_match(lt):
                 continue
             title = lt
             break
