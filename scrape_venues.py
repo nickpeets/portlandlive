@@ -73,11 +73,17 @@ def fetch(url):
 # then find the title-link within the same event block.
 DATE_ONLY = re.compile(r'(Mon|Tue|Wed|Thu|Fri|Sat|Sun),\s+([A-Z][a-z]{2})\s+(\d{1,2})')
 
+def _normalize_ws(s):
+    # turn every kind of unicode space (incl. \xa0 nbsp) into a plain space
+    return re.sub(r'\s+', ' ', re.sub(r'[\u00a0\u2009\u202f\u200b]', ' ', s or '')).strip()
+
 def date_link_match(text):
-    """True only when the link text is essentially just a date (<= 16 chars),
-    so titles containing a date don't trigger."""
-    t = clean(text)
-    return DATE_ONLY.search(t) if len(t) <= 16 else None
+    """True only when link text is essentially just a date (short), tolerant of
+    any unicode whitespace. Returns the regex match or None."""
+    t = _normalize_ws(text)
+    if len(t) > 18:
+        return None
+    return DATE_ONLY.search(t)
 
 def parse_mammoth(html, today):
     soup = BeautifulSoup(html, "html.parser")
@@ -128,9 +134,11 @@ def parse_mammoth(html, today):
                       "address": addr, "date": date, "time": showtime, "venueUrl": tix})
     if not shows:
         ev_links = [a for a in soup.find_all("a", href=True) if "/event/" in a["href"]]
-        print(f"    [debug] page length={len(html)} chars, event-links found={len(ev_links)}")
+        print(f"    [debug] event-links found={len(ev_links)}")
         for a in ev_links[:6]:
-            print(f"    [debug] link text={clean(a.get_text())!r}")
+            raw = a.get_text()
+            print(f"    [debug] raw={raw!r} norm={_normalize_ws(raw)!r} "
+                  f"match={bool(date_link_match(raw))}")
     return shows
 
 # ---- Dante's (danteslive.com) ------------------------------------------------
