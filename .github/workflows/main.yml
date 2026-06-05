@@ -1,0 +1,27 @@
+name: Refresh listings
+"on":
+  schedule:
+    - cron: '0 14 * * *'
+  workflow_dispatch:
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install deps
+        run: pip install requests
+      - name: Scrape venue calendars
+        continue-on-error: true
+        run: python3 scrape_venues.py
+      - name: Build shows.json
+        run: python3 build_shows.py
+      - name: Commit if changed
+        run: |
+          git config user.name "portlandlive-bot"
+          git config user.email "bot@portlandlive.local"
+          git add shows.json manual_shows.json
+          git diff --staged --quiet || git commit -m "Refresh listings $(date -u +%F)"
+          git push
