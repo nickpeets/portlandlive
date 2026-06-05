@@ -124,6 +124,13 @@ def parse_mammoth(html, today):
         full = f"{title} (w/ {support})" if support else title
         shows.append({"title": full, "venue": venue, "neighborhood": nb,
                       "address": addr, "date": date, "time": tix_time, "venueUrl": tix})
+    if not shows:
+        # Diagnostics: tell us what the live HTML actually contained.
+        ev_links = [a for a in soup.find_all("a", href=True) if "/event/" in a["href"]]
+        print(f"    [debug] page length={len(html)} chars, "
+              f"event-links found={len(ev_links)}")
+        for a in ev_links[:5]:
+            print(f"    [debug] link text={clean(a.get_text())!r}")
     return shows
 
 # ---- Dante's (danteslive.com) ------------------------------------------------
