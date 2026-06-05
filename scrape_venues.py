@@ -87,13 +87,16 @@ def date_link_match(text):
 
 def parse_mammoth(html, today):
     soup = BeautifulSoup(html, "html.parser")
+    # All anchors in document order. Events appear as: [date-link][title-link]...
+    # [venue-link][etix-link][More Info-link], then the next event's date-link.
+    anchors = soup.find_all("a", href=True)
     shows = []
     seen = set()
-    for a in soup.find_all("a", href=True):
+
+    for i, a in enumerate(anchors):
         if "/event/" not in a["href"]:
             continue
-        txt = clean(a.get_text())
-        m = date_link_match(txt)
+        m = date_link_match(a.get_text())
         if not m:
             continue
         url = a["href"].split("?")[0]
@@ -103,42 +106,54 @@ def parse_mammoth(html, today):
         mon = MONTHS[m.group(2)]; day = int(m.group(3))
         date = f"{infer_year(mon, today)}-{mon:02d}-{day:02d}"
 
-        block = a.find_parent(["article", "div", "li"]) or a.parent
-        # title = the other /event/ link in this block that isn't a date or "More Info"
-        title = ""
-        for la in block.find_all("a", href=True):
-            if "/event/" not in la["href"]:
-                continue
-            lt = clean(la.get_text())
-            if not lt or lt.lower() == "more info" or date_link_match(lt):
-                continue
-            title = lt
-            break
+        # Look ahead in document order for this event's details, stopping when we
+        # reach the NEXT event's date-link.
+        title, venue, tix, support, showtime = "", "Roseland Theater", url, "", ""
+        for b in anchors[i+1:i+12]:
+            bt = clean(b.get_text())
+            href = b.get("href", "")
+            if "/event/" in href and date_link_match(b.get_text()):
+                break  # next event started
+            if not title and "/event/" in href and bt and bt.lower() != "more info":
+                title = bt
+            if "/venue/" in href and bt in VENUE_INFO:
+                venue = bt
+            if "etix.com" in href:
+                tix = b["href"]
         if not title:
             continue
 
-        h4 = block.find("h4")
-        support = clean(h4.get_text()).removeprefix("with ").strip() if h4 else ""
-        btext = clean(block.get_text(" "))
-        sm = re.search(r'Show:\s*([\d:]+\s*[ap]m)', btext, re.I)
-        showtime = to_time(sm.group(1)) if sm else ""
-        venue = "Roseland Theater"
-        vlink = block.find("a", href=re.compile(r'/venue/'))
-        if vlink and clean(vlink.get_text()) in VENUE_INFO:
-            venue = clean(vlink.get_text())
-        tlink = block.find("a", href=re.compile(r'etix\.com'))
-        tix = tlink["href"] if tlink else url
+        # support act + show time: collect the elements BETWEEN this date anchor and
+        # the next event's date anchor (document order), and read them from there.
+        between = []
+        for el in a.next_elements:
+            # stop at the next event date-link
+            if getattr(el, "name", None) == "a" and "/event/" in (el.get("href") or "") \
+               and date_link_match(el.get_text()):
+                break
+            between.append(el)
+            if len(between) > 60:
+                break
+        seg = clean(" ".join(getattr(el, "string", "") or "" for el in between
+                             if getattr(el, "string", None)))
+        sm = re.search(r'Show:\s*([\d:]+\s*[ap]m)', seg, re.I)
+        if sm:
+            showtime = to_time(sm.group(1))
+        wm = re.search(r'\bwith\s+(.+?)(?:\s+All Ages|\s+\d+\+|\s+Doors:|$)', seg)
+        if wm:
+            support = clean(wm.group(1))
+
         nb, addr = VENUE_INFO.get(venue, ("Portland", ""))
         full = f"{title} (w/ {support})" if support else title
         shows.append({"title": full, "venue": venue, "neighborhood": nb,
                       "address": addr, "date": date, "time": showtime, "venueUrl": tix})
+
     if not shows:
         ev_links = [a for a in soup.find_all("a", href=True) if "/event/" in a["href"]]
         print(f"    [debug] event-links found={len(ev_links)}")
         for a in ev_links[:6]:
             raw = a.get_text()
-            print(f"    [debug] raw={raw!r} norm={_normalize_ws(raw)!r} "
-                  f"match={bool(date_link_match(raw))}")
+            print(f"    [debug] raw={raw!r} norm={_normalize_ws(raw)!r} match={bool(date_link_match(raw))}")
     return shows
 
 # ---- Dante's (danteslive.com) ------------------------------------------------
