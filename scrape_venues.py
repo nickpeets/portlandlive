@@ -2,36 +2,30 @@
 """
 PortlandLive venue scraper.
 
-Scrapes venues' OWN published calendars (their own show data, published to fill
-seats) and writes scripts/manual_shows.json, which build_shows.py merges into
-shows.json. Pure HTTP + HTML parsing — no API key, no headless browser.
+Scrapes venues' OWN published calendars and writes manual_shows.json, which
+build_shows.py merges into shows.json. Uses BeautifulSoup for robust HTML parsing
+(handles real-world attribute order, nesting, entities) — no API key, no browser.
 
-Covered sources:
+Sources:
   - Mammoth NW / Double Tee (roselandpdx.com): one page lists Roseland, Hawthorne,
-    Aladdin, Crystal Ballroom, Wonder, Revolution Hall, Mississippi Studios,
-    Holocene, Star Theater, Alberta Rose, and the big halls. Many venues, one fetch.
-  - Dante's (danteslive.com): the venue's own TicketWeb-powered calendar, paginated.
+    Aladdin, Crystal Ballroom, Wonder, Revolution Hall, Mississippi, Holocene,
+    Star Theater, Alberta Rose, the big halls.
+  - Dante's (danteslive.com): venue's own TicketWeb calendar, paginated.
 
-Add a venue by writing a parser for its page structure and registering it in
-SOURCES. Each site differs; parsers break on redesigns — that's the upkeep cost.
-
-Run:
-    pip install requests
-    python3 scripts/scrape_venues.py
+Run:  pip install requests beautifulsoup4 && python3 scripts/scrape_venues.py
 """
 import re, json, os, sys, datetime
 
 try:
     import requests
+    from bs4 import BeautifulSoup
 except ImportError:
-    sys.exit("pip install requests")
+    sys.exit("pip install requests beautifulsoup4")
 
 MONTHS = {m: i for i, m in enumerate(
     ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"], 1)}
-
 HORIZON_DAYS = 90
 
-# venue name -> (neighborhood, address)
 VENUE_INFO = {
     "Roseland Theater": ("Old Town/Chinatown", "8 NW 6th Ave"),
     "Peter's Room (Roseland)": ("Old Town/Chinatown", "8 NW 6th Ave"),
@@ -57,7 +51,7 @@ def clean(s):
     return re.sub(r"\s+", " ", (s or "")).strip()
 
 def to_time(s):
-    m = re.match(r'(\d{1,2})(?::(\d{2}))?\s*([ap])m', s.strip(), re.I)
+    m = re.search(r'(\d{1,2})(?::(\d{2}))?\s*([ap])m', s, re.I)
     if not m:
         return ""
     h = int(m.group(1)); mm = m.group(2) or "00"; ap = m.group(3).upper()
@@ -67,96 +61,111 @@ def infer_year(month, today):
     return today.year + 1 if month < today.month else today.year
 
 def fetch(url):
-    r = requests.get(url, headers={"User-Agent": "PortlandLive/1.0 (listings aggregator)"},
-                     timeout=30)
+    r = requests.get(url, headers={"User-Agent":
+        "Mozilla/5.0 (compatible; PortlandLive/1.0; listings aggregator)"}, timeout=30)
     r.raise_for_status()
     return r.text
 
-def html_to_lines(html):
-    """Reduce HTML to markdown-ish lines: anchors -> [text](href "title"), keep
-    headings, drop the rest. Mirrors how the page reads so link regexes work."""
-    html = re.sub(r'<a\b[^>]*?href="([^"]+)"[^>]*?(?:\stitle="([^"]*)")?[^>]*>(.*?)</a>',
-                  lambda m: f'[{clean(re.sub("<[^>]+>","",m.group(3)))}]({m.group(1)}'
-                            + (f' "{m.group(2)}"' if m.group(2) else '') + ')',
-                  html, flags=re.S | re.I)
-    html = re.sub(r'<h4[^>]*>(.*?)</h4>', lambda m: "#### " + re.sub("<[^>]+>","",m.group(1)),
-                  html, flags=re.S | re.I)
-    html = re.sub(r'<h2[^>]*>(.*?)</h2>', lambda m: "## " + re.sub("<[^>]+>","",m.group(1)),
-                  html, flags=re.S | re.I)
-    html = re.sub(r'<[^>]+>', '\n', html)
-    html = html.replace('&amp;', '&').replace('&#8211;', '–').replace('&nbsp;', ' ')
-    return [clean(l) for l in html.splitlines() if clean(l)]
+# ---- Mammoth NW (roselandpdx.com) --------------------------------------------
+# Strategy: find every <a> whose href contains /event/ AND whose text ends with a
+# weekday+date ("... Fri, Jun 05"). That anchor is the event header. Then walk its
+# surrounding container text for "Show: N pm", the /venue/ link, and the etix link.
+DATE_TAIL = re.compile(r'(Mon|Tue|Wed|Thu|Fri|Sat|Sun),\s+([A-Z][a-z]{2})\s+(\d{1,2})\s*$')
 
-# ---- Mammoth NW / Double Tee (roselandpdx.com) -------------------------------
-MAMMOTH_DATE = re.compile(
-    r'^\[(.+?)\s+(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun),\s+([A-Z][a-z]{2})\s+(\d{1,2})\]'
-    r'\((https://[^\s)]+/event/[^\s)]+)')
-MAMMOTH_SHOW = re.compile(r'Show:\s*([\d:]+\s*[ap]m)', re.I)
-MAMMOTH_VENUE = re.compile(r'^\[(.+?)\]\(https?://[^\s)]+/venue/')
-MAMMOTH_TIX = re.compile(r'^\[(?:Buy Tickets|Sold Out|Tickets)\]\((https?://[^\s)]+)')
-
-def parse_mammoth(lines, today):
-    starts = [i for i, l in enumerate(lines) if MAMMOTH_DATE.match(l)]
+def parse_mammoth(html, today):
+    soup = BeautifulSoup(html, "html.parser")
     shows = []
-    for n, start in enumerate(starts):
-        end = starts[n + 1] if n + 1 < len(starts) else len(lines)
-        block = lines[start:end]
-        m = MAMMOTH_DATE.match(block[0])
-        title = clean(m.group(1))
+    seen_urls = set()
+    for a in soup.find_all("a", href=True):
+        if "/event/" not in a["href"]:
+            continue
+        text = clean(a.get_text())
+        m = DATE_TAIL.search(text)
+        if not m:
+            continue
+        # this is an event header anchor
+        url = a["href"].split("?")[0]
+        title = clean(text[:m.start()])
+        if not title or url in seen_urls:
+            continue
+        seen_urls.add(url)
         mon = MONTHS[m.group(2)]; day = int(m.group(3))
         date = f"{infer_year(mon, today)}-{mon:02d}-{day:02d}"
-        support, showtime, tix, venue = "", "", m.group(4), "Roseland Theater"
-        for b in block:
-            if b.startswith("#### with"):
-                support = clean(b[4:]).removeprefix("with ").strip()
-            sm = MAMMOTH_SHOW.search(b)
-            if sm:
-                showtime = to_time(sm.group(1))
-            vm = MAMMOTH_VENUE.match(b)
-            if vm and vm.group(1) in VENUE_INFO:
-                venue = vm.group(1)
-            tm = MAMMOTH_TIX.match(b)
-            if tm:
-                tix = tm.group(1)
+
+        # Walk forward through siblings/containers to gather details for this event.
+        # Collect a text window: from this anchor up to the next event header.
+        window_text, support, venue, tix = [], "", "Roseland Theater", url
+        node = a
+        steps = 0
+        cur = a.parent
+        # Gather the text of the enclosing block + following blocks until next /event/ date anchor
+        block = a.find_parent(["article", "div", "li"]) or a.parent
+        block_text = clean(block.get_text(" "))
+        sm = re.search(r'Show:\s*([\d:]+\s*[ap]m)', block_text, re.I)
+        if sm:
+            tix_time = to_time(sm.group(1))
+        else:
+            tix_time = ""
+        # support act: an <h4> within the block
+        h4 = block.find("h4")
+        if h4:
+            support = clean(h4.get_text()).removeprefix("with ").strip()
+        # venue: a /venue/ link in the block
+        vlink = block.find("a", href=re.compile(r'/venue/'))
+        if vlink:
+            vname = clean(vlink.get_text())
+            if vname in VENUE_INFO:
+                venue = vname
+        # ticket link: etix
+        tlink = block.find("a", href=re.compile(r'etix\.com'))
+        if tlink:
+            tix = tlink["href"]
         nb, addr = VENUE_INFO.get(venue, ("Portland", ""))
         full = f"{title} (w/ {support})" if support else title
         shows.append({"title": full, "venue": venue, "neighborhood": nb,
-                      "address": addr, "date": date, "time": showtime, "venueUrl": tix})
+                      "address": addr, "date": date, "time": tix_time, "venueUrl": tix})
     return shows
 
 # ---- Dante's (danteslive.com) ------------------------------------------------
-# Event title line carries an unambiguous date in its title attr: "- DD/MM/YY".
-DANTES_EVENT = re.compile(
-    r'^\[([^\]]+)\]\((https://www\.danteslive\.com/tm-event/[^\s)]+)'
-    r'\s+"[^"]*?-\s*(\d{2})/(\d{2})/(\d{2})"\)$')
-DANTES_SHOW = re.compile(r'Show:\s*([\d:]+\s*[ap]m)', re.I)
-DANTES_TIX = re.compile(r'^\[(?:Buy Tickets|On Sale[^\]]*)\]\((https://www\.ticketweb\.com[^\s)]+)')
+# Each event has an <a href=".../tm-event/..." title="TITLE - DD/MM/YY"> plus a
+# nearby "Show: N pm" and a ticketweb link.
+DANTES_DATE = re.compile(r'-\s*(\d{2})/(\d{2})/(\d{2})\s*$')
 
-def parse_dantes(lines, today):
-    # title lines only (not the [![image](...)] variant)
-    idxs = [i for i, l in enumerate(lines)
-            if DANTES_EVENT.match(l) and not l.startswith('[![')]
+def parse_dantes(html, today):
+    soup = BeautifulSoup(html, "html.parser")
     shows = []
-    for idx in idxs:
-        m = DANTES_EVENT.match(lines[idx])
-        title = clean(m.group(1))
-        dd, mm, yy = int(m.group(3)), int(m.group(4)), int(m.group(5))
+    seen = set()
+    for a in soup.find_all("a", href=True, title=True):
+        if "/tm-event/" not in a["href"]:
+            continue
+        title_attr = a.get("title", "")
+        m = DANTES_DATE.search(title_attr)
+        if not m:
+            continue
+        # event header anchor (the text one; skip if it wraps only an <img>)
+        link_text = clean(a.get_text())
+        if not link_text:  # image-only anchor, skip; the text anchor has the same title
+            continue
+        url = a["href"].split("?")[0]
+        dd, mm, yy = int(m.group(1)), int(m.group(2)), int(m.group(3))
         date = f"20{yy:02d}-{mm:02d}-{dd:02d}"
-        showtime, tix = "", m.group(2)
-        for b in lines[idx:idx + 4]:
-            sm = DANTES_SHOW.search(b)
-            if sm and not showtime:
-                showtime = to_time(sm.group(1))
-            tm = DANTES_TIX.match(b)
-            if tm:
-                tix = tm.group(1)
+        key = (url, date)
+        if key in seen:
+            continue
+        seen.add(key)
+        title = clean(re.sub(r'-\s*\d{2}/\d{2}/\d{2}\s*$', '', title_attr))
+        # show time + ticketweb from the enclosing block
+        block = a.find_parent(["article", "div", "li"]) or a.parent
+        btext = clean(block.get_text(" "))
+        sm = re.search(r'Show:\s*([\d:]+\s*[ap]m)', btext, re.I)
+        showtime = to_time(sm.group(1)) if sm else ""
+        tlink = block.find("a", href=re.compile(r'ticketweb\.com'))
+        tix = tlink["href"] if tlink else url
         nb, addr = VENUE_INFO["Dante's"]
         shows.append({"title": title, "venue": "Dante's", "neighborhood": nb,
                       "address": addr, "date": date, "time": showtime, "venueUrl": tix})
     return shows
 
-# ---- Source registry ---------------------------------------------------------
-# Each source: list of page URLs + the parser for that site's structure.
 SOURCES = [
     {"name": "Mammoth NW", "parser": parse_mammoth,
      "urls": ["https://roselandpdx.com/events/"]},
@@ -174,11 +183,10 @@ def scrape():
         got = []
         for url in src["urls"]:
             try:
-                lines = html_to_lines(fetch(url))
-                got.extend(src["parser"](lines, today))
+                got.extend(src["parser"](fetch(url), today))
             except Exception as e:
                 print(f"  {url}: ERROR {e}")
-        got = [s for s in got if s["date"] <= horizon and s["date"] >= today.isoformat()]
+        got = [s for s in got if today.isoformat() <= s["date"] <= horizon]
         print(f"  {src['name']}: {len(got)} shows")
         out.extend(got)
     return out
@@ -186,7 +194,6 @@ def scrape():
 def main():
     scraped = scrape()
     scraped_venues = {s["venue"] for s in scraped}
-
     target = os.path.join(os.path.dirname(__file__), "manual_shows.json")
     hand = []
     if os.path.exists(target):
@@ -195,7 +202,6 @@ def main():
                     if s.get("venue") not in scraped_venues]
         except Exception:
             pass
-
     merged = hand + scraped
     with open(target, "w") as f:
         json.dump({"_comment": "Auto-generated by scrape_venues.py + hand-added shows.",
