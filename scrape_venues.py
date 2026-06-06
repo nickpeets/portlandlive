@@ -267,6 +267,121 @@ def parse_msstudios(html, today):
 
 
 # ---- Wonder Ballroom (wonderballroom.com/events/) ----------------------------
+# In document order each event is: a dated /event/ link ("Sat, Jun 06, 2026")
+# (sometimes duplicated), then the title /event/ link, then optional <h4> support,
+# "Doors : 7 pm, Show : 8 pm", and an etix link. Trigger on the dated link, pair
+# with the next non-date /event/ link for the title, then walk forward from the
+# title for support/time/tickets. Dedupe on the /event/ slug.
+WB_DATE = re.compile(r'(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+(\d{1,2}),\s+(\d{4})')
+
+def parse_wonder(html, today):
+    soup = BeautifulSoup(html, "html.parser")
+    anchors = soup.find_all("a", href=True)
+    shows = []
+    seen = set()
+    for i, a in enumerate(anchors):
+        if "/event/" not in a["href"]:
+            continue
+        m = WB_DATE.search(clean(a.get_text()))
+        if not m:
+            continue
+        slug = a["href"].split("?")[0]
+        if slug in seen:
+            continue
+        seen.add(slug)
+        date = f"{int(m.group(3))}-{MONTHS[m.group(1)]:02d}-{int(m.group(2)):02d}"
+        title, title_anchor = "", None
+        for b in anchors[i+1:i+8]:
+            if "/event/" not in b["href"]:
+                continue
+            bt = clean(b.get_text())
+            if not bt or WB_DATE.search(bt) or bt.lower() == "more info":
+                continue
+            title, title_anchor = bt, b
+            break
+        if not title_anchor:
+            continue
+        support, showtime, tix = "", "", slug
+        for el in title_anchor.find_all_next(["a", "h4", "div", "h2"], limit=14):
+            if el.name == "a" and "/event/" in (el.get("href") or "") \
+               and WB_DATE.search(clean(el.get_text())):
+                break
+            etx = clean(el.get_text())
+            if el.name == "h4" and not support:
+                support = re.sub(r'^(With special guests?|with)\s+', '', etx, flags=re.I).strip()
+            sm = re.search(r'Show\s*:\s*([\d:]+\s*[ap]m)', etx, re.I)
+            if sm and not showtime:
+                showtime = to_time(sm.group(1))
+            if el.name == "a" and "etix.com" in (el.get("href") or ""):
+                tix = el["href"]
+        full = f"{title} (w/ {support})" if support else title
+        shows.append({"title": full, "venue": "Wonder Ballroom",
+                      "neighborhood": "Eliot/Boise", "address": "128 NE Russell St",
+                      "date": date, "time": showtime, "venueUrl": tix})
+    if not shows:
+        ev = [a for a in anchors if "/event/" in a["href"]]
+        print(f"    [debug-wb] event-links={len(ev)}")
+        for a in ev[:5]:
+            print(f"    [debug-wb] text={clean(a.get_text())!r}")
+    return shows
+
+# ---- Mississippi Studios + Polaris Hall (mississippistudios.com) --------------
+# One page lists both venues (and sometimes Revolution Hall). The etix ticket URL
+# slug (...-portland-<venue>) is the reliable venue signal. Date comes from the
+# "Weekday, Month D, YYYY" headings above each event.
+MS_DATE_HDR = re.compile(r'(?:Mon|Tues|Wednes|Thurs|Fri|Satur|Sun)day,\s+([A-Z][a-z]+)\s+(\d{1,2}),\s+(\d{4})')
+
+def _venue_from_etix(url):
+    for slug, name in VENUE_BY_SLUG.items():
+        if slug in url:
+            return name
+    return None
+
+def parse_msstudios(html, today):
+    soup = BeautifulSoup(html, "html.parser")
+    shows = []
+    seen = set()
+    cur_date = None
+    # Walk headings and content in document order.
+    for el in soup.find_all(["h5", "h2", "h4", "p", "div"]):
+        t = clean(el.get_text())
+        if el.name == "h5":
+            m = MS_DATE_HDR.search(t)
+            if m and m.group(1) in MONTHS_FULL:
+                cur_date = f"{int(m.group(3))}-{MONTHS_FULL[m.group(1)]:02d}-{int(m.group(2)):02d}"
+            continue
+        if el.name == "h2":
+            a = el.find("a", href=True)
+            if not a or "etix.com" not in (a.get("href") or ""):
+                continue
+            url = a["href"]
+            venue = _venue_from_etix(url)
+            if not venue or not cur_date:
+                continue
+            key = (url, cur_date)
+            if key in seen:
+                continue
+            seen.add(key)
+            title = re.sub(r'^SOLD OUT:\s*', '', clean(a.get_text()))
+            # show time + support from following siblings until next h2/h5
+            support, showtime = "", ""
+            for sib in el.find_all_next(["h2", "h5", "h4", "div", "p"], limit=8):
+                if sib.name in ("h2", "h5"):
+                    break
+                st = clean(sib.get_text())
+                if sib.name == "h4" and not support:
+                    support = st
+                sm = re.search(r'Show:\s*([\d:]+\s*[AP]M)', st, re.I)
+                if sm and not showtime:
+                    showtime = to_time(sm.group(1))
+            nb, addr = VENUE_INFO.get(venue, ("Portland", ""))
+            full = f"{title} (w/ {support})" if support else title
+            shows.append({"title": full, "venue": venue, "neighborhood": nb,
+                          "address": addr, "date": cur_date, "time": showtime, "venueUrl": url})
+    return shows
+
+
+# ---- Wonder Ballroom (wonderballroom.com/events/) ----------------------------
 # Each event: a dated /event/ link ("Fri, May 29, 2026"), a title <h2>, optional
 # <h4> support, "Doors : 7 pm, Show : 8 pm", and an etix ticket link.
 WB_DATE = re.compile(r'(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+(\d{1,2}),\s+(\d{4})')
