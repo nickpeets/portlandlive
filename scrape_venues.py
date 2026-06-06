@@ -416,8 +416,53 @@ def parse_wonder(html, today):
                       "neighborhood": "Eliot/Boise", "address": "128 NE Russell St",
                       "date": e["date"], "time": "", "venueUrl": tix})
     return shows
+# ---- Holocene (holocene.org/events/) -----------------------------------------
+# Each event: a title <h2> linking to /event/... with an etix ticket link whose
+# slug ends -portland-holocene, a "Day, Mon DD" date line, "Doors: X pm", and an
+# optional presenter line. Same etix-slug approach as Mississippi/Polaris.
+HOLO_DATE = re.compile(r'\b(Mon|Tue|Wed|Thu|Fri|Sat|Sun),\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{1,2})\b')
 
+def parse_holocene(html, today):
+    soup = BeautifulSoup(html, "html.parser")
+    text = clean(soup.get_text(" "))
+    events = {}
+    order = []
+    for a in soup.find_all("a", href=True):
+        if "/event/" not in a["href"]:
+            continue
+        slug = a["href"].split("?")[0]
+        txt = clean(a.get_text())
+        if slug not in events:
+            events[slug] = {"title": None, "tix": None}
+            order.append(slug)
+        if txt and txt.lower() != "more info" and not events[slug]["title"]:
+            events[slug]["title"] = txt
+        if "etix.com" in a["href"] and "-holocene" in a["href"] and not events[slug]["tix"]:
+            events[slug]["tix"] = a["href"]
+    # dates appear in document order as "Day, Mon DD" lines; map them to events by order
+    dates = HOLO_DATE.findall(text)
+    shows = []
+    di = 0
+    for slug in order:
+        e = events[slug]
+        if not e["title"]:
+            continue
+        date_iso = None
+        if di < len(dates):
+            _, mon, day = dates[di]
+            mo = MONTHS[mon]; d = int(day)
+            yr = today.year if mo >= today.month else today.year + 1
+            date_iso = f"{yr}-{mo:02d}-{d:02d}"
+            di += 1
+        if not date_iso:
+            continue
+        shows.append({"title": e["title"], "venue": "Holocene",
+                      "neighborhood": "Central Eastside", "address": "1001 SE Morrison St",
+                      "date": date_iso, "time": "", "venueUrl": e["tix"] or slug})
+    return shows
 SOURCES = [
+    {"name": "Holocene", "parser": parse_holocene,
+     "urls": ["https://www.holocene.org/events/"]},
     {"name": "Wonder Ballroom", "parser": parse_wonder,
      "urls": ["https://wonderballroom.com/events/"]},
     {"name": "Mississippi/Polaris", "parser": parse_msstudios,
