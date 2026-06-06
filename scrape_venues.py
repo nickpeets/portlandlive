@@ -306,6 +306,14 @@ def parse_wonder(html, today):
             shows.append({"title": full, "venue": "Wonder Ballroom",
                           "neighborhood": "Eliot/Boise", "address": "128 NE Russell St",
                           "date": cur_date, "time": showtime, "venueUrl": tix})
+    if not shows:
+        ev_links = [a for a in soup.find_all("a", href=True) if "/event/" in a["href"]]
+        h2s = soup.find_all("h2")
+        print(f"    [debug-wb] event-links={len(ev_links)}, h2s={len(h2s)}")
+        for a in ev_links[:5]:
+            print(f"    [debug-wb] event-link text={clean(a.get_text())!r}")
+        for h in h2s[:3]:
+            print(f"    [debug-wb] h2 text={clean(h.get_text())!r}")
     return shows
 
 SOURCES = [
