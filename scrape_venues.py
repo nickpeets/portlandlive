@@ -320,9 +320,9 @@ def parse_wonder(html, today):
                       "date": date, "time": showtime, "venueUrl": tix})
     if not shows:
         ev = [a for a in anchors if "/event/" in a["href"]]
-        print(f"    [debug-wb] event-links={len(ev)}")
+        print(f"    [debug-wb-v2] event-links={len(ev)}")
         for a in ev[:5]:
-            print(f"    [debug-wb] text={clean(a.get_text())!r}")
+            print(f"    [debug-wb-v2] text={clean(a.get_text())!r}")
     return shows
 
 # ---- Mississippi Studios + Polaris Hall (mississippistudios.com) --------------
