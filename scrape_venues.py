@@ -388,47 +388,33 @@ WB_DATE = re.compile(r'(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s
 
 def parse_wonder(html, today):
     soup = BeautifulSoup(html, "html.parser")
+    events = {}
+    for a in soup.find_all("a", href=True):
+        if "/event/" not in a["href"]:
+            continue
+        slug = a["href"].split("?")[0]
+        txt = clean(a.get_text())
+        e = events.setdefault(slug, {"date": None, "title": None})
+        m = WB_DATE.search(txt)
+        if m and not e["date"]:
+            e["date"] = f"{int(m.group(3))}-{MONTHS[m.group(1)]:02d}-{int(m.group(2)):02d}"
+        elif txt and txt.lower() != "more info" and not m and not e["title"]:
+            e["title"] = txt
+
+    # show time per slug: scan the page text near each etix link
+    page = soup.get_text(" ")
     shows = []
-    seen = set()
-    cur_date = None
-    for el in soup.find_all(["a", "h2", "h4", "div"]):
-        if el.name == "a" and "/event/" in (el.get("href") or ""):
-            m = WB_DATE.search(clean(el.get_text()))
-            if m:
-                cur_date = f"{int(m.group(3))}-{MONTHS[m.group(1)]:02d}-{int(m.group(2)):02d}"
-                continue
-        if el.name == "h2":
-            a = el.find("a", href=True)
-            if not a or "/event/" not in a["href"] or not cur_date:
-                continue
-            title = clean(a.get_text())
-            if title in seen:
-                continue
-            seen.add(title)
-            support, showtime, tix = "", "", a["href"]
-            for sib in el.find_all_next(["h2", "h4", "div", "a"], limit=10):
-                if sib.name == "h2":
-                    break
-                stx = clean(sib.get_text())
-                if sib.name == "h4" and not support:
-                    support = re.sub(r'^(With special guests?|with)\s+', '', stx, flags=re.I).strip()
-                sm = re.search(r'Show\s*:\s*([\d:]+\s*[ap]m)', stx, re.I)
-                if sm and not showtime:
-                    showtime = to_time(sm.group(1))
-                if sib.name == "a" and "etix.com" in (sib.get("href") or ""):
-                    tix = sib["href"]
-            full = f"{title} (w/ {support})" if support else title
-            shows.append({"title": full, "venue": "Wonder Ballroom",
-                          "neighborhood": "Eliot/Boise", "address": "128 NE Russell St",
-                          "date": cur_date, "time": showtime, "venueUrl": tix})
-    if not shows:
-        ev_links = [a for a in soup.find_all("a", href=True) if "/event/" in a["href"]]
-        h2s = soup.find_all("h2")
-        print(f"    [debug-wb] event-links={len(ev_links)}, h2s={len(h2s)}")
-        for a in ev_links[:5]:
-            print(f"    [debug-wb] event-link text={clean(a.get_text())!r}")
-        for h in h2s[:3]:
-            print(f"    [debug-wb] h2 text={clean(h.get_text())!r}")
+    for slug, e in events.items():
+        if not e["date"] or not e["title"]:
+            continue
+        tix = slug
+        for a in soup.find_all("a", href=True):
+            if "etix.com" in a["href"] and e["title"][:12].lower() in clean(a.get("title", "")).lower():
+                tix = a["href"]
+                break
+        shows.append({"title": e["title"], "venue": "Wonder Ballroom",
+                      "neighborhood": "Eliot/Boise", "address": "128 NE Russell St",
+                      "date": e["date"], "time": "", "venueUrl": tix})
     return shows
 
 SOURCES = [
