@@ -265,7 +265,52 @@ def parse_msstudios(html, today):
                           "address": addr, "date": cur_date, "time": showtime, "venueUrl": url})
     return shows
 
+
+# ---- Wonder Ballroom (wonderballroom.com/events/) ----------------------------
+# Each event: a dated /event/ link ("Fri, May 29, 2026"), a title <h2>, optional
+# <h4> support, "Doors : 7 pm, Show : 8 pm", and an etix ticket link.
+WB_DATE = re.compile(r'(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+(\d{1,2}),\s+(\d{4})')
+
+def parse_wonder(html, today):
+    soup = BeautifulSoup(html, "html.parser")
+    shows = []
+    seen = set()
+    cur_date = None
+    for el in soup.find_all(["a", "h2", "h4", "div"]):
+        if el.name == "a" and "/event/" in (el.get("href") or ""):
+            m = WB_DATE.search(clean(el.get_text()))
+            if m:
+                cur_date = f"{int(m.group(3))}-{MONTHS[m.group(1)]:02d}-{int(m.group(2)):02d}"
+                continue
+        if el.name == "h2":
+            a = el.find("a", href=True)
+            if not a or "/event/" not in a["href"] or not cur_date:
+                continue
+            title = clean(a.get_text())
+            if title in seen:
+                continue
+            seen.add(title)
+            support, showtime, tix = "", "", a["href"]
+            for sib in el.find_all_next(["h2", "h4", "div", "a"], limit=10):
+                if sib.name == "h2":
+                    break
+                stx = clean(sib.get_text())
+                if sib.name == "h4" and not support:
+                    support = re.sub(r'^(With special guests?|with)\s+', '', stx, flags=re.I).strip()
+                sm = re.search(r'Show\s*:\s*([\d:]+\s*[ap]m)', stx, re.I)
+                if sm and not showtime:
+                    showtime = to_time(sm.group(1))
+                if sib.name == "a" and "etix.com" in (sib.get("href") or ""):
+                    tix = sib["href"]
+            full = f"{title} (w/ {support})" if support else title
+            shows.append({"title": full, "venue": "Wonder Ballroom",
+                          "neighborhood": "Eliot/Boise", "address": "128 NE Russell St",
+                          "date": cur_date, "time": showtime, "venueUrl": tix})
+    return shows
+
 SOURCES = [
+    {"name": "Wonder Ballroom", "parser": parse_wonder,
+     "urls": ["https://wonderballroom.com/events/"]},
     {"name": "Mississippi/Polaris", "parser": parse_msstudios,
      "urls": ["https://mississippistudios.com/"]},
     {"name": "Mammoth NW", "parser": parse_mammoth,
