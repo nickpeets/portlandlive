@@ -25,8 +25,13 @@ def main():
             print(f"manual_shows.json unreadable: {e}")
 
     # drop past shows
-    today = datetime.date.today().isoformat()
-    shows = [s for s in shows if s.get("date", "") >= today]
+    # Drop past shows using US Pacific time (venues' local zone), not the
+    # GitHub runner's UTC clock, with a 1-day grace buffer so a show never
+    # disappears until the day AFTER it happens.
+    pacific = datetime.timezone(datetime.timedelta(hours=-8))
+    today_pacific = datetime.datetime.now(pacific).date()
+    cutoff = (today_pacific - datetime.timedelta(days=1)).isoformat()
+    shows = [s for s in shows if s.get("date", "") >= cutoff]
 
     # dedupe on (title, venue, date)
     seen, deduped = set(), []
