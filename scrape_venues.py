@@ -913,7 +913,48 @@ def parse_startheater(html, today):
     return shows
 
 
+
+# ---- Jack London Revue (jacklondonrevue.com/calendar) -- single venue, same
+# TicketWeb tw-* widget as Star Theater but a different container layout, so we
+# anchor on .tw-event-date-complete and climb to the nearest .tw-name.
+def parse_jacklondonrevue(html, today):
+    soup = BeautifulSoup(html, "html.parser")
+    shows = []
+    seen = set()
+    venue = "Jack London Revue"
+    for de in soup.select(".tw-event-date-complete"):
+        cont = de
+        nm = None
+        for _ in range(6):
+            cont = cont.parent
+            if cont is None:
+                break
+            nm = cont.select_one(".tw-name")
+            if nm:
+                break
+        if not (cont and nm):
+            continue
+        date = _st_date(clean(de.get_text(" ")))
+        title = clean(nm.get_text(" "))
+        title = re.sub(r"^(SOLD OUT|CANCELLED|POSTPONED)[:\s-]*", "", title, flags=re.I).strip()
+        if not (date and title):
+            continue
+        te = cont.select_one(".tw-event-time-complete")
+        showtime = to_time(clean(te.get_text(" "))) if te else ""
+        a = cont.find("a", href=True)
+        url = a["href"] if a else "https://jacklondonrevue.com/calendar/"
+        key = (venue, date, title.lower())
+        if key in seen:
+            continue
+        seen.add(key)
+        nb, addr = VENUE_INFO.get(venue, ("Downtown", ""))
+        shows.append({"title": title, "venue": venue, "neighborhood": nb,
+                      "address": addr, "date": date, "time": showtime, "venueUrl": url})
+    return shows
+
+
 SOURCES = [
+    {"name": "Jack London Revue", "parser": parse_jacklondonrevue, "urls": ["https://jacklondonrevue.com/calendar/"]},
     {"name": "Star Theater", "parser": parse_startheater, "urls": ["https://startheaterportland.com/"]},
     {"name": "Alberta Rose Theatre", "parser": parse_albertarose, "urls": ["https://albertarosetheatre.com/events/"]},
     {"name": "Portland5 (Keller/Schnitzer/Newmark/etc)", "parser": parse_portland5, "urls": ["https://www.portland5.com/events"]},
