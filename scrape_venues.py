@@ -401,9 +401,10 @@ def parse_wonder(html, today):
         elif txt and txt.lower() != "more info" and not m and not e["title"]:
             e["title"] = txt
 
-    # show time per slug: scan the page text near each etix link
-    page = soup.get_text(" ")
+    # show times appear in document order as "Show : 8 pm" per event
+    show_times = re.findall(r'Show\s*:?\s*([\d:]+\s*[apAP][mM])', soup.get_text(" "))
     shows = []
+    ti = 0
     for slug, e in events.items():
         if not e["date"] or not e["title"]:
             continue
@@ -412,9 +413,11 @@ def parse_wonder(html, today):
             if "etix.com" in a["href"] and e["title"][:12].lower() in clean(a.get("title", "")).lower():
                 tix = a["href"]
                 break
+        showtime = to_time(show_times[ti]) if ti < len(show_times) else ""
+        ti += 1
         shows.append({"title": e["title"], "venue": "Wonder Ballroom",
                       "neighborhood": "Eliot/Boise", "address": "128 NE Russell St",
-                      "date": e["date"], "time": "", "venueUrl": tix})
+                      "date": e["date"], "time": showtime, "venueUrl": tix})
     return shows
 # ---- Holocene (holocene.org/events/) -----------------------------------------
 # Each event: a title <h2> linking to /event/... with an etix ticket link whose
@@ -441,6 +444,7 @@ def parse_holocene(html, today):
             events[slug]["tix"] = a["href"]
     # dates appear in document order as "Day, Mon DD" lines; map them to events by order
     dates = HOLO_DATE.findall(text)
+    times = re.findall(r'Doors?:?\s*([\d:]+\s*[apAP][mM])', text)
     shows = []
     di = 0
     for slug in order:
@@ -448,17 +452,20 @@ def parse_holocene(html, today):
         if not e["title"]:
             continue
         date_iso = None
+        showtime = ""
         if di < len(dates):
             _, mon, day = dates[di]
             mo = MONTHS[mon]; d = int(day)
             yr = today.year if mo >= today.month else today.year + 1
             date_iso = f"{yr}-{mo:02d}-{d:02d}"
+            if di < len(times):
+                showtime = to_time(times[di])
             di += 1
         if not date_iso:
             continue
         shows.append({"title": e["title"], "venue": "Holocene",
                       "neighborhood": "Central Eastside", "address": "1001 SE Morrison St",
-                      "date": date_iso, "time": "", "venueUrl": e["tix"] or slug})
+                      "date": date_iso, "time": showtime, "venueUrl": e["tix"] or slug})
     return shows
 SOURCES = [
     {"name": "Holocene", "parser": parse_holocene,

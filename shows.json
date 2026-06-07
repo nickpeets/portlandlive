@@ -1,67 +1,7 @@
 {
-  "generated": "2026-06-06T19:26:57+00:00",
+  "generated": "2026-06-07T02:08:33+00:00",
   "source": "Scraped from venue calendars + hand-added listings",
   "shows": [
-    {
-      "title": "MICKEY AVALON ~ 20th Anniversary Playing the Complete First Album with Frankie Flawless",
-      "venue": "Dante's",
-      "neighborhood": "Old Town/Chinatown",
-      "address": "350 W Burnside St",
-      "date": "2026-06-06",
-      "time": "",
-      "venueUrl": "https://www.danteslive.com/tm-event/mickey-avalon-with-guests/",
-      "id": 1
-    },
-    {
-      "title": "SMASH disco~glam~metal~punk-hiphop",
-      "venue": "Dante's",
-      "neighborhood": "Old Town/Chinatown",
-      "address": "350 W Burnside St",
-      "date": "2026-06-06",
-      "time": "",
-      "venueUrl": "https://www.danteslive.com/tm-event/smash-discoglammetalpunk-hiphop/",
-      "id": 2
-    },
-    {
-      "title": "GLOBAL BASED PRESENTS: MS NINA (DJ SET) ⋆ 21+",
-      "venue": "Holocene",
-      "neighborhood": "Central Eastside",
-      "address": "1001 SE Morrison St",
-      "date": "2026-06-06",
-      "time": "",
-      "venueUrl": "https://www.holocene.org/event/global-based-presents-ms-nina-dj-set-%e2%8b%86-21/holocene/portland/",
-      "id": 3
-    },
-    {
-      "title": "BRONCHO - Just Enough Hip to Be Woman",
-      "venue": "Mississippi Studios",
-      "neighborhood": "Boise/Mississippi",
-      "address": "3939 N Mississippi Ave",
-      "date": "2026-06-06",
-      "time": "9:00 PM",
-      "venueUrl": "https://www.etix.com/ticket/p/42652450/sold-outbroncho-just-enough-hip-to-be-woman-portland-mississippi-studios",
-      "id": 4
-    },
-    {
-      "title": "The Cab *CANCELLED* (w/ Carr with Carr end event sub header)",
-      "venue": "Roseland Theater",
-      "neighborhood": "Old Town/Chinatown",
-      "address": "8 NW 6th Ave",
-      "date": "2026-06-06",
-      "time": "",
-      "venueUrl": "https://roselandpdx.com/event/the-cab/roseland-theater/portland-oregon/",
-      "id": 5
-    },
-    {
-      "title": "Jeff Rosenstock",
-      "venue": "Wonder Ballroom",
-      "neighborhood": "Eliot/Boise",
-      "address": "128 NE Russell St",
-      "date": "2026-06-06",
-      "time": "",
-      "venueUrl": "https://wonderballroom.com/event/jeff-rosenstock-2/wonder-ballroom/portland-oregon/",
-      "id": 6
-    },
     {
       "title": "NO WRONG ANSWER TRIVIA followed by Sinferno Cabaret",
       "venue": "Dante's",
@@ -70,7 +10,7 @@
       "date": "2026-06-07",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/no-wrong-answer-trivia-followed-by-sinferno-cabaret/",
-      "id": 7
+      "id": 1
     },
     {
       "title": "SINFERNO CABARET",
@@ -80,7 +20,7 @@
       "date": "2026-06-07",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/sinferno-cabaret-91/",
-      "id": 8
+      "id": 2
     },
     {
       "title": "Arietta Ward / Tony Ozier (w/ DJ Jumbo)",
@@ -90,7 +30,7 @@
       "date": "2026-06-07",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/51588312/arietta-ward-tony-ozier-portland-mississippi-studios",
-      "id": 9
+      "id": 3
     },
     {
       "title": "Jhariah Trust Ceremony Tour (w/ Mijita)",
@@ -100,7 +40,7 @@
       "date": "2026-06-07",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/51748124/jhariah-trust-ceremony-tour-portland-polaris-hall",
-      "id": 10
+      "id": 4
     },
     {
       "title": "Jeff Rosenstock",
@@ -108,9 +48,9 @@
       "neighborhood": "Eliot/Boise",
       "address": "128 NE Russell St",
       "date": "2026-06-07",
-      "time": "",
+      "time": "8:00 PM",
       "venueUrl": "https://wonderballroom.com/event/jeff-rosenstock-3/wonder-ballroom/portland-oregon/",
-      "id": 11
+      "id": 5
     },
     {
       "title": "KARAOKE FROM HELL",
@@ -120,7 +60,7 @@
       "date": "2026-06-08",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/karaoke-from-hell-92/",
-      "id": 12
+      "id": 6
     },
     {
       "title": "Mikaela Davis (w/ Olivia Ellen Lloyd)",
@@ -130,7 +70,7 @@
       "date": "2026-06-08",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/47418872/mikaela-davis-portland-mississippi-studios",
-      "id": 13
+      "id": 7
     },
     {
       "title": "ALEC BANG & THE CULT CLASSICS with Ringer and the Bells",
@@ -140,7 +80,7 @@
       "date": "2026-06-09",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/alec-bang-the-cult-classics-with-ringer-and-the-bells/",
-      "id": 14
+      "id": 8
     },
     {
       "title": "Hunx and His Punx (w/ Slippers)",
@@ -150,7 +90,7 @@
       "date": "2026-06-09",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/81879123/sold-outhunx-and-his-punx-portland-mississippi-studios",
-      "id": 15
+      "id": 9
     },
     {
       "title": "Lip Critic (w/ Flatwounds, Bejalvin)",
@@ -160,7 +100,7 @@
       "date": "2026-06-09",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/77797267/lip-critic-portland-polaris-hall",
-      "id": 16
+      "id": 10
     },
     {
       "title": "'68 with Nate Bergman",
@@ -170,7 +110,7 @@
       "date": "2026-06-10",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/68-with-nate-bergman/",
-      "id": 17
+      "id": 11
     },
     {
       "title": "Dorian Electra w/ Oskie – All Ages!",
@@ -178,9 +118,9 @@
       "neighborhood": "Central Eastside",
       "address": "1001 SE Morrison St",
       "date": "2026-06-10",
-      "time": "",
+      "time": "7:00 PM",
       "venueUrl": "https://www.holocene.org/event/dorian-electra-w-oskie-all-ages/holocene/portland/",
-      "id": 18
+      "id": 12
     },
     {
       "title": "By Storm - My Ghost Go Ghost (w/ Corridos Ketamina)",
@@ -190,7 +130,7 @@
       "date": "2026-06-10",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/95794676/by-storm-my-ghost-go-ghost-portland-mississippi-studios",
-      "id": 19
+      "id": 13
     },
     {
       "title": "Toadies: The Charmer Tour (w/ Local H, Sparta)",
@@ -200,7 +140,7 @@
       "date": "2026-06-10",
       "time": "",
       "venueUrl": "https://www.etix.com/ticket/p/48092798/toadiesthe-charmer-tour-portland-roseland-theater?partner_id=100",
-      "id": 20
+      "id": 14
     },
     {
       "title": "3BALLMTY – CLUB CONEXIÓN TOUR – Phase 2",
@@ -208,9 +148,9 @@
       "neighborhood": "Eliot/Boise",
       "address": "128 NE Russell St",
       "date": "2026-06-10",
-      "time": "",
+      "time": "8:00 PM",
       "venueUrl": "https://wonderballroom.com/event/3ballmty-club-conexi%c3%b3n-tour-phase-2/wonder-ballroom/portland-oregon/",
-      "id": 21
+      "id": 15
     },
     {
       "title": "BROTHER ALI with DJ Abilities and Rob the Universe",
@@ -220,7 +160,7 @@
       "date": "2026-06-11",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/brother-ali-at-dantes/",
-      "id": 22
+      "id": 16
     },
     {
       "title": "Matthew Dear (DJ set) – w/ Feu du Camp & Petite Syrah – 21+",
@@ -228,9 +168,9 @@
       "neighborhood": "Central Eastside",
       "address": "1001 SE Morrison St",
       "date": "2026-06-11",
-      "time": "",
+      "time": "8:00 PM",
       "venueUrl": "https://www.holocene.org/event/matthew-dear-dj-set-w-feu-du-camp-petite-syrah-21/holocene/portland/",
-      "id": 23
+      "id": 17
     },
     {
       "title": "Pete & Bas Save America (w/ Delivery Boys)",
@@ -240,7 +180,7 @@
       "date": "2026-06-11",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/77981929/pete-bas-save-america-portland-mississippi-studios",
-      "id": 24
+      "id": 18
     },
     {
       "title": "lowercase (w/ Thrones, Caustic Resin)",
@@ -250,7 +190,7 @@
       "date": "2026-06-11",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/30426499/lowercase-portland-polaris-hall",
-      "id": 25
+      "id": 19
     },
     {
       "title": "EMO VS. POP-PUNK: Myspace Music Video Party",
@@ -260,7 +200,7 @@
       "date": "2026-06-12",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/emo-vs-pop-punk-myspace-music-video-party/",
-      "id": 26
+      "id": 20
     },
     {
       "title": "Candi Pop: A Girly Pop Dance Party: PRIDE EDITION – 21+",
@@ -268,9 +208,9 @@
       "neighborhood": "Central Eastside",
       "address": "1001 SE Morrison St",
       "date": "2026-06-12",
-      "time": "",
+      "time": "9:00 PM",
       "venueUrl": "https://www.holocene.org/event/candi-pop-a-girly-pop-dance-party-pride-edition-21/holocene/portland/",
-      "id": 27
+      "id": 21
     },
     {
       "title": "Dakota Theim (Album Release) (w/ Family Worship Center, Big Spender)",
@@ -280,7 +220,7 @@
       "date": "2026-06-12",
       "time": "9:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/81926765/dakota-theim-album-release-portland-mississippi-studios",
-      "id": 28
+      "id": 22
     },
     {
       "title": "TsuShiMaMiRe",
@@ -290,7 +230,7 @@
       "date": "2026-06-12",
       "time": "9:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/54584619/tsushimamire-portland-polaris-hall",
-      "id": 29
+      "id": 23
     },
     {
       "title": "EMERSON WOOLF & THE WISHBONES & Sydney Sprague",
@@ -300,7 +240,7 @@
       "date": "2026-06-13",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/emerson-woolf-the-wishbones-guests/",
-      "id": 30
+      "id": 24
     },
     {
       "title": "SMASH disco~glam~metal~punk-hiphop",
@@ -310,7 +250,7 @@
       "date": "2026-06-13",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/smash-discoglammetalpunk-hiphop-2/",
-      "id": 31
+      "id": 25
     },
     {
       "title": "DISCO LIPS: PRIDE EDITION – 21+",
@@ -318,9 +258,9 @@
       "neighborhood": "Central Eastside",
       "address": "1001 SE Morrison St",
       "date": "2026-06-13",
-      "time": "",
+      "time": "8:00 PM",
       "venueUrl": "https://www.holocene.org/event/disco-lips-pride-edition-21/holocene/portland/",
-      "id": 32
+      "id": 26
     },
     {
       "title": "Alela Diane (w/ Shannon Lay)",
@@ -330,7 +270,7 @@
       "date": "2026-06-13",
       "time": "8:30 PM",
       "venueUrl": "https://www.etix.com/ticket/p/83167573/alela-diane-portland-mississippi-studios",
-      "id": 33
+      "id": 27
     },
     {
       "title": "HOPELESS DEVILS followed by Sinferno Cabaret",
@@ -340,7 +280,7 @@
       "date": "2026-06-14",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/hopeless-devils-followed-by-sinferno-cabaret/",
-      "id": 34
+      "id": 28
     },
     {
       "title": "SINFERNO CABARET",
@@ -350,7 +290,7 @@
       "date": "2026-06-14",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/sinferno-cabaret-92/",
-      "id": 35
+      "id": 29
     },
     {
       "title": "Camp Blu + Famous Friend + Floats + VHS Ghost – 21+",
@@ -358,9 +298,9 @@
       "neighborhood": "Central Eastside",
       "address": "1001 SE Morrison St",
       "date": "2026-06-14",
-      "time": "",
+      "time": "7:00 PM",
       "venueUrl": "https://www.holocene.org/event/camp-blu-famous-friend-floats-vhs-ghost-21/holocene/portland/",
-      "id": 36
+      "id": 30
     },
     {
       "title": "Mark de Clive-Lowe & MAE.SUN",
@@ -370,7 +310,7 @@
       "date": "2026-06-14",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/83910877/mark-de-clivelowe-maesun-portland-mississippi-studios",
-      "id": 37
+      "id": 31
     },
     {
       "title": "Mary Gauthier: Celebrating the 20th Anniversary of Mercy Now (w/ with special guest Jaimee Harris)",
@@ -380,7 +320,7 @@
       "date": "2026-06-14",
       "time": "7:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/66329763/mary-gauthiercelebrating-the-20th-anniversary-of-mercy-now-portland-polaris-hall",
-      "id": 38
+      "id": 32
     },
     {
       "title": "KARAOKE FROM HELL",
@@ -390,7 +330,7 @@
       "date": "2026-06-15",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/karaoke-from-hell-93/",
-      "id": 39
+      "id": 33
     },
     {
       "title": "Low Bar Chorale (w/ Mitch and the Melody Makers)",
@@ -400,7 +340,7 @@
       "date": "2026-06-16",
       "time": "7:30 PM",
       "venueUrl": "https://www.etix.com/ticket/p/47272379/low-bar-chorale-portland-polaris-hall",
-      "id": 40
+      "id": 34
     },
     {
       "title": "GUTTERMOUTH with Grimedog, Cryptilians, & Bazooka Sharkz",
@@ -410,7 +350,7 @@
       "date": "2026-06-17",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/guttermouth-with-grimedog-cryptilians-guest/",
-      "id": 41
+      "id": 35
     },
     {
       "title": "BIEBER AND A BEAT: A JUSTIN BIEBER NIGHT – 21+",
@@ -418,9 +358,9 @@
       "neighborhood": "Central Eastside",
       "address": "1001 SE Morrison St",
       "date": "2026-06-17",
-      "time": "",
+      "time": "8:30 PM",
       "venueUrl": "https://www.holocene.org/event/bieber-and-a-beat-a-justin-bieber-night-21-2/holocene/portland/",
-      "id": 42
+      "id": 36
     },
     {
       "title": "Lee DeWyze (w/ Joy Pearson)",
@@ -430,7 +370,7 @@
       "date": "2026-06-17",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/85777685/lee-dewyze-portland-polaris-hall",
-      "id": 43
+      "id": 37
     },
     {
       "title": "Hannah Diamond (DJ set) w/ Emoji Heap & Sweetbabyjames – 21+",
@@ -438,9 +378,9 @@
       "neighborhood": "Central Eastside",
       "address": "1001 SE Morrison St",
       "date": "2026-06-18",
-      "time": "",
+      "time": "9:00 PM",
       "venueUrl": "https://www.holocene.org/event/hannah-diamond-dj-set-w-emoji-heap-sweetbabyjames-21/holocene/portland/",
-      "id": 44
+      "id": 38
     },
     {
       "title": "Ásgeir (w/ Trinity Jane)",
@@ -450,7 +390,7 @@
       "date": "2026-06-18",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/36510780/%C3%A1sgeir-portland-mississippi-studios",
-      "id": 45
+      "id": 39
     },
     {
       "title": "Makeout Reef (w/ Soft Blue Shimmer, Grolixes)",
@@ -460,7 +400,7 @@
       "date": "2026-06-18",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/39030921/makeout-reef-portland-polaris-hall",
-      "id": 46
+      "id": 40
     },
     {
       "title": "The Crane Wives – ACT II",
@@ -468,9 +408,9 @@
       "neighborhood": "Eliot/Boise",
       "address": "128 NE Russell St",
       "date": "2026-06-18",
-      "time": "",
+      "time": "8:00 PM",
       "venueUrl": "https://wonderballroom.com/event/the-crane-wives-act-ii/wonder-ballroom/portland-oregon/",
-      "id": 47
+      "id": 41
     },
     {
       "title": "HOTWAX disco~glam~metal~punk~hiphop",
@@ -480,7 +420,7 @@
       "date": "2026-06-19",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/hotwax-discoglammetalpunkhiphop-4/",
-      "id": 48
+      "id": 42
     },
     {
       "title": "PSYCLOPS ALBUM RELEASE SHOW with Skulldozer, Viral Tyrant, & Red Panda Death March",
@@ -490,7 +430,7 @@
       "date": "2026-06-19",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/psyclops-album-release-show-with-skulldozer-viral-tyrant-red-panda-death-march/",
-      "id": 49
+      "id": 43
     },
     {
       "title": "DANG! – A Soulful Electronic Dance Night – 21+",
@@ -498,9 +438,9 @@
       "neighborhood": "Central Eastside",
       "address": "1001 SE Morrison St",
       "date": "2026-06-19",
-      "time": "",
+      "time": "9:00 PM",
       "venueUrl": "https://www.holocene.org/event/dang-a-soulful-electronic-dance-night-21-5/holocene/portland/",
-      "id": 50
+      "id": 44
     },
     {
       "title": "Jesca Hoop (w/ Faun Fables)",
@@ -510,7 +450,7 @@
       "date": "2026-06-19",
       "time": "9:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/42079741/jesca-hoop-portland-mississippi-studios",
-      "id": 51
+      "id": 45
     },
     {
       "title": "Eleni Mandell (w/ Drew Grow)",
@@ -520,7 +460,7 @@
       "date": "2026-06-19",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/90962992/eleni-mandell-portland-polaris-hall",
-      "id": 52
+      "id": 46
     },
     {
       "title": "Punchis Banda Rave",
@@ -530,7 +470,7 @@
       "date": "2026-06-19",
       "time": "",
       "venueUrl": "https://www.etix.com/ticket/p/89783269/punchis-banda-rave-portland-roseland-theater?partner_id=100",
-      "id": 53
+      "id": 47
     },
     {
       "title": "The Crane Wives – ACT II",
@@ -538,9 +478,9 @@
       "neighborhood": "Eliot/Boise",
       "address": "128 NE Russell St",
       "date": "2026-06-19",
-      "time": "",
+      "time": "8:00 PM",
       "venueUrl": "https://wonderballroom.com/event/the-crane-wives-act-ii-2/wonder-ballroom/portland-oregon/",
-      "id": 54
+      "id": 48
     },
     {
       "title": "AGENT ORANGE with The Drowns & The Last Responders",
@@ -550,7 +490,7 @@
       "date": "2026-06-20",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/agent-orange-with-the-drowns-guests/",
-      "id": 55
+      "id": 49
     },
     {
       "title": "SMASH disco~glam~metal~punk-hiphop",
@@ -560,7 +500,7 @@
       "date": "2026-06-20",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/smash-discoglammetalpunk-hiphop-3/",
-      "id": 56
+      "id": 50
     },
     {
       "title": "Laffy Taffy: ~Twerk in ALL A$$-Sorted Flavors~ [Hot Girl Summer 26’] – 21+",
@@ -568,9 +508,9 @@
       "neighborhood": "Central Eastside",
       "address": "1001 SE Morrison St",
       "date": "2026-06-20",
-      "time": "",
+      "time": "10:00 PM",
       "venueUrl": "https://www.holocene.org/event/laffy-taffy-twerk-in-all-a-sorted-flavors-hot-girl-summer-26-21/holocene/portland/",
-      "id": 57
+      "id": 51
     },
     {
       "title": "Dustbowl Revival (w/ Steel Fringe)",
@@ -580,7 +520,7 @@
       "date": "2026-06-20",
       "time": "9:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/35316272/dustbowl-revival-portland-mississippi-studios",
-      "id": 58
+      "id": 52
     },
     {
       "title": "Bôa",
@@ -588,9 +528,9 @@
       "neighborhood": "Eliot/Boise",
       "address": "128 NE Russell St",
       "date": "2026-06-20",
-      "time": "",
+      "time": "8:00 PM",
       "venueUrl": "https://wonderballroom.com/event/b%c3%b4a-2/wonder-ballroom/portland-oregon/",
-      "id": 59
+      "id": 53
     },
     {
       "title": "RHEA C. ARACHNE followed by Sinferno Cabaret",
@@ -600,7 +540,7 @@
       "date": "2026-06-21",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/rhea-c-arachne-followed-by-sinferno-cabaret/",
-      "id": 60
+      "id": 54
     },
     {
       "title": "SINFERNO CABARET",
@@ -610,7 +550,7 @@
       "date": "2026-06-21",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/sinferno-cabaret-93/",
-      "id": 61
+      "id": 55
     },
     {
       "title": "Unseen Object (Release show!) w/Shanea, Starz Of Da Bizzare – 21+",
@@ -618,9 +558,9 @@
       "neighborhood": "Central Eastside",
       "address": "1001 SE Morrison St",
       "date": "2026-06-21",
-      "time": "",
+      "time": "6:00 PM",
       "venueUrl": "https://www.holocene.org/event/unseen-object-release-show-w-shanea-starz-of-da-bizzare-21/holocene/portland/",
-      "id": 62
+      "id": 56
     },
     {
       "title": "BendreTheGiant (Album Release) (w/ Night Heron, greaterkind)",
@@ -630,7 +570,7 @@
       "date": "2026-06-21",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/65743091/bendrethegiant-album-release-portland-mississippi-studios",
-      "id": 63
+      "id": 57
     },
     {
       "title": "Gia Margaret is on tour s i n g i n g (w/ with Brendan Eder Ensemble)",
@@ -640,7 +580,7 @@
       "date": "2026-06-21",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/54890744/gia-margaret-is-on-tour-s-i-n-g-i-n-g-portland-polaris-hall",
-      "id": 64
+      "id": 58
     },
     {
       "title": "KARAOKE FROM HELL",
@@ -650,7 +590,7 @@
       "date": "2026-06-22",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/karaoke-from-hell-94/",
-      "id": 65
+      "id": 59
     },
     {
       "title": "Perry Maysun – A Very Pathetic Tour (w/ Isaiah Poet)",
@@ -660,7 +600,7 @@
       "date": "2026-06-22",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/90158167/perry-maysun-a-very-pathetic-tour-portland-polaris-hall",
-      "id": 66
+      "id": 60
     },
     {
       "title": "Camping in Alaska with Human Ant Farm, Glimpse, and Juno Driver – All Ages!",
@@ -668,9 +608,9 @@
       "neighborhood": "Central Eastside",
       "address": "1001 SE Morrison St",
       "date": "2026-06-23",
-      "time": "",
+      "time": "7:00 PM",
       "venueUrl": "https://www.holocene.org/event/camping-in-alaska-with-human-ant-farm-glimpse-and-juno-driver-all-ages/holocene/portland/",
-      "id": 67
+      "id": 61
     },
     {
       "title": "Creaturess (w/ Tylo, Shield Maiden)",
@@ -680,7 +620,7 @@
       "date": "2026-06-23",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/71122215/creaturess-portland-mississippi-studios",
-      "id": 68
+      "id": 62
     },
     {
       "title": "Novulent (w/ Babyteeth)",
@@ -690,7 +630,7 @@
       "date": "2026-06-23",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/44981611/novulent-portland-polaris-hall",
-      "id": 69
+      "id": 63
     },
     {
       "title": "Our Lady Peace: 30th Anniversary Tour With Special Guests The Verve Pipe",
@@ -700,7 +640,7 @@
       "date": "2026-06-23",
       "time": "",
       "venueUrl": "https://www.etix.com/ticket/p/88822559/our-lady-peace30th-anniversary-tour-with-special-guests-the-verve-pipe-portland-roseland-theater?partner_id=100",
-      "id": 70
+      "id": 64
     },
     {
       "title": "Pomplamoose",
@@ -708,9 +648,9 @@
       "neighborhood": "Eliot/Boise",
       "address": "128 NE Russell St",
       "date": "2026-06-23",
-      "time": "",
+      "time": "8:00 PM",
       "venueUrl": "https://wonderballroom.com/event/pomplamoose/wonder-ballroom/portland-oregon/",
-      "id": 71
+      "id": 65
     },
     {
       "title": "ANVIL with Midnite Hellion & Seduktor",
@@ -720,7 +660,7 @@
       "date": "2026-06-24",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/anvil-with-midnite-hellion/",
-      "id": 72
+      "id": 66
     },
     {
       "title": "A full venue activation of Holocene: Featuring a/v sets by Matthew D. Gantt, Mike Nigro, Aesthetic Stalemate + more! – 21+",
@@ -728,9 +668,9 @@
       "neighborhood": "Central Eastside",
       "address": "1001 SE Morrison St",
       "date": "2026-06-24",
-      "time": "",
+      "time": "7:00 PM",
       "venueUrl": "https://www.holocene.org/event/a-full-venue-activation-of-holocene-featuring-a-v-sets-by-matthew-d-gantt-mike-nigro-aesthetic-stalemate-more-21/holocene/portland/",
-      "id": 73
+      "id": 67
     },
     {
       "title": "Local Love Letter #25: Plankton Wat (Album Release) (w/ Talking Contest, RLLRBLL)",
@@ -740,7 +680,7 @@
       "date": "2026-06-24",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/85329245/local-love-letter-25plankton-wat-album-release-portland-mississippi-studios",
-      "id": 74
+      "id": 68
     },
     {
       "title": "Panic Shack (w/ Whisper Hiss)",
@@ -750,7 +690,7 @@
       "date": "2026-06-24",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/41515245/panic-shack-portland-polaris-hall",
-      "id": 75
+      "id": 69
     },
     {
       "title": "MOVED TO THE CRYSTAL BALLROOM: underscores Galleria – North American Chapter",
@@ -758,9 +698,9 @@
       "neighborhood": "Eliot/Boise",
       "address": "128 NE Russell St",
       "date": "2026-06-24",
-      "time": "",
+      "time": "8:00 PM",
       "venueUrl": "https://wonderballroom.com/event/moved-to-the-crystal-ballroom-underscores-galleria-north-american-chapter/wonder-ballroom/portland-oregon/",
-      "id": 76
+      "id": 70
     },
     {
       "title": "ANDRES with Resilia, Lilac Kings, & Pain Cave",
@@ -770,7 +710,7 @@
       "date": "2026-06-25",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/andres-with-resilia-lilac-kings/",
-      "id": 77
+      "id": 71
     },
     {
       "title": "girl so in love: An Olivia Rodrigo Night – 21+",
@@ -778,9 +718,9 @@
       "neighborhood": "Central Eastside",
       "address": "1001 SE Morrison St",
       "date": "2026-06-25",
-      "time": "",
+      "time": "9:00 PM",
       "venueUrl": "https://www.holocene.org/event/girl-so-in-love-an-olivia-rodrigo-night-21/holocene/portland/",
-      "id": 78
+      "id": 72
     },
     {
       "title": "Big Richard (w/ Minor Gold)",
@@ -790,7 +730,7 @@
       "date": "2026-06-25",
       "time": "9:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/97961988/big-richard-portland-mississippi-studios",
-      "id": 79
+      "id": 73
     },
     {
       "title": "HOTWAX disco~glam~metal~punk~hiphop",
@@ -800,7 +740,7 @@
       "date": "2026-06-26",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/hotwax-discoglammetalpunkhiphop-5/",
-      "id": 80
+      "id": 74
     },
     {
       "title": "MICAH ARISS with Ghost Mode, Red Keep, & Screams of Syrens",
@@ -810,7 +750,7 @@
       "date": "2026-06-26",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/micha-ariss-with-ghost-mode-red-keep-screams-of-syrens/",
-      "id": 81
+      "id": 75
     },
     {
       "title": "Holland Andrews + Methods Body – Record Release Party – EARLY SHOW! – 21+",
@@ -818,9 +758,9 @@
       "neighborhood": "Central Eastside",
       "address": "1001 SE Morrison St",
       "date": "2026-06-26",
-      "time": "",
+      "time": "5:00 PM",
       "venueUrl": "https://www.holocene.org/event/holland-andrews-methods-body-record-release-party-early-show-21/holocene/portland/",
-      "id": 82
+      "id": 76
     },
     {
       "title": "SNAP! Y2K ’90s vs ’00s Dance Party! – 21+",
@@ -828,9 +768,9 @@
       "neighborhood": "Central Eastside",
       "address": "1001 SE Morrison St",
       "date": "2026-06-26",
-      "time": "",
+      "time": "9:00 PM",
       "venueUrl": "https://www.holocene.org/event/snap-y2k-90s-vs-00s-dance-party-21-19/holocene/portland/",
-      "id": 83
+      "id": 77
     },
     {
       "title": "Small Million (w/ Bijoux Cone (solo), MY BODY)",
@@ -840,7 +780,7 @@
       "date": "2026-06-26",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/55880925/small-million-portland-mississippi-studios",
-      "id": 84
+      "id": 78
     },
     {
       "title": "HOLLY HUMBERSTONE – Cruel World North American Tour (w/ Leyla Ebrahimi with Leyla Ebrahimi end event sub header)",
@@ -850,7 +790,7 @@
       "date": "2026-06-26",
       "time": "",
       "venueUrl": "https://www.etix.com/ticket/p/53935020/holly-humberstone-cruel-world-north-american-tour-portland-roseland-theater?partner_id=100",
-      "id": 85
+      "id": 79
     },
     {
       "title": "SMASH disco~glam~metal~punk-hiphop",
@@ -860,7 +800,7 @@
       "date": "2026-06-27",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/smash-discoglammetalpunk-hiphop-4/",
-      "id": 86
+      "id": 80
     },
     {
       "title": "US AIR GUITAR CHAMPIONSHIPS 2026",
@@ -870,7 +810,7 @@
       "date": "2026-06-27",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/us-air-guitar-championships-2026/",
-      "id": 87
+      "id": 81
     },
     {
       "title": "Dungeons & Drag Queens – EARLY SHOW! – 21+",
@@ -878,9 +818,9 @@
       "neighborhood": "Central Eastside",
       "address": "1001 SE Morrison St",
       "date": "2026-06-27",
-      "time": "",
+      "time": "5:00 PM",
       "venueUrl": "https://www.holocene.org/event/dungeons-drag-queens-early-show-21/holocene/portland/",
-      "id": 88
+      "id": 82
     },
     {
       "title": "QUÉ CALOR: Today’s Hottest Latin Hits 🔥 – 21+",
@@ -888,9 +828,9 @@
       "neighborhood": "Central Eastside",
       "address": "1001 SE Morrison St",
       "date": "2026-06-27",
-      "time": "",
+      "time": "9:00 PM",
       "venueUrl": "https://www.holocene.org/event/qu%c3%a9-calor-todays-hottest-latin-hits-%f0%9f%94%a5-21/holocene/portland/",
-      "id": 89
+      "id": 83
     },
     {
       "title": "Water Boyz Presents: Chris Travis performing live! – THE PREFIX TOUR",
@@ -900,7 +840,7 @@
       "date": "2026-06-27",
       "time": "",
       "venueUrl": "https://www.etix.com/ticket/p/87931213/water-boyz-presentschris-travis-performing-livethe-prefix-tour-portland-roseland-theater?partner_id=100",
-      "id": 90
+      "id": 84
     },
     {
       "title": "Searows – Death in the Business of Whaling",
@@ -908,9 +848,9 @@
       "neighborhood": "Eliot/Boise",
       "address": "128 NE Russell St",
       "date": "2026-06-27",
-      "time": "",
+      "time": "8:00 PM",
       "venueUrl": "https://wonderballroom.com/event/searows-death-in-the-business-of-whaling/wonder-ballroom/portland-oregon/",
-      "id": 91
+      "id": 85
     },
     {
       "title": "OATHBOUND with Hangfire, Foghorn, & Pretty Suspect",
@@ -920,7 +860,7 @@
       "date": "2026-06-28",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/oathbound-with-hangfire-foghorn-pretty-suspect/",
-      "id": 92
+      "id": 86
     },
     {
       "title": "SINFERNO CABARET",
@@ -930,7 +870,7 @@
       "date": "2026-06-28",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/sinferno-cabaret-94/",
-      "id": 93
+      "id": 87
     },
     {
       "title": "2charm – 18+",
@@ -938,9 +878,9 @@
       "neighborhood": "Central Eastside",
       "address": "1001 SE Morrison St",
       "date": "2026-06-28",
-      "time": "",
+      "time": "7:00 PM",
       "venueUrl": "https://www.holocene.org/event/2charm-18/holocene/portland/",
-      "id": 94
+      "id": 88
     },
     {
       "title": "Searows – Death in the Business of Whaling",
@@ -948,9 +888,9 @@
       "neighborhood": "Eliot/Boise",
       "address": "128 NE Russell St",
       "date": "2026-06-28",
-      "time": "",
+      "time": "8:00 PM",
       "venueUrl": "https://wonderballroom.com/event/searows-death-in-the-business-of-whaling-2/wonder-ballroom/portland-oregon/",
-      "id": 95
+      "id": 89
     },
     {
       "title": "KARAOKE FROM HELL",
@@ -960,7 +900,7 @@
       "date": "2026-06-29",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/karaoke-from-hell-95/",
-      "id": 96
+      "id": 90
     },
     {
       "title": "Shane Parish Plays Autechre Guitar – w/ Patricia Wolf (DJ Set) – 21+",
@@ -968,9 +908,9 @@
       "neighborhood": "Central Eastside",
       "address": "1001 SE Morrison St",
       "date": "2026-06-30",
-      "time": "",
+      "time": "7:00 PM",
       "venueUrl": "https://www.holocene.org/event/shane-parish-plays-autechre-guitar-w-patricia-wolf-dj-set-21/holocene/portland/",
-      "id": 97
+      "id": 91
     },
     {
       "title": "Girli – w/ Creature Party – All Ages",
@@ -978,9 +918,9 @@
       "neighborhood": "Central Eastside",
       "address": "1001 SE Morrison St",
       "date": "2026-07-01",
-      "time": "",
+      "time": "8:00 PM",
       "venueUrl": "https://www.holocene.org/event/girli-w-creature-party-all-ages/holocene/portland/",
-      "id": 98
+      "id": 92
     },
     {
       "title": "WHEN WE MET with Deepest Darkest & Underwater Cliffs",
@@ -990,7 +930,7 @@
       "date": "2026-07-02",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/when-we-met-with-deepest-darkest-underwater-cliffs/",
-      "id": 99
+      "id": 93
     },
     {
       "title": "CITY POP! Japanese Boogie, J-jazz, & New Wave Night – w/ SEASIDE.FM + JOE BALL – 21+",
@@ -998,9 +938,9 @@
       "neighborhood": "Central Eastside",
       "address": "1001 SE Morrison St",
       "date": "2026-07-02",
-      "time": "",
+      "time": "7:00 PM",
       "venueUrl": "https://www.holocene.org/event/city-pop-japanese-boogie-j-jazz-new-wave-night-w-seaside-fm-joe-ball-21-2/holocene/portland/",
-      "id": 100
+      "id": 94
     },
     {
       "title": "HOTWAX disco~glam~metal~punk~hiphop",
@@ -1010,7 +950,7 @@
       "date": "2026-07-03",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/hotwax-discoglammetalpunkhiphop-6/",
-      "id": 101
+      "id": 95
     },
     {
       "title": "KISS ME KISS ME KISS ME (The Cure tribute) with Constant Debauchery (Depeche Mode tribute) & Pacific Monkeys (Arctic Monkeys tribute)",
@@ -1020,7 +960,7 @@
       "date": "2026-07-03",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/kiss-me-kiss-me-kiss-me-the-cure-tribute-with-constant-debauchery-depeche-mode-tribute-pacific-monkeys-arctic-monkeys-tribute/",
-      "id": 102
+      "id": 96
     },
     {
       "title": "SILVER HORSE followed by Sinferno Cabaret",
@@ -1030,7 +970,7 @@
       "date": "2026-07-05",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/silver-horse-followed-by-sinferno-cabaret/",
-      "id": 103
+      "id": 97
     },
     {
       "title": "KARAOKE FROM HELL",
@@ -1040,7 +980,7 @@
       "date": "2026-07-06",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/karaoke-from-hell-96/",
-      "id": 104
+      "id": 98
     },
     {
       "title": "The Moth StorySLAM: REVENGE – 21+",
@@ -1048,9 +988,9 @@
       "neighborhood": "Central Eastside",
       "address": "1001 SE Morrison St",
       "date": "2026-07-06",
-      "time": "",
+      "time": "8:00 PM",
       "venueUrl": "https://www.holocene.org/event/the-moth-storyslam-revenge-21/holocene/portland/",
-      "id": 105
+      "id": 99
     },
     {
       "title": "EMM with TeZATalks, Miss Jaxon, & Papa Titty",
@@ -1060,7 +1000,7 @@
       "date": "2026-07-07",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/emm/",
-      "id": 106
+      "id": 100
     },
     {
       "title": "*CANCELLED* 3QUENCY – GIRLS TALK TOUR",
@@ -1068,9 +1008,9 @@
       "neighborhood": "Eliot/Boise",
       "address": "128 NE Russell St",
       "date": "2026-07-07",
-      "time": "",
+      "time": "8:00 PM",
       "venueUrl": "https://wonderballroom.com/event/cancelled-3quency-girls-talk-tour/wonder-ballroom/portland-oregon/",
-      "id": 107
+      "id": 101
     },
     {
       "title": "Mayray / Perimeters / Sylphide – 21+",
@@ -1078,9 +1018,9 @@
       "neighborhood": "Central Eastside",
       "address": "1001 SE Morrison St",
       "date": "2026-07-08",
-      "time": "",
+      "time": "9:00 PM",
       "venueUrl": "https://www.holocene.org/event/mayray-perimeters-sylphide-21/holocene/portland/",
-      "id": 108
+      "id": 102
     },
     {
       "title": "POSITIVITY CLUB with Girls In Cages, Friday Night Saints, & The Concussions",
@@ -1090,7 +1030,7 @@
       "date": "2026-07-09",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/positivity-club-with-girls-in-cages-friday-night-saints-the-concussions/",
-      "id": 109
+      "id": 103
     },
     {
       "title": "Life on Planets – 21+",
@@ -1098,9 +1038,9 @@
       "neighborhood": "Central Eastside",
       "address": "1001 SE Morrison St",
       "date": "2026-07-09",
-      "time": "",
+      "time": "9:00 PM",
       "venueUrl": "https://www.holocene.org/event/life-on-planets-21/holocene/portland/",
-      "id": 110
+      "id": 104
     },
     {
       "title": "Aaron Hibell",
@@ -1108,9 +1048,9 @@
       "neighborhood": "Eliot/Boise",
       "address": "128 NE Russell St",
       "date": "2026-07-09",
-      "time": "",
+      "time": "8:00 PM",
       "venueUrl": "https://wonderballroom.com/event/aaron-hibell/wonder-ballroom/portland-oregon/",
-      "id": 111
+      "id": 105
     },
     {
       "title": "HOTWAX disco~glam~metal~punk~hiphop",
@@ -1120,7 +1060,7 @@
       "date": "2026-07-10",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/hotwax-discoglammetalpunkhiphop-7/",
-      "id": 112
+      "id": 106
     },
     {
       "title": "Party Girl – A Night Of Party Girl Anthems – 21+",
@@ -1128,9 +1068,9 @@
       "neighborhood": "Central Eastside",
       "address": "1001 SE Morrison St",
       "date": "2026-07-10",
-      "time": "",
+      "time": "7:00 PM",
       "venueUrl": "https://www.holocene.org/event/party-girl-a-night-of-party-girl-anthems-21-7/holocene/portland/",
-      "id": 113
+      "id": 107
     },
     {
       "title": "Have A Nice Life",
@@ -1138,9 +1078,9 @@
       "neighborhood": "Eliot/Boise",
       "address": "128 NE Russell St",
       "date": "2026-07-10",
-      "time": "",
+      "time": "8:00 PM",
       "venueUrl": "https://wonderballroom.com/event/have-a-nice-life/wonder-ballroom/portland-oregon/",
-      "id": 114
+      "id": 108
     },
     {
       "title": "Earlybirds Club",
@@ -1148,9 +1088,9 @@
       "neighborhood": "Eliot/Boise",
       "address": "128 NE Russell St",
       "date": "2026-07-11",
-      "time": "",
+      "time": "8:00 PM",
       "venueUrl": "https://wonderballroom.com/event/earlybirds-club-4/wonder-ballroom/portland-oregon/",
-      "id": 115
+      "id": 109
     },
     {
       "title": "ILUKA – The Wings Tour – All Ages",
@@ -1158,9 +1098,9 @@
       "neighborhood": "Central Eastside",
       "address": "1001 SE Morrison St",
       "date": "2026-07-12",
-      "time": "",
+      "time": "8:00 PM",
       "venueUrl": "https://www.holocene.org/event/iluka-the-wings-tour-all-ages/holocene/portland/",
-      "id": 116
+      "id": 110
     },
     {
       "title": "KARAOKE FROM HELL",
@@ -1170,7 +1110,7 @@
       "date": "2026-07-13",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/karaoke-from-hell-97/",
-      "id": 117
+      "id": 111
     },
     {
       "title": "Sam Prekop and John McEntire “Sons Of” – Exclusive Live LP Recording Event – 21+",
@@ -1178,9 +1118,9 @@
       "neighborhood": "Central Eastside",
       "address": "1001 SE Morrison St",
       "date": "2026-07-14",
-      "time": "",
+      "time": "7:00 PM",
       "venueUrl": "https://www.holocene.org/event/sam-prekop-and-john-mcentire-sons-of-exclusive-live-lp-recording-event-21/holocene/portland/",
-      "id": 118
+      "id": 112
     },
     {
       "title": "MOONDOGGY & Sun Casino",
@@ -1190,7 +1130,7 @@
       "date": "2026-07-15",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/moondoggy-guests/",
-      "id": 119
+      "id": 113
     },
     {
       "title": "Jewelry Exchange / The Social Stomach / Negative Concord – 21+",
@@ -1198,9 +1138,9 @@
       "neighborhood": "Central Eastside",
       "address": "1001 SE Morrison St",
       "date": "2026-07-15",
-      "time": "",
+      "time": "9:00 PM",
       "venueUrl": "https://www.holocene.org/event/jewelry-exchange-the-social-stomach-negative-concord-21/holocene/portland/",
-      "id": 120
+      "id": 114
     },
     {
       "title": "VALKERIE with Here’s To Hoping, Rat Wizard, & Stoning Giants",
@@ -1210,7 +1150,7 @@
       "date": "2026-07-16",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/valkerie-with-heres-to-hoping-rat-wizard-stoning-giants/",
-      "id": 121
+      "id": 115
     },
     {
       "title": "BANG: Queer Techno Transmission – 21+",
@@ -1218,9 +1158,9 @@
       "neighborhood": "Central Eastside",
       "address": "1001 SE Morrison St",
       "date": "2026-07-16",
-      "time": "",
+      "time": "7:00 PM",
       "venueUrl": "https://www.holocene.org/event/bang-queer-techno-transmission-21/holocene/portland/",
-      "id": 122
+      "id": 116
     },
     {
       "title": "FANG with Roundeye, The Besmirchers, & NOR/ME",
@@ -1230,7 +1170,7 @@
       "date": "2026-07-17",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/fang-with-roundeye-the-besmirchers-nor-me/",
-      "id": 123
+      "id": 117
     },
     {
       "title": "HOTWAX disco~glam~metal~punk~hiphop",
@@ -1240,7 +1180,7 @@
       "date": "2026-07-17",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/hotwax-discoglammetalpunkhiphop-8/",
-      "id": 124
+      "id": 118
     },
     {
       "title": "NICK LUTSKO & THE $100K BAND with Guests",
@@ -1250,7 +1190,7 @@
       "date": "2026-07-18",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/nick-lutsko-the-100k-band-with-guests/",
-      "id": 125
+      "id": 119
     },
     {
       "title": "Chai & Roses Pride Party: A Sunday Tea Dance for QTBIPOC & Allies – 21+",
@@ -1258,9 +1198,9 @@
       "neighborhood": "Central Eastside",
       "address": "1001 SE Morrison St",
       "date": "2026-07-19",
-      "time": "",
+      "time": "7:00 PM",
       "venueUrl": "https://www.holocene.org/event/chai-roses-pride-party-a-sunday-tea-dance-for-qtbipoc-allies-21-2/holocene/portland/",
-      "id": 126
+      "id": 120
     },
     {
       "title": "KARAOKE FROM HELL",
@@ -1270,7 +1210,7 @@
       "date": "2026-07-20",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/karaoke-from-hell-98/",
-      "id": 127
+      "id": 121
     },
     {
       "title": "Riff Wood",
@@ -1278,9 +1218,9 @@
       "neighborhood": "Central Eastside",
       "address": "1001 SE Morrison St",
       "date": "2026-07-21",
-      "time": "",
+      "time": "9:00 PM",
       "venueUrl": "https://www.holocene.org/event/riff-wood/monqui-presents/portland-oregon/",
-      "id": 128
+      "id": 122
     },
     {
       "title": "HAUNT ME with Cathedral Bells, Holy Water and DJs Danse Du Corpse and Final Girl",
@@ -1290,7 +1230,7 @@
       "date": "2026-07-22",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/haunt-me/",
-      "id": 129
+      "id": 123
     },
     {
       "title": "NOT HERE ANYMORE with Dismantle Me, BRIA, & OSHA Violations",
@@ -1300,7 +1240,7 @@
       "date": "2026-07-23",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/not-here-anymore-with-dismantle-me-bria-osha-violations/",
-      "id": 130
+      "id": 124
     },
     {
       "title": "Video Game Rave – 21+",
@@ -1308,9 +1248,9 @@
       "neighborhood": "Central Eastside",
       "address": "1001 SE Morrison St",
       "date": "2026-07-23",
-      "time": "",
+      "time": "9:00 PM",
       "venueUrl": "https://www.holocene.org/event/video-game-rave-21-2/holocene/portland/",
-      "id": 131
+      "id": 125
     },
     {
       "title": "HOTWAX disco~glam~metal~punk~hiphop",
@@ -1320,7 +1260,7 @@
       "date": "2026-07-24",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/hotwax-discoglammetalpunkhiphop-9/",
-      "id": 132
+      "id": 126
     },
     {
       "title": "THE SOAPGIRLS & Guests",
@@ -1330,7 +1270,7 @@
       "date": "2026-07-24",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/the-soapgirls-guests/",
-      "id": 133
+      "id": 127
     },
     {
       "title": "Fulton Lee – Sing With Me Tour 2026 *MOVED TO HAWTHORNE THEATRE*",
@@ -1340,7 +1280,7 @@
       "date": "2026-07-24",
       "time": "",
       "venueUrl": "https://www.etix.com/ticket/p/54748356/fulton-lee-sing-with-me-tour-2026-portland-roseland-theater?partner_id=100",
-      "id": 134
+      "id": 128
     },
     {
       "title": "POP OFF! LGBTQ+ POP & EDM PARTY! – 21+",
@@ -1348,9 +1288,9 @@
       "neighborhood": "Central Eastside",
       "address": "1001 SE Morrison St",
       "date": "2026-07-24",
-      "time": "",
+      "time": "5:00 PM",
       "venueUrl": "https://www.holocene.org/event/pop-off-lgbtq-pop-edm-party-21/holocene/portland/",
-      "id": 135
+      "id": 129
     },
     {
       "title": "PERREOLAND | PORTLAND",
@@ -1360,7 +1300,7 @@
       "date": "2026-07-24",
       "time": "",
       "venueUrl": "https://www.etix.com/ticket/p/75170616/perreo-land-portland-roseland-theater?partner_id=100",
-      "id": 136
+      "id": 130
     },
     {
       "title": "Marielle V Jakobsons, David Wesley Golightly, Marcus Fischer – EARLY SHOW! – 21+",
@@ -1368,9 +1308,9 @@
       "neighborhood": "Central Eastside",
       "address": "1001 SE Morrison St",
       "date": "2026-07-25",
-      "time": "",
+      "time": "6:00 PM",
       "venueUrl": "https://www.holocene.org/event/marielle-v-jakobsons-david-wesley-golightly-marcus-fischer-early-show-21/holocene/portland/",
-      "id": 137
+      "id": 131
     },
     {
       "title": "SHOUT! 60’s Discotheque Dance Party w/DJ Drew Groove – 21+",
@@ -1378,9 +1318,9 @@
       "neighborhood": "Central Eastside",
       "address": "1001 SE Morrison St",
       "date": "2026-07-26",
-      "time": "",
+      "time": "8:00 PM",
       "venueUrl": "https://www.holocene.org/event/shout-60s-discotheque-dance-party-w-dj-drew-groove-21-2/holocene/portland/",
-      "id": 138
+      "id": 132
     },
     {
       "title": "KARAOKE FROM HELL",
@@ -1390,7 +1330,7 @@
       "date": "2026-07-27",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/karaoke-from-hell-99/",
-      "id": 139
+      "id": 133
     },
     {
       "title": "of Montreal",
@@ -1398,9 +1338,9 @@
       "neighborhood": "Eliot/Boise",
       "address": "128 NE Russell St",
       "date": "2026-07-27",
-      "time": "",
+      "time": "6:00 PM",
       "venueUrl": "https://wonderballroom.com/event/of-montreal-4/wonder-ballroom/portland-oregon/",
-      "id": 140
+      "id": 134
     },
     {
       "title": "EDGE OF PARADISE & STARKILL with Vintersea & Guests",
@@ -1410,7 +1350,7 @@
       "date": "2026-07-28",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/edge-of-paradise-starkill-with-vintersea-guests/",
-      "id": 141
+      "id": 135
     },
     {
       "title": "Black Moth Super Rainbow",
@@ -1418,9 +1358,9 @@
       "neighborhood": "Eliot/Boise",
       "address": "128 NE Russell St",
       "date": "2026-07-28",
-      "time": "",
+      "time": "8:00 PM",
       "venueUrl": "https://wonderballroom.com/event/black-moth-super-rainbow/wonder-ballroom/portland-oregon/",
-      "id": 142
+      "id": 136
     },
     {
       "title": "MICAH AND THE MIRRORS with Masters Of Karate, Advisor, & Stunt Drummer",
@@ -1430,7 +1370,7 @@
       "date": "2026-07-29",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/micah-and-the-mirrors-with-masters-of-karate-advisor-stunt-drummer/",
-      "id": 143
+      "id": 137
     },
     {
       "title": "Willow Avalon – Pink Pocket Pistol Tour",
@@ -1438,9 +1378,9 @@
       "neighborhood": "Eliot/Boise",
       "address": "128 NE Russell St",
       "date": "2026-07-30",
-      "time": "",
+      "time": "8:00 PM",
       "venueUrl": "https://wonderballroom.com/event/willow-avalon-pink-pocket-pistol-tour/wonder-ballroom/portland-oregon/",
-      "id": 144
+      "id": 138
     },
     {
       "title": "HOTWAX disco~glam~metal~punk~hiphop",
@@ -1450,7 +1390,7 @@
       "date": "2026-07-31",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/hotwax-discoglammetalpunkhiphop-10/",
-      "id": 145
+      "id": 139
     },
     {
       "title": "GrindHouse disco~glam~metal~punk",
@@ -1460,7 +1400,7 @@
       "date": "2026-08-01",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/grindhouse-discoglammetalpunk-2/",
-      "id": 146
+      "id": 140
     },
     {
       "title": "Rumble At The Roseland #134",
@@ -1470,7 +1410,7 @@
       "date": "2026-08-01",
       "time": "",
       "venueUrl": "https://www.etix.com/ticket/p/46364184/rumble-at-the-roseland-134-portland-roseland-theater?partner_id=100",
-      "id": 147
+      "id": 141
     },
     {
       "title": "Blisspop Presents: Hot In Herre: 2000s Dance Party",
@@ -1478,9 +1418,9 @@
       "neighborhood": "Eliot/Boise",
       "address": "128 NE Russell St",
       "date": "2026-08-01",
-      "time": "",
+      "time": "8:00 PM",
       "venueUrl": "https://wonderballroom.com/event/blisspop-presents-hot-in-herre-2000s-dance-party/wonder-ballroom/portland-oregon/",
-      "id": 148
+      "id": 142
     },
     {
       "title": "KARAOKE FROM HELL",
@@ -1490,7 +1430,7 @@
       "date": "2026-08-03",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/karaoke-from-hell-100/",
-      "id": 149
+      "id": 143
     },
     {
       "title": "Poppy (w/ Landmvrks, Thousand Below with Landmvrks, Thousand Below end event sub header)",
@@ -1500,7 +1440,7 @@
       "date": "2026-08-03",
       "time": "",
       "venueUrl": "https://www.etix.com/ticket/p/56475022/poppy-portland-roseland-theater?partner_id=100",
-      "id": 150
+      "id": 144
     },
     {
       "title": "MC CHRIS with Mega Ran",
@@ -1510,7 +1450,7 @@
       "date": "2026-08-04",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/mc-chris-with-mega-ran/",
-      "id": 151
+      "id": 145
     },
     {
       "title": "Avalon Emerson & the Charm – 21+",
@@ -1518,9 +1458,9 @@
       "neighborhood": "Central Eastside",
       "address": "1001 SE Morrison St",
       "date": "2026-08-05",
-      "time": "",
+      "time": "8:00 PM",
       "venueUrl": "https://www.holocene.org/event/avalon-emerson-the-charm-21/holocene/portland/",
-      "id": 152
+      "id": 146
     },
     {
       "title": "Otha: Club 20 Tour 2026 – w/ Digital Warthog – 21+",
@@ -1528,9 +1468,9 @@
       "neighborhood": "Central Eastside",
       "address": "1001 SE Morrison St",
       "date": "2026-08-06",
-      "time": "",
+      "time": "9:00 PM",
       "venueUrl": "https://www.holocene.org/event/otha-club-20-tour-2026-w-digital-warthog-21/holocene/portland/",
-      "id": 153
+      "id": 147
     },
     {
       "title": "HOTWAX disco~glam~metal~punk~hiphop",
@@ -1540,7 +1480,7 @@
       "date": "2026-08-07",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/hotwax-discoglammetalpunkhiphop-11/",
-      "id": 154
+      "id": 148
     },
     {
       "title": "KARAOKE FROM HELL",
@@ -1550,7 +1490,7 @@
       "date": "2026-08-10",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/karaoke-from-hell-101/",
-      "id": 155
+      "id": 149
     },
     {
       "title": "Audrey Hobert: The Staircase To Stardom Tour",
@@ -1560,7 +1500,7 @@
       "date": "2026-08-11",
       "time": "",
       "venueUrl": "https://www.etix.com/ticket/p/46978531/audrey-hobertthe-staircase-to-stardom-tour-portland-roseland-theater?partner_id=100",
-      "id": 156
+      "id": 150
     },
     {
       "title": "Kingfishr",
@@ -1568,9 +1508,9 @@
       "neighborhood": "Eliot/Boise",
       "address": "128 NE Russell St",
       "date": "2026-08-11",
-      "time": "",
+      "time": "8:00 PM",
       "venueUrl": "https://wonderballroom.com/event/kingfishr/wonder-ballroom/portland-oregon/",
-      "id": 157
+      "id": 151
     },
     {
       "title": "Chasing Abbey",
@@ -1578,9 +1518,9 @@
       "neighborhood": "Eliot/Boise",
       "address": "128 NE Russell St",
       "date": "2026-08-12",
-      "time": "",
+      "time": "8:00 PM",
       "venueUrl": "https://wonderballroom.com/event/chasing-abbey/wonder-ballroom/portland-oregon/",
-      "id": 158
+      "id": 152
     },
     {
       "title": "CLUB SLAYYY: SLAYYYTER + HYPERPOP NIGHT 🐰 – 21+",
@@ -1588,9 +1528,9 @@
       "neighborhood": "Central Eastside",
       "address": "1001 SE Morrison St",
       "date": "2026-08-13",
-      "time": "",
+      "time": "7:00 PM",
       "venueUrl": "https://www.holocene.org/event/club-slayyy-slayyyter-hyperpop-night-%f0%9f%90%b0-21/holocene/portland/",
-      "id": 159
+      "id": 153
     },
     {
       "title": "HOTWAX disco~glam~metal~punk~hiphop",
@@ -1600,7 +1540,7 @@
       "date": "2026-08-14",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/hotwax-discoglammetalpunkhiphop-12/",
-      "id": 160
+      "id": 154
     },
     {
       "title": "Passion Pit – The Pretty Penny Tour (w/ Arden Jones with Arden Jones end event sub header)",
@@ -1610,7 +1550,7 @@
       "date": "2026-08-14",
       "time": "",
       "venueUrl": "https://www.etix.com/ticket/p/54716693/passion-pit-the-pretty-penny-tour-portland-roseland-theater?partner_id=100",
-      "id": 161
+      "id": 155
     },
     {
       "title": "ODDBALLS AND OUTLAWS: IV and The Strange Band + Clownvis Presley",
@@ -1620,7 +1560,7 @@
       "date": "2026-08-16",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/oddballs-and-outlaws-iv-and-the-strange-band-clownvis-presley/",
-      "id": 162
+      "id": 156
     },
     {
       "title": "Corbyn Besson and Soulidified: The Pop’n Out Tour",
@@ -1630,7 +1570,7 @@
       "date": "2026-08-16",
       "time": "",
       "venueUrl": "https://www.etix.com/ticket/p/69958819/corbyn-besson-soulidified-2026-portland-roseland-theater?partner_id=100",
-      "id": 163
+      "id": 157
     },
     {
       "title": "KARAOKE FROM HELL",
@@ -1640,7 +1580,7 @@
       "date": "2026-08-17",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/karaoke-from-hell-102/",
-      "id": 164
+      "id": 158
     },
     {
       "title": "OLIVER TREE – LOVE YOU MADLY, HATE YOU BADLY WORLD’S FIRST WORLD TOUR",
@@ -1650,7 +1590,7 @@
       "date": "2026-08-17",
       "time": "",
       "venueUrl": "https://www.etix.com/ticket/p/30799301/oliver-tree-love-you-madlyhate-you-badly-worlds-first-world-tour-portland-roseland-theater?partner_id=100",
-      "id": 165
+      "id": 159
     },
     {
       "title": "THE CYBERTRONIC SPREE with Spaceman Bob",
@@ -1660,7 +1600,7 @@
       "date": "2026-08-18",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/the-cybertronic-spree-with-spaceman-bob/",
-      "id": 166
+      "id": 160
     },
     {
       "title": "Quicksand & Bane",
@@ -1668,9 +1608,9 @@
       "neighborhood": "Eliot/Boise",
       "address": "128 NE Russell St",
       "date": "2026-08-18",
-      "time": "",
+      "time": "8:00 PM",
       "venueUrl": "https://wonderballroom.com/event/quicksand-bane/wonder-ballroom/portland-oregon/",
-      "id": 167
+      "id": 161
     },
     {
       "title": "Casket Cassette, Stare Away – 21+",
@@ -1678,9 +1618,9 @@
       "neighborhood": "Central Eastside",
       "address": "1001 SE Morrison St",
       "date": "2026-08-19",
-      "time": "",
+      "time": "9:00 PM",
       "venueUrl": "https://www.holocene.org/event/casket-cassette-stare-away-21/holocene/portland/",
-      "id": 168
+      "id": 162
     },
     {
       "title": "DALE WATSON AND HIS LONE STARS with Guests",
@@ -1690,7 +1630,7 @@
       "date": "2026-08-20",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/dale-watson-and-his-lone-stars-with-guests/",
-      "id": 169
+      "id": 163
     },
     {
       "title": "LUST FOR LANA: A LANA DEL REY DANCE NIGHT – 21+",
@@ -1698,9 +1638,9 @@
       "neighborhood": "Central Eastside",
       "address": "1001 SE Morrison St",
       "date": "2026-08-20",
-      "time": "",
+      "time": "8:00 PM",
       "venueUrl": "https://www.holocene.org/event/lust-for-lana-a-lana-del-rey-dance-night-21/holocene/portland/",
-      "id": 170
+      "id": 164
     },
     {
       "title": "HOTWAX disco~glam~metal~punk~hiphop",
@@ -1710,7 +1650,7 @@
       "date": "2026-08-21",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/hotwax-discoglammetalpunkhiphop-13/",
-      "id": 171
+      "id": 165
     },
     {
       "title": "CANCERSLUG with Guests",
@@ -1720,7 +1660,7 @@
       "date": "2026-08-22",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/cancerslug-with-guests/",
-      "id": 172
+      "id": 166
     },
     {
       "title": "The Sword & Red Fang (w/ Spoon Benders with Spoon Benders end event sub header)",
@@ -1730,7 +1670,7 @@
       "date": "2026-08-22",
       "time": "",
       "venueUrl": "https://www.etix.com/ticket/p/88825889/the-sword-red-fang-portland-roseland-theater?partner_id=100",
-      "id": 173
+      "id": 167
     },
     {
       "title": "KARAOKE FROM HELL",
@@ -1740,7 +1680,7 @@
       "date": "2026-08-24",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/karaoke-from-hell-103/",
-      "id": 174
+      "id": 168
     },
     {
       "title": "Diggy Graves – The No Vacancy Tour",
@@ -1748,9 +1688,9 @@
       "neighborhood": "Eliot/Boise",
       "address": "128 NE Russell St",
       "date": "2026-08-25",
-      "time": "",
+      "time": "7:30 PM",
       "venueUrl": "https://wonderballroom.com/event/diggy-graves-the-no-vacancy-tour/wonder-ballroom/portland-oregon/",
-      "id": 175
+      "id": 169
     },
     {
       "title": "THE DARTS with Combobox & Unreal",
@@ -1760,7 +1700,7 @@
       "date": "2026-08-26",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/the-darts-with-combobox-guests/",
-      "id": 176
+      "id": 170
     },
     {
       "title": "Eagles of Death Metal – Death By Sexy Anniversary Tour",
@@ -1768,9 +1708,9 @@
       "neighborhood": "Eliot/Boise",
       "address": "128 NE Russell St",
       "date": "2026-08-27",
-      "time": "",
+      "time": "8:00 PM",
       "venueUrl": "https://wonderballroom.com/event/eagles-of-death-metal-death-by-sexy-anniversary-tour/wonder-ballroom/portland-oregon/",
-      "id": 177
+      "id": 171
     },
     {
       "title": "HOTWAX disco~glam~metal~punk~hiphop",
@@ -1780,7 +1720,7 @@
       "date": "2026-08-28",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/hotwax-discoglammetalpunkhiphop-14/",
-      "id": 178
+      "id": 172
     },
     {
       "title": "MICRO MAIDENS BURLESQUE",
@@ -1790,7 +1730,7 @@
       "date": "2026-08-28",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/micro-maidens-burlesque/",
-      "id": 179
+      "id": 173
     },
     {
       "title": "Black Marble",
@@ -1798,9 +1738,9 @@
       "neighborhood": "Eliot/Boise",
       "address": "128 NE Russell St",
       "date": "2026-08-29",
-      "time": "",
+      "time": "8:00 PM",
       "venueUrl": "https://wonderballroom.com/event/black-marble/wonder-ballroom/portland-oregon/",
-      "id": 180
+      "id": 174
     },
     {
       "title": "KARAOKE FROM HELL",
@@ -1810,7 +1750,7 @@
       "date": "2026-08-31",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/karaoke-from-hell-104/",
-      "id": 181
+      "id": 175
     },
     {
       "title": "HOTWAX disco~glam~metal~punk~hiphop",
@@ -1820,7 +1760,17 @@
       "date": "2026-09-04",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/hotwax-discoglammetalpunkhiphop-15/",
-      "id": 182
+      "id": 176
+    },
+    {
+      "title": "MOVED TO THE CRYSTAL BALLROOM: Slayyyter – WOR$T GIRL IN THE WORLD TOUR",
+      "venue": "Wonder Ballroom",
+      "neighborhood": "Eliot/Boise",
+      "address": "128 NE Russell St",
+      "date": "2026-09-05",
+      "time": "8:00 PM",
+      "venueUrl": "https://wonderballroom.com/event/moved-to-the-crystal-ballroom-slayyyter-wort-girl-in-the-world-tour/wonder-ballroom/portland-oregon/",
+      "id": 177
     }
   ]
 }
