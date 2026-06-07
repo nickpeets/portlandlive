@@ -58,6 +58,7 @@ VENUE_INFO = {
     "Dante's": ("Old Town/Chinatown", "350 W Burnside St"),
     "Star Theater": ("Old Town/Chinatown", "13 NW 6th Ave"),
     "The Get Down": ("Central Eastside", "615 SE Alder St"),
+    "Showdown Saloon": ("Central Eastside", ""),
     "Alberta Rose Theatre": ("Alberta Arts", "3000 NE Alberta St"),
     "Arlene Schnitzer Concert Hall": ("Downtown", "1037 SW Broadway"),
     "Keller Auditorium": ("Downtown", "222 SW Clay St"),
@@ -1001,7 +1002,59 @@ def parse_getdown(html, today):
     return shows
 
 
+
+# ---- Showdown Saloon (showdownpdx.com) -- single venue, TicketWeb tw-* widget
+# variant: each .tw-section has .tw-name, .tw-event-date ("Jun 7") and
+# .tw-event-time-complete ("Show: 8:00 pm"). (showdownsaloon.com is bot-walled;
+# showdownpdx.com is the clean public site.)
+_SD_MON = {m: i for i, m in enumerate(
+    ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"])}
+_SD_DATE = re.compile(r"([A-Z][a-z]{2})\s+(\d{1,2})")
+
+
+def _sd_date(txt, today):
+    m = _SD_DATE.search(txt or "")
+    if not m:
+        return ""
+    mon = _SD_MON.get(m.group(1), 0)
+    if not mon:
+        return ""
+    return f"{infer_year(mon, today)}-{mon:02d}-{int(m.group(2)):02d}"
+
+
+def parse_showdown(html, today):
+    soup = BeautifulSoup(html, "html.parser")
+    shows = []
+    seen = set()
+    venue = "Showdown Saloon"
+    for sec in soup.select(".tw-section"):
+        nm = sec.select_one(".tw-name")
+        title = clean(nm.get_text(" ")) if nm else ""
+        title = re.sub(r"^(SOLD OUT|CANCELLED|POSTPONED)[:\s-]*", "", title, flags=re.I).strip()
+        de = sec.select_one(".tw-event-date")
+        date = _sd_date(clean(de.get_text(" ")) if de else "", today)
+        if not (title and date):
+            continue
+        te = sec.select_one(".tw-event-time-complete")
+        showtime = ""
+        if te:
+            sm = re.search(r"Show:?\s*([\d:]+\s*[ap]m)", clean(te.get_text(" ")), re.I)
+            if sm:
+                showtime = to_time(sm.group(1))
+        a = sec.find("a", href=True)
+        url = a["href"] if a else "https://showdownpdx.com/"
+        key = (venue, date, title.lower())
+        if key in seen:
+            continue
+        seen.add(key)
+        nb, addr = VENUE_INFO.get(venue, ("Central Eastside", ""))
+        shows.append({"title": title, "venue": venue, "neighborhood": nb,
+                      "address": addr, "date": date, "time": showtime, "venueUrl": url})
+    return shows
+
+
 SOURCES = [
+    {"name": "Showdown Saloon", "parser": parse_showdown, "urls": ["https://showdownpdx.com/"]},
     {"name": "The Get Down", "parser": parse_getdown, "urls": ["https://thegetdownpdx.com/"]},
     {"name": "Jack London Revue", "parser": parse_jacklondonrevue, "urls": ["https://jacklondonrevue.com/calendar/"]},
     {"name": "Star Theater", "parser": parse_startheater, "urls": ["https://startheaterportland.com/"]},
