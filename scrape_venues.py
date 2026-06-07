@@ -14,7 +14,7 @@ Sources:
 
 Run:  pip install requests beautifulsoup4 && python3 scripts/scrape_venues.py
 """
-import re, json, os, sys, datetime
+import re, json, os, sys, time, datetime
 
 try:
     import requests
@@ -60,6 +60,11 @@ VENUE_INFO = {
     "Alberta Rose Theatre": ("Alberta Arts", "3000 NE Alberta St"),
     "Arlene Schnitzer Concert Hall": ("Downtown", "1037 SW Broadway"),
     "Keller Auditorium": ("Downtown", "222 SW Clay St"),
+    "Newmark Theatre": ("Downtown", "1111 SW Broadway"),
+    "Brunish Theatre": ("Downtown", "1111 SW Broadway"),
+    "Winningstad Theatre": ("Downtown", "1111 SW Broadway"),
+    "Hatfield Hall Rotunda": ("Downtown", "1111 SW Broadway"),
+    "Main Street": ("Downtown", "SW Main St"),
     "Moda Center": ("Lloyd/Rose Quarter", "1 N Center Ct St"),
     "Veterans Memorial Coliseum": ("Lloyd/Rose Quarter", "300 N Winning Way"),
     "Theater of the Clouds": ("Lloyd/Rose Quarter", "1 N Center Ct St"),
@@ -735,7 +740,77 @@ def parse_rosequarter(html, today):
     return shows
 
 
+
+# ---- Portland'5 (portland5.com) -- Keller Auditorium, Arlene Schnitzer Concert
+# Hall, Newmark/Brunish/Winningstad Theatres + Hatfield Hall Rotunda + Main Street
+# (Music on Main outdoor series). Static HTML, venue on each .teaser__content card,
+# but PAGINATED via ?page=N. Harness passes page 0; we walk the rest ourselves.
+P5_BASE = "https://www.portland5.com/events"
+_P5_MON = {m: i for i, m in enumerate(
+    ["", "January", "February", "March", "April", "May", "June",
+     "July", "August", "September", "October", "November", "December"])}
+_P5_DATE = re.compile(r"([A-Z][a-z]+)\s+(\d{1,2})")
+
+
+def _p5_date(txt, today):
+    m = _P5_DATE.search(txt or "")
+    if not m:
+        return ""
+    mon = _P5_MON.get(m.group(1), 0)
+    if not mon:
+        return ""
+    day = int(m.group(2))
+    ym = re.search(r"(\d{4})", txt)
+    year = int(ym.group(1)) if ym else infer_year(mon, today)
+    return f"{year}-{mon:02d}-{day:02d}"
+
+
+def _p5_cards(html, today, out, seen):
+    soup = BeautifulSoup(html, "html.parser")
+    cards = soup.select(".teaser__content")
+    for c in cards:
+        vn = c.select_one(".teaser__venue-name") or c.select_one(".teaser__venue")
+        venue = clean(vn.get_text(" ")) if vn else ""
+        t = c.select_one(".teaser__title")
+        title = clean(t.get_text(" ")) if t else ""
+        a = c.select_one(".teaser__link") or c.find("a", href=True)
+        href = a["href"] if a and a.has_attr("href") else ""
+        if href and not href.startswith("http"):
+            href = "https://www.portland5.com" + href
+        b = c.select_one(".teaser__body")
+        date = _p5_date(clean(b.get_text(" ")) if b else "", today)
+        if not (venue and title and date):
+            continue
+        key = (venue, date, title.lower())
+        if key in seen:
+            continue
+        seen.add(key)
+        nb, addr = VENUE_INFO.get(venue, ("Downtown", ""))
+        out.append({"title": title, "venue": venue, "neighborhood": nb,
+                    "address": addr, "date": date, "time": "", "venueUrl": href})
+    return len(cards)
+
+
+def parse_portland5(html, today):
+    out = []
+    seen = set()
+    _p5_cards(html, today, out, seen)
+    page = 1
+    while page <= 20:
+        try:
+            h = fetch(f"{P5_BASE}?page={page}")
+        except Exception:
+            break
+        cnt = _p5_cards(h, today, out, seen)
+        if cnt == 0:
+            break
+        page += 1
+        time.sleep(0.5)
+    return out
+
+
 SOURCES = [
+    {"name": "Portland5 (Keller/Schnitzer/Newmark/etc)", "parser": parse_portland5, "urls": ["https://www.portland5.com/events"]},
     {"name": "Rose Quarter (Moda/Coliseum/TOTC)", "parser": parse_rosequarter, "urls": ["https://www.rosequarter.com/events/event-calendar"]},
     {"name": "Monqui (Crystal/McMenamins)", "parser": parse_monqui,
      "urls": ["https://monqui.com/events/"]},
