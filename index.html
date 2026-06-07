@@ -354,6 +354,10 @@ body{
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.3-7-11a7 7 0 0 1 14 0c0 4.7-7 11-7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg>
         <select id="nbSel"><option value="">All Neighborhoods</option></select>
       </label>
+      <label class="pill" title="Only shows happening tonight">
+        <span class="toggle" id="tonightToggle"></span>
+        <span>Tonight</span>
+      </label>
       <label class="pill" title="Show only events with tickets/links">
         <span class="toggle" id="tixToggle"></span>
         <span>Ticket link</span>
@@ -395,7 +399,7 @@ body{
 const state = {
   shows: [], stamp: "",
   view: "grid", sort: "date",
-  q: "", nb: "", start: "", end: "", tixOnly: false,
+  q: "", nb: "", start: "", end: "", tixOnly: false, tonight: false,
 };
 
 const $ = s => document.querySelector(s);
@@ -449,6 +453,12 @@ function filtered(){
   if(state.start) out = out.filter(s => s.date >= state.start);
   if(state.end) out = out.filter(s => s.date <= state.end);
   if(state.tixOnly) out = out.filter(s => s.venueUrl);
+    if(state.tonight){
+      const now = new Date();
+      const pac = new Date(now.toLocaleString("en-US",{timeZone:"America/Los_Angeles"}));
+      const t = `${pac.getFullYear()}-${String(pac.getMonth()+1).padStart(2,'0')}-${String(pac.getDate()).padStart(2,'0')}`;
+      out = out.filter(s => s.date === t);
+    }
 
   const by = state.sort;
   out.sort((a,b)=>{
@@ -531,12 +541,13 @@ $('#nbSel').addEventListener('change',e=>{state.nb=e.target.value;render();});
 $('#startDate').addEventListener('change',e=>{state.start=e.target.value;render();});
 $('#endDate').addEventListener('change',e=>{state.end=e.target.value;render();});
 $('#tixToggle').addEventListener('click',e=>{state.tixOnly=!state.tixOnly;e.target.classList.toggle('on',state.tixOnly);render();});
+$('#tonightToggle').addEventListener('click',e=>{state.tonight=!state.tonight;e.target.classList.toggle('on',state.tonight);render();});
 $('#gridBtn').addEventListener('click',()=>{state.view='grid';$('#gridBtn').classList.add('active');$('#listBtn').classList.remove('active');render();});
 $('#listBtn').addEventListener('click',()=>{state.view='list';$('#listBtn').classList.add('active');$('#gridBtn').classList.remove('active');render();});
 $('#resetBtn').addEventListener('click',()=>{
-  state.q="";state.nb="";state.start="";state.end="";state.tixOnly=false;state.sort="date";
+  state.q="";state.nb="";state.start="";state.end="";state.tixOnly=false;state.tonight=false;state.sort="date";
   $('#searchInput').value="";$('#nbSel').value="";$('#startDate').value="";$('#endDate').value="";
-  $('#sortSel').value="date";$('#tixToggle').classList.remove('on');render();
+  $('#sortSel').value="date";$('#tixToggle').classList.remove('on');$('#tonightToggle').classList.remove('on');render();
 });
 
 load();
