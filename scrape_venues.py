@@ -866,7 +866,55 @@ def parse_albertarose(html, today):
     return shows
 
 
+
+# ---- Star Theater (startheaterportland.com) -- single venue, TicketWeb tw-*
+# widget on the homepage. Each .tw-section has .tw-name (title),
+# .tw-event-date-complete ("June 07, 2026"), .tw-event-time-complete ("9:00 pm").
+_ST_MON = {m: i for i, m in enumerate(
+    ["", "January", "February", "March", "April", "May", "June",
+     "July", "August", "September", "October", "November", "December"])}
+_ST_DATE = re.compile(r"([A-Z][a-z]+)\s+(\d{1,2}),?\s*(\d{4})")
+
+
+def _st_date(txt):
+    m = _ST_DATE.search(txt or "")
+    if not m:
+        return ""
+    mon = _ST_MON.get(m.group(1), 0)
+    if not mon:
+        return ""
+    return f"{int(m.group(3))}-{mon:02d}-{int(m.group(2)):02d}"
+
+
+def parse_startheater(html, today):
+    soup = BeautifulSoup(html, "html.parser")
+    shows = []
+    seen = set()
+    for sec in soup.select(".tw-section"):
+        nm = sec.select_one(".tw-name")
+        title = clean(nm.get_text(" ")) if nm else ""
+        title = re.sub(r"^(SOLD OUT|CANCELLED|POSTPONED)[:\s-]*", "", title, flags=re.I).strip()
+        de = sec.select_one(".tw-event-date-complete")
+        date = _st_date(clean(de.get_text(" ")) if de else "")
+        if not (title and date):
+            continue
+        te = sec.select_one(".tw-event-time-complete")
+        showtime = to_time(clean(te.get_text(" "))) if te else ""
+        a = sec.find("a", href=True)
+        url = a["href"] if a else "https://startheaterportland.com/"
+        venue = "Star Theater"
+        key = (venue, date, title.lower())
+        if key in seen:
+            continue
+        seen.add(key)
+        nb, addr = VENUE_INFO.get(venue, ("Old Town/Chinatown", ""))
+        shows.append({"title": title, "venue": venue, "neighborhood": nb,
+                      "address": addr, "date": date, "time": showtime, "venueUrl": url})
+    return shows
+
+
 SOURCES = [
+    {"name": "Star Theater", "parser": parse_startheater, "urls": ["https://startheaterportland.com/"]},
     {"name": "Alberta Rose Theatre", "parser": parse_albertarose, "urls": ["https://albertarosetheatre.com/events/"]},
     {"name": "Portland5 (Keller/Schnitzer/Newmark/etc)", "parser": parse_portland5, "urls": ["https://www.portland5.com/events"]},
     {"name": "Rose Quarter (Moda/Coliseum/TOTC)", "parser": parse_rosequarter, "urls": ["https://www.rosequarter.com/events/event-calendar"]},
