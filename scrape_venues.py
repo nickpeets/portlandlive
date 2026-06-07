@@ -921,8 +921,7 @@ def parse_startheater(html, today):
 # anchor on .tw-event-date-complete and climb to the nearest .tw-name.
 def parse_jacklondonrevue(html, today):
     soup = BeautifulSoup(html, "html.parser")
-    shows = []
-    seen = set()
+    bykey = {}
     venue = "Jack London Revue"
     for de in soup.select(".tw-event-date-complete"):
         cont = de
@@ -945,14 +944,19 @@ def parse_jacklondonrevue(html, today):
         showtime = to_time(clean(te.get_text(" "))) if te else ""
         a = cont.find("a", href=True)
         url = a["href"] if a else "https://jacklondonrevue.com/calendar/"
-        key = (venue, date, title.lower())
-        if key in seen:
-            continue
-        seen.add(key)
+        slug = url.rsplit("/tm-event/", 1)[-1].strip("/") if "/tm-event/" in url else ""
+        norm_title = re.sub(r"\s+", " ", re.sub(r"[\u2010-\u2015]", "-", title)).strip().lower()
+        key = (venue, date, slug or norm_title)
         nb, addr = VENUE_INFO.get(venue, ("Downtown", ""))
-        shows.append({"title": title, "venue": venue, "neighborhood": nb,
-                      "address": addr, "date": date, "time": showtime, "venueUrl": url})
-    return shows
+        rec = {"title": title, "venue": venue, "neighborhood": nb,
+               "address": addr, "date": date, "time": showtime, "venueUrl": url}
+        prev = bykey.get(key)
+        # JLR renders two date elements per event (one timed, one not);
+        # keep one record per (venue,date,title), preferring the one WITH a time.
+        if prev is None or (not prev.get("time") and showtime):
+            bykey[key] = rec
+
+    return list(bykey.values())
 
 
 
