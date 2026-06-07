@@ -467,7 +467,97 @@ def parse_holocene(html, today):
                       "neighborhood": "Central Eastside", "address": "1001 SE Morrison St",
                       "date": date_iso, "time": showtime, "venueUrl": e["tix"] or slug})
     return shows
+# ---- Revolution Hall (revolutionhall.com) ------------------------------------
+# The events are NOT in the static page and the site does NOT use the
+# "Weekday, Month D, YYYY" headings parse_msstudios relies on. Instead the calendar
+# loads via a WordPress AJAX endpoint: a POST to admin-ajax.php with action
+# crb_get_searched_events_markup and a "feed" param, returning a JSON-encoded HTML
+# string of ~30 .event-wrapper blocks per page. We paginate until a short page.
+# The building has two rooms; the etix slug (-show-bar-at-revolution-hall vs plain
+# -revolution-hall) tells them apart.
+REVHALL_AJAX = ("https://www.revolutionhall.com/wp-admin/admin-ajax.php"
+                "?action=crb_get_searched_events_markup")
+REVHALL_DATE = re.compile(r'([A-Z][a-z]+)\s+(\d{1,2})(?:st|nd|rd|th)?,\s+(\d{4})')
+
+def _revhall_post_page(page):
+    body = (f"feed=all&style=default&page={page}"
+            f"&feed_id=feed-primary&query=&page_id=6")
+    r = requests.post(REVHALL_AJAX, data=body, timeout=30, headers={
+        "User-Agent": "Mozilla/5.0 (compatible; PortlandLive/1.0; listings aggregator)",
+        "Content-type": "application/x-www-form-urlencoded"})
+    r.raise_for_status()
+    return json.loads(r.text)  # endpoint returns the markup as a JSON string
+
+def _revhall_date(dtxt, today):
+    low = dtxt.lower()
+    if low.startswith("tonight"):
+        return today.isoformat()
+    if low.startswith("tomorrow"):
+        return (today + datetime.timedelta(days=1)).isoformat()
+    m = REVHALL_DATE.search(dtxt)
+    if not m:
+        return None
+    mon3 = m.group(1)[:3]
+    if mon3 not in MONTHS:
+        return None
+    mon, day = MONTHS[mon3], int(m.group(2))
+    year = int(m.group(3)) if m.group(3) else infer_year(mon, today)
+    return f"{year}-{mon:02d}-{day:02d}"
+
+def _revhall_events(markup, today, seen, shows):
+    """Parse one chunk of .event-wrapper markup into `shows`; return wrapper count."""
+    soup = BeautifulSoup(markup, "html.parser")
+    wrappers = soup.select(".event-wrapper")
+    for ev in wrappers:
+        a = ev.select_one(".event__content h3 a[href]")
+        if not a:
+            continue
+        url = a["href"].split("?")[0]
+        slug = url.rsplit("/", 1)[-1]
+        venue = ("Revolution Hall (Show Bar)"
+                 if "show-bar-at-revolution-hall" in slug else "Revolution Hall")
+        df = ev.select_one(".event-date--full")
+        date = _revhall_date(clean(df.get_text()) if df else "", today)
+        if not date:
+            continue
+        key = (url, date)
+        if key in seen:
+            continue
+        seen.add(key)
+        title = re.sub(r'^SOLD OUT:\s*', '', clean(a.get_text()))
+        h4 = ev.select_one(".event__content h4")
+        support = re.sub(r'^with\s+', '', clean(h4.get_text()), flags=re.I) if h4 else ""
+        st = ev.select_one(".event-doors-showtime")
+        showtime = ""
+        if st:
+            sm = re.search(r'Show:?\s*([\d:]+\s*[ap]m)', clean(st.get_text()), re.I)
+            if sm:
+                showtime = to_time(sm.group(1))
+        # Both rooms share the building address; VENUE_INFO keys the main name.
+        nb, addr = VENUE_INFO["Revolution Hall"]
+        full = f"{title} (w/ {support})" if support else title
+        shows.append({"title": full, "venue": venue, "neighborhood": nb,
+                      "address": addr, "date": date, "time": showtime, "venueUrl": url})
+    return len(wrappers)
+
+def parse_revolutionhall(html, today):
+    shows, seen = [], set()
+    # The GET'd page embeds page 1; if so, AJAX-paginate from page 2, else from 1.
+    page = 2 if _revhall_events(html, today, seen, shows) else 1
+    while page <= 15:
+        try:
+            markup = _revhall_post_page(page)
+        except Exception as e:
+            print(f"    [revhall] page {page} error {e}")
+            break
+        if _revhall_events(markup, today, seen, shows) < 30:
+            break  # short page = last page
+        page += 1
+    return shows
+
 SOURCES = [
+    {"name": "Revolution Hall", "parser": parse_revolutionhall,
+     "urls": ["https://revolutionhall.com/"]},
     {"name": "Holocene", "parser": parse_holocene,
      "urls": ["https://www.holocene.org/events/"]},
     {"name": "Wonder Ballroom", "parser": parse_wonder,
