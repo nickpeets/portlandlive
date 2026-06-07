@@ -809,7 +809,65 @@ def parse_portland5(html, today):
     return out
 
 
+
+# ---- Alberta Rose Theatre (albertarosetheatre.com) -- single venue, rhp-event
+# CMS. Each .row.g-0 holds one .rhp-event__info--list (title + /event/ link) and
+# one .singleEventDate ("Sun, Jun 07") + .eventDateDetails ("Show: 8 pm").
+_AR_MON = {m: i for i, m in enumerate(
+    ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"])}
+_AR_DATE = re.compile(r"([A-Z][a-z]{2})\s+(\d{1,2})")
+
+
+def _ar_date(txt, today):
+    m = _AR_DATE.search(txt or "")
+    if not m:
+        return ""
+    mon = _AR_MON.get(m.group(1), 0)
+    if not mon:
+        return ""
+    yr = re.search(r"(\d{4})", txt)
+    year = int(yr.group(1)) if yr else infer_year(mon, today)
+    return f"{year}-{mon:02d}-{int(m.group(2)):02d}"
+
+
+def parse_albertarose(html, today):
+    soup = BeautifulSoup(html, "html.parser")
+    shows = []
+    seen = set()
+    for info in soup.select(".rhp-event__info--list"):
+        row = info.find_parent(class_="row") or info.parent
+        a = info.find("a", href=True)
+        if not a:
+            continue
+        te = info.select_one(".rhp-event__title--list")
+        title = clean(te.get_text(" ")) if te else clean(a.get_text(" "))
+        title = re.sub(r"^(SOLD OUT|CANCELLED|POSTPONED)[:\s-]*", "", title, flags=re.I).strip()
+        de = row.select_one(".singleEventDate") if row else None
+        date = _ar_date(clean(de.get_text(" ")) if de else "", today)
+        if not (title and date):
+            continue
+        url = a["href"]
+        if not url.startswith("http"):
+            url = "https://albertarosetheatre.com" + url
+        det = (row.select_one(".eventDateDetails") if row else None) or info.select_one(".eventDateDetails")
+        showtime = ""
+        if det:
+            sm = re.search(r"Show:?\s*([\d:]+\s*[ap]m)", clean(det.get_text(" ")), re.I)
+            if sm:
+                showtime = to_time(sm.group(1))
+        venue = "Alberta Rose Theatre"
+        key = (venue, date, title.lower())
+        if key in seen:
+            continue
+        seen.add(key)
+        nb, addr = VENUE_INFO.get(venue, ("NE/Alberta", ""))
+        shows.append({"title": title, "venue": venue, "neighborhood": nb,
+                      "address": addr, "date": date, "time": showtime, "venueUrl": url})
+    return shows
+
+
 SOURCES = [
+    {"name": "Alberta Rose Theatre", "parser": parse_albertarose, "urls": ["https://albertarosetheatre.com/events/"]},
     {"name": "Portland5 (Keller/Schnitzer/Newmark/etc)", "parser": parse_portland5, "urls": ["https://www.portland5.com/events"]},
     {"name": "Rose Quarter (Moda/Coliseum/TOTC)", "parser": parse_rosequarter, "urls": ["https://www.rosequarter.com/events/event-calendar"]},
     {"name": "Monqui (Crystal/McMenamins)", "parser": parse_monqui,
