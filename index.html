@@ -161,6 +161,13 @@ body{
 }
 .dayhead .count{font-family:'Oswald';font-weight:500;font-size:13px;color:rgba(243,234,215,.7);margin-left:10px;letter-spacing:.08em}
 
+.venue-card{cursor:pointer}
+.venue-header{margin-bottom:18px}
+.venue-header .venue-name{font-family:'Alfa Slab One',serif;font-size:26px;color:var(--cream);margin:6px 0 4px}
+.venue-header .venue-info{color:var(--cream);opacity:.85;font-size:14px}
+.back-link{display:inline-block;color:var(--rust);text-decoration:none;font-weight:600;font-size:14px;cursor:pointer}
+.back-link:hover{text-decoration:underline}
+
 /* GRID */
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
 .card{
@@ -362,6 +369,10 @@ body{
         <span class="toggle" id="tixToggle"></span>
         <span>Ticket link</span>
       </label>
+      <label class="pill" title="Browse shows by venue">
+        <span class="toggle" id="venuesToggle"></span>
+        <span>Venues</span>
+      </label>
 
       <span class="spacer"></span>
 
@@ -398,7 +409,7 @@ body{
 <script>
 const state = {
   shows: [], stamp: "",
-  view: "grid", sort: "date",
+  layout: "grid", view: "shows", selectedVenue: null, sort: "date",
   q: "", nb: "", start: "", end: "", tixOnly: false, tonight: false,
 };
 
@@ -471,6 +482,7 @@ function filtered(){
 }
 
 function render(){
+  if(state.view === "venues"){ renderVenues(); return; }
   const list = filtered();
   $('#resultCount').textContent = list.length
     ? `${list.length} show${list.length>1?'s':''} found`
@@ -490,14 +502,53 @@ function render(){
     Object.keys(groups).sort().forEach(date=>{
       const g = document.createElement('div'); g.className='daygroup';
       g.innerHTML = `<div class="dayhead">${ordinalDate(date)}<span class="count">${groups[date].length} shows</span></div>`;
-      g.appendChild(state.view==="grid"?gridOf(groups[date]):listOf(groups[date]));
+      g.appendChild(state.layout==="grid"?gridOf(groups[date]):listOf(groups[date]));
       wrap.appendChild(g);
     });
   } else {
-    wrap.appendChild(state.view==="grid"?gridOf(list):listOf(list));
+    wrap.appendChild(state.layout==="grid"?gridOf(list):listOf(list));
   }
 }
 
+function renderVenues(){
+  const wrap = $('#results');
+  wrap.innerHTML = "";
+  const all = state.shows;
+  if(state.selectedVenue){
+    const vshows = all.filter(s => s.venue === state.selectedVenue);
+    const first = vshows[0] || {};
+    $('#resultCount').textContent = vshows.length ? `${vshows.length} show${vshows.length>1?'s':''} found` : "No results";
+    const head = document.createElement('div');
+    head.className = 'venue-header';
+    head.innerHTML = `<a class="back-link" id="backToVenues" href="#">\u2190 All venues</a>`
+      + `<h2 class="venue-name">${esc(state.selectedVenue)}</h2>`
+      + `<div class="venue-info">${esc(first.neighborhood||'')}${first.address?' \u00b7 '+esc(first.address):''}</div>`;
+    wrap.appendChild(head);
+    $('#backToVenues').addEventListener('click',(e)=>{e.preventDefault();state.selectedVenue=null;render();});
+    if(vshows.length){
+      wrap.appendChild(state.layout==="grid"?gridOf(vshows):listOf(vshows));
+    } else {
+      const em=document.createElement('div'); em.className='empty'; em.innerHTML='<h2>No Results Found.</h2>'; wrap.appendChild(em);
+    }
+    return;
+  }
+  const groups = {};
+  all.forEach(s=>{ const v=s.venue||'Unknown'; if(!groups[v]) groups[v]={name:v,neighborhood:s.neighborhood||'',count:0}; groups[v].count++; if(!groups[v].neighborhood && s.neighborhood) groups[v].neighborhood=s.neighborhood; });
+  const venues = Object.values(groups).sort((a,b)=> b.count-a.count || a.name.localeCompare(b.name));
+  $('#resultCount').textContent = venues.length ? `${venues.length} venue${venues.length>1?'s':''}` : "No results";
+  if(!venues.length){ wrap.innerHTML = '<div class="empty"><h2>No Results Found.</h2></div>'; return; }
+  const g = document.createElement('div'); g.className='grid';
+  venues.forEach(v=>{
+    const c = document.createElement('div'); c.className='card venue-card';
+    c.innerHTML = `<div class="when">${esc(v.neighborhood||'')}</div>`
+      + `<div class="title">${esc(v.name)}</div>`
+      + `<div class="venue">${v.count} upcoming show${v.count>1?'s':''}</div>`
+      + `<div class="foot"><span class="nbtag">${esc(v.name)} \u00b7 ${esc(v.neighborhood||'')} \u00b7 ${v.count} show${v.count>1?'s':''}</span></div>`;
+    c.addEventListener('click',()=>{ state.selectedVenue=v.name; render(); });
+    g.appendChild(c);
+  });
+  wrap.appendChild(g);
+}
 function gridOf(items){
   const g=document.createElement('div'); g.className='grid';
   items.forEach(s=>{
@@ -541,11 +592,12 @@ $('#nbSel').addEventListener('change',e=>{state.nb=e.target.value;render();});
 $('#startDate').addEventListener('change',e=>{state.start=e.target.value;render();});
 $('#endDate').addEventListener('change',e=>{state.end=e.target.value;render();});
 $('#tixToggle').addEventListener('click',e=>{state.tixOnly=!state.tixOnly;e.target.classList.toggle('on',state.tixOnly);render();});
+$('#venuesToggle').addEventListener('click',()=>{if(state.view==='venues'){state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');$('#viewingWord').textContent='Shows';}else{state.view='venues';state.selectedVenue=null;$('#venuesToggle').classList.add('on');$('#viewingWord').textContent='Venues';}render();});
 $('#tonightToggle').addEventListener('click',e=>{state.tonight=!state.tonight;e.target.classList.toggle('on',state.tonight);render();});
-$('#gridBtn').addEventListener('click',()=>{state.view='grid';$('#gridBtn').classList.add('active');$('#listBtn').classList.remove('active');render();});
-$('#listBtn').addEventListener('click',()=>{state.view='list';$('#listBtn').classList.add('active');$('#gridBtn').classList.remove('active');render();});
+$('#gridBtn').addEventListener('click',()=>{state.layout='grid';$('#gridBtn').classList.add('active');$('#listBtn').classList.remove('active');render();});
+$('#listBtn').addEventListener('click',()=>{state.layout='list';$('#listBtn').classList.add('active');$('#gridBtn').classList.remove('active');render();});
 $('#resetBtn').addEventListener('click',()=>{
-  state.q="";state.nb="";state.start="";state.end="";state.tixOnly=false;state.tonight=false;state.sort="date";
+  state.q="";state.nb="";state.start="";state.end="";state.tixOnly=false;state.tonight=false;state.sort="date";state.view="shows";state.selectedVenue=null;$('#venuesToggle').classList.remove('on');$('#viewingWord').textContent='Shows';
   $('#searchInput').value="";$('#nbSel').value="";$('#startDate').value="";$('#endDate').value="";
   $('#sortSel').value="date";$('#tixToggle').classList.remove('on');$('#tonightToggle').classList.remove('on');render();
 });
