@@ -555,7 +555,48 @@ def parse_revolutionhall(html, today):
         page += 1
     return shows
 
+
+def parse_aladdin(html, today):
+    soup = BeautifulSoup(html, "html.parser")
+    shows = []
+    seen = set()
+    for ev in soup.select(".event--list-style"):
+        a = next((x for x in ev.find_all("a", href=True)
+                  if "etix.com/ticket/p/" in x["href"]), None)
+        if not a:
+            continue
+        url = a["href"].split("?")[0]
+        slug = url.rstrip("/").rsplit("/", 1)[-1]
+        # filter out non-Aladdin cross-listings (True West shows at other rooms)
+        if "aladdin" not in slug:
+            continue
+        df = ev.select_one(".event-date--full")
+        date = _revhall_date(clean(df.get_text()) if df else "", today)
+        if not date:
+            continue
+        key = (slug, date)
+        if key in seen:
+            continue
+        seen.add(key)
+        te = ev.select_one(".event-title")
+        title = clean(te.get_text()) if te else clean(a.get_text())
+        title = re.sub(r"^SOLD OUT:\s*", "", title)
+        st = ev.select_one(".event-doors-showtime")
+        showtime = ""
+        if st:
+            sm = re.search(r"Show:?\s*([\d:]+\s*[ap]m)", clean(st.get_text()), re.I)
+            if sm:
+                showtime = to_time(sm.group(1))
+        nb, addr = VENUE_INFO["Aladdin Theater"]
+        shows.append({"title": title, "venue": "Aladdin Theater",
+                      "neighborhood": nb, "address": addr, "date": date,
+                      "time": showtime, "venueUrl": url})
+    return shows
+
+
 SOURCES = [
+    {"name": "Aladdin Theater", "parser": parse_aladdin,
+     "urls": ["https://www.aladdin-theater.com/"]},
     {"name": "Revolution Hall", "parser": parse_revolutionhall,
      "urls": ["https://revolutionhall.com/"]},
     {"name": "Holocene", "parser": parse_holocene,
