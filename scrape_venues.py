@@ -57,6 +57,7 @@ VENUE_INFO = {
     "Holocene": ("Central Eastside", "1001 SE Morrison St"),
     "Dante's": ("Old Town/Chinatown", "350 W Burnside St"),
     "Star Theater": ("Old Town/Chinatown", "13 NW 6th Ave"),
+    "The Get Down": ("Central Eastside", "615 SE Alder St"),
     "Alberta Rose Theatre": ("Alberta Arts", "3000 NE Alberta St"),
     "Arlene Schnitzer Concert Hall": ("Downtown", "1037 SW Broadway"),
     "Keller Auditorium": ("Downtown", "222 SW Clay St"),
@@ -953,7 +954,55 @@ def parse_jacklondonrevue(html, today):
     return shows
 
 
+
+# ---- The Get Down (thegetdownpdx.com) -- single venue, Webflow CMS (same family
+# as Rose Quarter). Each .day-card-2 has .b-show-2 (show name) / .title and a
+# .dayofevent ("Wednesday , Jun 10"); tickets via tixr. No listing time.
+_GD_MON = {m: i for i, m in enumerate(
+    ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"])}
+_GD_DATE = re.compile(r"([A-Z][a-z]{2})\s+(\d{1,2})")
+
+
+def _gd_date(txt, today):
+    m = _GD_DATE.search(txt or "")
+    if not m:
+        return ""
+    mon = _GD_MON.get(m.group(1), 0)
+    if not mon:
+        return ""
+    return f"{infer_year(mon, today)}-{mon:02d}-{int(m.group(2)):02d}"
+
+
+def parse_getdown(html, today):
+    soup = BeautifulSoup(html, "html.parser")
+    shows = []
+    seen = set()
+    venue = "The Get Down"
+    for c in soup.select(".day-card-2"):
+        sh = c.select_one(".b-show-2") or c.select_one(".title")
+        title = clean(sh.get_text(" ")) if sh else ""
+        title = re.sub(r"^(SOLD OUT|CANCELLED|POSTPONED)[:\s-]*", "", title, flags=re.I).strip()
+        doe = c.select_one(".dayofevent")
+        date = _gd_date(clean(doe.get_text(" ")) if doe else "", today)
+        if not (title and date):
+            continue
+        a = c.find("a", href=True)
+        if not a:
+            sib = c.find_next("a", href=True)
+            a = sib if sib and "tixr" in sib.get("href", "") else None
+        url = a["href"] if a else "https://thegetdownpdx.com/"
+        key = (venue, date, title.lower())
+        if key in seen:
+            continue
+        seen.add(key)
+        nb, addr = VENUE_INFO.get(venue, ("Central Eastside", ""))
+        shows.append({"title": title, "venue": venue, "neighborhood": nb,
+                      "address": addr, "date": date, "time": "", "venueUrl": url})
+    return shows
+
+
 SOURCES = [
+    {"name": "The Get Down", "parser": parse_getdown, "urls": ["https://thegetdownpdx.com/"]},
     {"name": "Jack London Revue", "parser": parse_jacklondonrevue, "urls": ["https://jacklondonrevue.com/calendar/"]},
     {"name": "Star Theater", "parser": parse_startheater, "urls": ["https://startheaterportland.com/"]},
     {"name": "Alberta Rose Theatre", "parser": parse_albertarose, "urls": ["https://albertarosetheatre.com/events/"]},
