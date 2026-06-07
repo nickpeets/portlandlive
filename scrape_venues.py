@@ -62,6 +62,7 @@ VENUE_INFO = {
     "Keller Auditorium": ("Downtown", "222 SW Clay St"),
     "Moda Center": ("Lloyd/Rose Quarter", "1 N Center Ct St"),
     "Veterans Memorial Coliseum": ("Lloyd/Rose Quarter", "300 N Winning Way"),
+    "Theater of the Clouds": ("Lloyd/Rose Quarter", "1 N Center Ct St"),
     "Jack London Revue": ("Downtown", "529 SW 4th Ave"),
 }
 
@@ -658,7 +659,84 @@ def parse_monqui(html, today):
     return shows
 
 
+
+# ---- Rose Quarter (rosequarter.com) -- Moda Center + Veterans Memorial Coliseum
+# + Theater of the Clouds, one Webflow CMS calendar. Venue + event-type live on
+# each card as fs-cmsfilter-field attributes. Keep event-type == Music only.
+_RQ_VENUES = {"Moda Center", "Veterans Memorial Coliseum", "Theater of the Clouds"}
+_RQ_MONABBR = {m: i for i, m in enumerate(
+    ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"])}
+_RQ_DATE = re.compile(r"([A-Z][a-z]{2})\s+(\d{1,2}),?\s*(\d{4})?")
+
+
+def _rq_field(card, name):
+    d = card.find(attrs={"fs-cmsfilter-field": name})
+    return clean(d.get_text(" ")) if d else ""
+
+
+def _rq_date(txt, today):
+    m = _RQ_DATE.search(txt or "")
+    if not m:
+        return ""
+    mon = _RQ_MONABBR.get(m.group(1), 0)
+    if not mon:
+        return ""
+    day = int(m.group(2))
+    year = int(m.group(3)) if m.group(3) else infer_year(mon, today)
+    return f"{year}-{mon:02d}-{day:02d}"
+
+
+def parse_rosequarter(html, today):
+    soup = BeautifulSoup(html, "html.parser")
+    shows = []
+    seen = set()
+    for a in soup.find_all("a", href=True):
+        if "calendar-events" not in a["href"]:
+            continue
+        card = a.find_parent(["article", "li", "div"])
+        if not card:
+            continue
+        venue = _rq_field(card, "venue")
+        if venue not in _RQ_VENUES:
+            continue
+        if _rq_field(card, "event-type") != "Music":
+            continue
+        url = a["href"]
+        if not url.startswith("http"):
+            url = "https://www.rosequarter.com" + url
+        dtxt = " ".join(d.get_text(" ") for d in card.select(".date-day, .date-comma"))
+        date = _rq_date(dtxt, today)
+        if not date:
+            slug = url.rstrip("/").rsplit("/", 1)[-1]
+            sm = re.search(r"-([a-z]{3})-(\d{1,2})-(\d{4})$", slug)
+            if sm:
+                mon = _RQ_MONABBR.get(sm.group(1).capitalize(), 0)
+                if mon:
+                    date = f"{int(sm.group(3))}-{mon:02d}-{int(sm.group(2)):02d}"
+        if not date:
+            continue
+        who = card.select_one(".card-who.artist") or card.select_one(".card-who")
+        tour = card.select_one(".card-tour-title")
+        artist = clean(who.get_text(" ")) if who else ""
+        tourt = clean(tour.get_text(" ")) if tour else ""
+        title = artist or tourt
+        if tourt and artist and tourt.lower() not in title.lower():
+            title = f"{artist}: {tourt}"
+        title = re.sub(r"^(SOLD OUT|CANCELLED|POSTPONED)[:\s-]*", "", title, flags=re.I).strip()
+        if not title:
+            continue
+        key = (venue, date, title.lower())
+        if key in seen:
+            continue
+        seen.add(key)
+        nb, addr = VENUE_INFO.get(venue, ("Lloyd/Rose Quarter", ""))
+        shows.append({"title": title, "venue": venue, "neighborhood": nb,
+                      "address": addr, "date": date, "time": "", "venueUrl": url})
+    return shows
+
+
 SOURCES = [
+    {"name": "Rose Quarter (Moda/Coliseum/TOTC)", "parser": parse_rosequarter, "urls": ["https://www.rosequarter.com/events/event-calendar"]},
     {"name": "Monqui (Crystal/McMenamins)", "parser": parse_monqui,
      "urls": ["https://monqui.com/events/"]},
     {"name": "Aladdin Theater", "parser": parse_aladdin,
