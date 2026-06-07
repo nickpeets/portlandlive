@@ -483,8 +483,10 @@ SOURCES = [
 ]
 
 def scrape():
-    today = datetime.date.today()
+    pacific = datetime.timezone(datetime.timedelta(hours=-8))
+    today = datetime.datetime.now(pacific).date()
     horizon = (today + datetime.timedelta(days=HORIZON_DAYS)).isoformat()
+    lower = (today - datetime.timedelta(days=1)).isoformat()
     out = []
     for src in SOURCES:
         got = []
@@ -493,7 +495,7 @@ def scrape():
                 got.extend(src["parser"](fetch(url), today))
             except Exception as e:
                 print(f"  {url}: ERROR {e}")
-        got = [s for s in got if today.isoformat() <= s["date"] <= horizon]
+        got = [s for s in got if lower <= s["date"] <= horizon]
         print(f"  {src['name']}: {len(got)} shows")
         out.extend(got)
     return out
