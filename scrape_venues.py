@@ -45,6 +45,11 @@ VENUE_INFO = {
     "Hawthorne Theatre": ("Mt Tabor/Hawthorne", "1507 SE 39th Ave"),
     "Aladdin Theater": ("Brooklyn", "3017 SE Milwaukie Ave"),
     "Crystal Ballroom": ("Downtown", "1332 W Burnside St"),
+    "McMenamins Edgefield": ("Troutdale", "2126 SW Halsey St, Troutdale"),
+    "McMenamins Grand Lodge": ("Forest Grove", "3505 Pacific Ave, Forest Grove"),
+    "Arlene Schnitzer Concert Hall": ("Downtown", "1037 SW Broadway"),
+    "Paramount Theatre": ("Downtown", "911 SW Salmon St"),
+    "The Old Church": ("Downtown", "1422 SW 11th Ave"),
     "Wonder Ballroom": ("Eliot/Boise", "128 NE Russell St"),
     "Revolution Hall": ("Buckman", "1300 SE Stark St"),
     "Polaris Hall": ("Overlook/N Portland", "635 N Killingsworth Ct"),
@@ -594,7 +599,68 @@ def parse_aladdin(html, today):
     return shows
 
 
+
+# Monqui promoter feed -- the only clean route to Crystal Ballroom + McMenamins
+# rooms (their own sites/etix pages are bot-walled). Venue comes from the URL
+# slug, not the title (titles can say "MOVED TO..."). Listing page has no times.
+MONQUI_SKIP = {"wonder-ballroom", "holocene", "revolution-hall", "roseland-theater"}
+MONQUI_SLUG_NAME = {
+    "crystal-ballroom": "Crystal Ballroom",
+    "mcmenamins-edgefield": "McMenamins Edgefield",
+    "mcmenamins-grand-lodge-concerts": "McMenamins Grand Lodge",
+    "arlene-schnitzer-concert-hall": "Arlene Schnitzer Concert Hall",
+    "paramount-theatre": "Paramount Theatre",
+    "the-old-church": "The Old Church",
+}
+
+
+def parse_monqui(html, today):
+    soup = BeautifulSoup(html, "html.parser")
+    shows = []
+    seen = set()
+    for ev in soup.select(".rhp-event-thumb"):
+        a = ev.find("a", class_="url", href=True) or ev.find("a", href=True)
+        if not a or "/event/" not in a["href"]:
+            continue
+        href = a["href"]
+        parts = href.split("/event/")[1].split("/")
+        if len(parts) < 3:
+            continue
+        slug, city = parts[1], parts[2]
+        if "oregon" not in city.lower():
+            continue  # drop Seattle/Tacoma/Bend/Eugene etc.
+        if slug in MONQUI_SKIP:
+            continue  # already covered by another source
+        venue = MONQUI_SLUG_NAME.get(slug, slug.replace("-", " ").title())
+        title = a.get("title") or a.get_text()
+        title = re.sub(r"^(MOVED TO[^:]*:\\s*|SOLD OUT:\\s*|CANCELLED:\\s*)", "",
+                       clean(title), flags=re.I)
+        de = ev.find(id="eventDate") or ev.select_one(".singleEventDate")
+        if not de:
+            continue
+        bits = [b.strip() for b in de.get_text("|").split("|") if b.strip()]
+        mon = day = None
+        for b in bits:
+            if b[:3] in MONTHS:
+                mon = MONTHS[b[:3]]
+            elif b.isdigit():
+                day = int(b)
+        if not mon or not day:
+            continue
+        date = f"{infer_year(mon, today)}-{mon:02d}-{day:02d}"
+        key = (venue, date, title)
+        if key in seen:
+            continue
+        seen.add(key)
+        nb, addr = VENUE_INFO.get(venue, ("Portland", ""))
+        shows.append({"title": title, "venue": venue, "neighborhood": nb,
+                      "address": addr, "date": date, "time": "", "venueUrl": href})
+    return shows
+
+
 SOURCES = [
+    {"name": "Monqui (Crystal/McMenamins)", "parser": parse_monqui,
+     "urls": ["https://monqui.com/events/"]},
     {"name": "Aladdin Theater", "parser": parse_aladdin,
      "urls": ["https://www.aladdin-theater.com/"]},
     {"name": "Revolution Hall", "parser": parse_revolutionhall,
