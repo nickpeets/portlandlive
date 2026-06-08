@@ -94,11 +94,29 @@ def to_time(s):
 def infer_year(month, today):
     return today.year + 1 if month < today.month else today.year
 
+class ChallengeError(Exception):
+    """Raised when a response looks like a bot-wall / WAF challenge rather than
+    real content, so per-venue isolation flags + skips it instead of parsing
+    the challenge page as 0 events."""
+
+
+_CHALLENGE_STATUS = {202, 403, 415, 429}
+# Strong challenge signatures only. Deliberately NOT triggering on the bare
+# word "captcha" (Laurelthirst's page has it as a harmless form label).
+_CHALLENGE_SIGS = ("One moment", "Just a moment", "awsWafCookieDomainList", "gokuProps")
+
+
 def fetch(url):
     r = requests.get(url, headers={"User-Agent":
         "Mozilla/5.0 (compatible; PortlandLive/1.0; listings aggregator)"}, timeout=30)
+    if r.status_code in _CHALLENGE_STATUS:
+        raise ChallengeError(f"challenge status {r.status_code} from {url}")
+    body = r.text
+    for sig in _CHALLENGE_SIGS:
+        if sig in body:
+            raise ChallengeError(f"challenge signature {sig!r} in body from {url}")
     r.raise_for_status()
-    return r.text
+    return body
 
 # ---- Mammoth NW (roselandpdx.com) --------------------------------------------
 # On the live page each event has SEPARATE links: one whose text is just the date
