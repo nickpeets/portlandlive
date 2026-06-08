@@ -37,6 +37,8 @@ def validate(shows):
     issues = []
     today = _dt.date.today()
     max_future = today + _dt.timedelta(days=730)  # ~2 years out
+    _pac = _dt.timezone(_dt.timedelta(hours=-8))
+    today_pacific = _dt.datetime.now(_pac).date()
     for s in shows:
         t = (s.get("title") or "").strip()
         v = s.get("venue", "")
@@ -58,6 +60,8 @@ def validate(shows):
                     issues.append(f"epoch/1970 date {d!r} @ {v} {t[:40]!r}")
                 elif dd > max_future:
                     issues.append(f"date >2yr out {d!r} @ {v} {t[:40]!r}")
+                elif dd < today_pacific:
+                    issues.append(f"past-dated show leaked {d!r} @ {v} {t[:40]!r}")
             except ValueError:
                 issues.append(f"unparseable date {d!r} @ {v} {t[:40]!r}")
         if tm != "" and not _TIME_RE.match(tm):
@@ -92,11 +96,11 @@ def main():
 
     # drop past shows
     # Drop past shows using US Pacific time (venues' local zone), not the
-    # GitHub runner's UTC clock, with a 1-day grace buffer so a show never
-    # disappears until the day AFTER it happens.
+    # GitHub runner's UTC clock, (no grace buffer) so a show
+    # disappears at Pacific midnight the night it ends.
     pacific = datetime.timezone(datetime.timedelta(hours=-8))
     today_pacific = datetime.datetime.now(pacific).date()
-    cutoff = (today_pacific - datetime.timedelta(days=1)).isoformat()
+    cutoff = today_pacific.isoformat()
     shows = [s for s in shows if s.get("date", "") >= cutoff]
 
     # dedupe on (title, venue, date)

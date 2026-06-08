@@ -1150,7 +1150,7 @@ def parse_laurelthirst(html, today):
     import concurrent.futures, urllib.request, urllib.parse
     out, seen = [], {}
     horizon = today + datetime.timedelta(days=120)
-    lower = today - datetime.timedelta(days=1)
+    lower = today
     links = []
     for page in range(1, 5):
         url = LAUREL_CPT + "?per_page=50&orderby=date&order=desc&page=%d" % page
@@ -1218,7 +1218,7 @@ _ASP_PDT = datetime.timezone(datetime.timedelta(hours=-7))  # Portland summer (P
 def parse_albertastreetpub(html, today):
     out, seen = [], {}
     horizon = today + datetime.timedelta(days=120)
-    lower = today - datetime.timedelta(days=1)
+    lower = today
     try:
         data = json.loads(html)
     except Exception:
@@ -1337,7 +1337,7 @@ def parse_nofun(html, today):
     # business as Devil's Dill; address verified at 1709 SE Hawthorne Blvd.
     out, seen = [], {}
     horizon = today + datetime.timedelta(days=120)
-    lower = today - datetime.timedelta(days=1)
+    lower = today
     try:
         data = json.loads(html)
     except Exception:
@@ -1500,7 +1500,7 @@ def scrape():
     pacific = datetime.timezone(datetime.timedelta(hours=-8))
     today = datetime.datetime.now(pacific).date()
     horizon = (today + datetime.timedelta(days=HORIZON_DAYS)).isoformat()
-    lower = (today - datetime.timedelta(days=1)).isoformat()
+    lower = today.isoformat()
     out = []
     for src in SOURCES:
         got = []
