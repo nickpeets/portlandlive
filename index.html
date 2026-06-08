@@ -141,6 +141,12 @@ body{
 .toggle::after{content:"";position:absolute;top:1px;left:1px;width:14px;height:14px;border-radius:50%;background:var(--cream);transition:left .15s}
 .toggle.on{background:var(--rust)}
 .toggle.on::after{left:17px}
+.heart{appearance:none;border:0;background:transparent;cursor:pointer;padding:2px;line-height:0;color:var(--ink);opacity:.55;transition:opacity .15s,transform .12s,color .15s;flex:0 0 auto}
+.heart svg{width:20px;height:20px;display:block}
+.heart:hover{opacity:1;transform:scale(1.12)}
+.heart.on{color:var(--rust);opacity:1}
+.heart.on:hover{color:var(--rust-deep)}
+.row .heart{margin-right:8px}
 
 /* ---------- RESULTS ---------- */
 .results-wrap{
@@ -373,6 +379,10 @@ body{
         <span class="toggle" id="venuesToggle"></span>
         <span>Venues</span>
       </label>
+      <label class="pill" title="Show only shows you have favorited">
+        <span class="toggle" id="myShowsToggle"></span>
+        <span>My Shows</span>
+      </label>
 
       <span class="spacer"></span>
 
@@ -411,6 +421,7 @@ const state = {
   shows: [], stamp: "",
   layout: "grid", view: "shows", selectedVenue: null, sort: "date",
   q: "", nb: "", start: "", end: "", tixOnly: false, tonight: false,
+  myShows: false, favorites: loadFavorites(),
 };
 
 const $ = s => document.querySelector(s);
@@ -464,6 +475,7 @@ function filtered(){
   if(state.start) out = out.filter(s => s.date >= state.start);
   if(state.end) out = out.filter(s => s.date <= state.end);
   if(state.tixOnly) out = out.filter(s => s.venueUrl);
+   if(state.myShows) out = out.filter(s => isFav(s));
     if(state.tonight){
       const now = new Date();
       const pac = new Date(now.toLocaleString("en-US",{timeZone:"America/Los_Angeles"}));
@@ -491,7 +503,7 @@ function render(){
   wrap.innerHTML = "";
 
   if(!list.length){
-    wrap.innerHTML = '<div class="empty"><h2>No Results Found.</h2><p>Try widening your dates or clearing the search.</p></div>';
+    wrap.innerHTML = state.myShows ? '<div class="empty"><h2>No favorites yet</h2><p>Tap the heart on a show to save it.</p></div>' : '<div class="empty"><h2>No Results Found.</h2><p>Try widening your dates or clearing the search.</p></div>';
     return;
   }
 
@@ -562,6 +574,7 @@ function gridOf(items){
       <div class="foot">
         <span class="nbtag">${esc(s.neighborhood||'')}</span>
         ${s.venueUrl?`<a class="tix" href="${s.venueUrl}" target="_blank" rel="noopener">Info →</a>`:''}
+        ${heartBtn(s)}
       </div>`;
     g.appendChild(c);
   });
@@ -573,6 +586,7 @@ function listOf(items){
   items.forEach(s=>{
     const r=document.createElement('div'); r.className='row';
     r.innerHTML = `
+      ${heartBtn(s)}
       <span class="rtime">${s.time||'—'}</span>
       ${s.venueUrl?`<a class="rtitle" href="${s.venueUrl}" target="_blank" rel="noopener">${esc(s.title)}</a>`:`<span class="rtitle">${esc(s.title)}</span>`}
       <span class="rat">at</span>
@@ -584,6 +598,34 @@ function listOf(items){
 }
 
 function esc(x){return (x||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+      const FAV_KEY = 'portlandlive:favorites';
+      function favKey(s){ return (s.venue||'') + '|' + (s.date||'') + '|' + (s.title||''); }
+      function loadFavorites(){
+        try{ const raw = localStorage.getItem(FAV_KEY); const arr = raw ? JSON.parse(raw) : []; return new Set(Array.isArray(arr) ? arr : []); }
+        catch(e){ return new Set(); }
+      }
+      function saveFavorites(){
+        try{ localStorage.setItem(FAV_KEY, JSON.stringify([...state.favorites])); }catch(e){}
+      }
+      function isFav(s){ return state.favorites.has(favKey(s)); }
+      function toggleFavKey(k){
+        if(state.favorites.has(k)) state.favorites.delete(k); else state.favorites.add(k);
+        saveFavorites();
+      }
+      function heartBtn(s){
+        const k = favKey(s); const on = state.favorites.has(k);
+        return `<button type="button" class="heart${on?' on':''}" data-fav="${esc(k)}" aria-pressed="${on}" aria-label="${on?'Remove from My Shows':'Save to My Shows'}" title="${on?'Remove from favorites':'Save to favorites'}">${heartSvg(on)}</button>`;
+      }
+      function toggleFav(s){
+        const k = favKey(s);
+        if(state.favorites.has(k)) state.favorites.delete(k); else state.favorites.add(k);
+        saveFavorites();
+      }
+      function heartSvg(on){
+        return on
+          ? '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.35-9.5-8.5C.5 9 2.5 5.5 6 5.5c2 0 3.2 1.1 4 2.3.8-1.2 2-2.3 4-2.3 3.5 0 5.5 3.5 3.5 7C19 16.65 12 21 12 21z"/></svg>'
+          : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.35-9.5-8.5C.5 9 2.5 5.5 6 5.5c2 0 3.2 1.1 4 2.3.8-1.2 2-2.3 4-2.3 3.5 0 5.5 3.5 3.5 7C19 16.65 12 21 12 21z"/></svg>';
+      }
 
 /* events */
 $('#searchInput').addEventListener('input',e=>{state.q=e.target.value;render();});
@@ -593,13 +635,15 @@ $('#startDate').addEventListener('change',e=>{state.start=e.target.value;render(
 $('#endDate').addEventListener('change',e=>{state.end=e.target.value;render();});
 $('#tixToggle').addEventListener('click',e=>{state.tixOnly=!state.tixOnly;e.target.classList.toggle('on',state.tixOnly);render();});
 $('#venuesToggle').addEventListener('click',()=>{if(state.view==='venues'){state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');$('#viewingWord').textContent='Shows';}else{state.view='venues';state.selectedVenue=null;$('#venuesToggle').classList.add('on');$('#viewingWord').textContent='Venues';}render();});
+      $('#myShowsToggle').addEventListener('click',e=>{state.myShows=!state.myShows;e.currentTarget.classList.toggle('on',state.myShows);render();});
+      $('#results').addEventListener('click',e=>{const h=e.target.closest('.heart');if(!h)return;e.preventDefault();e.stopPropagation();toggleFavKey(h.getAttribute('data-fav'));render();});
 $('#tonightToggle').addEventListener('click',e=>{state.tonight=!state.tonight;e.target.classList.toggle('on',state.tonight);render();});
 $('#gridBtn').addEventListener('click',()=>{state.layout='grid';$('#gridBtn').classList.add('active');$('#listBtn').classList.remove('active');render();});
 $('#listBtn').addEventListener('click',()=>{state.layout='list';$('#listBtn').classList.add('active');$('#gridBtn').classList.remove('active');render();});
 $('#resetBtn').addEventListener('click',()=>{
   state.q="";state.nb="";state.start="";state.end="";state.tixOnly=false;state.tonight=false;state.sort="date";state.view="shows";state.selectedVenue=null;$('#venuesToggle').classList.remove('on');$('#viewingWord').textContent='Shows';
   $('#searchInput').value="";$('#nbSel').value="";$('#startDate').value="";$('#endDate').value="";
-  $('#sortSel').value="date";$('#tixToggle').classList.remove('on');$('#tonightToggle').classList.remove('on');render();
+  $('#sortSel').value="date";$('#tixToggle').classList.remove('on');$('#tonightToggle').classList.remove('on');state.myShows=false;$('#myShowsToggle').classList.remove('on');render();
 });
 
 load();
