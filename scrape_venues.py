@@ -1487,10 +1487,13 @@ def scrape():
     for src in SOURCES:
         got = []
         for url in src["urls"]:
+            # Per-venue isolation: a single source throwing (exception, timeout,
+            # bot-challenge, shape change) must NOT abort the scrape or lose the
+            # other venues. Log loudly and continue.
             try:
                 got.extend(src["parser"](fetch(url), today))
             except Exception as e:
-                print(f"  {url}: ERROR {e}")
+                print(f"  WARN: {src['name']} parser failed: {type(e).__name__}: {e} ({url})")
         got = [s for s in got if lower <= s["date"] <= horizon]
         print(f"  {src['name']}: {len(got)} shows")
         out.extend(got)
