@@ -71,6 +71,7 @@ VENUE_INFO = {
     "Veterans Memorial Coliseum": ("Lloyd/Rose Quarter", "300 N Winning Way"),
     "Theater of the Clouds": ("Lloyd/Rose Quarter", "1 N Center Ct St"),
     "Jack London Revue": ("Downtown", "529 SW 4th Ave"),
+    "Bunk Bar": ("Central Eastside", "1028 SE Water Ave"),
     "Mississippi Pizza": ("Boise", "3552 N Mississippi Ave"),
     "Laurelthirst Public House": ("Kerns", "2958 NE Glisan St"),
     "Alberta Street Pub": ("Alberta Arts", "1036 NE Alberta St"),
@@ -1225,7 +1226,55 @@ def parse_mississippipizza(html, today):
                       "venueUrl": a.get("href", "")})
     return shows
 
+
+def parse_bunkbar(html, today):
+    # Bunk Bar (shows.bunksandwiches.com) - Next.js App Router. Events are
+    # server-rendered into EventCard_* CSS-module divs. Date + start time are
+    # emitted in UTC; convert to Pacific (PDT, UTC-7) for the correct local
+    # date and time (a late-evening show rolls back one calendar day).
+    import datetime as _dt
+    soup = BeautifulSoup(html, "html.parser")
+    nb, addr = VENUE_INFO["Bunk Bar"]
+    shows = []
+    for c in soup.select('div[class*="EventCard_eventCard__"]'):
+        de = c.select_one('p[class*="EventCard_eventDate__"]')
+        h2 = c.find("h2")
+        ul = c.find("ul")
+        if not de or not h2:
+            continue
+        mm = re.search(r"([A-Za-z]+)\s+(\d{1,2})", clean(de.get_text()))
+        if not mm:
+            continue
+        mo = MONTHS.get(mm.group(1)[:3].title())
+        if not mo:
+            continue
+        day = int(mm.group(2))
+        yr = infer_year(mo, today)
+        title = clean(h2.get_text())
+        if not title:
+            continue
+        tt = clean(ul.get_text()) if ul else ""
+        tmatch = re.search(r"(\d{1,2}):(\d{2})\s*([AP]M)", tt)
+        if tmatch:
+            hh = int(tmatch.group(1)) % 12 + (12 if tmatch.group(3) == "PM" else 0)
+            mn = int(tmatch.group(2))
+            dt_p = _dt.datetime(yr, mo, day, hh, mn) - _dt.timedelta(hours=7)
+            date = dt_p.strftime("%Y-%m-%d")
+            tm = dt_p.strftime("%I:%M %p").lstrip("0")
+        else:
+            date = f"{yr:04d}-{mo:02d}-{day:02d}"
+            tm = ""
+        a = h2.find_parent("a") or c.find("a", href=True)
+        url = a.get("href") if a and a.get("href") else "https://shows.bunksandwiches.com/"
+        if url.startswith("/"):
+            url = "https://shows.bunksandwiches.com" + url
+        shows.append({"title": title, "venue": "Bunk Bar",
+                      "neighborhood": nb, "address": addr,
+                      "date": date, "time": tm, "venueUrl": url})
+    return shows
+
 SOURCES = [
+    {"name": "Bunk Bar (shows.bunksandwiches.com)", "parser": parse_bunkbar, "urls": ["https://shows.bunksandwiches.com/"]},
     {"name": "Mississippi Pizza (mississippipizza.com)", "parser": parse_mississippipizza, "urls": ["https://mississippipizza.com/calendar/"]},
     {"name": "Alberta Street Pub (albertastreetpub.com)", "parser": parse_albertastreetpub, "urls": ["https://www.albertastreetpub.com/music?format=json"]},
     {"name": "Laurelthirst (laurelthirst.com)", "parser": parse_laurelthirst, "urls": ["https://www.laurelthirst.com/"]},
