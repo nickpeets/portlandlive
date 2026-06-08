@@ -71,6 +71,7 @@ VENUE_INFO = {
     "Veterans Memorial Coliseum": ("Lloyd/Rose Quarter", "300 N Winning Way"),
     "Theater of the Clouds": ("Lloyd/Rose Quarter", "1 N Center Ct St"),
     "Jack London Revue": ("Downtown", "529 SW 4th Ave"),
+    "Twilight Cafe & Bar": ("Hosford-Abernethy", "1420 SE Powell Blvd"),
     "No Fun": ("Buckman", "1709 SE Hawthorne Blvd"),
     "Bunk Bar": ("Central Eastside", "1028 SE Water Ave"),
     "Mississippi Pizza": ("Boise", "3552 N Mississippi Ave"),
@@ -1313,7 +1314,58 @@ def parse_nofun(html, today):
                     "date": date, "time": tm, "venueUrl": url})
     return out
 
+
+def parse_twilight(html, today):
+    # Twilight Cafe & Bar (twilightcafeandbar.com, HoldMyTicket CMS). The
+    # /calendar_list page server-renders month-grid <table>s: a th.heading
+    # holds "Month YYYY", each td.daywrap has a .daylabel day number and any
+    # events as .event-title (+ a .cal_flyer_wrap/.cal_buy link). No showtime
+    # is exposed in the grid, so time is left blank. Max one event per cell.
+    soup = BeautifulSoup(html, "html.parser")
+    nb, addr = VENUE_INFO["Twilight Cafe & Bar"]
+    shows, seen = [], set()
+    for tbl in soup.find_all("table"):
+        head = tbl.select_one("th.heading")
+        if not head:
+            continue
+        mh = re.search(r"([A-Za-z]+)\s+(\d{4})", clean(head.get_text()))
+        if not mh:
+            continue
+        mo = MONTHS.get(mh.group(1)[:3].title())
+        yr = int(mh.group(2))
+        if not mo:
+            continue
+        for cell in tbl.select("td.daywrap"):
+            dl = cell.select_one(".daylabel")
+            if not dl:
+                continue
+            dm = re.search(r"\d+", dl.get_text())
+            if not dm:
+                continue
+            day = int(dm.group(0))
+            for et in cell.select(".event-title"):
+                title = clean(et.get_text())
+                title = re.sub(r"\s+", " ", re.sub(r"[\u2010-\u2015]", "-", title)).strip()
+                if not title:
+                    continue
+                a = cell.select_one(".cal_flyer_wrap a") or cell.select_one("a.cal_buy")
+                href = a.get("href") if a and a.get("href") else ""
+                if href and not href.startswith("http"):
+                    href = "https://twilightcafeandbar.com/" + href.lstrip("/")
+                if not href:
+                    href = "https://twilightcafeandbar.com/calendar_list"
+                date = f"{yr:04d}-{mo:02d}-{day:02d}"
+                key = (date, title.lower())
+                if key in seen:
+                    continue
+                seen.add(key)
+                shows.append({"title": title, "venue": "Twilight Cafe & Bar",
+                              "neighborhood": nb, "address": addr,
+                              "date": date, "time": "", "venueUrl": href})
+    return shows
+
 SOURCES = [
+    {"name": "Twilight Cafe & Bar (twilightcafeandbar.com)", "parser": parse_twilight, "urls": ["https://twilightcafeandbar.com/calendar_list"]},
     {"name": "No Fun (nofunportland.com)", "parser": parse_nofun, "urls": ["https://www.nofunportland.com/events?format=json"]},
     {"name": "Bunk Bar (shows.bunksandwiches.com)", "parser": parse_bunkbar, "urls": ["https://shows.bunksandwiches.com/"]},
     {"name": "Mississippi Pizza (mississippipizza.com)", "parser": parse_mississippipizza, "urls": ["https://mississippipizza.com/calendar/"]},
