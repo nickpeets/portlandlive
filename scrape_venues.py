@@ -71,6 +71,8 @@ VENUE_INFO = {
     "Veterans Memorial Coliseum": ("Lloyd/Rose Quarter", "300 N Winning Way"),
     "Theater of the Clouds": ("Lloyd/Rose Quarter", "1 N Center Ct St"),
     "Jack London Revue": ("Downtown", "529 SW 4th Ave"),
+    "Laurelthirst Public House": ("Kerns", "2958 NE Glisan St"),
+    "Alberta Street Pub": ("Alberta Arts", "1036 NE Alberta St"),
 }
 
 def clean(s):
@@ -1057,7 +1059,142 @@ def parse_showdown(html, today):
     return shows
 
 
+
+# ---- Laurelthirst Public House (laurelthirst.com) ----------------------------
+# WordPress + EventON plugin. No single feed lists upcoming events with dates,
+# but the WP REST CPT route /wp-json/wp/v2/ajde_events lists event posts
+# (newest-published first), and each event PAGE carries clean schema.org
+# JSON-LD with itemprop="startDate" (e.g. 2026-6-20T18:00-7:00). We page the
+# CPT list and read each event page's startDate concurrently.
+LAUREL_BASE = "https://www.laurelthirst.com"
+LAUREL_CPT = LAUREL_BASE + "/wp-json/wp/v2/ajde_events"
+_LAUREL_SD = re.compile(r"itemprop=['\"]startDate['\"]\s+content=['\"]([^'\"]+)['\"]")
+_LAUREL_LD = re.compile(r"application/ld\+json[^>]*>(.*?)</script>", re.S)
+
+def _laurel_event(link):
+    try:
+        h = fetch(link)
+    except Exception:
+        return None
+    m = _LAUREL_SD.search(h)
+    if not m:
+        return None
+    name = None
+    nm = _LAUREL_LD.search(h)
+    if nm:
+        try:
+            name = json.loads(nm.group(1)).get("name")
+        except Exception:
+            name = None
+    return (link, m.group(1), name)
+
+def parse_laurelthirst(html, today):
+    import concurrent.futures, urllib.request, urllib.parse
+    out, seen = [], {}
+    horizon = today + datetime.timedelta(days=120)
+    lower = today - datetime.timedelta(days=1)
+    links = []
+    for page in range(1, 5):
+        url = LAUREL_CPT + "?per_page=50&orderby=date&order=desc&page=%d" % page
+        try:
+            data = json.loads(fetch(url))
+        except Exception:
+            break
+        if not data:
+            break
+        for e in data:
+            lk = e.get("link", "")
+            if lk:
+                links.append((lk, e.get("title", {}).get("rendered", "")))
+        if len(data) < 50:
+            break
+    # fetch event pages concurrently for start dates
+    results = {}
+    with concurrent.futures.ThreadPoolExecutor(max_workers=12) as ex:
+        futs = {ex.submit(_laurel_event, lk): lk for lk, _ in links}
+        for f in concurrent.futures.as_completed(futs):
+            r = f.result()
+            if r:
+                results[r[0]] = (r[1], r[2])
+    for lk, rendered in links:
+        if lk not in results:
+            continue
+        sd, name = results[lk]
+        mm = re.match(r"(\d{4})-(\d{1,2})-(\d{1,2})(?:T(\d{1,2}):(\d{2}))?", sd or "")
+        if not mm:
+            continue
+        try:
+            d = datetime.date(int(mm.group(1)), int(mm.group(2)), int(mm.group(3)))
+        except ValueError:
+            continue
+        if not (lower <= d <= horizon):
+            continue
+        date = d.isoformat()
+        tm = ""
+        if mm.group(4) is not None:
+            hh, mn = int(mm.group(4)), int(mm.group(5))
+            tm = "%d:%02d %s" % (hh % 12 or 12, mn, "AM" if hh < 12 else "PM")
+        raw = name or rendered or ""
+        title = clean(raw.replace("&amp;", "&"))
+        title = re.sub(r"\s+", " ", re.sub(r"[\u2010-\u2015]", "-", title)).strip()
+        if not title:
+            continue
+        key = (date, lk or title.lower())
+        if key in seen:
+            continue
+        seen[key] = 1
+        nb, addr = VENUE_INFO.get("Laurelthirst Public House", ("Kerns", "2958 NE Glisan St"))
+        out.append({"title": title, "venue": "Laurelthirst Public House",
+                    "neighborhood": nb, "address": addr,
+                    "date": date, "time": tm, "venueUrl": lk})
+    return out
+
+
+
+# ---- Alberta Street Pub (albertastreetpub.com) ------------------------------
+# Squarespace site. The /music events page exposes structured JSON via the
+# ?format=json query param: an "upcoming" list of events with title, fullUrl,
+# and startDate (epoch milliseconds, UTC). Convert to Pacific local time.
+_ASP_PDT = datetime.timezone(datetime.timedelta(hours=-7))  # Portland summer (PDT)
+
+def parse_albertastreetpub(html, today):
+    out, seen = [], {}
+    horizon = today + datetime.timedelta(days=120)
+    lower = today - datetime.timedelta(days=1)
+    try:
+        data = json.loads(html)
+    except Exception:
+        return out
+    for e in data.get("upcoming", []):
+        sd = e.get("startDate")
+        if not sd:
+            continue
+        dt = datetime.datetime.fromtimestamp(sd / 1000, tz=datetime.timezone.utc).astimezone(_ASP_PDT)
+        d = dt.date()
+        if not (lower <= d <= horizon):
+            continue
+        date = d.isoformat()
+        tm = "%d:%02d %s" % (dt.hour % 12 or 12, dt.minute, "AM" if dt.hour < 12 else "PM")
+        title = clean((e.get("title") or "").replace("&amp;", "&"))
+        title = re.sub(r"\s+", " ", re.sub(r"[\u2010-\u2015]", "-", title)).strip()
+        if not title:
+            continue
+        fu = e.get("fullUrl") or ""
+        url = ("https://www.albertastreetpub.com" + fu) if fu.startswith("/") else (fu or "https://www.albertastreetpub.com/music")
+        key = (date, title.lower())
+        if key in seen:
+            continue
+        seen[key] = 1
+        nb, addr = VENUE_INFO.get("Alberta Street Pub", ("Alberta Arts", "1036 NE Alberta St"))
+        out.append({"title": title, "venue": "Alberta Street Pub",
+                    "neighborhood": nb, "address": addr,
+                    "date": date, "time": tm, "venueUrl": url})
+    return out
+
+
 SOURCES = [
+    {"name": "Alberta Street Pub (albertastreetpub.com)", "parser": parse_albertastreetpub, "urls": ["https://www.albertastreetpub.com/music?format=json"]},
+    {"name": "Laurelthirst (laurelthirst.com)", "parser": parse_laurelthirst, "urls": ["https://www.laurelthirst.com/"]},
     {"name": "Showdown Saloon", "parser": parse_showdown, "urls": ["https://showdownpdx.com/"]},
     {"name": "The Get Down", "parser": parse_getdown, "urls": ["https://thegetdownpdx.com/"]},
     {"name": "Jack London Revue", "parser": parse_jacklondonrevue, "urls": ["https://jacklondonrevue.com/calendar/"]},
