@@ -71,6 +71,7 @@ VENUE_INFO = {
     "Veterans Memorial Coliseum": ("Lloyd/Rose Quarter", "300 N Winning Way"),
     "Theater of the Clouds": ("Lloyd/Rose Quarter", "1 N Center Ct St"),
     "Jack London Revue": ("Downtown", "529 SW 4th Ave"),
+    "Pioneer Courthouse Square": ("Downtown", "701 SW 6th Ave"),
     "Twilight Cafe & Bar": ("Hosford-Abernethy", "1420 SE Powell Blvd"),
     "No Fun": ("Buckman", "1709 SE Hawthorne Blvd"),
     "Bunk Bar": ("Central Eastside", "1028 SE Water Ave"),
@@ -1364,7 +1365,51 @@ def parse_twilight(html, today):
                               "date": date, "time": "", "venueUrl": href})
     return shows
 
+
+def parse_pdxlive(html, today):
+    # Pioneer Courthouse Square / PDX Live summer concert series. pdx-live.com
+    # runs the WLCR WordPress theme (same family as Mississippi Studios); its
+    # /wp-json/wlcr/v1/events/raw endpoint returns a clean JSON list. Each
+    # event's start.local already holds the correct local date+time, and
+    # venue.name is authoritative (we only keep Pioneer Courthouse Square).
+    out, seen = [], set()
+    try:
+        data = json.loads(html)
+    except Exception:
+        return out
+    if not isinstance(data, list):
+        return out
+    for e in data:
+        nm = e.get("name")
+        title = clean(nm.get("text")) if isinstance(nm, dict) else clean(str(nm or ""))
+        title = re.sub(r"\s+", " ", re.sub(r"[\u2010-\u2015]", "-", title)).strip()
+        st = e.get("start") or {}
+        loc = st.get("local") if isinstance(st, dict) else None
+        if not title or not loc:
+            continue
+        m = re.match(r"(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})", loc)
+        if not m:
+            continue
+        date = f"{m.group(1)}-{m.group(2)}-{m.group(3)}"
+        hh, mn = int(m.group(4)), int(m.group(5))
+        tm = "%d:%02d %s" % (hh % 12 or 12, mn, "AM" if hh < 12 else "PM")
+        ven = e.get("venue")
+        vname = clean(ven.get("name")) if isinstance(ven, dict) else ""
+        if vname and "pioneer courthouse" not in vname.lower():
+            continue
+        nb, addr = VENUE_INFO["Pioneer Courthouse Square"]
+        url = e.get("url") or "https://pdx-live.com/"
+        key = (date, title.lower())
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append({"title": title, "venue": "Pioneer Courthouse Square",
+                    "neighborhood": nb, "address": addr,
+                    "date": date, "time": tm, "venueUrl": url})
+    return out
+
 SOURCES = [
+    {"name": "Pioneer Courthouse Square / PDX Live (pdx-live.com)", "parser": parse_pdxlive, "urls": ["https://pdx-live.com/wp-json/wlcr/v1/events/raw"]},
     {"name": "Twilight Cafe & Bar (twilightcafeandbar.com)", "parser": parse_twilight, "urls": ["https://twilightcafeandbar.com/calendar_list"]},
     {"name": "No Fun (nofunportland.com)", "parser": parse_nofun, "urls": ["https://www.nofunportland.com/events?format=json"]},
     {"name": "Bunk Bar (shows.bunksandwiches.com)", "parser": parse_bunkbar, "urls": ["https://shows.bunksandwiches.com/"]},
