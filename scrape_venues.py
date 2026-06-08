@@ -71,6 +71,7 @@ VENUE_INFO = {
     "Veterans Memorial Coliseum": ("Lloyd/Rose Quarter", "300 N Winning Way"),
     "Theater of the Clouds": ("Lloyd/Rose Quarter", "1 N Center Ct St"),
     "Jack London Revue": ("Downtown", "529 SW 4th Ave"),
+    "No Fun": ("Buckman", "1709 SE Hawthorne Blvd"),
     "Bunk Bar": ("Central Eastside", "1028 SE Water Ave"),
     "Mississippi Pizza": ("Boise", "3552 N Mississippi Ave"),
     "Laurelthirst Public House": ("Kerns", "2958 NE Glisan St"),
@@ -1273,7 +1274,47 @@ def parse_bunkbar(html, today):
                       "date": date, "time": tm, "venueUrl": url})
     return shows
 
+
+def parse_nofun(html, today):
+    # No Fun (nofunportland.com) - Squarespace events collection. The
+    # /events?format=json endpoint returns an "upcoming" list with startDate
+    # epoch ms in UTC; convert to Pacific (PDT) like Alberta Street Pub. Same
+    # business as Devil's Dill; address verified at 1709 SE Hawthorne Blvd.
+    out, seen = [], {}
+    horizon = today + datetime.timedelta(days=120)
+    lower = today - datetime.timedelta(days=1)
+    try:
+        data = json.loads(html)
+    except Exception:
+        return out
+    nb, addr = VENUE_INFO.get("No Fun", ("Buckman", "1709 SE Hawthorne Blvd"))
+    for e in data.get("upcoming", []):
+        sd = e.get("startDate")
+        if not sd:
+            continue
+        dt = datetime.datetime.fromtimestamp(sd / 1000, tz=datetime.timezone.utc).astimezone(_ASP_PDT)
+        d = dt.date()
+        if not (lower <= d <= horizon):
+            continue
+        date = d.isoformat()
+        tm = "%d:%02d %s" % (dt.hour % 12 or 12, dt.minute, "AM" if dt.hour < 12 else "PM")
+        title = clean((e.get("title") or "").replace("&amp;", "&"))
+        title = re.sub(r"\s+", " ", re.sub(r"[\u2010-\u2015]", "-", title)).strip()
+        if not title:
+            continue
+        fu = e.get("fullUrl") or ""
+        url = ("https://www.nofunportland.com" + fu) if fu.startswith("/") else (fu or "https://www.nofunportland.com/events")
+        key = (date, title.lower())
+        if key in seen:
+            continue
+        seen[key] = 1
+        out.append({"title": title, "venue": "No Fun",
+                    "neighborhood": nb, "address": addr,
+                    "date": date, "time": tm, "venueUrl": url})
+    return out
+
 SOURCES = [
+    {"name": "No Fun (nofunportland.com)", "parser": parse_nofun, "urls": ["https://www.nofunportland.com/events?format=json"]},
     {"name": "Bunk Bar (shows.bunksandwiches.com)", "parser": parse_bunkbar, "urls": ["https://shows.bunksandwiches.com/"]},
     {"name": "Mississippi Pizza (mississippipizza.com)", "parser": parse_mississippipizza, "urls": ["https://mississippipizza.com/calendar/"]},
     {"name": "Alberta Street Pub (albertastreetpub.com)", "parser": parse_albertastreetpub, "urls": ["https://www.albertastreetpub.com/music?format=json"]},
