@@ -629,6 +629,31 @@ MONQUI_SLUG_NAME = {
 }
 
 
+_MQ_LD = re.compile(r"<script[^>]*application/ld\+json[^>]*>(.*?)</script>", re.S)
+
+
+def _monqui_event_time(url):
+    # Fetch a Monqui event detail page and return a to_time()-normalized
+    # show time from schema.org JSON-LD startDate (already Pacific-local,
+    # offset -0700). Returns (url, "") if no time is available.
+    try:
+        h = fetch(url)
+    except Exception:
+        return (url, "")
+    for m in _MQ_LD.finditer(h):
+        try:
+            d = json.loads(m.group(1))
+        except Exception:
+            continue
+        if isinstance(d, dict) and d.get("@type") == "Event":
+            tm = re.search(r"T(\d{2}):(\d{2})", d.get("startDate", ""))
+            if tm:
+                hh, mm = int(tm.group(1)), tm.group(2)
+                ap = "am" if hh < 12 else "pm"
+                return (url, to_time(f"{hh % 12 or 12}:{mm} {ap}"))
+    return (url, "")
+
+
 def parse_monqui(html, today):
     soup = BeautifulSoup(html, "html.parser")
     shows = []
@@ -670,6 +695,16 @@ def parse_monqui(html, today):
         nb, addr = VENUE_INFO.get(venue, ("Portland", ""))
         shows.append({"title": title, "venue": venue, "neighborhood": nb,
                       "address": addr, "date": date, "time": "", "venueUrl": href})
+    # show times only live on each event detail page; fetch concurrently
+    import concurrent.futures
+    urls = list({s["venueUrl"] for s in shows})
+    times = {}
+    with concurrent.futures.ThreadPoolExecutor(max_workers=12) as ex:
+        for u, t in ex.map(_monqui_event_time, urls):
+            times[u] = t
+    for s in shows:
+        s["time"] = times.get(s["venueUrl"], "")
+
     return shows
 
 
