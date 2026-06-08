@@ -11,6 +11,15 @@ Pipeline:
 The GitHub Action runs both in order, then commits shows.json.
 """
 import json, os, datetime
+import re
+
+_DASHES = re.compile(r"[\u2010-\u2015]")
+
+
+def _norm_title(t):
+    # dash-normalize + collapse whitespace + lower so unicode-dash variants
+    # (the JLR phantom-dup bug) can never produce a distinct dedupe key.
+    return re.sub(r"\s+", " ", _DASHES.sub("-", t or "")).strip().lower()
 
 HERE = os.path.dirname(__file__)
 MANUAL = os.path.join(HERE, "manual_shows.json")
@@ -36,7 +45,7 @@ def main():
     # dedupe on (title, venue, date)
     seen, deduped = set(), []
     for s in shows:
-        k = (s.get("title","").lower().strip(),
+        k = (_norm_title(s.get("title","")),
              s.get("venue","").lower().strip(),
              s.get("date",""))
         if k not in seen and s.get("title") and s.get("date"):
