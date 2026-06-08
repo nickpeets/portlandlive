@@ -1517,8 +1517,59 @@ def scrape():
         out.extend(got)
     return out
 
+_BASELINE_FILE = os.path.join(os.path.dirname(__file__), "venue_baselines.json")
+_BASELINE_HISTORY = 10   # rolling window of recent run counts per venue
+_ANOMALY_PCT = 0.60      # flag drop/spike beyond +/-60% of trailing average
+
+
+def check_baselines(scraped):
+    # S1: per-venue count baseline + zero-drop/anomaly alert. Compares each
+    # venue's count this run to its trailing history; loudly flags venues that
+    # dropped to 0 (had shows before) or moved >60% vs their average. Seeds
+    # silently on first sighting. Updates the rolling history file each run.
+    from collections import Counter
+    counts = Counter(s.get("venue", "") for s in scraped)
+    try:
+        hist = json.load(open(_BASELINE_FILE))
+    except Exception:
+        hist = {}
+    alerts = []
+    venues = set(hist) | set(counts)
+    for v in sorted(venues):
+        if not v:
+            continue
+        now = counts.get(v, 0)
+        past = hist.get(v, [])
+        if past:
+            avg = sum(past) / len(past)
+            if now == 0 and avg > 0:
+                alerts.append(f"{v}: DROPPED TO 0 (trailing avg {avg:.1f})")
+            elif avg > 0 and abs(now - avg) / avg > _ANOMALY_PCT:
+                direction = "spike" if now > avg else "drop"
+                alerts.append(f"{v}: {direction} {now} vs avg {avg:.1f} (>{int(_ANOMALY_PCT*100)}%)")
+    if alerts:
+        print(f"BASELINE ALERT: {len(alerts)} venue(s) anomalous:")
+        for a in alerts:
+            print(f"  ALERT: {a}")
+    else:
+        print(f"BASELINE: {len([v for v in counts if v])} venues OK, 0 anomalies")
+    # roll the history forward (append this run, cap window); seed new venues
+    new_hist = {}
+    for v in venues:
+        if not v:
+            continue
+        new_hist[v] = (hist.get(v, []) + [counts.get(v, 0)])[-_BASELINE_HISTORY:]
+    try:
+        with open(_BASELINE_FILE, "w") as f:
+            json.dump(new_hist, f, indent=2, sort_keys=True)
+    except Exception as e:
+        print(f"  WARN: could not write baselines: {e}")
+    return alerts
+
+
 def main():
     scraped = scrape()
+    check_baselines(scraped)
     scraped_venues = {s["venue"] for s in scraped}
     target = os.path.join(os.path.dirname(__file__), "manual_shows.json")
     hand = []
