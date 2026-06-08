@@ -118,6 +118,21 @@ def fetch(url):
     r.raise_for_status()
     return body
 
+
+def _img_from(el, needle):
+    """First <img> src under el whose src/data-src contains needle, else ''."""
+    if el is None:
+        return ""
+    for im in el.find_all("img"):
+        s = im.get("src") or im.get("data-src") or ""
+        if needle in s:
+            return s.strip()
+    return ""
+
+def _bump(url):
+    """Bump HoldMyTicket Cloudinary thumbnail width to a larger size."""
+    return url.replace("/w_225/", "/w_600/") if url else url
+
 # ---- Mammoth NW (roselandpdx.com) --------------------------------------------
 # On the live page each event has SEPARATE links: one whose text is just the date
 # ("Fri, Jun 05") and another whose text is the title. We trigger on the date-link,
@@ -197,7 +212,7 @@ def parse_mammoth(html, today):
         nb, addr = VENUE_INFO.get(venue, ("Portland", ""))
         full = f"{title} (w/ {support})" if support else title
         shows.append({"title": full, "venue": venue, "neighborhood": nb,
-                      "address": addr, "date": date, "time": showtime, "venueUrl": tix})
+                      "address": addr, "date": date, "time": showtime, "venueUrl": tix, "imageUrl": ""})
 
     if not shows:
         ev_links = [a for a in soup.find_all("a", href=True) if "/event/" in a["href"]]
@@ -244,7 +259,7 @@ def parse_dantes(html, today):
         tix = tlink["href"] if tlink else url
         nb, addr = VENUE_INFO["Dante's"]
         shows.append({"title": title, "venue": "Dante's", "neighborhood": nb,
-                      "address": addr, "date": date, "time": showtime, "venueUrl": tix})
+                      "address": addr, "date": date, "time": showtime, "venueUrl": tix, "imageUrl": ""})
     return shows
 
 
@@ -300,7 +315,7 @@ def parse_msstudios(html, today):
             nb, addr = VENUE_INFO.get(venue, ("Portland", ""))
             full = f"{title} (w/ {support})" if support else title
             shows.append({"title": full, "venue": venue, "neighborhood": nb,
-                          "address": addr, "date": cur_date, "time": showtime, "venueUrl": url})
+                          "address": addr, "date": cur_date, "time": showtime, "venueUrl": url, "imageUrl": ""})
     return shows
 
 
@@ -355,7 +370,7 @@ def parse_wonder(html, today):
         full = f"{title} (w/ {support})" if support else title
         shows.append({"title": full, "venue": "Wonder Ballroom",
                       "neighborhood": "Eliot/Boise", "address": "128 NE Russell St",
-                      "date": date, "time": showtime, "venueUrl": tix})
+                      "date": date, "time": showtime, "venueUrl": tix, "imageUrl": ""})
     if not shows:
         ev = [a for a in anchors if "/event/" in a["href"]]
         print(f"    [debug-wb-v2] event-links={len(ev)}")
@@ -415,7 +430,7 @@ def parse_msstudios(html, today):
             nb, addr = VENUE_INFO.get(venue, ("Portland", ""))
             full = f"{title} (w/ {support})" if support else title
             shows.append({"title": full, "venue": venue, "neighborhood": nb,
-                          "address": addr, "date": cur_date, "time": showtime, "venueUrl": url})
+                          "address": addr, "date": cur_date, "time": showtime, "venueUrl": url, "imageUrl": ""})
     return shows
 
 
@@ -455,7 +470,7 @@ def parse_wonder(html, today):
         ti += 1
         shows.append({"title": e["title"], "venue": "Wonder Ballroom",
                       "neighborhood": "Eliot/Boise", "address": "128 NE Russell St",
-                      "date": e["date"], "time": showtime, "venueUrl": tix})
+                      "date": e["date"], "time": showtime, "venueUrl": tix, "imageUrl": ""})
     return shows
 # ---- Holocene (holocene.org/events/) -----------------------------------------
 # Each event: a title <h2> linking to /event/... with an etix ticket link whose
@@ -503,7 +518,7 @@ def parse_holocene(html, today):
             continue
         shows.append({"title": e["title"], "venue": "Holocene",
                       "neighborhood": "Central Eastside", "address": "1001 SE Morrison St",
-                      "date": date_iso, "time": showtime, "venueUrl": e["tix"] or slug})
+                      "date": date_iso, "time": showtime, "venueUrl": e["tix"] or slug, "imageUrl": ""})
     return shows
 # ---- Revolution Hall (revolutionhall.com) ------------------------------------
 # The events are NOT in the static page and the site does NOT use the
@@ -574,8 +589,9 @@ def _revhall_events(markup, today, seen, shows):
         # Both rooms share the building address; VENUE_INFO keys the main name.
         nb, addr = VENUE_INFO["Revolution Hall"]
         full = f"{title} (w/ {support})" if support else title
+        img = _img_from(ev, "performance-image")
         shows.append({"title": full, "venue": venue, "neighborhood": nb,
-                      "address": addr, "date": date, "time": showtime, "venueUrl": url})
+                      "address": addr, "date": date, "time": showtime, "venueUrl": url, "imageUrl": img})
     return len(wrappers)
 
 def parse_revolutionhall(html, today):
@@ -626,9 +642,10 @@ def parse_aladdin(html, today):
             if sm:
                 showtime = to_time(sm.group(1))
         nb, addr = VENUE_INFO["Aladdin Theater"]
+        img = _img_from(ev, "performance-image")
         shows.append({"title": title, "venue": "Aladdin Theater",
                       "neighborhood": nb, "address": addr, "date": date,
-                      "time": showtime, "venueUrl": url})
+                      "time": showtime, "venueUrl": url, "imageUrl": img})
     return shows
 
 
@@ -657,19 +674,25 @@ def _monqui_event_time(url):
     try:
         h = fetch(url)
     except Exception:
-        return (url, "")
+        return (url, "", "")
     for m in _MQ_LD.finditer(h):
         try:
             d = json.loads(m.group(1))
         except Exception:
             continue
         if isinstance(d, dict) and d.get("@type") == "Event":
+            mqimg = d.get("image") or ""
+            if isinstance(mqimg, list):
+                mqimg = mqimg[0] if mqimg else ""
+            if isinstance(mqimg, dict):
+                mqimg = mqimg.get("url") or mqimg.get("@id") or ""
             tm = re.search(r"T(\d{2}):(\d{2})", d.get("startDate", ""))
             if tm:
                 hh, mm = int(tm.group(1)), tm.group(2)
                 ap = "am" if hh < 12 else "pm"
-                return (url, to_time(f"{hh % 12 or 12}:{mm} {ap}"))
-    return (url, "")
+                return (url, to_time(f"{hh % 12 or 12}:{mm} {ap}"), mqimg)
+            return (url, "", mqimg)
+    return (url, "", "")
 
 
 def parse_monqui(html, today):
@@ -712,16 +735,20 @@ def parse_monqui(html, today):
         seen.add(key)
         nb, addr = VENUE_INFO.get(venue, ("Portland", ""))
         shows.append({"title": title, "venue": venue, "neighborhood": nb,
-                      "address": addr, "date": date, "time": "", "venueUrl": href})
+                      "address": addr, "date": date, "time": "", "venueUrl": href, "imageUrl": ""})
     # show times only live on each event detail page; fetch concurrently
     import concurrent.futures
     urls = list({s["venueUrl"] for s in shows})
     times = {}
+    mqimages = {}
     with concurrent.futures.ThreadPoolExecutor(max_workers=12) as ex:
-        for u, t in ex.map(_monqui_event_time, urls):
+        for u, t, im in ex.map(_monqui_event_time, urls):
             times[u] = t
+            mqimages[u] = im
     for s in shows:
         s["time"] = times.get(s["venueUrl"], "")
+        if not s.get("imageUrl"):
+            s["imageUrl"] = mqimages.get(s["venueUrl"], "")
 
     return shows
 
@@ -798,7 +825,7 @@ def parse_rosequarter(html, today):
         seen.add(key)
         nb, addr = VENUE_INFO.get(venue, ("Lloyd/Rose Quarter", ""))
         shows.append({"title": title, "venue": venue, "neighborhood": nb,
-                      "address": addr, "date": date, "time": "", "venueUrl": url})
+                      "address": addr, "date": date, "time": "", "venueUrl": url, "imageUrl": ""})
     return shows
 
 
@@ -849,7 +876,7 @@ def _p5_cards(html, today, out, seen):
         seen.add(key)
         nb, addr = VENUE_INFO.get(venue, ("Downtown", ""))
         out.append({"title": title, "venue": venue, "neighborhood": nb,
-                    "address": addr, "date": date, "time": "", "venueUrl": href})
+                    "address": addr, "date": date, "time": "", "venueUrl": href, "imageUrl": ""})
     return len(cards)
 
 
@@ -924,7 +951,7 @@ def parse_albertarose(html, today):
         seen.add(key)
         nb, addr = VENUE_INFO.get(venue, ("NE/Alberta", ""))
         shows.append({"title": title, "venue": venue, "neighborhood": nb,
-                      "address": addr, "date": date, "time": showtime, "venueUrl": url})
+                      "address": addr, "date": date, "time": showtime, "venueUrl": url, "imageUrl": ""})
     return shows
 
 
@@ -970,8 +997,9 @@ def parse_startheater(html, today):
             continue
         seen.add(key)
         nb, addr = VENUE_INFO.get(venue, ("Old Town/Chinatown", ""))
+        img = _img_from(sec, "i.ticketweb.com")
         shows.append({"title": title, "venue": venue, "neighborhood": nb,
-                      "address": addr, "date": date, "time": showtime, "venueUrl": url})
+                      "address": addr, "date": date, "time": showtime, "venueUrl": url, "imageUrl": img})
     return shows
 
 
@@ -1008,13 +1036,18 @@ def parse_jacklondonrevue(html, today):
         norm_title = re.sub(r"\s+", " ", re.sub(r"[\u2010-\u2015]", "-", title)).strip().lower()
         key = (venue, date, slug or norm_title)
         nb, addr = VENUE_INFO.get(venue, ("Downtown", ""))
+        img = _img_from(cont, "i.ticketweb.com")
         rec = {"title": title, "venue": venue, "neighborhood": nb,
-               "address": addr, "date": date, "time": showtime, "venueUrl": url}
+               "address": addr, "date": date, "time": showtime, "venueUrl": url, "imageUrl": img}
         prev = bykey.get(key)
         # JLR renders two date elements per event (one timed, one not);
         # keep one record per (venue,date,title), preferring the one WITH a time.
+        if prev is not None and not rec.get("imageUrl") and prev.get("imageUrl"):
+            rec["imageUrl"] = prev["imageUrl"]
         if prev is None or (not prev.get("time") and showtime):
             bykey[key] = rec
+        elif not bykey[key].get("imageUrl") and rec.get("imageUrl"):
+            bykey[key]["imageUrl"] = rec["imageUrl"]
 
     return list(bykey.values())
 
@@ -1062,7 +1095,7 @@ def parse_getdown(html, today):
         seen.add(key)
         nb, addr = VENUE_INFO.get(venue, ("Central Eastside", ""))
         shows.append({"title": title, "venue": venue, "neighborhood": nb,
-                      "address": addr, "date": date, "time": "", "venueUrl": url})
+                      "address": addr, "date": date, "time": "", "venueUrl": url, "imageUrl": ""})
     return shows
 
 
@@ -1113,7 +1146,7 @@ def parse_showdown(html, today):
         seen.add(key)
         nb, addr = VENUE_INFO.get(venue, ("Central Eastside", ""))
         shows.append({"title": title, "venue": venue, "neighborhood": nb,
-                      "address": addr, "date": date, "time": showtime, "venueUrl": url})
+                      "address": addr, "date": date, "time": showtime, "venueUrl": url, "imageUrl": ""})
     return shows
 
 
@@ -1204,7 +1237,7 @@ def parse_laurelthirst(html, today):
         nb, addr = VENUE_INFO.get("Laurelthirst Public House", ("Kerns", "2958 NE Glisan St"))
         out.append({"title": title, "venue": "Laurelthirst Public House",
                     "neighborhood": nb, "address": addr,
-                    "date": date, "time": tm, "venueUrl": lk})
+                    "date": date, "time": tm, "venueUrl": lk, "imageUrl": ""})
     return out
 
 
@@ -1246,7 +1279,7 @@ def parse_albertastreetpub(html, today):
         nb, addr = VENUE_INFO.get("Alberta Street Pub", ("Alberta Arts", "1036 NE Alberta St"))
         out.append({"title": title, "venue": "Alberta Street Pub",
                     "neighborhood": nb, "address": addr,
-                    "date": date, "time": tm, "venueUrl": url})
+                    "date": date, "time": tm, "venueUrl": url, "imageUrl": (e.get("assetUrl") or "")})
     return out
 
 
@@ -1279,7 +1312,7 @@ def parse_mississippipizza(html, today):
         shows.append({"title": title, "venue": "Mississippi Pizza",
                       "neighborhood": nb, "address": addr,
                       "date": date, "time": tm,
-                      "venueUrl": a.get("href", "")})
+                      "venueUrl": a.get("href", ""), "imageUrl": ""})
     return shows
 
 
@@ -1326,7 +1359,7 @@ def parse_bunkbar(html, today):
             url = "https://shows.bunksandwiches.com" + url
         shows.append({"title": title, "venue": "Bunk Bar",
                       "neighborhood": nb, "address": addr,
-                      "date": date, "time": tm, "venueUrl": url})
+                      "date": date, "time": tm, "venueUrl": url, "imageUrl": ""})
     return shows
 
 
@@ -1365,7 +1398,7 @@ def parse_nofun(html, today):
         seen[key] = 1
         out.append({"title": title, "venue": "No Fun",
                     "neighborhood": nb, "address": addr,
-                    "date": date, "time": tm, "venueUrl": url})
+                    "date": date, "time": tm, "venueUrl": url, "imageUrl": (e.get("assetUrl") or "")})
     return out
 
 
@@ -1413,9 +1446,10 @@ def parse_twilight(html, today):
                 if key in seen:
                     continue
                 seen.add(key)
+                img = _bump(_img_from(a, "flyers2"))
                 shows.append({"title": title, "venue": "Twilight Cafe & Bar",
                               "neighborhood": nb, "address": addr,
-                              "date": date, "time": "", "venueUrl": href})
+                              "date": date, "time": "", "venueUrl": href, "imageUrl": img})
     return shows
 
 
@@ -1458,7 +1492,7 @@ def parse_pdxlive(html, today):
         seen.add(key)
         out.append({"title": title, "venue": "Pioneer Courthouse Square",
                     "neighborhood": nb, "address": addr,
-                    "date": date, "time": tm, "venueUrl": url})
+                    "date": date, "time": tm, "venueUrl": url, "imageUrl": ((e.get("logo") or {}).get("url") or "")})
     return out
 
 SOURCES = [
