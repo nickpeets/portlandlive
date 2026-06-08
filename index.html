@@ -341,7 +341,6 @@ body{
   <div class="controls-inner">
     <div class="ctl-row">
       <span class="ctl-label">Viewing <span class="reg" id="viewingWord">Shows</span></span>
-      <span class="ctl-label">Ordered by</span>
       <label class="pill">
         <select id="sortSel">
           <option value="date">Date (soonest)</option>
@@ -357,23 +356,9 @@ body{
     </div>
 
     <div class="ctl-row">
-      <label class="pill" title="Date range">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>
-        <input id="startDate" type="date">
-        <span style="opacity:.6">–</span>
-        <input id="endDate" type="date">
-      </label>
-      <label class="pill" title="Neighborhood">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.3-7-11a7 7 0 0 1 14 0c0 4.7-7 11-7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg>
-        <select id="nbSel"><option value="">All Neighborhoods</option></select>
-      </label>
       <label class="pill" title="Only shows happening tonight">
         <span class="toggle" id="tonightToggle"></span>
         <span>Tonight</span>
-      </label>
-      <label class="pill" title="Show only events with tickets/links">
-        <span class="toggle" id="tixToggle"></span>
-        <span>Ticket link</span>
       </label>
       <label class="pill" title="Browse shows by venue">
         <span class="toggle" id="venuesToggle"></span>
@@ -461,7 +446,7 @@ async function load(){
 
 function buildNeighborhoods(){
   const set = [...new Set(state.shows.map(s=>s.neighborhood).filter(Boolean))].sort();
-  const sel = $('#nbSel');
+  const sel = $('#nbSel'); if(!sel) return;
   set.forEach(n=>{
     const o=document.createElement('option'); o.value=n; o.textContent=n; sel.appendChild(o);
   });
@@ -630,10 +615,10 @@ function esc(x){return (x||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>'
 /* events */
 $('#searchInput').addEventListener('input',e=>{state.q=e.target.value;render();});
 $('#sortSel').addEventListener('change',e=>{state.sort=e.target.value;render();});
-$('#nbSel').addEventListener('change',e=>{state.nb=e.target.value;render();});
-$('#startDate').addEventListener('change',e=>{state.start=e.target.value;render();});
-$('#endDate').addEventListener('change',e=>{state.end=e.target.value;render();});
-$('#tixToggle').addEventListener('click',e=>{state.tixOnly=!state.tixOnly;e.target.classList.toggle('on',state.tixOnly);render();});
+$('#nbSel')?.addEventListener('change',e=>{state.nb=e.target.value;render();});
+$('#startDate')?.addEventListener('change',e=>{state.start=e.target.value;render();});
+$('#endDate')?.addEventListener('change',e=>{state.end=e.target.value;render();});
+$('#tixToggle')?.addEventListener('click',e=>{state.tixOnly=!state.tixOnly;e.target.classList.toggle('on',state.tixOnly);render();});
 $('#venuesToggle').addEventListener('click',()=>{if(state.view==='venues'){state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');$('#viewingWord').textContent='Shows';}else{state.view='venues';state.selectedVenue=null;$('#venuesToggle').classList.add('on');$('#viewingWord').textContent='Venues';}render();});
       $('#myShowsToggle').addEventListener('click',e=>{state.myShows=!state.myShows;e.currentTarget.classList.toggle('on',state.myShows);render();});
       $('#results').addEventListener('click',e=>{const h=e.target.closest('.heart');if(!h)return;e.preventDefault();e.stopPropagation();toggleFavKey(h.getAttribute('data-fav'));render();});
@@ -642,8 +627,8 @@ $('#gridBtn').addEventListener('click',()=>{state.layout='grid';$('#gridBtn').cl
 $('#listBtn').addEventListener('click',()=>{state.layout='list';$('#listBtn').classList.add('active');$('#gridBtn').classList.remove('active');render();});
 $('#resetBtn').addEventListener('click',()=>{
   state.q="";state.nb="";state.start="";state.end="";state.tixOnly=false;state.tonight=false;state.sort="date";state.view="shows";state.selectedVenue=null;$('#venuesToggle').classList.remove('on');$('#viewingWord').textContent='Shows';
-  $('#searchInput').value="";$('#nbSel').value="";$('#startDate').value="";$('#endDate').value="";
-  $('#sortSel').value="date";$('#tixToggle').classList.remove('on');$('#tonightToggle').classList.remove('on');state.myShows=false;$('#myShowsToggle').classList.remove('on');render();
+  $('#searchInput').value="";
+  $('#sortSel').value="date";$('#tonightToggle').classList.remove('on');state.myShows=false;$('#myShowsToggle').classList.remove('on');render();
 });
 
 load();
