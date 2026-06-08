@@ -1,5 +1,5 @@
 {
-  "generated": "2026-06-08T00:24:42+00:00",
+  "generated": "2026-06-08T00:45:40+00:00",
   "source": "Scraped from venue calendars + hand-added listings",
   "shows": [
     {
@@ -143,6 +143,26 @@
       "id": 14
     },
     {
+      "title": "FREE! Acoustic Song and Tune Sharing Circle",
+      "venue": "Mississippi Pizza",
+      "neighborhood": "Boise",
+      "address": "3552 N Mississippi Ave",
+      "date": "2026-06-07",
+      "time": "3:00 PM",
+      "venueUrl": "https://mississippipizza.com/event/free-acoustic-song-and-tune-sharing-circle-9/",
+      "id": 15
+    },
+    {
+      "title": "FREE! Nerd Night",
+      "venue": "Mississippi Pizza",
+      "neighborhood": "Boise",
+      "address": "3552 N Mississippi Ave",
+      "date": "2026-06-07",
+      "time": "7:00 PM",
+      "venueUrl": "https://mississippipizza.com/event/free-nerd-night-11/",
+      "id": 16
+    },
+    {
       "title": "Arietta Ward / Tony Ozier (w/ DJ Jumbo)",
       "venue": "Mississippi Studios",
       "neighborhood": "Boise/Mississippi",
@@ -150,7 +170,7 @@
       "date": "2026-06-07",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/51588312/arietta-ward-tony-ozier-portland-mississippi-studios",
-      "id": 15
+      "id": 17
     },
     {
       "title": "Jhariah Trust Ceremony Tour (w/ Mijita)",
@@ -160,7 +180,7 @@
       "date": "2026-06-07",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/51748124/jhariah-trust-ceremony-tour-portland-polaris-hall",
-      "id": 16
+      "id": 18
     },
     {
       "title": "Casual Eddie with Special Guest Peter Nevins",
@@ -170,7 +190,7 @@
       "date": "2026-06-07",
       "time": "8:00 PM",
       "venueUrl": "https://www.showdownpdx.com/tm-event/casual-eddie-with-special-guest-peter-nevins/",
-      "id": 17
+      "id": 19
     },
     {
       "title": "CHURCH OF HIVE",
@@ -180,7 +200,7 @@
       "date": "2026-06-07",
       "time": "9:00 PM",
       "venueUrl": "https://www.startheaterportland.com/tm-event/church-of-hive-6/",
-      "id": 18
+      "id": 20
     },
     {
       "title": "Jeff Rosenstock",
@@ -190,7 +210,7 @@
       "date": "2026-06-07",
       "time": "8:00 PM",
       "venueUrl": "https://wonderballroom.com/event/jeff-rosenstock-3/wonder-ballroom/portland-oregon/",
-      "id": 19
+      "id": 21
     },
     {
       "title": "Portland Youth Jazz Orchestra Spring Concert featuring the Portland Vanguard Big Band",
@@ -200,7 +220,7 @@
       "date": "2026-06-08",
       "time": "6:45 PM",
       "venueUrl": "https://albertarosetheatre.com/event/portland-youth-jazz-orchestra-spring-concert-featuring-the-portland-vanguard-big-band-2/alberta-rose-theatre/portland-oregon/",
-      "id": 20
+      "id": 22
     },
     {
       "title": "A Strange Salon hosted by Stephanie Strange",
@@ -210,7 +230,7 @@
       "date": "2026-06-08",
       "time": "7:00 PM",
       "venueUrl": "https://www.albertastreetpub.com/music/2025/11/10/a-strange-salon-hosted-by-stephanie-strange-65f2b",
-      "id": 21
+      "id": 23
     },
     {
       "title": "KARAOKE FROM HELL",
@@ -220,7 +240,7 @@
       "date": "2026-06-08",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/karaoke-from-hell-92/",
-      "id": 22
+      "id": 24
     },
     {
       "title": "Portland Country Underground",
@@ -230,7 +250,17 @@
       "date": "2026-06-08",
       "time": "6:00 PM",
       "venueUrl": "https://laurelthirst.com/events/portland-country-underground-53/",
-      "id": 23
+      "id": 25
+    },
+    {
+      "title": "Portland Songwriters Open Mic",
+      "venue": "Mississippi Pizza",
+      "neighborhood": "Boise",
+      "address": "3552 N Mississippi Ave",
+      "date": "2026-06-08",
+      "time": "6:30 PM",
+      "venueUrl": "https://mississippipizza.com/event/portland-songwriters-open-mic-9/",
+      "id": 26
     },
     {
       "title": "Mikaela Davis (w/ Olivia Ellen Lloyd)",
@@ -240,7 +270,7 @@
       "date": "2026-06-08",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/47418872/mikaela-davis-portland-mississippi-studios",
-      "id": 24
+      "id": 27
     },
     {
       "title": "Daily Stoic Live",
@@ -250,7 +280,7 @@
       "date": "2026-06-08",
       "time": "7:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/80444483/daily-stoic-live-portland-revolution-hall",
-      "id": 25
+      "id": 28
     },
     {
       "title": "Austin Brown with Jeffrey East",
@@ -260,7 +290,7 @@
       "date": "2026-06-08",
       "time": "8:00 PM",
       "venueUrl": "https://www.showdownpdx.com/tm-event/austin-brown-with-jeffrey-east/",
-      "id": 26
+      "id": 29
     },
     {
       "title": "Racing Mount Pleasant",
@@ -270,7 +300,7 @@
       "date": "2026-06-09",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/85924524/racing-mount-pleasant-portland-aladdin-theater",
-      "id": 27
+      "id": 30
     },
     {
       "title": "Bridgetown Trivia on the Heated Patio!",
@@ -280,7 +310,7 @@
       "date": "2026-06-09",
       "time": "7:00 PM",
       "venueUrl": "https://www.albertastreetpub.com/music/2023/3/13/bridgetown-trivia-on-the-heated-patio-6cwzx-dg47h-78jwb-2lt32-azz6n-gd4lz-rd6wg-6ghnc-653hl-dnb5c-42dcy-r6ztl-37cda-7ljxc-xm5zz",
-      "id": 28
+      "id": 31
     },
     {
       "title": "Santiago & The Signifiers",
@@ -290,7 +320,7 @@
       "date": "2026-06-09",
       "time": "7:00 PM",
       "venueUrl": "https://www.albertastreetpub.com/music/2026/6/9/santiago-amp-the-signifiers",
-      "id": 29
+      "id": 32
     },
     {
       "title": "ALEC BANG & THE CULT CLASSICS with Ringer and the Bells",
@@ -300,7 +330,7 @@
       "date": "2026-06-09",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/alec-bang-the-cult-classics-with-ringer-and-the-bells/",
-      "id": 30
+      "id": 33
     },
     {
       "title": "Jackstraw",
@@ -310,7 +340,7 @@
       "date": "2026-06-09",
       "time": "6:00 PM",
       "venueUrl": "https://laurelthirst.com/events/jackstraw-38/",
-      "id": 31
+      "id": 34
     },
     {
       "title": "Stone & Sue w/ Andrew Oliver",
@@ -320,7 +350,17 @@
       "date": "2026-06-09",
       "time": "9:00 PM",
       "venueUrl": "https://laurelthirst.com/events/stone-sue-w-andrew-oliver/",
-      "id": 32
+      "id": 35
+    },
+    {
+      "title": "Any Given Session",
+      "venue": "Mississippi Pizza",
+      "neighborhood": "Boise",
+      "address": "3552 N Mississippi Ave",
+      "date": "2026-06-09",
+      "time": "8:00 PM",
+      "venueUrl": "https://mississippipizza.com/event/any-given-session/",
+      "id": 36
     },
     {
       "title": "Hunx and His Punx (w/ Slippers)",
@@ -330,7 +370,7 @@
       "date": "2026-06-09",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/81879123/sold-outhunx-and-his-punx-portland-mississippi-studios",
-      "id": 33
+      "id": 37
     },
     {
       "title": "Lip Critic (w/ Flatwounds, Bejalvin)",
@@ -340,7 +380,7 @@
       "date": "2026-06-09",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/77797267/lip-critic-portland-polaris-hall",
-      "id": 34
+      "id": 38
     },
     {
       "title": "Two-Step Tuesday with Best Intentions and Dance Lessons",
@@ -350,7 +390,7 @@
       "date": "2026-06-09",
       "time": "7:30 PM",
       "venueUrl": "https://www.showdownpdx.com/tm-event/two-step-tuesday-with-best-intentions-and-dance-lessons-2/",
-      "id": 35
+      "id": 39
     },
     {
       "title": "Tab Benoit w/ Ghalia Volt - Soul of the Swamp Tour",
@@ -360,7 +400,7 @@
       "date": "2026-06-10",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/54220399/tab-benoit-wghalia-volt-soul-of-the-swamp-tour-portland-aladdin-theater",
-      "id": 36
+      "id": 40
     },
     {
       "title": "Wednesday Night Social - Cigars, Dominos & Music",
@@ -370,7 +410,7 @@
       "date": "2026-06-10",
       "time": "6:00 PM",
       "venueUrl": "https://www.albertastreetpub.com/music/2023/10/18/wednesday-night-social-fkf88-mke97-4227c-l64xx-gss68-cjzan-8lsw3-nbgjn-yr6pm-6kblr-ff6b5-lsmb9-hkw2h-f5mft-hfbdc-nddag-sg2pm-ylbtn-7mp5t-b64gk-lwx2r-tbbpe-gkh64",
-      "id": 37
+      "id": 41
     },
     {
       "title": "The Music of SQUARE ENIX – Magic, Memories, and Melodies",
@@ -380,7 +420,7 @@
       "date": "2026-06-10",
       "time": "",
       "venueUrl": "https://www.portland5.com/event/music-square-enix-magic-memories-and-melodies",
-      "id": 38
+      "id": 42
     },
     {
       "title": "'68 with Nate Bergman",
@@ -390,7 +430,7 @@
       "date": "2026-06-10",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/68-with-nate-bergman/",
-      "id": 39
+      "id": 43
     },
     {
       "title": "Dorian Electra w/ Oskie – All Ages!",
@@ -400,7 +440,7 @@
       "date": "2026-06-10",
       "time": "7:00 PM",
       "venueUrl": "https://www.holocene.org/event/dorian-electra-w-oskie-all-ages/holocene/portland/",
-      "id": 40
+      "id": 44
     },
     {
       "title": "The Get Down Funk Collective",
@@ -410,7 +450,27 @@
       "date": "2026-06-10",
       "time": "6:00 AM",
       "venueUrl": "https://laurelthirst.com/events/the-get-down-funk-collective-7/",
-      "id": 41
+      "id": 45
+    },
+    {
+      "title": "FREE! Trivia-sippi! Weekly Quiz Night!",
+      "venue": "Mississippi Pizza",
+      "neighborhood": "Boise",
+      "address": "3552 N Mississippi Ave",
+      "date": "2026-06-10",
+      "time": "6:00 PM",
+      "venueUrl": "https://mississippipizza.com/event/free-trivia-sippi-weekly-quiz-night-39/",
+      "id": 46
+    },
+    {
+      "title": "Mango Twist- Live Music & Dancing!",
+      "venue": "Mississippi Pizza",
+      "neighborhood": "Boise",
+      "address": "3552 N Mississippi Ave",
+      "date": "2026-06-10",
+      "time": "8:30 PM",
+      "venueUrl": "https://mississippipizza.com/event/mango-twist-live-music-dancing-2/",
+      "id": 47
     },
     {
       "title": "By Storm - My Ghost Go Ghost (w/ Corridos Ketamina)",
@@ -420,7 +480,7 @@
       "date": "2026-06-10",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/95794676/by-storm-my-ghost-go-ghost-portland-mississippi-studios",
-      "id": 42
+      "id": 48
     },
     {
       "title": "Lady Killers Pride Show hosted by Ally J Ward & Devan Daily",
@@ -430,7 +490,7 @@
       "date": "2026-06-10",
       "time": "7:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/64390439/lady-killers-pride-show-hosted-by-ally-j-ward-devan-daily-portland-show-bar-at-revolution-hall",
-      "id": 43
+      "id": 49
     },
     {
       "title": "Toadies: The Charmer Tour (w/ Local H, Sparta)",
@@ -440,7 +500,7 @@
       "date": "2026-06-10",
       "time": "",
       "venueUrl": "https://www.etix.com/ticket/p/48092798/toadiesthe-charmer-tour-portland-roseland-theater?partner_id=100",
-      "id": 44
+      "id": 50
     },
     {
       "title": "Whiskey Wednesday",
@@ -450,7 +510,7 @@
       "date": "2026-06-10",
       "time": "8:00 PM",
       "venueUrl": "https://www.showdownpdx.com/tm-event/whiskey-wednesday-with-bad-assets-and-gabriel-john/",
-      "id": 45
+      "id": 51
     },
     {
       "title": "The 4 x 20s Comedy Show (seated show)",
@@ -460,7 +520,7 @@
       "date": "2026-06-10",
       "time": "",
       "venueUrl": "https://www.tixr.com/groups/thegetdownpdx/events/the-polish-ambassador-polish-phish-178613",
-      "id": 46
+      "id": 52
     },
     {
       "title": "3BALLMTY – CLUB CONEXIÓN TOUR – Phase 2",
@@ -470,7 +530,7 @@
       "date": "2026-06-10",
       "time": "8:00 PM",
       "venueUrl": "https://wonderballroom.com/event/3ballmty-club-conexi%c3%b3n-tour-phase-2/wonder-ballroom/portland-oregon/",
-      "id": 47
+      "id": 53
     },
     {
       "title": "Naomi Watanabe - FROM TOKYO",
@@ -480,7 +540,7 @@
       "date": "2026-06-11",
       "time": "7:30 PM",
       "venueUrl": "https://www.etix.com/ticket/p/78318828/naomi-watanabe-from-tokyo-portland-aladdin-theater",
-      "id": 48
+      "id": 54
     },
     {
       "title": "Karyn Ann with The Y // Nathan Earle // Mama Sam & Friends",
@@ -490,7 +550,7 @@
       "date": "2026-06-11",
       "time": "7:00 PM",
       "venueUrl": "https://www.albertastreetpub.com/music/2026/6/11/karyn-ann-with-the-y-nathan-earle-mama-sam-amp-friends",
-      "id": 49
+      "id": 55
     },
     {
       "title": "BROTHER ALI with DJ Abilities and Rob the Universe",
@@ -500,7 +560,7 @@
       "date": "2026-06-11",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/brother-ali-at-dantes/",
-      "id": 50
+      "id": 56
     },
     {
       "title": "Matthew Dear (DJ set) – w/ Feu du Camp & Petite Syrah – 21+",
@@ -510,7 +570,7 @@
       "date": "2026-06-11",
       "time": "8:00 PM",
       "venueUrl": "https://www.holocene.org/event/matthew-dear-dj-set-w-feu-du-camp-petite-syrah-21/holocene/portland/",
-      "id": 51
+      "id": 57
     },
     {
       "title": "MEL BROWN B3 ORGAN GROUP – Jazz Titan Thursdays",
@@ -520,7 +580,7 @@
       "date": "2026-06-11",
       "time": "8:00 PM",
       "venueUrl": "https://www.jacklondonrevue.com/tm-event/mel-brown-b3-organ-group/",
-      "id": 52
+      "id": 58
     },
     {
       "title": "Dumpster Joe // Tevis Hodge, Jr.",
@@ -530,7 +590,7 @@
       "date": "2026-06-11",
       "time": "9:00 PM",
       "venueUrl": "https://laurelthirst.com/events/dumpster-joe-tevis-hodge-jr-2/",
-      "id": 53
+      "id": 59
     },
     {
       "title": "Kory Quinn Band",
@@ -540,7 +600,7 @@
       "date": "2026-06-11",
       "time": "6:00 PM",
       "venueUrl": "https://laurelthirst.com/events/kory-quinn-band/",
-      "id": 54
+      "id": 60
     },
     {
       "title": "The Dead South",
@@ -550,7 +610,17 @@
       "date": "2026-06-11",
       "time": "",
       "venueUrl": "https://monqui.com/event/the-dead-south-3/mcmenamins-edgefield/troutdale-oregon/",
-      "id": 55
+      "id": 61
+    },
+    {
+      "title": "Steven Leslie + Francis Pigeon + Al Lesieutre",
+      "venue": "Mississippi Pizza",
+      "neighborhood": "Boise",
+      "address": "3552 N Mississippi Ave",
+      "date": "2026-06-11",
+      "time": "8:00 PM",
+      "venueUrl": "https://mississippipizza.com/event/steven-leslie-francis-pigeon-al-lesieutre/",
+      "id": 62
     },
     {
       "title": "Pete & Bas Save America (w/ Delivery Boys)",
@@ -560,7 +630,7 @@
       "date": "2026-06-11",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/77981929/pete-bas-save-america-portland-mississippi-studios",
-      "id": 56
+      "id": 63
     },
     {
       "title": "lowercase (w/ Thrones, Caustic Resin)",
@@ -570,7 +640,7 @@
       "date": "2026-06-11",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/30426499/lowercase-portland-polaris-hall",
-      "id": 57
+      "id": 64
     },
     {
       "title": "Blackberry Smoke: Rattle, Ramble and Roll Tour 2026 (w/ Kenneth Brian)",
@@ -580,7 +650,7 @@
       "date": "2026-06-11",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/96320975/blackberry-smokerattleramble-and-roll-tour-2026-portland-revolution-hall",
-      "id": 58
+      "id": 65
     },
     {
       "title": "The Silos and Kris Stuart & the Humbuckers",
@@ -590,7 +660,7 @@
       "date": "2026-06-11",
       "time": "8:00 PM",
       "venueUrl": "https://www.showdownpdx.com/tm-event/the-silos-and-kris-stuart-the-humbuckers/",
-      "id": 59
+      "id": 66
     },
     {
       "title": "ChRocktikal the 1st World Tour [CRTK: The Beginning] in Portland",
@@ -600,7 +670,7 @@
       "date": "2026-06-11",
       "time": "7:00 PM",
       "venueUrl": "https://www.startheaterportland.com/tm-event/chrocktikal-the-1st-world-tour-crtk-the-beginning-in-portland/",
-      "id": 60
+      "id": 67
     },
     {
       "title": "The Polish Ambassador - Polish Phish",
@@ -610,7 +680,7 @@
       "date": "2026-06-11",
       "time": "",
       "venueUrl": "https://www.tixr.com/groups/thegetdownpdx/events/the-polish-ambassador-dead-polish-178617",
-      "id": 61
+      "id": 68
     },
     {
       "title": "Portland Cello Project: Mixtape Pop vs Grunge",
@@ -620,7 +690,7 @@
       "date": "2026-06-12",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/47122981/portland-cello-projectmixtape-pop-vs-grunge-portland-aladdin-theater",
-      "id": 62
+      "id": 69
     },
     {
       "title": "2 Cent Fridays - Open Mic Night G-Wade // Deangelo // Doolie",
@@ -630,7 +700,7 @@
       "date": "2026-06-12",
       "time": "6:00 PM",
       "venueUrl": "https://www.albertastreetpub.com/music/2026/2/13/2-cent-fridays-open-mic-night-g-wade-deangelo-doolie",
-      "id": 63
+      "id": 70
     },
     {
       "title": "Here Comes Everybody - 40th Anniversary Show",
@@ -640,7 +710,7 @@
       "date": "2026-06-12",
       "time": "9:00 PM",
       "venueUrl": "https://www.albertastreetpub.com/music/2026/6/12/here-comes-everybody",
-      "id": 64
+      "id": 71
     },
     {
       "title": "TITS UP",
@@ -650,7 +720,7 @@
       "date": "2026-06-12",
       "time": "5:00 PM",
       "venueUrl": "https://www.albertastreetpub.com/music/2024/2/9/tits-up-3y8x8-z9wpc-wa6yf-6sspp-serrr-xgchh-yckjg-xal9h-ch8p7-ks3km",
-      "id": 65
+      "id": 72
     },
     {
       "title": "Chelsea Handler: The High and Mighty Tour",
@@ -660,7 +730,7 @@
       "date": "2026-06-12",
       "time": "",
       "venueUrl": "https://www.portland5.com/event/chelsea-handler-high-and-mighty-tour",
-      "id": 66
+      "id": 73
     },
     {
       "title": "EMO VS. POP-PUNK: Myspace Music Video Party",
@@ -670,7 +740,7 @@
       "date": "2026-06-12",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/emo-vs-pop-punk-myspace-music-video-party/",
-      "id": 67
+      "id": 74
     },
     {
       "title": "Candi Pop: A Girly Pop Dance Party: PRIDE EDITION – 21+",
@@ -680,7 +750,7 @@
       "date": "2026-06-12",
       "time": "9:00 PM",
       "venueUrl": "https://www.holocene.org/event/candi-pop-a-girly-pop-dance-party-pride-edition-21/holocene/portland/",
-      "id": 68
+      "id": 75
     },
     {
       "title": "PENELOPE TRAPPES w/ Wet Mango",
@@ -690,7 +760,27 @@
       "date": "2026-06-12",
       "time": "8:00 PM",
       "venueUrl": "https://www.jacklondonrevue.com/tm-event/penelope-trappes-w-wet-mango/",
-      "id": 69
+      "id": 76
+    },
+    {
+      "title": "DTW Brass Band",
+      "venue": "Mississippi Pizza",
+      "neighborhood": "Boise",
+      "address": "3552 N Mississippi Ave",
+      "date": "2026-06-12",
+      "time": "8:00 PM",
+      "venueUrl": "https://mississippipizza.com/event/dtw-brass-band/",
+      "id": 77
+    },
+    {
+      "title": "Lizzy Rose",
+      "venue": "Mississippi Pizza",
+      "neighborhood": "Boise",
+      "address": "3552 N Mississippi Ave",
+      "date": "2026-06-12",
+      "time": "4:00 PM",
+      "venueUrl": "https://mississippipizza.com/event/lizzy-rose/",
+      "id": 78
     },
     {
       "title": "Dakota Theim (Album Release) (w/ Family Worship Center, Big Spender)",
@@ -700,7 +790,7 @@
       "date": "2026-06-12",
       "time": "9:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/81926765/dakota-theim-album-release-portland-mississippi-studios",
-      "id": 70
+      "id": 79
     },
     {
       "title": "Alex Warren: Little Orphan Alex Live",
@@ -710,7 +800,7 @@
       "date": "2026-06-12",
       "time": "",
       "venueUrl": "https://www.rosequarter.com/calendar-events/alex-warren-jun-12-2026",
-      "id": 71
+      "id": 80
     },
     {
       "title": "Justin Willman: One for the Ages Tour",
@@ -720,7 +810,7 @@
       "date": "2026-06-12",
       "time": "",
       "venueUrl": "https://www.portland5.com/event/justin-willman-one-ages-tour",
-      "id": 72
+      "id": 81
     },
     {
       "title": "TsuShiMaMiRe",
@@ -730,7 +820,7 @@
       "date": "2026-06-12",
       "time": "9:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/54584619/tsushimamire-portland-polaris-hall",
-      "id": 73
+      "id": 82
     },
     {
       "title": "THE AQUABATS! with special guests (w/ THE BANDULUS, THE LASHES)",
@@ -740,7 +830,7 @@
       "date": "2026-06-12",
       "time": "7:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/31837072/the-aquabatswith-special-guests-portland-revolution-hall",
-      "id": 74
+      "id": 83
     },
     {
       "title": "Video Dance Attack Presents: Prince Tribute",
@@ -750,7 +840,7 @@
       "date": "2026-06-12",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/40652213/video-dance-attack-presentsprince-tribute-portland-show-bar-at-revolution-hall",
-      "id": 75
+      "id": 84
     },
     {
       "title": "THE MIDNIGHT SHOW with JOHNNY FRANCO & His Real Brother Dom with their Six Pack of Buds",
@@ -760,7 +850,7 @@
       "date": "2026-06-12",
       "time": "11:30 PM",
       "venueUrl": "https://www.showdownpdx.com/tm-event/the-midnight-show-with-johnny-franco-his-real-brother-dom-with-their-six-pack-of-buds-7/",
-      "id": 76
+      "id": 85
     },
     {
       "title": "The Montvales and Creekbed Carter Hogan with Tradwife String Band",
@@ -770,7 +860,7 @@
       "date": "2026-06-12",
       "time": "8:00 PM",
       "venueUrl": "https://www.showdownpdx.com/tm-event/the-montvales-and-creekbed-carter-hogan/",
-      "id": 77
+      "id": 86
     },
     {
       "title": "80s Kids: A 1980s Synth Pop Joyride",
@@ -780,7 +870,7 @@
       "date": "2026-06-12",
       "time": "8:00 PM",
       "venueUrl": "https://www.startheaterportland.com/tm-event/80s-kids-a-1980s-synth-pop-joyride/",
-      "id": 78
+      "id": 87
     },
     {
       "title": "The Polish Ambassador - Dead Polish",
@@ -790,7 +880,7 @@
       "date": "2026-06-12",
       "time": "",
       "venueUrl": "https://thegetdownpdx.com/",
-      "id": 79
+      "id": 88
     },
     {
       "title": "Tigers Jaw",
@@ -800,7 +890,7 @@
       "date": "2026-06-13",
       "time": "7:30 PM",
       "venueUrl": "https://www.etix.com/ticket/p/45219199/sold-outtigers-jaw-portland-aladdin-theater",
-      "id": 80
+      "id": 89
     },
     {
       "title": "Johnny Franco and His Real Brother Dom in THE DO EVERYTHING SHOW",
@@ -810,7 +900,7 @@
       "date": "2026-06-13",
       "time": "8:00 PM",
       "venueUrl": "https://albertarosetheatre.com/event/johnny-franco-and-his-real-brother-dom-in-the-do-everything-show/alberta-rose-theatre/portland-oregon/",
-      "id": 81
+      "id": 90
     },
     {
       "title": "Lunch & Soul with the Mel Brown Organ Trio",
@@ -820,7 +910,7 @@
       "date": "2026-06-13",
       "time": "1:00 PM",
       "venueUrl": "https://www.albertastreetpub.com/music/2025/12/6/lunch-amp-soul-with-the-mel-brown-organ-trio",
-      "id": 82
+      "id": 91
     },
     {
       "title": "These Foolish Things // The Purple Greens",
@@ -830,7 +920,7 @@
       "date": "2026-06-13",
       "time": "5:00 PM",
       "venueUrl": "https://www.albertastreetpub.com/music/2026/6/13/these-foolish-things-the-purple-greens",
-      "id": 83
+      "id": 92
     },
     {
       "title": "Vybe Sessions with DJ Pyum & Sayu Beatz. Performances by: Briggzzy, Djemini, NOVAMAJIQ, Helo, Lana Shea",
@@ -840,7 +930,7 @@
       "date": "2026-06-13",
       "time": "9:00 PM",
       "venueUrl": "https://www.albertastreetpub.com/music/2026/6/13/dj-pyum-amp-sayu-beatz-present",
-      "id": 84
+      "id": 93
     },
     {
       "title": "EMERSON WOOLF & THE WISHBONES & Sydney Sprague",
@@ -850,7 +940,7 @@
       "date": "2026-06-13",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/emerson-woolf-the-wishbones-guests/",
-      "id": 85
+      "id": 94
     },
     {
       "title": "SMASH disco~glam~metal~punk-hiphop",
@@ -860,7 +950,7 @@
       "date": "2026-06-13",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/smash-discoglammetalpunk-hiphop-2/",
-      "id": 86
+      "id": 95
     },
     {
       "title": "Valerie Yeo: universe [held]",
@@ -870,7 +960,7 @@
       "date": "2026-06-13",
       "time": "",
       "venueUrl": "https://www.portland5.com/event/valerie-yeo-universe-held",
-      "id": 87
+      "id": 96
     },
     {
       "title": "DISCO LIPS: PRIDE EDITION – 21+",
@@ -880,7 +970,7 @@
       "date": "2026-06-13",
       "time": "8:00 PM",
       "venueUrl": "https://www.holocene.org/event/disco-lips-pride-edition-21/holocene/portland/",
-      "id": 88
+      "id": 97
     },
     {
       "title": "BURLY-Q REVUE",
@@ -890,7 +980,7 @@
       "date": "2026-06-13",
       "time": "10:30 PM",
       "venueUrl": "https://www.jacklondonrevue.com/tm-event/burly-q-revue-3/",
-      "id": 89
+      "id": 98
     },
     {
       "title": "PAOLO ANGELI",
@@ -900,7 +990,7 @@
       "date": "2026-06-13",
       "time": "8:00 PM",
       "venueUrl": "https://www.jacklondonrevue.com/tm-event/paolo-angeli/",
-      "id": 90
+      "id": 99
     },
     {
       "title": "Gretta Seabird / Jackson Warner & Damn Well Please / Joel Shelley",
@@ -910,7 +1000,27 @@
       "date": "2026-06-13",
       "time": "9:00 PM",
       "venueUrl": "https://laurelthirst.com/events/gretta-seabird-jackson-warner-damn-well-please-joel-shelley/",
-      "id": 91
+      "id": 100
+    },
+    {
+      "title": "Temp Lez Bar: BIG GAY PRIDE PARTY",
+      "venue": "Mississippi Pizza",
+      "neighborhood": "Boise",
+      "address": "3552 N Mississippi Ave",
+      "date": "2026-06-13",
+      "time": "9:00 PM",
+      "venueUrl": "https://mississippipizza.com/event/temp-lez-bar-big-gay-pride-party/",
+      "id": 101
+    },
+    {
+      "title": "The Mantis",
+      "venue": "Mississippi Pizza",
+      "neighborhood": "Boise",
+      "address": "3552 N Mississippi Ave",
+      "date": "2026-06-13",
+      "time": "7:00 PM",
+      "venueUrl": "https://mississippipizza.com/event/the-mantis-8/",
+      "id": 102
     },
     {
       "title": "Alela Diane (w/ Shannon Lay)",
@@ -920,7 +1030,7 @@
       "date": "2026-06-13",
       "time": "8:30 PM",
       "venueUrl": "https://www.etix.com/ticket/p/83167573/alela-diane-portland-mississippi-studios",
-      "id": 92
+      "id": 103
     },
     {
       "title": "The Lemon Twigs (w/ Mod Lang)",
@@ -930,7 +1040,7 @@
       "date": "2026-06-13",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/58763315/the-lemon-twigs-portland-revolution-hall",
-      "id": 93
+      "id": 104
     },
     {
       "title": "Join the Revolution in Fighting Alzheimer's (w/ w/ DJ Honest John)",
@@ -940,7 +1050,7 @@
       "date": "2026-06-13",
       "time": "4:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/91509793/join-the-revolution-in-fighting-alzheimers-portland-show-bar-at-revolution-hall",
-      "id": 94
+      "id": 105
     },
     {
       "title": "Chayce Beckham with Marley Hale",
@@ -950,7 +1060,7 @@
       "date": "2026-06-13",
       "time": "8:00 PM",
       "venueUrl": "https://www.showdownpdx.com/tm-event/chayce-beckham/",
-      "id": 95
+      "id": 106
     },
     {
       "title": "BRÜT",
@@ -960,7 +1070,7 @@
       "date": "2026-06-13",
       "time": "",
       "venueUrl": "https://www.tixr.com/groups/thegetdownpdx/events/haley-johnsen-189658",
-      "id": 96
+      "id": 107
     },
     {
       "title": "Brett Dennen - Art Is Life",
@@ -970,7 +1080,7 @@
       "date": "2026-06-14",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/93904111/brett-dennen-art-is-life-portland-aladdin-theater",
-      "id": 97
+      "id": 108
     },
     {
       "title": "Christina Mata with Opener Zach Connolly",
@@ -980,7 +1090,7 @@
       "date": "2026-06-14",
       "time": "5:00 PM",
       "venueUrl": "https://www.albertastreetpub.com/music/2026/6/14/christina-mata",
-      "id": 98
+      "id": 109
     },
     {
       "title": "SOULFUL SUNDAYS!",
@@ -990,7 +1100,7 @@
       "date": "2026-06-14",
       "time": "9:00 PM",
       "venueUrl": "https://www.albertastreetpub.com/music/2023/3/5/soulful-sundays-p3a5l-3wl64-twxnj-wkacn-lc8tr-gphsj-x73af-5meh3-6cspz-9z8kp-wtz8c-47fe8-ekh63-lxhbe-7z8f3-nejhj",
-      "id": 99
+      "id": 110
     },
     {
       "title": "Trap Bingo - Hosted by Seeznin!",
@@ -1000,7 +1110,7 @@
       "date": "2026-06-14",
       "time": "6:30 PM",
       "venueUrl": "https://www.albertastreetpub.com/music/2026/6/14/trap-bingo-hosted-by-seeznin",
-      "id": 100
+      "id": 111
     },
     {
       "title": "MYS - Joy Manifest: Beethoven’s Ninth",
@@ -1010,7 +1120,7 @@
       "date": "2026-06-14",
       "time": "",
       "venueUrl": "https://www.portland5.com/event/mys-joy-manifest-beethovens-ninth",
-      "id": 101
+      "id": 112
     },
     {
       "title": "HOPELESS DEVILS followed by Sinferno Cabaret",
@@ -1020,7 +1130,7 @@
       "date": "2026-06-14",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/hopeless-devils-followed-by-sinferno-cabaret/",
-      "id": 102
+      "id": 113
     },
     {
       "title": "SINFERNO CABARET",
@@ -1030,7 +1140,7 @@
       "date": "2026-06-14",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/sinferno-cabaret-92/",
-      "id": 103
+      "id": 114
     },
     {
       "title": "Camp Blu + Famous Friend + Floats + VHS Ghost – 21+",
@@ -1040,7 +1150,7 @@
       "date": "2026-06-14",
       "time": "7:00 PM",
       "venueUrl": "https://www.holocene.org/event/camp-blu-famous-friend-floats-vhs-ghost-21/holocene/portland/",
-      "id": 104
+      "id": 115
     },
     {
       "title": "D & D & DOUBLE Ds FANTASY CABARET",
@@ -1050,7 +1160,17 @@
       "date": "2026-06-14",
       "time": "8:00 PM",
       "venueUrl": "https://www.jacklondonrevue.com/tm-event/d-d-double-ds-fantasy-cabaret/",
-      "id": 105
+      "id": 116
+    },
+    {
+      "title": "The Craft! A Drag & Burlesque Tribute",
+      "venue": "Mississippi Pizza",
+      "neighborhood": "Boise",
+      "address": "3552 N Mississippi Ave",
+      "date": "2026-06-14",
+      "time": "8:00 PM",
+      "venueUrl": "https://mississippipizza.com/event/the-craft-a-drag-burlesque-tribute/",
+      "id": 117
     },
     {
       "title": "Mark de Clive-Lowe & MAE.SUN",
@@ -1060,7 +1180,7 @@
       "date": "2026-06-14",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/83910877/mark-de-clivelowe-maesun-portland-mississippi-studios",
-      "id": 106
+      "id": 118
     },
     {
       "title": "Mary Gauthier: Celebrating the 20th Anniversary of Mercy Now (w/ with special guest Jaimee Harris)",
@@ -1070,7 +1190,7 @@
       "date": "2026-06-14",
       "time": "7:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/66329763/mary-gauthiercelebrating-the-20th-anniversary-of-mercy-now-portland-polaris-hall",
-      "id": 107
+      "id": 119
     },
     {
       "title": "Casual Eddie with Special Guest",
@@ -1080,7 +1200,7 @@
       "date": "2026-06-14",
       "time": "8:00 PM",
       "venueUrl": "https://www.showdownpdx.com/tm-event/casual-eddie-with-special-guest/",
-      "id": 108
+      "id": 120
     },
     {
       "title": "CHURCH OF HIVE",
@@ -1090,7 +1210,7 @@
       "date": "2026-06-14",
       "time": "9:00 PM",
       "venueUrl": "https://www.startheaterportland.com/tm-event/church-of-hive-7/",
-      "id": 109
+      "id": 121
     },
     {
       "title": "Ben Rice & The PDX Hustle",
@@ -1100,7 +1220,7 @@
       "date": "2026-06-15",
       "time": "7:00 PM",
       "venueUrl": "https://www.albertastreetpub.com/music/2026/1/19/ben-rice-amp-the-pdx-hustle",
-      "id": 110
+      "id": 122
     },
     {
       "title": "KARAOKE FROM HELL",
@@ -1110,7 +1230,7 @@
       "date": "2026-06-15",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/karaoke-from-hell-93/",
-      "id": 111
+      "id": 123
     },
     {
       "title": "PDX Songwriters Open Mic (FREE)",
@@ -1120,7 +1240,7 @@
       "date": "2026-06-15",
       "time": "7:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/96846837/pdx-songwriters-open-mic-free-portland-show-bar-at-revolution-hall",
-      "id": 112
+      "id": 124
     },
     {
       "title": "Square Dancing with Caller Steph Noll and Silver Star String Band",
@@ -1130,7 +1250,7 @@
       "date": "2026-06-15",
       "time": "7:00 PM",
       "venueUrl": "https://www.showdownpdx.com/tm-event/square-dancing-with-caller-steph-noll-and-silver-star-string-band/",
-      "id": 113
+      "id": 125
     },
     {
       "title": "Bridgetown Trivia on the Heated Patio!",
@@ -1140,7 +1260,7 @@
       "date": "2026-06-16",
       "time": "7:00 PM",
       "venueUrl": "https://www.albertastreetpub.com/music/2023/3/13/bridgetown-trivia-on-the-heated-patio-6cwzx-dg47h-78jwb-2lt32-azz6n-gd4lz-rd6wg-6ghnc-653hl-dnb5c-42dcy-r6ztl-37cda-7ljxc-fwzrf",
-      "id": 114
+      "id": 126
     },
     {
       "title": "Steve Mic & The Hold Tights",
@@ -1150,7 +1270,7 @@
       "date": "2026-06-16",
       "time": "7:00 PM",
       "venueUrl": "https://www.albertastreetpub.com/music/2026/6/16/steve-mic-amp-the-hold-tights",
-      "id": 115
+      "id": 127
     },
     {
       "title": "Back to the Future",
@@ -1160,7 +1280,17 @@
       "date": "2026-06-16",
       "time": "",
       "venueUrl": "https://www.portland5.com/event/back-future",
-      "id": 116
+      "id": 128
+    },
+    {
+      "title": "Lazy Fair + The Acoustic Minds",
+      "venue": "Mississippi Pizza",
+      "neighborhood": "Boise",
+      "address": "3552 N Mississippi Ave",
+      "date": "2026-06-16",
+      "time": "8:00 PM",
+      "venueUrl": "https://mississippipizza.com/event/lazy-fair-the-acoustic-minds/",
+      "id": 129
     },
     {
       "title": "Westside Dance Academy Recitals",
@@ -1170,7 +1300,7 @@
       "date": "2026-06-16",
       "time": "",
       "venueUrl": "https://www.portland5.com/event/westside-dance-academy-recitals",
-      "id": 117
+      "id": 130
     },
     {
       "title": "Low Bar Chorale (w/ Mitch and the Melody Makers)",
@@ -1180,7 +1310,7 @@
       "date": "2026-06-16",
       "time": "7:30 PM",
       "venueUrl": "https://www.etix.com/ticket/p/47272379/low-bar-chorale-portland-polaris-hall",
-      "id": 118
+      "id": 131
     },
     {
       "title": "SongSpeak Sessions with Arietta Ward and Michael Elson (FREE) (w/ Saeeda Wright)",
@@ -1190,7 +1320,7 @@
       "date": "2026-06-16",
       "time": "6:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/85289971/songspeak-sessions-with-arietta-ward-and-michael-elson-free-portland-show-bar-at-revolution-hall",
-      "id": 119
+      "id": 132
     },
     {
       "title": "KABAKA PYRAMID with Trinity Sound",
@@ -1200,7 +1330,7 @@
       "date": "2026-06-16",
       "time": "8:00 PM",
       "venueUrl": "https://www.startheaterportland.com/tm-event/kabaka-pyramid-with-trinity-sound/",
-      "id": 120
+      "id": 133
     },
     {
       "title": "Wednesday Night Social - Cigars, Dominos & Music",
@@ -1210,7 +1340,7 @@
       "date": "2026-06-17",
       "time": "6:00 PM",
       "venueUrl": "https://www.albertastreetpub.com/music/2023/10/18/wednesday-night-social-fkf88-mke97-4227c-l64xx-gss68-cjzan-8lsw3-nbgjn-yr6pm-6kblr-ff6b5-lsmb9-hkw2h-f5mft-hfbdc-nddag-sg2pm-ylbtn-7mp5t-b64gk",
-      "id": 121
+      "id": 134
     },
     {
       "title": "GUTTERMOUTH with Grimedog, Cryptilians, & Bazooka Sharkz",
@@ -1220,7 +1350,7 @@
       "date": "2026-06-17",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/guttermouth-with-grimedog-cryptilians-guest/",
-      "id": 122
+      "id": 135
     },
     {
       "title": "BIEBER AND A BEAT: A JUSTIN BIEBER NIGHT – 21+",
@@ -1230,7 +1360,7 @@
       "date": "2026-06-17",
       "time": "8:30 PM",
       "venueUrl": "https://www.holocene.org/event/bieber-and-a-beat-a-justin-bieber-night-21-2/holocene/portland/",
-      "id": 123
+      "id": 136
     },
     {
       "title": "Scott Law Band",
@@ -1240,7 +1370,27 @@
       "date": "2026-06-17",
       "time": "6:00 PM",
       "venueUrl": "https://laurelthirst.com/events/scott-law-band-30/",
-      "id": 124
+      "id": 137
+    },
+    {
+      "title": "FREE! Trivia-sippi! Weekly Quiz Night!",
+      "venue": "Mississippi Pizza",
+      "neighborhood": "Boise",
+      "address": "3552 N Mississippi Ave",
+      "date": "2026-06-17",
+      "time": "6:00 PM",
+      "venueUrl": "https://mississippipizza.com/event/free-trivia-sippi-weekly-quiz-night-40/",
+      "id": 138
+    },
+    {
+      "title": "Mango Twist- Live Music & Dancing!",
+      "venue": "Mississippi Pizza",
+      "neighborhood": "Boise",
+      "address": "3552 N Mississippi Ave",
+      "date": "2026-06-17",
+      "time": "8:30 PM",
+      "venueUrl": "https://mississippipizza.com/event/mango-twist-live-music-dancing-3/",
+      "id": 139
     },
     {
       "title": "Lee DeWyze (w/ Joy Pearson)",
@@ -1250,7 +1400,7 @@
       "date": "2026-06-17",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/85777685/lee-dewyze-portland-polaris-hall",
-      "id": 125
+      "id": 140
     },
     {
       "title": "Consider This with Naomi Shihab Nye",
@@ -1260,7 +1410,7 @@
       "date": "2026-06-18",
       "time": "7:00 PM",
       "venueUrl": "https://albertarosetheatre.com/event/consider-this-with-naomi-shihab-nye/alberta-rose-theatre/portland-oregon/",
-      "id": 126
+      "id": 141
     },
     {
       "title": "Precious Machinery // Jesterhook",
@@ -1270,7 +1420,7 @@
       "date": "2026-06-18",
       "time": "7:00 PM",
       "venueUrl": "https://www.albertastreetpub.com/music/2026/6/18/precious-machinery-jesterhook",
-      "id": 127
+      "id": 142
     },
     {
       "title": "Hannah Diamond (DJ set) w/ Emoji Heap & Sweetbabyjames – 21+",
@@ -1280,7 +1430,7 @@
       "date": "2026-06-18",
       "time": "9:00 PM",
       "venueUrl": "https://www.holocene.org/event/hannah-diamond-dj-set-w-emoji-heap-sweetbabyjames-21/holocene/portland/",
-      "id": 128
+      "id": 143
     },
     {
       "title": "CHUCK ISRAELS JAZZ ORCH – Jazz Titan Thursdays",
@@ -1290,7 +1440,7 @@
       "date": "2026-06-18",
       "time": "8:00 PM",
       "venueUrl": "https://www.jacklondonrevue.com/tm-event/chuck-israels-jazz-orch-jazz-titan-thursdays-3/",
-      "id": 129
+      "id": 144
     },
     {
       "title": "BirdDog",
@@ -1300,7 +1450,7 @@
       "date": "2026-06-18",
       "time": "6:00 PM",
       "venueUrl": "https://laurelthirst.com/events/birddog-3/",
-      "id": 130
+      "id": 145
     },
     {
       "title": "Turkey Buzzards / Mike Elias (of Denver)",
@@ -1310,7 +1460,27 @@
       "date": "2026-06-18",
       "time": "9:00 PM",
       "venueUrl": "https://laurelthirst.com/events/turkey-buzzards-guests/",
-      "id": 131
+      "id": 146
+    },
+    {
+      "title": "Finn Yang Quintet",
+      "venue": "Mississippi Pizza",
+      "neighborhood": "Boise",
+      "address": "3552 N Mississippi Ave",
+      "date": "2026-06-18",
+      "time": "4:00 PM",
+      "venueUrl": "https://mississippipizza.com/event/finn-yang-quintet/",
+      "id": 147
+    },
+    {
+      "title": "Graham Patzner + Dustin Dale Gaspard + Trill Lebeau",
+      "venue": "Mississippi Pizza",
+      "neighborhood": "Boise",
+      "address": "3552 N Mississippi Ave",
+      "date": "2026-06-18",
+      "time": "8:00 PM",
+      "venueUrl": "https://mississippipizza.com/event/graham-patzner-dustin-dale-gaspard-trill-lebeau/",
+      "id": 148
     },
     {
       "title": "Ásgeir (w/ Trinity Jane)",
@@ -1320,7 +1490,7 @@
       "date": "2026-06-18",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/36510780/%C3%A1sgeir-portland-mississippi-studios",
-      "id": 132
+      "id": 149
     },
     {
       "title": "Makeout Reef (w/ Soft Blue Shimmer, Grolixes)",
@@ -1330,7 +1500,7 @@
       "date": "2026-06-18",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/39030921/makeout-reef-portland-polaris-hall",
-      "id": 133
+      "id": 150
     },
     {
       "title": "HAYDEN BLOUNT with Zandi Holup and River Tramps",
@@ -1340,7 +1510,7 @@
       "date": "2026-06-18",
       "time": "8:30 PM",
       "venueUrl": "https://www.startheaterportland.com/tm-event/hayden-blount/",
-      "id": 134
+      "id": 151
     },
     {
       "title": "Hayden Blount LIVE at Star Theater (Portland, OR)",
@@ -1350,7 +1520,7 @@
       "date": "2026-06-18",
       "time": "8:30 PM",
       "venueUrl": "https://www.startheaterportland.com/tm-event/hayden-blount-live-at-star-theater-portland-or/",
-      "id": 135
+      "id": 152
     },
     {
       "title": "Haley Johnsen",
@@ -1360,7 +1530,7 @@
       "date": "2026-06-18",
       "time": "",
       "venueUrl": "https://www.tixr.com/groups/thegetdownpdx/events/andre-nickatina-176891",
-      "id": 136
+      "id": 153
     },
     {
       "title": "The Crane Wives – ACT II",
@@ -1370,7 +1540,7 @@
       "date": "2026-06-18",
       "time": "8:00 PM",
       "venueUrl": "https://wonderballroom.com/event/the-crane-wives-act-ii/wonder-ballroom/portland-oregon/",
-      "id": 137
+      "id": 154
     },
     {
       "title": "2 Cent Fridays - Open Mic Night G-Wade // Deangelo // Doolie",
@@ -1380,7 +1550,7 @@
       "date": "2026-06-19",
       "time": "8:00 PM",
       "venueUrl": "https://www.albertastreetpub.com/music/2026/1/30/2-cent-fridays-open-mic-night-g-wade-deangelo-doolie",
-      "id": 138
+      "id": 155
     },
     {
       "title": "ICONIC - Juneteenth Celebration",
@@ -1390,7 +1560,7 @@
       "date": "2026-06-19",
       "time": "9:30 PM",
       "venueUrl": "https://www.albertastreetpub.com/music/2026/6/19/iconic-juneteenth-celebration",
-      "id": 139
+      "id": 156
     },
     {
       "title": "The Bald and the Beautiful LIVE: Very Bald, Very Beautiful",
@@ -1400,7 +1570,7 @@
       "date": "2026-06-19",
       "time": "",
       "venueUrl": "https://www.portland5.com/event/bald-and-beautiful-live-very-bald-very-beautiful",
-      "id": 140
+      "id": 157
     },
     {
       "title": "HOTWAX disco~glam~metal~punk~hiphop",
@@ -1410,7 +1580,7 @@
       "date": "2026-06-19",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/hotwax-discoglammetalpunkhiphop-4/",
-      "id": 141
+      "id": 158
     },
     {
       "title": "PSYCLOPS ALBUM RELEASE SHOW with Skulldozer, Viral Tyrant, & Red Panda Death March",
@@ -1420,7 +1590,7 @@
       "date": "2026-06-19",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/psyclops-album-release-show-with-skulldozer-viral-tyrant-red-panda-death-march/",
-      "id": 142
+      "id": 159
     },
     {
       "title": "DANG! – A Soulful Electronic Dance Night – 21+",
@@ -1430,7 +1600,7 @@
       "date": "2026-06-19",
       "time": "9:00 PM",
       "venueUrl": "https://www.holocene.org/event/dang-a-soulful-electronic-dance-night-21-5/holocene/portland/",
-      "id": 143
+      "id": 160
     },
     {
       "title": "ELIJAH ROCK sings the Great American Songbook",
@@ -1440,7 +1610,7 @@
       "date": "2026-06-19",
       "time": "8:00 PM",
       "venueUrl": "https://www.jacklondonrevue.com/tm-event/elijah-rock-sings-the-great-american-songbook/",
-      "id": 144
+      "id": 161
     },
     {
       "title": "Kendall Lujan & Briggs Yahn",
@@ -1450,7 +1620,27 @@
       "date": "2026-06-19",
       "time": "9:00 PM",
       "venueUrl": "https://laurelthirst.com/events/kendall-lujan-briggs-yahn/",
-      "id": 145
+      "id": 162
+    },
+    {
+      "title": "LOBO LARA + PsychoTropika + SONIDO DEAD STEADY + DJ Mala",
+      "venue": "Mississippi Pizza",
+      "neighborhood": "Boise",
+      "address": "3552 N Mississippi Ave",
+      "date": "2026-06-19",
+      "time": "8:00 PM",
+      "venueUrl": "https://mississippipizza.com/event/lobo-lara-psychotropika-sonido-dead-steady-dj-mala/",
+      "id": 163
+    },
+    {
+      "title": "Mr. Hoo",
+      "venue": "Mississippi Pizza",
+      "neighborhood": "Boise",
+      "address": "3552 N Mississippi Ave",
+      "date": "2026-06-19",
+      "time": "5:00 PM",
+      "venueUrl": "https://mississippipizza.com/event/mr-hoo-20/",
+      "id": 164
     },
     {
       "title": "Jesca Hoop (w/ Faun Fables)",
@@ -1460,7 +1650,7 @@
       "date": "2026-06-19",
       "time": "9:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/42079741/jesca-hoop-portland-mississippi-studios",
-      "id": 146
+      "id": 165
     },
     {
       "title": "Eleni Mandell (w/ Drew Grow)",
@@ -1470,7 +1660,7 @@
       "date": "2026-06-19",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/90962992/eleni-mandell-portland-polaris-hall",
-      "id": 147
+      "id": 166
     },
     {
       "title": "KOKOROKO",
@@ -1480,7 +1670,7 @@
       "date": "2026-06-19",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/35402944/kokoroko-portland-revolution-hall",
-      "id": 148
+      "id": 167
     },
     {
       "title": "Value Select",
@@ -1490,7 +1680,7 @@
       "date": "2026-06-19",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/82829201/value-select-portland-show-bar-at-revolution-hall",
-      "id": 149
+      "id": 168
     },
     {
       "title": "Punchis Banda Rave",
@@ -1500,7 +1690,7 @@
       "date": "2026-06-19",
       "time": "",
       "venueUrl": "https://www.etix.com/ticket/p/89783269/punchis-banda-rave-portland-roseland-theater?partner_id=100",
-      "id": 150
+      "id": 169
     },
     {
       "title": "WAX",
@@ -1510,7 +1700,7 @@
       "date": "2026-06-19",
       "time": "8:00 PM",
       "venueUrl": "https://www.startheaterportland.com/tm-event/wax/",
-      "id": 151
+      "id": 170
     },
     {
       "title": "The Crane Wives – ACT II",
@@ -1520,7 +1710,7 @@
       "date": "2026-06-19",
       "time": "8:00 PM",
       "venueUrl": "https://wonderballroom.com/event/the-crane-wives-act-ii-2/wonder-ballroom/portland-oregon/",
-      "id": 152
+      "id": 171
     },
     {
       "title": "Drag Brunch Hosted by Nicoleonoscopi!",
@@ -1530,7 +1720,7 @@
       "date": "2026-06-20",
       "time": "12:00 PM",
       "venueUrl": "https://www.albertastreetpub.com/music/2026/5/16/drag-brunch-hosted-by-nicoleonoscopi",
-      "id": 153
+      "id": 172
     },
     {
       "title": "PDXMemorex",
@@ -1540,7 +1730,7 @@
       "date": "2026-06-20",
       "time": "5:00 PM",
       "venueUrl": "https://www.albertastreetpub.com/music/2026/6/20/pdxmemorex",
-      "id": 154
+      "id": 173
     },
     {
       "title": "Video Goth Night",
@@ -1550,7 +1740,7 @@
       "date": "2026-06-20",
       "time": "8:00 PM",
       "venueUrl": "https://www.albertastreetpub.com/music/2026/3/21/video-goth-night",
-      "id": 155
+      "id": 174
     },
     {
       "title": "MrBallen: Lights Out Live - Cancelled",
@@ -1560,7 +1750,7 @@
       "date": "2026-06-20",
       "time": "",
       "venueUrl": "https://www.portland5.com/event/mrballen-lights-out-live-cancelled",
-      "id": 156
+      "id": 175
     },
     {
       "title": "AGENT ORANGE with The Drowns & The Last Responders",
@@ -1570,7 +1760,7 @@
       "date": "2026-06-20",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/agent-orange-with-the-drowns-guests/",
-      "id": 157
+      "id": 176
     },
     {
       "title": "SMASH disco~glam~metal~punk-hiphop",
@@ -1580,7 +1770,7 @@
       "date": "2026-06-20",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/smash-discoglammetalpunk-hiphop-3/",
-      "id": 158
+      "id": 177
     },
     {
       "title": "Laffy Taffy: ~Twerk in ALL A$$-Sorted Flavors~ [Hot Girl Summer 26’] – 21+",
@@ -1590,7 +1780,7 @@
       "date": "2026-06-20",
       "time": "10:00 PM",
       "venueUrl": "https://www.holocene.org/event/laffy-taffy-twerk-in-all-a-sorted-flavors-hot-girl-summer-26-21/holocene/portland/",
-      "id": 159
+      "id": 178
     },
     {
       "title": "BURLY-Q REVUE",
@@ -1600,7 +1790,7 @@
       "date": "2026-06-20",
       "time": "10:30 PM",
       "venueUrl": "https://www.jacklondonrevue.com/tm-event/burly-q-revue-4/",
-      "id": 160
+      "id": 179
     },
     {
       "title": "Josh Cole&#039;s bluegrass Matinee",
@@ -1610,7 +1800,7 @@
       "date": "2026-06-20",
       "time": "1:00 PM",
       "venueUrl": "https://laurelthirst.com/events/josh-coles-bluegrass-matinee-10/",
-      "id": 161
+      "id": 180
     },
     {
       "title": "Shorty & the Mustangs",
@@ -1620,7 +1810,27 @@
       "date": "2026-06-20",
       "time": "6:00 PM",
       "venueUrl": "https://laurelthirst.com/events/shorty-the-mustangs-14/",
-      "id": 162
+      "id": 181
+    },
+    {
+      "title": "FREE! Stone Pepper",
+      "venue": "Mississippi Pizza",
+      "neighborhood": "Boise",
+      "address": "3552 N Mississippi Ave",
+      "date": "2026-06-20",
+      "time": "4:00 PM",
+      "venueUrl": "https://mississippipizza.com/event/free-stone-pepper/",
+      "id": 182
+    },
+    {
+      "title": "Pura Vida Orquesta – Salsa and more",
+      "venue": "Mississippi Pizza",
+      "neighborhood": "Boise",
+      "address": "3552 N Mississippi Ave",
+      "date": "2026-06-20",
+      "time": "8:30 PM",
+      "venueUrl": "https://mississippipizza.com/event/pura-vida-orquesta-salsa-and-more-11/",
+      "id": 183
     },
     {
       "title": "Dustbowl Revival (w/ Steel Fringe)",
@@ -1630,7 +1840,7 @@
       "date": "2026-06-20",
       "time": "9:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/35316272/dustbowl-revival-portland-mississippi-studios",
-      "id": 163
+      "id": 184
     },
     {
       "title": "HONNE - 10 Year Anniversary Tour",
@@ -1640,7 +1850,7 @@
       "date": "2026-06-20",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/61246054/honne-10-year-anniversary-tour-portland-revolution-hall",
-      "id": 164
+      "id": 185
     },
     {
       "title": "Andre Nickatina",
@@ -1650,7 +1860,7 @@
       "date": "2026-06-20",
       "time": "",
       "venueUrl": "https://www.tixr.com/groups/thegetdownpdx/events/me-porto-bonito-reggaeton-party--189980",
-      "id": 165
+      "id": 186
     },
     {
       "title": "Bôa",
@@ -1660,7 +1870,7 @@
       "date": "2026-06-20",
       "time": "8:00 PM",
       "venueUrl": "https://wonderballroom.com/event/b%c3%b4a-2/wonder-ballroom/portland-oregon/",
-      "id": 166
+      "id": 187
     },
     {
       "title": "Khemmis",
@@ -1670,7 +1880,7 @@
       "date": "2026-06-21",
       "time": "7:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/59845217/khemmis-portland-aladdin-theater",
-      "id": 167
+      "id": 188
     },
     {
       "title": "Megan Cronin Album Release Show with Max Tucker // Dylan Ileng // Drew Hitzman // Featuring Garreson",
@@ -1680,7 +1890,7 @@
       "date": "2026-06-21",
       "time": "5:00 PM",
       "venueUrl": "https://www.albertastreetpub.com/music/2026/6/21/megan-cronin-album-release-show-with-max-tucker-dylan-ileng-drew-hitzman-featuring-garreson",
-      "id": 168
+      "id": 189
     },
     {
       "title": "SOULFUL SUNDAYS!",
@@ -1690,7 +1900,7 @@
       "date": "2026-06-21",
       "time": "9:00 PM",
       "venueUrl": "https://www.albertastreetpub.com/music/2023/3/5/soulful-sundays-p3a5l-3wl64-twxnj-wkacn-lc8tr-gphsj-x73af-5meh3-6cspz-9z8kp-wtz8c-47fe8-ekh63-lxhbe",
-      "id": 169
+      "id": 190
     },
     {
       "title": "RHEA C. ARACHNE followed by Sinferno Cabaret",
@@ -1700,7 +1910,7 @@
       "date": "2026-06-21",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/rhea-c-arachne-followed-by-sinferno-cabaret/",
-      "id": 170
+      "id": 191
     },
     {
       "title": "SINFERNO CABARET",
@@ -1710,7 +1920,7 @@
       "date": "2026-06-21",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/sinferno-cabaret-93/",
-      "id": 171
+      "id": 192
     },
     {
       "title": "Unseen Object (Release show!) w/Shanea, Starz Of Da Bizzare – 21+",
@@ -1720,7 +1930,17 @@
       "date": "2026-06-21",
       "time": "6:00 PM",
       "venueUrl": "https://www.holocene.org/event/unseen-object-release-show-w-shanea-starz-of-da-bizzare-21/holocene/portland/",
-      "id": 172
+      "id": 193
+    },
+    {
+      "title": "The Occidental Tourists",
+      "venue": "Mississippi Pizza",
+      "neighborhood": "Boise",
+      "address": "3552 N Mississippi Ave",
+      "date": "2026-06-21",
+      "time": "7:00 PM",
+      "venueUrl": "https://mississippipizza.com/event/the-occidental-tourists-10/",
+      "id": 194
     },
     {
       "title": "BendreTheGiant (Album Release) (w/ Night Heron, greaterkind)",
@@ -1730,7 +1950,7 @@
       "date": "2026-06-21",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/65743091/bendrethegiant-album-release-portland-mississippi-studios",
-      "id": 173
+      "id": 195
     },
     {
       "title": "Gia Margaret is on tour s i n g i n g (w/ with Brendan Eder Ensemble)",
@@ -1740,7 +1960,7 @@
       "date": "2026-06-21",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/54890744/gia-margaret-is-on-tour-s-i-n-g-i-n-g-portland-polaris-hall",
-      "id": 174
+      "id": 196
     },
     {
       "title": "CHURCH OF HIVE",
@@ -1750,7 +1970,7 @@
       "date": "2026-06-21",
       "time": "9:00 PM",
       "venueUrl": "https://www.startheaterportland.com/tm-event/church-of-hive-8/",
-      "id": 175
+      "id": 197
     },
     {
       "title": "Anna May",
@@ -1760,7 +1980,7 @@
       "date": "2026-06-22",
       "time": "7:00 PM",
       "venueUrl": "https://www.albertastreetpub.com/music/2026/6/22/anna-may",
-      "id": 176
+      "id": 198
     },
     {
       "title": "KARAOKE FROM HELL",
@@ -1770,7 +1990,7 @@
       "date": "2026-06-22",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/karaoke-from-hell-94/",
-      "id": 177
+      "id": 199
     },
     {
       "title": "CLOSED FOR MAINTENANCE",
@@ -1780,7 +2000,17 @@
       "date": "2026-06-22",
       "time": "",
       "venueUrl": "https://laurelthirst.com/events/closed-for-maintenance/",
-      "id": 178
+      "id": 200
+    },
+    {
+      "title": "Dog Mom + Kitchen Congregation + Essie & The Hum",
+      "venue": "Mississippi Pizza",
+      "neighborhood": "Boise",
+      "address": "3552 N Mississippi Ave",
+      "date": "2026-06-22",
+      "time": "8:00 PM",
+      "venueUrl": "https://mississippipizza.com/event/dog-mom-kitchen-congregation-essie-the-hum/",
+      "id": 201
     },
     {
       "title": "Tommy Emmanuel, CGP - Living In The Light Tour",
@@ -1790,7 +2020,7 @@
       "date": "2026-06-22",
       "time": "",
       "venueUrl": "https://www.portland5.com/event/tommy-emmanuel-cgp-living-light-tour",
-      "id": 179
+      "id": 202
     },
     {
       "title": "Perry Maysun – A Very Pathetic Tour (w/ Isaiah Poet)",
@@ -1800,7 +2030,7 @@
       "date": "2026-06-22",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/90158167/perry-maysun-a-very-pathetic-tour-portland-polaris-hall",
-      "id": 180
+      "id": 203
     },
     {
       "title": "Bridgetown Trivia on the Heated Patio!",
@@ -1810,7 +2040,7 @@
       "date": "2026-06-23",
       "time": "7:00 PM",
       "venueUrl": "https://www.albertastreetpub.com/music/2023/3/13/bridgetown-trivia-on-the-heated-patio-6cwzx-dg47h-78jwb-2lt32-azz6n-gd4lz-rd6wg-6ghnc-653hl-dnb5c-42dcy-r6ztl-37cda-7ljxc-nstwg",
-      "id": 181
+      "id": 204
     },
     {
       "title": "Local Roots NW Presents: Local Roots Live Featuring: Time Theft & New Victorian",
@@ -1820,7 +2050,7 @@
       "date": "2026-06-23",
       "time": "7:00 PM",
       "venueUrl": "https://www.albertastreetpub.com/music/2026/6/23/local-roots-nw-presents-local-roots-live-featuring-time-theft-amp-new-victorian",
-      "id": 182
+      "id": 205
     },
     {
       "title": "Natalia Lafourcade - Cancionera Tour",
@@ -1830,7 +2060,7 @@
       "date": "2026-06-23",
       "time": "",
       "venueUrl": "https://www.portland5.com/event/natalia-lafourcade-cancionera-tour",
-      "id": 183
+      "id": 206
     },
     {
       "title": "Camping in Alaska with Human Ant Farm, Glimpse, and Juno Driver – All Ages!",
@@ -1840,7 +2070,17 @@
       "date": "2026-06-23",
       "time": "7:00 PM",
       "venueUrl": "https://www.holocene.org/event/camping-in-alaska-with-human-ant-farm-glimpse-and-juno-driver-all-ages/holocene/portland/",
-      "id": 184
+      "id": 207
+    },
+    {
+      "title": "Flawed Fauna + Les Ailes + Terrible Pop",
+      "venue": "Mississippi Pizza",
+      "neighborhood": "Boise",
+      "address": "3552 N Mississippi Ave",
+      "date": "2026-06-23",
+      "time": "8:00 PM",
+      "venueUrl": "https://mississippipizza.com/event/flawed-fauna-les-ailes-terrible-pop/",
+      "id": 208
     },
     {
       "title": "Creaturess (w/ Tylo, Shield Maiden)",
@@ -1850,7 +2090,7 @@
       "date": "2026-06-23",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/71122215/creaturess-portland-mississippi-studios",
-      "id": 185
+      "id": 209
     },
     {
       "title": "Novulent (w/ Babyteeth)",
@@ -1860,7 +2100,7 @@
       "date": "2026-06-23",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/44981611/novulent-portland-polaris-hall",
-      "id": 186
+      "id": 210
     },
     {
       "title": "Rx Bandits - And The Battle Begun 20th Anniversary Tour (w/ Maps & Atlases)",
@@ -1870,7 +2110,7 @@
       "date": "2026-06-23",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/54801161/rx-bandits-and-the-battle-begun-20th-anniversary-tour-portland-revolution-hall",
-      "id": 187
+      "id": 211
     },
     {
       "title": "Our Lady Peace: 30th Anniversary Tour With Special Guests The Verve Pipe",
@@ -1880,7 +2120,7 @@
       "date": "2026-06-23",
       "time": "",
       "venueUrl": "https://www.etix.com/ticket/p/88822559/our-lady-peace30th-anniversary-tour-with-special-guests-the-verve-pipe-portland-roseland-theater?partner_id=100",
-      "id": 188
+      "id": 212
     },
     {
       "title": "Jade Fox & Mal Wright: Authenticity as Strategy",
@@ -1890,7 +2130,7 @@
       "date": "2026-06-23",
       "time": "",
       "venueUrl": "https://www.portland5.com/event/jade-fox-mal-wright-authenticity-strategy",
-      "id": 189
+      "id": 213
     },
     {
       "title": "Pomplamoose",
@@ -1900,7 +2140,7 @@
       "date": "2026-06-23",
       "time": "8:00 PM",
       "venueUrl": "https://wonderballroom.com/event/pomplamoose/wonder-ballroom/portland-oregon/",
-      "id": 190
+      "id": 214
     },
     {
       "title": "Science On Tap – Menopause Research: Patterns, Placebos, & Pitfalls",
@@ -1910,7 +2150,7 @@
       "date": "2026-06-24",
       "time": "7:00 PM",
       "venueUrl": "https://albertarosetheatre.com/event/science-on-tap-menopause-research-patterns-placebos-pitfalls/alberta-rose-theatre/portland-oregon/",
-      "id": 191
+      "id": 215
     },
     {
       "title": "Wednesday Night Social - Cigars, Dominos & Music",
@@ -1920,7 +2160,7 @@
       "date": "2026-06-24",
       "time": "6:00 PM",
       "venueUrl": "https://www.albertastreetpub.com/music/2023/10/18/wednesday-night-social-fkf88-mke97-4227c-l64xx-gss68-cjzan-8lsw3-nbgjn-yr6pm-6kblr-ff6b5-lsmb9-hkw2h-f5mft-hfbdc-nddag-sg2pm-ylbtn-7mp5t-b64gk-lwx2r-zfn6s",
-      "id": 192
+      "id": 216
     },
     {
       "title": "ANVIL with Midnite Hellion & Seduktor",
@@ -1930,7 +2170,7 @@
       "date": "2026-06-24",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/anvil-with-midnite-hellion/",
-      "id": 193
+      "id": 217
     },
     {
       "title": "A full venue activation of Holocene: Featuring a/v sets by Matthew D. Gantt, Mike Nigro, Aesthetic Stalemate + more! – 21+",
@@ -1940,7 +2180,7 @@
       "date": "2026-06-24",
       "time": "7:00 PM",
       "venueUrl": "https://www.holocene.org/event/a-full-venue-activation-of-holocene-featuring-a-v-sets-by-matthew-d-gantt-mike-nigro-aesthetic-stalemate-more-21/holocene/portland/",
-      "id": 194
+      "id": 218
     },
     {
       "title": "SAWYER FREDERICKS",
@@ -1950,7 +2190,27 @@
       "date": "2026-06-24",
       "time": "8:00 PM",
       "venueUrl": "https://www.jacklondonrevue.com/tm-event/sawyer-fredericks/",
-      "id": 195
+      "id": 219
+    },
+    {
+      "title": "FREE! Trivia-sippi! Weekly Quiz Night!",
+      "venue": "Mississippi Pizza",
+      "neighborhood": "Boise",
+      "address": "3552 N Mississippi Ave",
+      "date": "2026-06-24",
+      "time": "6:00 PM",
+      "venueUrl": "https://mississippipizza.com/event/free-trivia-sippi-weekly-quiz-night-41/",
+      "id": 220
+    },
+    {
+      "title": "Mango Twist- Live Music & Dancing!",
+      "venue": "Mississippi Pizza",
+      "neighborhood": "Boise",
+      "address": "3552 N Mississippi Ave",
+      "date": "2026-06-24",
+      "time": "8:30 PM",
+      "venueUrl": "https://mississippipizza.com/event/mango-twist-live-music-dancing-4/",
+      "id": 221
     },
     {
       "title": "Local Love Letter #25: Plankton Wat (Album Release) (w/ Talking Contest, RLLRBLL)",
@@ -1960,7 +2220,7 @@
       "date": "2026-06-24",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/85329245/local-love-letter-25plankton-wat-album-release-portland-mississippi-studios",
-      "id": 196
+      "id": 222
     },
     {
       "title": "Panic Shack (w/ Whisper Hiss)",
@@ -1970,7 +2230,7 @@
       "date": "2026-06-24",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/41515245/panic-shack-portland-polaris-hall",
-      "id": 197
+      "id": 223
     },
     {
       "title": "Hear You Loud & Queer (w/ hosted by Mack Lee and Ally J Ward)",
@@ -1980,7 +2240,7 @@
       "date": "2026-06-24",
       "time": "7:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/69512124/hear-you-loud-queer-portland-show-bar-at-revolution-hall",
-      "id": 198
+      "id": 224
     },
     {
       "title": "AK'CHAMEL with Derek Monypeny and Descending Pharaohs",
@@ -1990,7 +2250,7 @@
       "date": "2026-06-24",
       "time": "8:00 PM",
       "venueUrl": "https://www.startheaterportland.com/tm-event/akchamel-with-derek-monypeny-and-descending-pharaohs/",
-      "id": 199
+      "id": 225
     },
     {
       "title": "MOVED TO THE CRYSTAL BALLROOM: underscores Galleria – North American Chapter",
@@ -2000,7 +2260,7 @@
       "date": "2026-06-24",
       "time": "8:00 PM",
       "venueUrl": "https://wonderballroom.com/event/moved-to-the-crystal-ballroom-underscores-galleria-north-american-chapter/wonder-ballroom/portland-oregon/",
-      "id": 200
+      "id": 226
     },
     {
       "title": "Tiny Girl Big Show- Stand Up Circus",
@@ -2010,7 +2270,7 @@
       "date": "2026-06-25",
       "time": "8:00 PM",
       "venueUrl": "https://albertarosetheatre.com/event/tiny-girl-big-show-stand-up-circus/alberta-rose-theatre/portland-oregon/",
-      "id": 201
+      "id": 227
     },
     {
       "title": "Carrie Jennings EP Release with Special Guest Hannah Glavor",
@@ -2020,7 +2280,7 @@
       "date": "2026-06-25",
       "time": "7:00 PM",
       "venueUrl": "https://www.albertastreetpub.com/music/2026/6/25/carrie-jennings-ep-release-with-special-guest-hannah-glavor",
-      "id": 202
+      "id": 228
     },
     {
       "title": "Jerry Seinfeld",
@@ -2030,7 +2290,7 @@
       "date": "2026-06-25",
       "time": "",
       "venueUrl": "https://www.portland5.com/event/jerry-seinfeld",
-      "id": 203
+      "id": 229
     },
     {
       "title": "ANDRES with Resilia, Lilac Kings, & Pain Cave",
@@ -2040,7 +2300,7 @@
       "date": "2026-06-25",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/andres-with-resilia-lilac-kings/",
-      "id": 204
+      "id": 230
     },
     {
       "title": "girl so in love: An Olivia Rodrigo Night – 21+",
@@ -2050,7 +2310,7 @@
       "date": "2026-06-25",
       "time": "9:00 PM",
       "venueUrl": "https://www.holocene.org/event/girl-so-in-love-an-olivia-rodrigo-night-21/holocene/portland/",
-      "id": 205
+      "id": 231
     },
     {
       "title": "MEL BROWN B3 ORGAN GROUP – Jazz Titan Thursdays",
@@ -2060,7 +2320,7 @@
       "date": "2026-06-25",
       "time": "8:00 PM",
       "venueUrl": "https://www.jacklondonrevue.com/tm-event/mel-brown-b3-organ-group-3/",
-      "id": 206
+      "id": 232
     },
     {
       "title": "Beatrice Anne / Odin Scott Coleman / Leo Crafft",
@@ -2070,7 +2330,27 @@
       "date": "2026-06-25",
       "time": "9:00 PM",
       "venueUrl": "https://laurelthirst.com/events/natalie-prauser-rose-gerber-beatrice-anne/",
-      "id": 207
+      "id": 233
+    },
+    {
+      "title": "FREE! Eric Alterman",
+      "venue": "Mississippi Pizza",
+      "neighborhood": "Boise",
+      "address": "3552 N Mississippi Ave",
+      "date": "2026-06-25",
+      "time": "4:00 PM",
+      "venueUrl": "https://mississippipizza.com/event/free-eric-alterman/",
+      "id": 234
+    },
+    {
+      "title": "Late Lyrics",
+      "venue": "Mississippi Pizza",
+      "neighborhood": "Boise",
+      "address": "3552 N Mississippi Ave",
+      "date": "2026-06-25",
+      "time": "8:30 PM",
+      "venueUrl": "https://mississippipizza.com/event/late-lyrics-2/",
+      "id": 235
     },
     {
       "title": "Big Richard (w/ Minor Gold)",
@@ -2080,7 +2360,7 @@
       "date": "2026-06-25",
       "time": "9:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/97961988/big-richard-portland-mississippi-studios",
-      "id": 208
+      "id": 236
     },
     {
       "title": "Whose Live Anyway? (Night 1)",
@@ -2090,7 +2370,7 @@
       "date": "2026-06-25",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/87687104/whose-live-anywaynight-1-portland-revolution-hall",
-      "id": 209
+      "id": 237
     },
     {
       "title": "EMO FEST: An Evening of Drag + Pop Punk by Discord Addams",
@@ -2100,7 +2380,7 @@
       "date": "2026-06-25",
       "time": "8:30 PM",
       "venueUrl": "https://www.startheaterportland.com/tm-event/emo-fest-an-evening-of-drag-pop-punk-by-discord-addams/",
-      "id": 210
+      "id": 238
     },
     {
       "title": "Heavenly",
@@ -2110,7 +2390,7 @@
       "date": "2026-06-26",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/58403599/heavenly-portland-aladdin-theater",
-      "id": 211
+      "id": 239
     },
     {
       "title": "John Gorka",
@@ -2120,7 +2400,7 @@
       "date": "2026-06-26",
       "time": "8:00 PM",
       "venueUrl": "https://albertarosetheatre.com/event/john-gorka-2/alberta-rose-theatre/portland-oregon/",
-      "id": 212
+      "id": 240
     },
     {
       "title": "2 Cent Fridays - Open Mic Night G-Wade // Deangelo // Doolie",
@@ -2130,7 +2410,7 @@
       "date": "2026-06-26",
       "time": "8:00 PM",
       "venueUrl": "https://www.albertastreetpub.com/music/2026/1/23/2-cent-fridays-open-mic-night-g-wade-deangelo-doolie",
-      "id": 213
+      "id": 241
     },
     {
       "title": "TITS UP",
@@ -2140,7 +2420,7 @@
       "date": "2026-06-26",
       "time": "5:00 PM",
       "venueUrl": "https://www.albertastreetpub.com/music/2024/2/9/tits-up-3y8x8-z9wpc-wa6yf-6sspp-serrr-xgchh-yckjg-xal9h-ch8p7-6745k",
-      "id": 214
+      "id": 242
     },
     {
       "title": "HOTWAX disco~glam~metal~punk~hiphop",
@@ -2150,7 +2430,7 @@
       "date": "2026-06-26",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/hotwax-discoglammetalpunkhiphop-5/",
-      "id": 215
+      "id": 243
     },
     {
       "title": "MICAH ARISS with Ghost Mode, Red Keep, & Screams of Syrens",
@@ -2160,7 +2440,7 @@
       "date": "2026-06-26",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/micha-ariss-with-ghost-mode-red-keep-screams-of-syrens/",
-      "id": 216
+      "id": 244
     },
     {
       "title": "Holland Andrews + Methods Body – Record Release Party – EARLY SHOW! – 21+",
@@ -2170,7 +2450,7 @@
       "date": "2026-06-26",
       "time": "5:00 PM",
       "venueUrl": "https://www.holocene.org/event/holland-andrews-methods-body-record-release-party-early-show-21/holocene/portland/",
-      "id": 217
+      "id": 245
     },
     {
       "title": "SNAP! Y2K ’90s vs ’00s Dance Party! – 21+",
@@ -2180,7 +2460,7 @@
       "date": "2026-06-26",
       "time": "9:00 PM",
       "venueUrl": "https://www.holocene.org/event/snap-y2k-90s-vs-00s-dance-party-21-19/holocene/portland/",
-      "id": 218
+      "id": 246
     },
     {
       "title": "KAHIL EL'ZABAR & DAVID MURRAY: We Be Free Tour (Early Show)",
@@ -2190,7 +2470,7 @@
       "date": "2026-06-26",
       "time": "7:30 PM",
       "venueUrl": "https://www.jacklondonrevue.com/tm-event/kahil-elzabar-david-murray-we-be-free-tour-early-show/",
-      "id": 219
+      "id": 247
     },
     {
       "title": "KAHIL EL'ZABAR & DAVID MURRAY: We Be Free Tour (Late Show)",
@@ -2200,7 +2480,7 @@
       "date": "2026-06-26",
       "time": "10:00 PM",
       "venueUrl": "https://www.jacklondonrevue.com/tm-event/kahil-elzabar-david-murray-we-be-free-tour-late-show/",
-      "id": 220
+      "id": 248
     },
     {
       "title": "Josh Cole Band / Tuesday String Band",
@@ -2210,7 +2490,17 @@
       "date": "2026-06-26",
       "time": "9:00 PM",
       "venueUrl": "https://laurelthirst.com/events/josh-cole-band/",
-      "id": 221
+      "id": 249
+    },
+    {
+      "title": "Lexie + Big Spender",
+      "venue": "Mississippi Pizza",
+      "neighborhood": "Boise",
+      "address": "3552 N Mississippi Ave",
+      "date": "2026-06-26",
+      "time": "8:00 PM",
+      "venueUrl": "https://mississippipizza.com/event/lexie-big-spender/",
+      "id": 250
     },
     {
       "title": "Small Million (w/ Bijoux Cone (solo), MY BODY)",
@@ -2220,7 +2510,7 @@
       "date": "2026-06-26",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/55880925/small-million-portland-mississippi-studios",
-      "id": 222
+      "id": 251
     },
     {
       "title": "Whose Live Anyway? (Night 2)",
@@ -2230,7 +2520,7 @@
       "date": "2026-06-26",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/76325250/whose-live-anywaynight-2-portland-revolution-hall",
-      "id": 223
+      "id": 252
     },
     {
       "title": "Møtrik (w/ Old Unconscious, Arch Cape)",
@@ -2240,7 +2530,7 @@
       "date": "2026-06-26",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/49143301/m%C3%B8trik-portland-show-bar-at-revolution-hall",
-      "id": 224
+      "id": 253
     },
     {
       "title": "HOLLY HUMBERSTONE – Cruel World North American Tour (w/ Leyla Ebrahimi with Leyla Ebrahimi end event sub header)",
@@ -2250,7 +2540,7 @@
       "date": "2026-06-26",
       "time": "",
       "venueUrl": "https://www.etix.com/ticket/p/53935020/holly-humberstone-cruel-world-north-american-tour-portland-roseland-theater?partner_id=100",
-      "id": 225
+      "id": 254
     },
     {
       "title": "HANNAH LEW with Nowhere Flower and Strange Babes",
@@ -2260,7 +2550,7 @@
       "date": "2026-06-26",
       "time": "9:00 PM",
       "venueUrl": "https://www.startheaterportland.com/tm-event/hannah-lew-with-nowhere-flower-and-strange-babes/",
-      "id": 226
+      "id": 255
     },
     {
       "title": "Me Porto Bonito [reggaeton party]",
@@ -2270,7 +2560,7 @@
       "date": "2026-06-26",
       "time": "",
       "venueUrl": "https://www.tixr.com/groups/thegetdownpdx/events/high-fade-174726",
-      "id": 227
+      "id": 256
     },
     {
       "title": "Stewart Copeland - Have I Said Too Much: An Evening of Conversation with the Hall of Fame Rock Star",
@@ -2280,7 +2570,7 @@
       "date": "2026-06-27",
       "time": "7:30 PM",
       "venueUrl": "https://www.etix.com/ticket/p/36608536/stewart-copeland-have-i-said-too-muchan-evening-of-conversation-with-the-hall-of-fame-rock-star-portland-aladdin-theater",
-      "id": 228
+      "id": 257
     },
     {
       "title": "DAPPERLESQUE: Pride Edition – A Gender-Bending Burlesque Cabaret",
@@ -2290,7 +2580,7 @@
       "date": "2026-06-27",
       "time": "8:00 PM",
       "venueUrl": "https://albertarosetheatre.com/event/dapperlesque-pride-edition-a-gender-bending-burlesque-cabaret/alberta-rose-theatre/portland-oregon/",
-      "id": 229
+      "id": 258
     },
     {
       "title": "Five Big Rocks // Uncanny Valley Girls // Sit Pretty",
@@ -2300,7 +2590,7 @@
       "date": "2026-06-27",
       "time": "9:00 PM",
       "venueUrl": "https://www.albertastreetpub.com/music/2026/6/27/five-big-rocks-uncanny-valley-girls-sit-pretty",
-      "id": 230
+      "id": 259
     },
     {
       "title": "The Frequence // Peter Rodocker",
@@ -2310,7 +2600,7 @@
       "date": "2026-06-27",
       "time": "5:00 PM",
       "venueUrl": "https://www.albertastreetpub.com/music/2026/6/27/the-frequence-peter-rodocker",
-      "id": 231
+      "id": 260
     },
     {
       "title": "TRANSformation",
@@ -2320,7 +2610,7 @@
       "date": "2026-06-27",
       "time": "",
       "venueUrl": "https://www.portland5.com/event/transformation",
-      "id": 232
+      "id": 261
     },
     {
       "title": "SMASH disco~glam~metal~punk-hiphop",
@@ -2330,7 +2620,7 @@
       "date": "2026-06-27",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/smash-discoglammetalpunk-hiphop-4/",
-      "id": 233
+      "id": 262
     },
     {
       "title": "US AIR GUITAR CHAMPIONSHIPS 2026",
@@ -2340,7 +2630,7 @@
       "date": "2026-06-27",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/us-air-guitar-championships-2026/",
-      "id": 234
+      "id": 263
     },
     {
       "title": "Dungeons & Drag Queens – EARLY SHOW! – 21+",
@@ -2350,7 +2640,7 @@
       "date": "2026-06-27",
       "time": "5:00 PM",
       "venueUrl": "https://www.holocene.org/event/dungeons-drag-queens-early-show-21/holocene/portland/",
-      "id": 235
+      "id": 264
     },
     {
       "title": "QUÉ CALOR: Today’s Hottest Latin Hits 🔥 – 21+",
@@ -2360,7 +2650,7 @@
       "date": "2026-06-27",
       "time": "9:00 PM",
       "venueUrl": "https://www.holocene.org/event/qu%c3%a9-calor-todays-hottest-latin-hits-%f0%9f%94%a5-21/holocene/portland/",
-      "id": 236
+      "id": 265
     },
     {
       "title": "BURLY-Q REVUE",
@@ -2370,7 +2660,7 @@
       "date": "2026-06-27",
       "time": "10:30 PM",
       "venueUrl": "https://www.jacklondonrevue.com/tm-event/burly-q-revue-5/",
-      "id": 237
+      "id": 266
     },
     {
       "title": "Frank &quot;Buzz Holland&quot; Goodman & Joe Chiusano: The Sixties",
@@ -2380,7 +2670,7 @@
       "date": "2026-06-27",
       "time": "1:00 PM",
       "venueUrl": "https://laurelthirst.com/events/frank-buzz-holland-goodman-joe-chiusano-the-sixties-2/",
-      "id": 238
+      "id": 267
     },
     {
       "title": "Josh Fortenbery / smilepile!",
@@ -2390,7 +2680,7 @@
       "date": "2026-06-27",
       "time": "9:00 PM",
       "venueUrl": "https://laurelthirst.com/events/josh-fortenbery-smilepile/",
-      "id": 239
+      "id": 268
     },
     {
       "title": "The Electric Stomp",
@@ -2400,7 +2690,17 @@
       "date": "2026-06-27",
       "time": "6:00 PM",
       "venueUrl": "https://laurelthirst.com/events/the-electric-stomp-13/",
-      "id": 240
+      "id": 269
+    },
+    {
+      "title": "Live Video Game Music",
+      "venue": "Mississippi Pizza",
+      "neighborhood": "Boise",
+      "address": "3552 N Mississippi Ave",
+      "date": "2026-06-27",
+      "time": "8:00 PM",
+      "venueUrl": "https://mississippipizza.com/event/live-video-game-music-2/",
+      "id": 270
     },
     {
       "title": "GayC/DC (w/ J. Graves)",
@@ -2410,7 +2710,7 @@
       "date": "2026-06-27",
       "time": "9:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/71419727/gaycdc-portland-mississippi-studios",
-      "id": 241
+      "id": 271
     },
     {
       "title": "Water Boyz Presents: Chris Travis performing live! – THE PREFIX TOUR",
@@ -2420,7 +2720,7 @@
       "date": "2026-06-27",
       "time": "",
       "venueUrl": "https://www.etix.com/ticket/p/87931213/water-boyz-presentschris-travis-performing-livethe-prefix-tour-portland-roseland-theater?partner_id=100",
-      "id": 242
+      "id": 272
     },
     {
       "title": "High Fade",
@@ -2430,7 +2730,7 @@
       "date": "2026-06-27",
       "time": "",
       "venueUrl": "https://www.tixr.com/groups/thegetdownpdx/events/rebirth-brass-band-mardi-gras-in-july-192377",
-      "id": 243
+      "id": 273
     },
     {
       "title": "Searows – Death in the Business of Whaling",
@@ -2440,7 +2740,7 @@
       "date": "2026-06-27",
       "time": "8:00 PM",
       "venueUrl": "https://wonderballroom.com/event/searows-death-in-the-business-of-whaling/wonder-ballroom/portland-oregon/",
-      "id": 244
+      "id": 274
     },
     {
       "title": "Nearly Dan",
@@ -2450,7 +2750,7 @@
       "date": "2026-06-28",
       "time": "7:00 PM",
       "venueUrl": "https://albertarosetheatre.com/event/nearly-dan-2/alberta-rose-theatre/portland-oregon/",
-      "id": 245
+      "id": 275
     },
     {
       "title": "SOULFUL SUNDAYS!",
@@ -2460,7 +2760,7 @@
       "date": "2026-06-28",
       "time": "9:00 PM",
       "venueUrl": "https://www.albertastreetpub.com/music/2023/3/5/soulful-sundays-p3a5l-3wl64-twxnj-wkacn-lc8tr-gphsj-x73af-5meh3-6cspz-9z8kp-wtz8c-47fe8-ekh63-lxhbe-7z8f3",
-      "id": 246
+      "id": 276
     },
     {
       "title": "Steve Drizos & The Slow Fades",
@@ -2470,7 +2770,7 @@
       "date": "2026-06-28",
       "time": "5:00 PM",
       "venueUrl": "https://www.albertastreetpub.com/music/2026/6/28/steve-drizos-amp-the-slow-fades",
-      "id": 247
+      "id": 277
     },
     {
       "title": "OATHBOUND with Hangfire, Foghorn, & Pretty Suspect",
@@ -2480,7 +2780,7 @@
       "date": "2026-06-28",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/oathbound-with-hangfire-foghorn-pretty-suspect/",
-      "id": 248
+      "id": 278
     },
     {
       "title": "SINFERNO CABARET",
@@ -2490,7 +2790,7 @@
       "date": "2026-06-28",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/sinferno-cabaret-94/",
-      "id": 249
+      "id": 279
     },
     {
       "title": "2charm – 18+",
@@ -2500,7 +2800,17 @@
       "date": "2026-06-28",
       "time": "7:00 PM",
       "venueUrl": "https://www.holocene.org/event/2charm-18/holocene/portland/",
-      "id": 250
+      "id": 280
+    },
+    {
+      "title": "Leo Moon Album Release!",
+      "venue": "Mississippi Pizza",
+      "neighborhood": "Boise",
+      "address": "3552 N Mississippi Ave",
+      "date": "2026-06-28",
+      "time": "7:30 PM",
+      "venueUrl": "https://mississippipizza.com/event/leo-moon-album-release/",
+      "id": 281
     },
     {
       "title": "Stavros Halkias: The Dreamboat Tour",
@@ -2510,7 +2820,7 @@
       "date": "2026-06-28",
       "time": "7:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/88428839/sold-outstavros-halkiasthe-dreamboat-tour-portland-revolution-hall",
-      "id": 251
+      "id": 282
     },
     {
       "title": "Stavros Halkias: The Dreamboat Tour (Late Show)",
@@ -2520,7 +2830,7 @@
       "date": "2026-06-28",
       "time": "9:30 PM",
       "venueUrl": "https://www.etix.com/ticket/p/53457789/stavros-halkiasthe-dreamboat-tour-late-show-portland-revolution-hall",
-      "id": 252
+      "id": 283
     },
     {
       "title": "CHURCH OF HIVE",
@@ -2530,7 +2840,7 @@
       "date": "2026-06-28",
       "time": "9:00 PM",
       "venueUrl": "https://www.startheaterportland.com/tm-event/church-of-hive-9/",
-      "id": 253
+      "id": 284
     },
     {
       "title": "DOOMSDAY CLOCK: A Cold War Night Carnival",
@@ -2540,7 +2850,7 @@
       "date": "2026-06-28",
       "time": "7:00 PM",
       "venueUrl": "https://www.startheaterportland.com/tm-event/doomsday-clock-a-cold-war-night-carnival/",
-      "id": 254
+      "id": 285
     },
     {
       "title": "Searows – Death in the Business of Whaling",
@@ -2550,7 +2860,7 @@
       "date": "2026-06-28",
       "time": "8:00 PM",
       "venueUrl": "https://wonderballroom.com/event/searows-death-in-the-business-of-whaling-2/wonder-ballroom/portland-oregon/",
-      "id": 255
+      "id": 286
     },
     {
       "title": "Uncle Lucius: The 20th Anniversary Tour",
@@ -2560,7 +2870,7 @@
       "date": "2026-06-29",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/89976625/uncle-luciusthe-20th-anniversary-tour-portland-aladdin-theater",
-      "id": 256
+      "id": 287
     },
     {
       "title": "Shae Fiol Live",
@@ -2570,7 +2880,7 @@
       "date": "2026-06-29",
       "time": "7:00 PM",
       "venueUrl": "https://www.albertastreetpub.com/music/2026/6/29/shae-fiol-live",
-      "id": 257
+      "id": 288
     },
     {
       "title": "KARAOKE FROM HELL",
@@ -2580,7 +2890,7 @@
       "date": "2026-06-29",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/karaoke-from-hell-95/",
-      "id": 258
+      "id": 289
     },
     {
       "title": "Ural Thomas & the Pain",
@@ -2590,7 +2900,17 @@
       "date": "2026-06-29",
       "time": "6:00 PM",
       "venueUrl": "https://laurelthirst.com/events/ural-thomas-the-pain-8/",
-      "id": 259
+      "id": 290
+    },
+    {
+      "title": "FREE! Covers Only",
+      "venue": "Mississippi Pizza",
+      "neighborhood": "Boise",
+      "address": "3552 N Mississippi Ave",
+      "date": "2026-06-29",
+      "time": "7:00 PM",
+      "venueUrl": "https://mississippipizza.com/event/free-covers-only-12/",
+      "id": 291
     },
     {
       "title": "Bridgetown Trivia on the Heated Patio!",
@@ -2600,7 +2920,7 @@
       "date": "2026-06-30",
       "time": "7:00 PM",
       "venueUrl": "https://www.albertastreetpub.com/music/2023/3/13/bridgetown-trivia-on-the-heated-patio-6cwzx-dg47h-78jwb-2lt32-azz6n-gd4lz-rd6wg-6ghnc-653hl-dnb5c-42dcy-r6ztl-37cda-7ljxc-4prg2-ksf9f-2jrzr-9sxzd-b8xet-kywd9-48lhc",
-      "id": 260
+      "id": 292
     },
     {
       "title": "The Banana Pitch Variety Show Featuring: Rex Marshall, Camp Crush, Robyn Saunders Wilson, Brianna Wheeler, Maggie Ray, & Friendmaker. Hosted by Michelle Kicherer",
@@ -2610,7 +2930,7 @@
       "date": "2026-06-30",
       "time": "7:00 PM",
       "venueUrl": "https://www.albertastreetpub.com/music/2026/6/30/the-banana-pitch-variety-show-featuring-rex-marshall-camp-crush-robyn-saunders-wilson-brianna-wheeler-maggie-ray-amp-friendmaker-hosted-by-michelle-kicherer",
-      "id": 261
+      "id": 293
     },
     {
       "title": "Shane Parish Plays Autechre Guitar – w/ Patricia Wolf (DJ Set) – 21+",
@@ -2620,7 +2940,7 @@
       "date": "2026-06-30",
       "time": "7:00 PM",
       "venueUrl": "https://www.holocene.org/event/shane-parish-plays-autechre-guitar-w-patricia-wolf-dj-set-21/holocene/portland/",
-      "id": 262
+      "id": 294
     },
     {
       "title": "ACOUSTIC ALCHEMY",
@@ -2630,7 +2950,17 @@
       "date": "2026-06-30",
       "time": "8:00 PM",
       "venueUrl": "https://www.jacklondonrevue.com/tm-event/acoustic-alchemy/",
-      "id": 263
+      "id": 295
+    },
+    {
+      "title": "Trill Lebeau + Alexa Melo",
+      "venue": "Mississippi Pizza",
+      "neighborhood": "Boise",
+      "address": "3552 N Mississippi Ave",
+      "date": "2026-06-30",
+      "time": "8:00 PM",
+      "venueUrl": "https://mississippipizza.com/event/trill-lebeau-alexa-melo/",
+      "id": 296
     },
     {
       "title": "5 Seconds of Summer",
@@ -2640,7 +2970,7 @@
       "date": "2026-06-30",
       "time": "",
       "venueUrl": "https://www.rosequarter.com/calendar-events/5-seconds-of-summer-jun-30-2026",
-      "id": 264
+      "id": 297
     },
     {
       "title": "Dr. Matthew Desmond: A Voice of the People Series",
@@ -2650,7 +2980,7 @@
       "date": "2026-06-30",
       "time": "",
       "venueUrl": "https://www.portland5.com/event/dr-matthew-desmond-voice-people-series",
-      "id": 265
+      "id": 298
     },
     {
       "title": "Wednesday Night Social - Cigars, Dominos & Music",
@@ -2660,7 +2990,7 @@
       "date": "2026-07-01",
       "time": "6:00 PM",
       "venueUrl": "https://www.albertastreetpub.com/music/2023/10/18/wednesday-night-social-fkf88-mke97-4227c-l64xx-gss68-cjzan-8lsw3-nbgjn-yr6pm-6kblr-ff6b5-lsmb9-hkw2h-f5mft-hfbdc-nddag-sg2pm-ylbtn-7mp5t-b64gk-lwx2r-tbbpe",
-      "id": 266
+      "id": 299
     },
     {
       "title": "Girli – w/ Creature Party – All Ages",
@@ -2670,7 +3000,7 @@
       "date": "2026-07-01",
       "time": "8:00 PM",
       "venueUrl": "https://www.holocene.org/event/girli-w-creature-party-all-ages/holocene/portland/",
-      "id": 267
+      "id": 300
     },
     {
       "title": "CHUCK ISRAELS JAZZ ORCH – Jazz Titan Thursdays",
@@ -2680,7 +3010,7 @@
       "date": "2026-07-01",
       "time": "8:00 PM",
       "venueUrl": "https://www.jacklondonrevue.com/tm-event/chuck-israels-jazz-orch-jazz-titan-thursdays-4/",
-      "id": 268
+      "id": 301
     },
     {
       "title": "KALEO – Way Down We Go Tour",
@@ -2690,7 +3020,7 @@
       "date": "2026-07-01",
       "time": "",
       "venueUrl": "https://monqui.com/event/kaleo-way-down-we-go-tour/mcmenamins-grand-lodge-concerts/portland-oregon/",
-      "id": 269
+      "id": 302
     },
     {
       "title": "The People's Jam (FREE)",
@@ -2700,7 +3030,7 @@
       "date": "2026-07-01",
       "time": "7:30 PM",
       "venueUrl": "https://www.etix.com/ticket/p/66065978/the-peoples-jam-free-portland-show-bar-at-revolution-hall",
-      "id": 270
+      "id": 303
     },
     {
       "title": "The Thesis",
@@ -2710,7 +3040,7 @@
       "date": "2026-07-02",
       "time": "8:30 PM",
       "venueUrl": "https://www.albertastreetpub.com/music/2026/7/2/the-thesis",
-      "id": 271
+      "id": 304
     },
     {
       "title": "WHEN WE MET with Deepest Darkest & Underwater Cliffs",
@@ -2720,7 +3050,7 @@
       "date": "2026-07-02",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/when-we-met-with-deepest-darkest-underwater-cliffs/",
-      "id": 272
+      "id": 305
     },
     {
       "title": "CITY POP! Japanese Boogie, J-jazz, & New Wave Night – w/ SEASIDE.FM + JOE BALL – 21+",
@@ -2730,7 +3060,7 @@
       "date": "2026-07-02",
       "time": "9:00 PM",
       "venueUrl": "https://www.holocene.org/event/city-pop-japanese-boogie-j-jazz-new-wave-night-w-seaside-fm-joe-ball-21-2/holocene/portland/",
-      "id": 273
+      "id": 306
     },
     {
       "title": "OKONSKI: A Waterfront Blues Afterparty",
@@ -2740,7 +3070,7 @@
       "date": "2026-07-02",
       "time": "9:30 PM",
       "venueUrl": "https://www.jacklondonrevue.com/tm-event/okonski-a-waterfront-blues-afterparty/",
-      "id": 274
+      "id": 307
     },
     {
       "title": "Kurt Vile And The Violators (w/ Ryan Davis + The Roadhouse Band)",
@@ -2750,7 +3080,7 @@
       "date": "2026-07-02",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/92692188/sold-outkurt-vile-and-the-violators-portland-revolution-hall",
-      "id": 275
+      "id": 308
     },
     {
       "title": "2 Cent Fridays - Open Mic Night G-Wade // Deangelo // Doolie",
@@ -2760,7 +3090,7 @@
       "date": "2026-07-03",
       "time": "8:00 PM",
       "venueUrl": "https://www.albertastreetpub.com/music/2026/2/27/2-cent-fridays-open-mic-night-g-wade-deangelo-doolie",
-      "id": 276
+      "id": 309
     },
     {
       "title": "DJ O.G.Too",
@@ -2770,7 +3100,7 @@
       "date": "2026-07-03",
       "time": "8:30 PM",
       "venueUrl": "https://www.albertastreetpub.com/music/2026/7/3/dj-ogtoo",
-      "id": 277
+      "id": 310
     },
     {
       "title": "HOTWAX disco~glam~metal~punk~hiphop",
@@ -2780,7 +3110,7 @@
       "date": "2026-07-03",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/hotwax-discoglammetalpunkhiphop-6/",
-      "id": 278
+      "id": 311
     },
     {
       "title": "KISS ME KISS ME KISS ME (The Cure tribute) with Constant Debauchery (Depeche Mode tribute) & Pacific Monkeys (Arctic Monkeys tribute)",
@@ -2790,7 +3120,7 @@
       "date": "2026-07-03",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/kiss-me-kiss-me-kiss-me-the-cure-tribute-with-constant-debauchery-depeche-mode-tribute-pacific-monkeys-arctic-monkeys-tribute/",
-      "id": 279
+      "id": 312
     },
     {
       "title": "Emo Nite at Holocene presented by Emo Nite LA – 21+ event",
@@ -2800,7 +3130,7 @@
       "date": "2026-07-03",
       "time": "7:00 PM",
       "venueUrl": "https://www.holocene.org/event/emo-nite-at-holocene-presented-by-emo-nite-la-21-event-51/holocene/portland/",
-      "id": 280
+      "id": 313
     },
     {
       "title": "BLUESNIK ORGAN TRIO – Waterfront Blues Afterparty",
@@ -2810,7 +3140,7 @@
       "date": "2026-07-03",
       "time": "9:30 PM",
       "venueUrl": "https://www.jacklondonrevue.com/tm-event/bluesnik-organ-trio-waterfront-blues-afterparty/",
-      "id": 281
+      "id": 314
     },
     {
       "title": "WOLFMOTHER – 20th Anniversary Tour (w/ Love Gang)",
@@ -2820,7 +3150,7 @@
       "date": "2026-07-03",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/70343253/wolfmother-20th-anniversary-tour-portland-revolution-hall",
-      "id": 282
+      "id": 315
     },
     {
       "title": "Drag Brunch Hosted by Nicoleonoscopi!",
@@ -2830,7 +3160,7 @@
       "date": "2026-07-04",
       "time": "12:00 PM",
       "venueUrl": "https://www.albertastreetpub.com/music/2026/5/2/drag-brunch-hosted-by-nicoleonoscopi",
-      "id": 283
+      "id": 316
     },
     {
       "title": "SMASH disco~glam~metal~punk-hiphop",
@@ -2840,7 +3170,7 @@
       "date": "2026-07-04",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/smash-discoglammetalpunk-hiphop-5/",
-      "id": 284
+      "id": 317
     },
     {
       "title": "AFRO DEAD: A Waterfront Blues Afterparty",
@@ -2850,7 +3180,7 @@
       "date": "2026-07-04",
       "time": "9:30 PM",
       "venueUrl": "https://www.jacklondonrevue.com/tm-event/afro-dead/",
-      "id": 285
+      "id": 318
     },
     {
       "title": "SILVER HORSE followed by Sinferno Cabaret",
@@ -2860,7 +3190,7 @@
       "date": "2026-07-05",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/silver-horse-followed-by-sinferno-cabaret/",
-      "id": 286
+      "id": 319
     },
     {
       "title": "Rebirth Brass Band - Mardi Gras in July",
@@ -2870,7 +3200,7 @@
       "date": "2026-07-05",
       "time": "",
       "venueUrl": "https://www.tixr.com/groups/thegetdownpdx/events/music-for-the-masses-dark-80-s-new-wave-nite-188839",
-      "id": 287
+      "id": 320
     },
     {
       "title": "KARAOKE FROM HELL",
@@ -2880,7 +3210,7 @@
       "date": "2026-07-06",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/karaoke-from-hell-96/",
-      "id": 288
+      "id": 321
     },
     {
       "title": "The Moth StorySLAM: REVENGE – 21+",
@@ -2890,7 +3220,7 @@
       "date": "2026-07-06",
       "time": "8:00 PM",
       "venueUrl": "https://www.holocene.org/event/the-moth-storyslam-revenge-21/holocene/portland/",
-      "id": 289
+      "id": 322
     },
     {
       "title": "EMM with TeZATalks, Miss Jaxon, & Papa Titty",
@@ -2900,7 +3230,7 @@
       "date": "2026-07-07",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/emm/",
-      "id": 290
+      "id": 323
     },
     {
       "title": "Ann Patchett With Willy Vlautin",
@@ -2910,7 +3240,7 @@
       "date": "2026-07-07",
       "time": "7:30 PM",
       "venueUrl": "https://www.etix.com/ticket/p/36502414/sold-outann-patchett-with-willy-vlautin-portland-revolution-hall",
-      "id": 291
+      "id": 324
     },
     {
       "title": "*CANCELLED* 3QUENCY – GIRLS TALK TOUR",
@@ -2920,7 +3250,7 @@
       "date": "2026-07-07",
       "time": "8:00 PM",
       "venueUrl": "https://wonderballroom.com/event/cancelled-3quency-girls-talk-tour/wonder-ballroom/portland-oregon/",
-      "id": 292
+      "id": 325
     },
     {
       "title": "Chamber Music Northwest presents NEW@NIGHT: “Lost Freedom: A Memory”",
@@ -2930,7 +3260,7 @@
       "date": "2026-07-08",
       "time": "7:00 PM",
       "venueUrl": "https://albertarosetheatre.com/event/chamber-music-northwest-presents-newnight-lost-freedom-a-memory/alberta-rose-theatre/portland-oregon/",
-      "id": 293
+      "id": 326
     },
     {
       "title": "Mayray / Perimeters / Sylphide – 21+",
@@ -2940,7 +3270,7 @@
       "date": "2026-07-08",
       "time": "9:00 PM",
       "venueUrl": "https://www.holocene.org/event/mayray-perimeters-sylphide-21/holocene/portland/",
-      "id": 294
+      "id": 327
     },
     {
       "title": "Max McNown – The Summer Vacation Tour",
@@ -2950,7 +3280,7 @@
       "date": "2026-07-08",
       "time": "",
       "venueUrl": "https://monqui.com/event/max-mcnown-the-summer-vacation-tour/mcmenamins-grand-lodge-concerts/portland-oregon/",
-      "id": 295
+      "id": 328
     },
     {
       "title": "POSITIVITY CLUB with Girls In Cages, Friday Night Saints, & The Concussions",
@@ -2960,7 +3290,7 @@
       "date": "2026-07-09",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/positivity-club-with-girls-in-cages-friday-night-saints-the-concussions/",
-      "id": 296
+      "id": 329
     },
     {
       "title": "Life on Planets – 21+",
@@ -2970,7 +3300,7 @@
       "date": "2026-07-09",
       "time": "9:00 PM",
       "venueUrl": "https://www.holocene.org/event/life-on-planets-21/holocene/portland/",
-      "id": 297
+      "id": 330
     },
     {
       "title": "Aaron Hibell",
@@ -2980,7 +3310,7 @@
       "date": "2026-07-09",
       "time": "8:00 PM",
       "venueUrl": "https://wonderballroom.com/event/aaron-hibell/wonder-ballroom/portland-oregon/",
-      "id": 298
+      "id": 331
     },
     {
       "title": "HOTWAX disco~glam~metal~punk~hiphop",
@@ -2990,7 +3320,7 @@
       "date": "2026-07-10",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/hotwax-discoglammetalpunkhiphop-7/",
-      "id": 299
+      "id": 332
     },
     {
       "title": "Party Girl – A Night Of Party Girl Anthems – 21+",
@@ -3000,7 +3330,17 @@
       "date": "2026-07-10",
       "time": "7:00 PM",
       "venueUrl": "https://www.holocene.org/event/party-girl-a-night-of-party-girl-anthems-21-7/holocene/portland/",
-      "id": 300
+      "id": 333
+    },
+    {
+      "title": "Wilcone",
+      "venue": "Mississippi Pizza",
+      "neighborhood": "Boise",
+      "address": "3552 N Mississippi Ave",
+      "date": "2026-07-10",
+      "time": "8:00 PM",
+      "venueUrl": "https://mississippipizza.com/event/wilcone/",
+      "id": 334
     },
     {
       "title": "Lucero: Celebrating “That Much Further West\" (w/ Thomas Dollbaum)",
@@ -3010,7 +3350,7 @@
       "date": "2026-07-10",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/34258932/lucerocelebrating-that-much-further-west-portland-revolution-hall",
-      "id": 301
+      "id": 335
     },
     {
       "title": "HOLY LOCUST with Yes Ma'am",
@@ -3020,7 +3360,7 @@
       "date": "2026-07-10",
       "time": "9:00 PM",
       "venueUrl": "https://www.startheaterportland.com/tm-event/holy-locust-with-yes-maam/",
-      "id": 302
+      "id": 336
     },
     {
       "title": "Music for the Masses: Dark 80's New Wave Nite",
@@ -3030,7 +3370,7 @@
       "date": "2026-07-10",
       "time": "",
       "venueUrl": "https://www.tixr.com/groups/thegetdownpdx/events/yacht-rock-remix-3-0-190694",
-      "id": 303
+      "id": 337
     },
     {
       "title": "Have A Nice Life",
@@ -3040,7 +3380,7 @@
       "date": "2026-07-10",
       "time": "8:00 PM",
       "venueUrl": "https://wonderballroom.com/event/have-a-nice-life/wonder-ballroom/portland-oregon/",
-      "id": 304
+      "id": 338
     },
     {
       "title": "Strong Songs Live!",
@@ -3050,7 +3390,7 @@
       "date": "2026-07-11",
       "time": "8:00 PM",
       "venueUrl": "https://albertarosetheatre.com/event/strong-songs-live/alberta-rose-theatre/portland-oregon/",
-      "id": 305
+      "id": 339
     },
     {
       "title": "Killers of Kill Tony",
@@ -3060,7 +3400,7 @@
       "date": "2026-07-11",
       "time": "",
       "venueUrl": "https://www.portland5.com/event/killers-kill-tony",
-      "id": 306
+      "id": 340
     },
     {
       "title": "Forrest Frank: The Jesus Generation Tour",
@@ -3070,7 +3410,7 @@
       "date": "2026-07-11",
       "time": "",
       "venueUrl": "https://www.rosequarter.com/calendar-events/forrest-frank-jul-11-2026",
-      "id": 307
+      "id": 341
     },
     {
       "title": "Sam Grisman Project",
@@ -3080,7 +3420,7 @@
       "date": "2026-07-11",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/96817543/sam-grisman-project-portland-revolution-hall",
-      "id": 308
+      "id": 342
     },
     {
       "title": "Yacht Rock Remix 3.0",
@@ -3090,7 +3430,7 @@
       "date": "2026-07-11",
       "time": "",
       "venueUrl": "https://www.tixr.com/groups/thegetdownpdx/events/fluorescents-187956",
-      "id": 309
+      "id": 343
     },
     {
       "title": "Earlybirds Club",
@@ -3100,7 +3440,7 @@
       "date": "2026-07-11",
       "time": "8:00 PM",
       "venueUrl": "https://wonderballroom.com/event/earlybirds-club-4/wonder-ballroom/portland-oregon/",
-      "id": 310
+      "id": 344
     },
     {
       "title": "Katsura Sunshine’s Rakugo",
@@ -3110,7 +3450,7 @@
       "date": "2026-07-12",
       "time": "7:00 PM",
       "venueUrl": "https://albertarosetheatre.com/event/katsura-sunshines-rakugo/alberta-rose-theatre/portland-oregon/",
-      "id": 311
+      "id": 345
     },
     {
       "title": "ILUKA – The Wings Tour – All Ages",
@@ -3120,7 +3460,7 @@
       "date": "2026-07-12",
       "time": "8:00 PM",
       "venueUrl": "https://www.holocene.org/event/iluka-the-wings-tour-all-ages/holocene/portland/",
-      "id": 312
+      "id": 346
     },
     {
       "title": "Rainbow Kitten Surprise: bones North American Tour",
@@ -3130,7 +3470,7 @@
       "date": "2026-07-12",
       "time": "",
       "venueUrl": "https://monqui.com/event/rainbow-kitten-surprise-bones-north-american-tour/mcmenamins-edgefield/troutdale-oregon/",
-      "id": 313
+      "id": 347
     },
     {
       "title": "KARAOKE FROM HELL",
@@ -3140,7 +3480,7 @@
       "date": "2026-07-13",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/karaoke-from-hell-97/",
-      "id": 314
+      "id": 348
     },
     {
       "title": "Sam Prekop and John McEntire “Sons Of” – Exclusive Live LP Recording Event – 21+",
@@ -3150,7 +3490,7 @@
       "date": "2026-07-14",
       "time": "7:00 PM",
       "venueUrl": "https://www.holocene.org/event/sam-prekop-and-john-mcentire-sons-of-exclusive-live-lp-recording-event-21/holocene/portland/",
-      "id": 315
+      "id": 349
     },
     {
       "title": "Hell’s Kitchen",
@@ -3160,7 +3500,7 @@
       "date": "2026-07-14",
       "time": "",
       "venueUrl": "https://www.portland5.com/event/hells-kitchen",
-      "id": 316
+      "id": 350
     },
     {
       "title": "Charley Crockett – Age of the Ram Tour",
@@ -3170,7 +3510,17 @@
       "date": "2026-07-14",
       "time": "",
       "venueUrl": "https://monqui.com/event/charley-crockett-age-of-the-ram-tour/mcmenamins-edgefield/troutdale-oregon/",
-      "id": 317
+      "id": 351
+    },
+    {
+      "title": "Haley Harkin + Sophie Bird + Not Lenny",
+      "venue": "Mississippi Pizza",
+      "neighborhood": "Boise",
+      "address": "3552 N Mississippi Ave",
+      "date": "2026-07-14",
+      "time": "8:00 PM",
+      "venueUrl": "https://mississippipizza.com/event/haley-harkin-sophie-bird-not-lenny/",
+      "id": 352
     },
     {
       "title": "Teddy Thompson",
@@ -3180,7 +3530,7 @@
       "date": "2026-07-15",
       "time": "7:30 PM",
       "venueUrl": "https://albertarosetheatre.com/event/teddy-thompson/alberta-rose-theatre/portland-oregon/",
-      "id": 318
+      "id": 353
     },
     {
       "title": "MOONDOGGY & Sun Casino",
@@ -3190,7 +3540,7 @@
       "date": "2026-07-15",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/moondoggy-guests/",
-      "id": 319
+      "id": 354
     },
     {
       "title": "Jewelry Exchange / The Social Stomach / Negative Concord – 21+",
@@ -3200,7 +3550,7 @@
       "date": "2026-07-15",
       "time": "9:00 PM",
       "venueUrl": "https://www.holocene.org/event/jewelry-exchange-the-social-stomach-negative-concord-21/holocene/portland/",
-      "id": 320
+      "id": 355
     },
     {
       "title": "Bob Moses & Cannons: Afterglow Tour",
@@ -3210,7 +3560,7 @@
       "date": "2026-07-15",
       "time": "",
       "venueUrl": "https://monqui.com/event/bob-moses-cannons-afterglow-tour/mcmenamins-edgefield/troutdale-oregon/",
-      "id": 321
+      "id": 356
     },
     {
       "title": "Fiddlehead (w/ Narrow Head, Knumears, Destiny Bond)",
@@ -3220,7 +3570,7 @@
       "date": "2026-07-15",
       "time": "7:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/71472893/fiddlehead-portland-revolution-hall",
-      "id": 322
+      "id": 357
     },
     {
       "title": "Fluorescents",
@@ -3230,7 +3580,7 @@
       "date": "2026-07-15",
       "time": "",
       "venueUrl": "https://www.tixr.com/groups/thegetdownpdx/events/a-spellman-spectacle-189464",
-      "id": 323
+      "id": 358
     },
     {
       "title": "Rizo and Courtney Act in THE JOY REVIVAL TRAIN",
@@ -3240,7 +3590,7 @@
       "date": "2026-07-16",
       "time": "8:00 PM",
       "venueUrl": "https://albertarosetheatre.com/event/rizo-and-courtney-act-in-the-joy-revival-train/alberta-rose-theatre/portland-oregon/",
-      "id": 324
+      "id": 359
     },
     {
       "title": "VALKERIE with Here’s To Hoping, Rat Wizard, & Stoning Giants",
@@ -3250,7 +3600,7 @@
       "date": "2026-07-16",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/valkerie-with-heres-to-hoping-rat-wizard-stoning-giants/",
-      "id": 325
+      "id": 360
     },
     {
       "title": "BANG: Queer Techno Transmission – 21+",
@@ -3260,7 +3610,7 @@
       "date": "2026-07-16",
       "time": "7:00 PM",
       "venueUrl": "https://www.holocene.org/event/bang-queer-techno-transmission-21/holocene/portland/",
-      "id": 326
+      "id": 361
     },
     {
       "title": "CHUCK ISRAELS JAZZ ORCH – Jazz Titan Thursdays",
@@ -3270,7 +3620,7 @@
       "date": "2026-07-16",
       "time": "8:00 PM",
       "venueUrl": "https://www.jacklondonrevue.com/tm-event/chuck-israels-jazz-orch-jazz-titan-thursdays-5/",
-      "id": 327
+      "id": 362
     },
     {
       "title": "A Spellman Spectacle",
@@ -3280,7 +3630,7 @@
       "date": "2026-07-16",
       "time": "",
       "venueUrl": "https://www.tixr.com/groups/thegetdownpdx/events/get-into-it-188837",
-      "id": 328
+      "id": 363
     },
     {
       "title": "Shinyribs",
@@ -3290,7 +3640,7 @@
       "date": "2026-07-17",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/61491561/shinyribs-portland-aladdin-theater",
-      "id": 329
+      "id": 364
     },
     {
       "title": "Back to the Barre",
@@ -3300,7 +3650,7 @@
       "date": "2026-07-17",
       "time": "8:00 PM",
       "venueUrl": "https://albertarosetheatre.com/event/back-to-the-barre/alberta-rose-theatre/portland-oregon/",
-      "id": 330
+      "id": 365
     },
     {
       "title": "FANG with Roundeye, The Besmirchers, & NOR/ME",
@@ -3310,7 +3660,7 @@
       "date": "2026-07-17",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/fang-with-roundeye-the-besmirchers-nor-me/",
-      "id": 331
+      "id": 366
     },
     {
       "title": "HOTWAX disco~glam~metal~punk~hiphop",
@@ -3320,7 +3670,7 @@
       "date": "2026-07-17",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/hotwax-discoglammetalpunkhiphop-8/",
-      "id": 332
+      "id": 367
     },
     {
       "title": "Nation of Language and Deep Sea Diver",
@@ -3330,7 +3680,7 @@
       "date": "2026-07-17",
       "time": "",
       "venueUrl": "https://monqui.com/event/nation-of-language-and-deep-sea-diver/mcmenamins-grand-lodge-concerts/portland-oregon/",
-      "id": 333
+      "id": 368
     },
     {
       "title": "PRIDE IN DEMAND: PORTLAND QUEER TAKEOVER",
@@ -3340,7 +3690,7 @@
       "date": "2026-07-17",
       "time": "9:00 PM",
       "venueUrl": "https://www.startheaterportland.com/tm-event/pride-in-demand-portland-queer-takeover/",
-      "id": 334
+      "id": 369
     },
     {
       "title": "GET INTO IT",
@@ -3350,7 +3700,7 @@
       "date": "2026-07-17",
       "time": "",
       "venueUrl": "https://www.tixr.com/groups/thegetdownpdx/events/chris-karns-192064",
-      "id": 335
+      "id": 370
     },
     {
       "title": "BOYeurism: Pride Spectacular",
@@ -3360,7 +3710,7 @@
       "date": "2026-07-18",
       "time": "8:00 PM",
       "venueUrl": "https://albertarosetheatre.com/event/boyeurism-pride-spectacular-2/alberta-rose-theatre/portland-oregon/",
-      "id": 336
+      "id": 371
     },
     {
       "title": "NICK LUTSKO & THE $100K BAND with Guests",
@@ -3370,7 +3720,7 @@
       "date": "2026-07-18",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/nick-lutsko-the-100k-band-with-guests/",
-      "id": 337
+      "id": 372
     },
     {
       "title": "GARRET T WILLIE",
@@ -3380,7 +3730,17 @@
       "date": "2026-07-18",
       "time": "8:00 PM",
       "venueUrl": "https://www.jacklondonrevue.com/tm-event/garret-t-willie/",
-      "id": 338
+      "id": 373
+    },
+    {
+      "title": "Sueño Eterno",
+      "venue": "Mississippi Pizza",
+      "neighborhood": "Boise",
+      "address": "3552 N Mississippi Ave",
+      "date": "2026-07-18",
+      "time": "5:00 PM",
+      "venueUrl": "https://mississippipizza.com/event/sue%c3%b1o-eterno/",
+      "id": 374
     },
     {
       "title": "Joji: Solaris",
@@ -3390,7 +3750,7 @@
       "date": "2026-07-18",
       "time": "",
       "venueUrl": "https://www.rosequarter.com/calendar-events/joji-jul-18-2026",
-      "id": 339
+      "id": 375
     },
     {
       "title": "Pavement (w/ Street Nights)",
@@ -3400,7 +3760,7 @@
       "date": "2026-07-18",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/79546642/sold-outpavement-portland-revolution-hall",
-      "id": 340
+      "id": 376
     },
     {
       "title": "PRIDE IN DEMAND: PORTLAND QUEER TAKEOVER",
@@ -3410,7 +3770,7 @@
       "date": "2026-07-18",
       "time": "9:00 PM",
       "venueUrl": "https://www.startheaterportland.com/tm-event/pride-in-demand-portland-queer-takeover-2/",
-      "id": 341
+      "id": 377
     },
     {
       "title": "Chai & Roses Pride Party: A Sunday Tea Dance for QTBIPOC & Allies – 21+",
@@ -3420,7 +3780,7 @@
       "date": "2026-07-19",
       "time": "7:00 PM",
       "venueUrl": "https://www.holocene.org/event/chai-roses-pride-party-a-sunday-tea-dance-for-qtbipoc-allies-21-2/holocene/portland/",
-      "id": 342
+      "id": 378
     },
     {
       "title": "Hedwig And The Angry Inch 25th Anniversary Movie Tour - Director's Commentary W/ John Cameron Mitchell",
@@ -3430,7 +3790,7 @@
       "date": "2026-07-19",
       "time": "1:30 PM",
       "venueUrl": "https://www.etix.com/ticket/p/89386118/hedwig-and-the-angry-inch-25th-anniversary-movie-tour-directors-commentary-wjohn-cameron-mitchell-portland-revolution-hall",
-      "id": 343
+      "id": 379
     },
     {
       "title": "Hedwig And The Angry Inch 25th Anniversary Movie Tour W/ John Cameron Mitchell",
@@ -3440,7 +3800,7 @@
       "date": "2026-07-19",
       "time": "6:30 PM",
       "venueUrl": "https://www.etix.com/ticket/p/96843255/sold-outhedwig-and-the-angry-inch-25th-anniversary-movie-tour-wjohn-cameron-mitchell-portland-revolution-hall",
-      "id": 344
+      "id": 380
     },
     {
       "title": "KARAOKE FROM HELL",
@@ -3450,7 +3810,17 @@
       "date": "2026-07-20",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/karaoke-from-hell-98/",
-      "id": 345
+      "id": 381
+    },
+    {
+      "title": "Jeff Toth With Liney Blu",
+      "venue": "Mississippi Pizza",
+      "neighborhood": "Boise",
+      "address": "3552 N Mississippi Ave",
+      "date": "2026-07-20",
+      "time": "8:00 PM",
+      "venueUrl": "https://mississippipizza.com/event/jeff-toth-with-liney-blu/",
+      "id": 382
     },
     {
       "title": "PDX Songwriters Open Mic (FREE)",
@@ -3460,7 +3830,7 @@
       "date": "2026-07-20",
       "time": "7:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/89516640/pdx-songwriters-open-mic-free-portland-show-bar-at-revolution-hall",
-      "id": 346
+      "id": 383
     },
     {
       "title": "Riff Wood",
@@ -3470,7 +3840,17 @@
       "date": "2026-07-21",
       "time": "9:00 PM",
       "venueUrl": "https://www.holocene.org/event/riff-wood/monqui-presents/portland-oregon/",
-      "id": 347
+      "id": 384
+    },
+    {
+      "title": "Spencer Kilpatrick & The Sand Gators",
+      "venue": "Mississippi Pizza",
+      "neighborhood": "Boise",
+      "address": "3552 N Mississippi Ave",
+      "date": "2026-07-21",
+      "time": "8:00 PM",
+      "venueUrl": "https://mississippipizza.com/event/spencer-kilpatrick-the-sand-gators/",
+      "id": 385
     },
     {
       "title": "Science On Tap – How Did the Frog Cross the Road? Portland’s Frog Tunnel",
@@ -3480,7 +3860,7 @@
       "date": "2026-07-22",
       "time": "7:00 PM",
       "venueUrl": "https://albertarosetheatre.com/event/science-on-tap-how-did-the-frog-cross-the-road-portlands-frog-tunnel/alberta-rose-theatre/portland-oregon/",
-      "id": 348
+      "id": 386
     },
     {
       "title": "Chance Peña",
@@ -3490,7 +3870,7 @@
       "date": "2026-07-22",
       "time": "",
       "venueUrl": "https://monqui.com/event/chance-pena-2/crystal-ballroom/portland-oregon/",
-      "id": 349
+      "id": 387
     },
     {
       "title": "HAUNT ME with Cathedral Bells, Holy Water and DJs Danse Du Corpse and Final Girl",
@@ -3500,7 +3880,7 @@
       "date": "2026-07-22",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/haunt-me/",
-      "id": 350
+      "id": 388
     },
     {
       "title": "BLACK MILK",
@@ -3510,7 +3890,7 @@
       "date": "2026-07-22",
       "time": "8:00 PM",
       "venueUrl": "https://www.jacklondonrevue.com/tm-event/black-milk/",
-      "id": 351
+      "id": 389
     },
     {
       "title": "Music on Main: Gata Galáctica",
@@ -3520,7 +3900,7 @@
       "date": "2026-07-22",
       "time": "",
       "venueUrl": "https://www.portland5.com/event/music-main-gata-galactica",
-      "id": 352
+      "id": 390
     },
     {
       "title": "Maren Morris: the dreamGIRL tour",
@@ -3530,7 +3910,7 @@
       "date": "2026-07-22",
       "time": "",
       "venueUrl": "https://monqui.com/event/maren-morris-the-dreamgirl-tour/mcmenamins-grand-lodge-concerts/portland-oregon/",
-      "id": 353
+      "id": 391
     },
     {
       "title": "Ocean Vuong in Conversation With Dao Strom",
@@ -3540,7 +3920,7 @@
       "date": "2026-07-22",
       "time": "7:30 PM",
       "venueUrl": "https://www.etix.com/ticket/p/52821094/ocean-vuong-in-conversation-with-dao-strom-portland-revolution-hall",
-      "id": 354
+      "id": 392
     },
     {
       "title": "NOT HERE ANYMORE with Dismantle Me, BRIA, & OSHA Violations",
@@ -3550,7 +3930,7 @@
       "date": "2026-07-23",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/not-here-anymore-with-dismantle-me-bria-osha-violations/",
-      "id": 355
+      "id": 393
     },
     {
       "title": "Video Game Rave – 21+",
@@ -3560,7 +3940,7 @@
       "date": "2026-07-23",
       "time": "9:00 PM",
       "venueUrl": "https://www.holocene.org/event/video-game-rave-21-2/holocene/portland/",
-      "id": 356
+      "id": 394
     },
     {
       "title": "MEL BROWN B3 ORGAN GROUP – Jazz Titan Thursdays",
@@ -3570,7 +3950,7 @@
       "date": "2026-07-23",
       "time": "8:00 PM",
       "venueUrl": "https://www.jacklondonrevue.com/tm-event/mel-brown-b3-organ-group-4/",
-      "id": 357
+      "id": 395
     },
     {
       "title": "Mary Flower and Leon Cotter CD Release",
@@ -3580,7 +3960,7 @@
       "date": "2026-07-23",
       "time": "7:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/78136091/mary-flower-and-leon-cotter-cd-release-portland-show-bar-at-revolution-hall",
-      "id": 358
+      "id": 396
     },
     {
       "title": "Super Greens // Supernatural Beavers",
@@ -3590,7 +3970,7 @@
       "date": "2026-07-24",
       "time": "9:00 PM",
       "venueUrl": "https://www.albertastreetpub.com/music/2026/7/24/super-greens-supernatural-beavers",
-      "id": 359
+      "id": 397
     },
     {
       "title": "HOTWAX disco~glam~metal~punk~hiphop",
@@ -3600,7 +3980,7 @@
       "date": "2026-07-24",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/hotwax-discoglammetalpunkhiphop-9/",
-      "id": 360
+      "id": 398
     },
     {
       "title": "THE SOAPGIRLS & Guests",
@@ -3610,7 +3990,7 @@
       "date": "2026-07-24",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/the-soapgirls-guests/",
-      "id": 361
+      "id": 399
     },
     {
       "title": "Fulton Lee – Sing With Me Tour 2026 *MOVED TO HAWTHORNE THEATRE*",
@@ -3620,7 +4000,7 @@
       "date": "2026-07-24",
       "time": "",
       "venueUrl": "https://www.etix.com/ticket/p/54748356/fulton-lee-sing-with-me-tour-2026-portland-roseland-theater?partner_id=100",
-      "id": 362
+      "id": 400
     },
     {
       "title": "POP OFF! LGBTQ+ POP & EDM PARTY! – 21+",
@@ -3630,7 +4010,7 @@
       "date": "2026-07-24",
       "time": "5:00 PM",
       "venueUrl": "https://www.holocene.org/event/pop-off-lgbtq-pop-edm-party-21/holocene/portland/",
-      "id": 363
+      "id": 401
     },
     {
       "title": "An Evening with CAKE",
@@ -3640,7 +4020,7 @@
       "date": "2026-07-24",
       "time": "",
       "venueUrl": "https://monqui.com/event/an-evening-with-cake-2/mcmenamins-edgefield/troutdale-oregon/",
-      "id": 364
+      "id": 402
     },
     {
       "title": "Benjamin Tod & Lost Dog Street Band (Night 1) (w/ Kelsey Waldon)",
@@ -3650,7 +4030,7 @@
       "date": "2026-07-24",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/95623476/benjamin-tod-lost-dog-street-band-night-1-portland-revolution-hall",
-      "id": 365
+      "id": 403
     },
     {
       "title": "PERREOLAND | PORTLAND",
@@ -3660,7 +4040,7 @@
       "date": "2026-07-24",
       "time": "",
       "venueUrl": "https://www.etix.com/ticket/p/75170616/perreo-land-portland-roseland-theater?partner_id=100",
-      "id": 366
+      "id": 404
     },
     {
       "title": "MATTE BLVCK – HOUSE OF SERPENTS TOUR with Snakes of Russia and So Much Blood",
@@ -3670,7 +4050,7 @@
       "date": "2026-07-24",
       "time": "9:00 PM",
       "venueUrl": "https://www.startheaterportland.com/tm-event/matte-blvck-house-of-serpents-tour-with-snakes-of-russia-and-so-much-blood/",
-      "id": 367
+      "id": 405
     },
     {
       "title": "Chris Karns",
@@ -3680,7 +4060,7 @@
       "date": "2026-07-24",
       "time": "",
       "venueUrl": "https://www.tixr.com/groups/thegetdownpdx/events/rave-jesus-presents-rave-revival-193551",
-      "id": 368
+      "id": 406
     },
     {
       "title": "Steam Powered Giraffe",
@@ -3690,7 +4070,7 @@
       "date": "2026-07-25",
       "time": "7:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/62978646/steam-powered-giraffe-portland-aladdin-theater",
-      "id": 369
+      "id": 407
     },
     {
       "title": "Booklover’s Burlesque – BANNED BOOKS EDITION",
@@ -3700,7 +4080,7 @@
       "date": "2026-07-25",
       "time": "7:00 PM",
       "venueUrl": "https://albertarosetheatre.com/event/booklovers-burlesque-banned-books-edition-3/alberta-rose-theatre/portland-oregon/",
-      "id": 370
+      "id": 408
     },
     {
       "title": "Marielle V Jakobsons, David Wesley Golightly, Marcus Fischer – EARLY SHOW! – 21+",
@@ -3710,7 +4090,7 @@
       "date": "2026-07-25",
       "time": "6:00 PM",
       "venueUrl": "https://www.holocene.org/event/marielle-v-jakobsons-david-wesley-golightly-marcus-fischer-early-show-21/holocene/portland/",
-      "id": 371
+      "id": 409
     },
     {
       "title": "THE HAPPYS",
@@ -3720,7 +4100,7 @@
       "date": "2026-07-25",
       "time": "8:00 PM",
       "venueUrl": "https://www.jacklondonrevue.com/tm-event/the-happys/",
-      "id": 372
+      "id": 410
     },
     {
       "title": "An Evening with CAKE",
@@ -3730,7 +4110,7 @@
       "date": "2026-07-25",
       "time": "",
       "venueUrl": "https://monqui.com/event/an-evening-with-cake-3/mcmenamins-edgefield/troutdale-oregon/",
-      "id": 373
+      "id": 411
     },
     {
       "title": "Benjamin Tod & Lost Dog Street Band (Night 2) (w/ Kelsey Waldon)",
@@ -3740,7 +4120,7 @@
       "date": "2026-07-25",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/99501577/benjamin-tod-lost-dog-street-band-night-2-portland-revolution-hall",
-      "id": 374
+      "id": 412
     },
     {
       "title": "Rave Jesus Presents Rave Revival",
@@ -3750,7 +4130,7 @@
       "date": "2026-07-25",
       "time": "",
       "venueUrl": "https://www.tixr.com/groups/thegetdownpdx/events/deadhead-disco-jerry-s-birthday-celebration-188785",
-      "id": 375
+      "id": 413
     },
     {
       "title": "Trap Bingo - Hosted by Seeznin!",
@@ -3760,7 +4140,7 @@
       "date": "2026-07-26",
       "time": "6:30 PM",
       "venueUrl": "https://www.albertastreetpub.com/music/2026/5/31/trap-bingo-hosted-by-seeznin",
-      "id": 376
+      "id": 414
     },
     {
       "title": "SHOUT! 60’s Discotheque Dance Party w/DJ Drew Groove – 21+",
@@ -3770,7 +4150,7 @@
       "date": "2026-07-26",
       "time": "8:00 PM",
       "venueUrl": "https://www.holocene.org/event/shout-60s-discotheque-dance-party-w-dj-drew-groove-21-2/holocene/portland/",
-      "id": 377
+      "id": 415
     },
     {
       "title": "Young the Giant – Victory Garden Tour",
@@ -3780,7 +4160,7 @@
       "date": "2026-07-26",
       "time": "",
       "venueUrl": "https://monqui.com/event/young-the-giant-victory-garden-tour/mcmenamins-edgefield/troutdale-oregon/",
-      "id": 378
+      "id": 416
     },
     {
       "title": "KIM GORDON - PLAY ME TOUR (w/ SASAMI)",
@@ -3790,7 +4170,7 @@
       "date": "2026-07-26",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/84649109/kim-gordon-play-me-tour-portland-revolution-hall",
-      "id": 379
+      "id": 417
     },
     {
       "title": "KARAOKE FROM HELL",
@@ -3800,7 +4180,7 @@
       "date": "2026-07-27",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/karaoke-from-hell-99/",
-      "id": 380
+      "id": 418
     },
     {
       "title": "Of Monsters and Men – The Mouse Parade Tour",
@@ -3810,7 +4190,7 @@
       "date": "2026-07-27",
       "time": "",
       "venueUrl": "https://monqui.com/event/of-monsters-and-men-the-mouse-parade-tour/mcmenamins-edgefield/troutdale-oregon/",
-      "id": 381
+      "id": 419
     },
     {
       "title": "ALEJANDRO ARANDA",
@@ -3820,7 +4200,7 @@
       "date": "2026-07-27",
       "time": "8:00 PM",
       "venueUrl": "https://www.startheaterportland.com/tm-event/alejandro-aranda/",
-      "id": 382
+      "id": 420
     },
     {
       "title": "of Montreal",
@@ -3830,7 +4210,7 @@
       "date": "2026-07-27",
       "time": "6:00 PM",
       "venueUrl": "https://wonderballroom.com/event/of-montreal-4/wonder-ballroom/portland-oregon/",
-      "id": 383
+      "id": 421
     },
     {
       "title": "James McMurtry and the Martial Law Review",
@@ -3840,7 +4220,7 @@
       "date": "2026-07-28",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/58628736/james-mcmurtry-and-the-martial-law-review-portland-aladdin-theater",
-      "id": 384
+      "id": 422
     },
     {
       "title": "EDGE OF PARADISE & STARKILL with Vintersea & Guests",
@@ -3850,7 +4230,7 @@
       "date": "2026-07-28",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/edge-of-paradise-starkill-with-vintersea-guests/",
-      "id": 385
+      "id": 423
     },
     {
       "title": "ANDERS OSBORNE & JACKIE GREENE",
@@ -3860,7 +4240,7 @@
       "date": "2026-07-28",
       "time": "8:00 PM",
       "venueUrl": "https://www.startheaterportland.com/tm-event/anders-osborne-jackie-greene/",
-      "id": 386
+      "id": 424
     },
     {
       "title": "Black Moth Super Rainbow",
@@ -3870,7 +4250,7 @@
       "date": "2026-07-28",
       "time": "8:00 PM",
       "venueUrl": "https://wonderballroom.com/event/black-moth-super-rainbow/wonder-ballroom/portland-oregon/",
-      "id": 387
+      "id": 425
     },
     {
       "title": "WU LYF",
@@ -3880,7 +4260,7 @@
       "date": "2026-07-29",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/94420452/wu-lyf-portland-aladdin-theater",
-      "id": 388
+      "id": 426
     },
     {
       "title": "MICAH AND THE MIRRORS with Masters Of Karate, Advisor, & Stunt Drummer",
@@ -3890,7 +4270,7 @@
       "date": "2026-07-29",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/micah-and-the-mirrors-with-masters-of-karate-advisor-stunt-drummer/",
-      "id": 389
+      "id": 427
     },
     {
       "title": "Music on Main: The Low Bar Chorale",
@@ -3900,7 +4280,7 @@
       "date": "2026-07-29",
       "time": "",
       "venueUrl": "https://www.portland5.com/event/music-main-low-bar-chorale",
-      "id": 390
+      "id": 428
     },
     {
       "title": "JOSH TATOFI",
@@ -3910,7 +4290,7 @@
       "date": "2026-07-29",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/73605294/josh-tatofi-portland-revolution-hall",
-      "id": 391
+      "id": 429
     },
     {
       "title": "SIGH (JAPAN) with Dreadnought (Denver) and Mania",
@@ -3920,7 +4300,7 @@
       "date": "2026-07-29",
       "time": "9:00 PM",
       "venueUrl": "https://www.startheaterportland.com/tm-event/sigh-japan-with-dreadnought-denver-and-mania/",
-      "id": 392
+      "id": 430
     },
     {
       "title": "CHUCK ISRAELS JAZZ ORCH – Jazz Titan Thursdays",
@@ -3930,7 +4310,7 @@
       "date": "2026-07-30",
       "time": "8:00 PM",
       "venueUrl": "https://www.jacklondonrevue.com/tm-event/chuck-israels-jazz-orch-jazz-titan-thursdays-6/",
-      "id": 393
+      "id": 431
     },
     {
       "title": "Willow Avalon – Pink Pocket Pistol Tour",
@@ -3940,7 +4320,7 @@
       "date": "2026-07-30",
       "time": "8:00 PM",
       "venueUrl": "https://wonderballroom.com/event/willow-avalon-pink-pocket-pistol-tour/wonder-ballroom/portland-oregon/",
-      "id": 394
+      "id": 432
     },
     {
       "title": "HOTWAX disco~glam~metal~punk~hiphop",
@@ -3950,7 +4330,7 @@
       "date": "2026-07-31",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/hotwax-discoglammetalpunkhiphop-10/",
-      "id": 395
+      "id": 433
     },
     {
       "title": "LOWDOWN BRASS BAND",
@@ -3960,7 +4340,7 @@
       "date": "2026-07-31",
       "time": "8:00 PM",
       "venueUrl": "https://www.jacklondonrevue.com/tm-event/lowdown-brass-band/",
-      "id": 396
+      "id": 434
     },
     {
       "title": "Myles Smith – My Mess, My Heart, My Life Tour",
@@ -3970,7 +4350,17 @@
       "date": "2026-07-31",
       "time": "",
       "venueUrl": "https://monqui.com/event/myles-smith-my-mess-my-heart-my-life-tour/mcmenamins-edgefield/troutdale-oregon/",
-      "id": 397
+      "id": 435
+    },
+    {
+      "title": ".COM",
+      "venue": "Mississippi Pizza",
+      "neighborhood": "Boise",
+      "address": "3552 N Mississippi Ave",
+      "date": "2026-07-31",
+      "time": "8:00 PM",
+      "venueUrl": "https://mississippipizza.com/event/com/",
+      "id": 436
     },
     {
       "title": "DeVotchKa “A Tribute to the Music of Little Miss Sunshine” (w/ Black Viiolet)",
@@ -3980,7 +4370,7 @@
       "date": "2026-07-31",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/76824332/devotchka-a-tribute-to-the-music-of-little-miss-sunshine-portland-revolution-hall",
-      "id": 398
+      "id": 437
     },
     {
       "title": "Deadhead Disco: Jerry's Birthday Celebration",
@@ -3990,7 +4380,7 @@
       "date": "2026-07-31",
       "time": "",
       "venueUrl": "https://www.tixr.com/groups/thegetdownpdx/events/random-rab-192789",
-      "id": 399
+      "id": 438
     },
     {
       "title": "GrindHouse disco~glam~metal~punk",
@@ -4000,7 +4390,7 @@
       "date": "2026-08-01",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/grindhouse-discoglammetalpunk-2/",
-      "id": 400
+      "id": 439
     },
     {
       "title": "JOHN PRIMER",
@@ -4010,7 +4400,7 @@
       "date": "2026-08-01",
       "time": "8:00 PM",
       "venueUrl": "https://www.jacklondonrevue.com/tm-event/john-primer/",
-      "id": 401
+      "id": 440
     },
     {
       "title": "Harry Potter and the Cursed Child",
@@ -4020,7 +4410,7 @@
       "date": "2026-08-01",
       "time": "",
       "venueUrl": "https://www.portland5.com/event/harry-potter-and-cursed-child",
-      "id": 402
+      "id": 441
     },
     {
       "title": "Megan Moroney: The Cloud 9 Tour",
@@ -4030,7 +4420,7 @@
       "date": "2026-08-01",
       "time": "",
       "venueUrl": "https://www.rosequarter.com/calendar-events/megan-moroney-aug-1-2026",
-      "id": 403
+      "id": 442
     },
     {
       "title": "Old 97's (w/ River Shook)",
@@ -4040,7 +4430,7 @@
       "date": "2026-08-01",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/43471923/old-97s-portland-revolution-hall",
-      "id": 404
+      "id": 443
     },
     {
       "title": "Rumble At The Roseland #134",
@@ -4050,7 +4440,7 @@
       "date": "2026-08-01",
       "time": "",
       "venueUrl": "https://www.etix.com/ticket/p/46364184/rumble-at-the-roseland-134-portland-roseland-theater?partner_id=100",
-      "id": 405
+      "id": 444
     },
     {
       "title": "Blisspop Presents: Hot In Herre: 2000s Dance Party",
@@ -4060,7 +4450,7 @@
       "date": "2026-08-01",
       "time": "8:00 PM",
       "venueUrl": "https://wonderballroom.com/event/blisspop-presents-hot-in-herre-2000s-dance-party/wonder-ballroom/portland-oregon/",
-      "id": 406
+      "id": 445
     },
     {
       "title": "The Downside with Gianmarco Soresi and Russell Daniels Live!",
@@ -4070,7 +4460,7 @@
       "date": "2026-08-02",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/59948073/the-downside-with-gianmarco-soresi-and-russell-daniels-live-portland-aladdin-theater",
-      "id": 407
+      "id": 446
     },
     {
       "title": "Bad Nerves (w/ The Death Chat)",
@@ -4080,7 +4470,7 @@
       "date": "2026-08-02",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/63476015/bad-nerves-portland-revolution-hall",
-      "id": 408
+      "id": 447
     },
     {
       "title": "The Strike",
@@ -4090,7 +4480,7 @@
       "date": "2026-08-03",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/34068383/the-strike-portland-aladdin-theater",
-      "id": 409
+      "id": 448
     },
     {
       "title": "KARAOKE FROM HELL",
@@ -4100,7 +4490,7 @@
       "date": "2026-08-03",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/karaoke-from-hell-100/",
-      "id": 410
+      "id": 449
     },
     {
       "title": "Poppy (w/ Landmvrks, Thousand Below with Landmvrks, Thousand Below end event sub header)",
@@ -4110,7 +4500,7 @@
       "date": "2026-08-03",
       "time": "",
       "venueUrl": "https://www.etix.com/ticket/p/56475022/poppy-portland-roseland-theater?partner_id=100",
-      "id": 411
+      "id": 450
     },
     {
       "title": "MC CHRIS with Mega Ran",
@@ -4120,7 +4510,7 @@
       "date": "2026-08-04",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/mc-chris-with-mega-ran/",
-      "id": 412
+      "id": 451
     },
     {
       "title": "The Marvelous Miss Gender Starring BOSCO",
@@ -4130,7 +4520,7 @@
       "date": "2026-08-04",
       "time": "",
       "venueUrl": "https://www.portland5.com/event/marvelous-miss-gender-starring-bosco",
-      "id": 413
+      "id": 452
     },
     {
       "title": "Motionless in White: The Sweat and Blood Tour",
@@ -4140,7 +4530,7 @@
       "date": "2026-08-04",
       "time": "",
       "venueUrl": "https://www.rosequarter.com/calendar-events/motionless-in-white-aug-4-2026",
-      "id": 414
+      "id": 453
     },
     {
       "title": "the FIXX",
@@ -4150,7 +4540,7 @@
       "date": "2026-08-05",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/64978803/the-fixx-portland-aladdin-theater",
-      "id": 415
+      "id": 454
     },
     {
       "title": "Dailey & Vincent",
@@ -4160,7 +4550,7 @@
       "date": "2026-08-05",
       "time": "7:00 PM",
       "venueUrl": "https://albertarosetheatre.com/event/dailey-vincent/alberta-rose-theatre/portland-oregon/",
-      "id": 416
+      "id": 455
     },
     {
       "title": "Avalon Emerson & the Charm – 21+",
@@ -4170,7 +4560,7 @@
       "date": "2026-08-05",
       "time": "8:00 PM",
       "venueUrl": "https://www.holocene.org/event/avalon-emerson-the-charm-21/holocene/portland/",
-      "id": 417
+      "id": 456
     },
     {
       "title": "Music on Main: Garcia Birthday Band",
@@ -4180,7 +4570,7 @@
       "date": "2026-08-05",
       "time": "",
       "venueUrl": "https://www.portland5.com/event/music-main-garcia-birthday-band",
-      "id": 418
+      "id": 457
     },
     {
       "title": "Benson Boone: The Wanted Man Tour",
@@ -4190,7 +4580,7 @@
       "date": "2026-08-05",
       "time": "",
       "venueUrl": "https://www.rosequarter.com/calendar-events/benson-boone-aug-5-2026",
-      "id": 419
+      "id": 458
     },
     {
       "title": "The People's Jam (FREE)",
@@ -4200,7 +4590,7 @@
       "date": "2026-08-05",
       "time": "7:30 PM",
       "venueUrl": "https://www.etix.com/ticket/p/71837766/the-peoples-jam-free-portland-show-bar-at-revolution-hall",
-      "id": 420
+      "id": 459
     },
     {
       "title": "Otha: Club 20 Tour 2026 – w/ Digital Warthog – 21+",
@@ -4210,7 +4600,7 @@
       "date": "2026-08-06",
       "time": "9:00 PM",
       "venueUrl": "https://www.holocene.org/event/otha-club-20-tour-2026-w-digital-warthog-21/holocene/portland/",
-      "id": 421
+      "id": 460
     },
     {
       "title": "Interpol – North America Tour 2026",
@@ -4220,7 +4610,7 @@
       "date": "2026-08-06",
       "time": "",
       "venueUrl": "https://monqui.com/event/interpol-north-america-tour-2026/mcmenamins-edgefield/troutdale-oregon/",
-      "id": 422
+      "id": 461
     },
     {
       "title": "The Robert Cray Band",
@@ -4230,7 +4620,7 @@
       "date": "2026-08-07",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/43724102/the-robert-cray-band-portland-aladdin-theater",
-      "id": 423
+      "id": 462
     },
     {
       "title": "Pedro Pastor y Los Locos Descalzos",
@@ -4240,7 +4630,7 @@
       "date": "2026-08-07",
       "time": "8:00 PM",
       "venueUrl": "https://albertarosetheatre.com/event/pedro-pastor-y-los-locos-descalzos/alberta-rose-theatre/portland-oregon/",
-      "id": 424
+      "id": 463
     },
     {
       "title": "Ali Wong Live",
@@ -4250,7 +4640,7 @@
       "date": "2026-08-07",
       "time": "",
       "venueUrl": "https://www.portland5.com/event/ali-wong-live",
-      "id": 425
+      "id": 464
     },
     {
       "title": "HOTWAX disco~glam~metal~punk~hiphop",
@@ -4260,7 +4650,7 @@
       "date": "2026-08-07",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/hotwax-discoglammetalpunkhiphop-11/",
-      "id": 426
+      "id": 465
     },
     {
       "title": "Tedeschi Trucks Band",
@@ -4270,7 +4660,7 @@
       "date": "2026-08-07",
       "time": "",
       "venueUrl": "https://monqui.com/event/tedeschi-trucks-band/mcmenamins-edgefield/troutdale-oregon/",
-      "id": 427
+      "id": 466
     },
     {
       "title": "Chris Mitchell",
@@ -4280,7 +4670,7 @@
       "date": "2026-08-07",
       "time": "",
       "venueUrl": "https://www.portland5.com/event/chris-mitchell",
-      "id": 428
+      "id": 467
     },
     {
       "title": "LCD Soundsystem",
@@ -4290,7 +4680,7 @@
       "date": "2026-08-08",
       "time": "",
       "venueUrl": "https://monqui.com/event/lcd-soundsystem/mcmenamins-edgefield/troutdale-oregon/",
-      "id": 429
+      "id": 468
     },
     {
       "title": "Random Rab",
@@ -4300,7 +4690,7 @@
       "date": "2026-08-08",
       "time": "",
       "venueUrl": "https://www.tixr.com/groups/thegetdownpdx/events/legend-zeppelin-192792",
-      "id": 430
+      "id": 469
     },
     {
       "title": "LCD Soundsystem",
@@ -4310,7 +4700,7 @@
       "date": "2026-08-09",
       "time": "",
       "venueUrl": "https://monqui.com/event/lcd-soundsystem-2/mcmenamins-edgefield/troutdale-oregon/",
-      "id": 431
+      "id": 470
     },
     {
       "title": "Yard Act",
@@ -4320,7 +4710,7 @@
       "date": "2026-08-09",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/72255747/yard-act-portland-revolution-hall",
-      "id": 432
+      "id": 471
     },
     {
       "title": "KARAOKE FROM HELL",
@@ -4330,7 +4720,7 @@
       "date": "2026-08-10",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/karaoke-from-hell-101/",
-      "id": 433
+      "id": 472
     },
     {
       "title": "Not For Radio - A Summer In The Forest: North America Tour",
@@ -4340,7 +4730,7 @@
       "date": "2026-08-11",
       "time": "",
       "venueUrl": "https://www.portland5.com/event/not-radio-summer-forest-north-america-tour",
-      "id": 434
+      "id": 473
     },
     {
       "title": "Comedy Bang! Bang! Ground Beefing Tour 2026 (Early Show)",
@@ -4350,7 +4740,7 @@
       "date": "2026-08-11",
       "time": "7:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/57498012/comedy-bangbangground-beefing-tour-2026-early-show-portland-revolution-hall",
-      "id": 435
+      "id": 474
     },
     {
       "title": "Comedy Bang! Bang! Ground Beefing Tour 2026 (Late Show)",
@@ -4360,7 +4750,7 @@
       "date": "2026-08-11",
       "time": "9:45 PM",
       "venueUrl": "https://www.etix.com/ticket/p/73495485/comedy-bangbangground-beefing-tour-2026-late-show-portland-revolution-hall",
-      "id": 436
+      "id": 475
     },
     {
       "title": "Audrey Hobert: The Staircase To Stardom Tour",
@@ -4370,7 +4760,7 @@
       "date": "2026-08-11",
       "time": "",
       "venueUrl": "https://www.etix.com/ticket/p/46978531/audrey-hobertthe-staircase-to-stardom-tour-portland-roseland-theater?partner_id=100",
-      "id": 437
+      "id": 476
     },
     {
       "title": "Kingfishr",
@@ -4380,7 +4770,7 @@
       "date": "2026-08-11",
       "time": "8:00 PM",
       "venueUrl": "https://wonderballroom.com/event/kingfishr/wonder-ballroom/portland-oregon/",
-      "id": 438
+      "id": 477
     },
     {
       "title": "Like a Star: Celebrating 20 Years of Corinne Bailey Rae",
@@ -4390,7 +4780,7 @@
       "date": "2026-08-12",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/56487643/like-a-starcelebrating-20-years-of-corinne-bailey-rae-portland-aladdin-theater",
-      "id": 439
+      "id": 478
     },
     {
       "title": "Carolyn Wonderland",
@@ -4400,7 +4790,7 @@
       "date": "2026-08-12",
       "time": "7:30 PM",
       "venueUrl": "https://albertarosetheatre.com/event/carolyn-wonderland/alberta-rose-theatre/portland-oregon/",
-      "id": 440
+      "id": 479
     },
     {
       "title": "Music on Main: The Bundy Band",
@@ -4410,7 +4800,7 @@
       "date": "2026-08-12",
       "time": "",
       "venueUrl": "https://www.portland5.com/event/music-main-bundy-band",
-      "id": 441
+      "id": 480
     },
     {
       "title": "Chasing Abbey",
@@ -4420,7 +4810,7 @@
       "date": "2026-08-12",
       "time": "8:00 PM",
       "venueUrl": "https://wonderballroom.com/event/chasing-abbey/wonder-ballroom/portland-oregon/",
-      "id": 442
+      "id": 481
     },
     {
       "title": "CLUB SLAYYY: SLAYYYTER + HYPERPOP NIGHT 🐰 – 21+",
@@ -4430,7 +4820,7 @@
       "date": "2026-08-13",
       "time": "7:00 PM",
       "venueUrl": "https://www.holocene.org/event/club-slayyy-slayyyter-hyperpop-night-%f0%9f%90%b0-21/holocene/portland/",
-      "id": 443
+      "id": 482
     },
     {
       "title": "CINEMALESQUE: A Burlesque Tribute to Film",
@@ -4440,7 +4830,7 @@
       "date": "2026-08-14",
       "time": "8:00 PM",
       "venueUrl": "https://albertarosetheatre.com/event/cinemalesque-a-burlesque-tribute-to-film/alberta-rose-theatre/portland-oregon/",
-      "id": 444
+      "id": 483
     },
     {
       "title": "Bronco: El Gran Baile Tour",
@@ -4450,7 +4840,7 @@
       "date": "2026-08-14",
       "time": "",
       "venueUrl": "https://www.portland5.com/event/bronco-el-gran-baile-tour",
-      "id": 445
+      "id": 484
     },
     {
       "title": "HOTWAX disco~glam~metal~punk~hiphop",
@@ -4460,7 +4850,7 @@
       "date": "2026-08-14",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/hotwax-discoglammetalpunkhiphop-12/",
-      "id": 446
+      "id": 485
     },
     {
       "title": "Gillian Welch & David Rawlings play Grateful Dead acoustic Reckoning",
@@ -4470,7 +4860,7 @@
       "date": "2026-08-14",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/32612358/gillian-welch-david-rawlings-play-grateful-dead-acoustic-reckoning-portland-revolution-hall",
-      "id": 447
+      "id": 486
     },
     {
       "title": "Passion Pit – The Pretty Penny Tour (w/ Arden Jones with Arden Jones end event sub header)",
@@ -4480,7 +4870,7 @@
       "date": "2026-08-14",
       "time": "",
       "venueUrl": "https://www.etix.com/ticket/p/54716693/passion-pit-the-pretty-penny-tour-portland-roseland-theater?partner_id=100",
-      "id": 448
+      "id": 487
     },
     {
       "title": "PUPPETEERS FOR FEARS PRESENTS ROBOPOCALYPSE: THE MUSICAL!",
@@ -4490,7 +4880,7 @@
       "date": "2026-08-14",
       "time": "8:00 PM",
       "venueUrl": "https://www.startheaterportland.com/tm-event/puppeteers-for-fears-presents-robopocalypse-the-musical/",
-      "id": 449
+      "id": 488
     },
     {
       "title": "Chris Ramsay Presents: It’s Probably Nothing...",
@@ -4500,7 +4890,7 @@
       "date": "2026-08-15",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/56675067/chris-ramsay-presentsits-probably-nothing-portland-aladdin-theater",
-      "id": 450
+      "id": 489
     },
     {
       "title": "Gillian Welch & David Rawlings play Grateful Dead acoustic Reckoning",
@@ -4510,7 +4900,7 @@
       "date": "2026-08-15",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/65508276/sold-outgillian-welch-david-rawlings-play-grateful-dead-acoustic-reckoning-portland-revolution-hall",
-      "id": 451
+      "id": 490
     },
     {
       "title": "Grupo Frontera: Triste Pero Bien C*bron Tour",
@@ -4520,7 +4910,7 @@
       "date": "2026-08-15",
       "time": "",
       "venueUrl": "https://www.rosequarter.com/calendar-events/grupo-frontera-aug-15-2026",
-      "id": 452
+      "id": 491
     },
     {
       "title": "Olivia O’Brien Presents: The PIXIE Tour",
@@ -4530,7 +4920,7 @@
       "date": "2026-08-16",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/73330629/olivia-obrien-presentsthe-pixie-tour-portland-aladdin-theater",
-      "id": 453
+      "id": 492
     },
     {
       "title": "ODDBALLS AND OUTLAWS: IV and The Strange Band + Clownvis Presley",
@@ -4540,7 +4930,7 @@
       "date": "2026-08-16",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/oddballs-and-outlaws-iv-and-the-strange-band-clownvis-presley/",
-      "id": 454
+      "id": 493
     },
     {
       "title": "Gillian Welch & David Rawlings play Grateful Dead acoustic Reckoning",
@@ -4550,7 +4940,7 @@
       "date": "2026-08-16",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/32052270/sold-outgillian-welch-david-rawlings-play-grateful-dead-acoustic-reckoning-portland-revolution-hall",
-      "id": 455
+      "id": 494
     },
     {
       "title": "Corbyn Besson and Soulidified: The Pop’n Out Tour",
@@ -4560,7 +4950,7 @@
       "date": "2026-08-16",
       "time": "",
       "venueUrl": "https://www.etix.com/ticket/p/69958819/corbyn-besson-soulidified-2026-portland-roseland-theater?partner_id=100",
-      "id": 456
+      "id": 495
     },
     {
       "title": "KARAOKE FROM HELL",
@@ -4570,7 +4960,7 @@
       "date": "2026-08-17",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/karaoke-from-hell-102/",
-      "id": 457
+      "id": 496
     },
     {
       "title": "Gillian Welch & David Rawlings play Grateful Dead acoustic Reckoning",
@@ -4580,7 +4970,7 @@
       "date": "2026-08-17",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/95644314/gillian-welch-david-rawlings-play-grateful-dead-acoustic-reckoning-portland-revolution-hall",
-      "id": 458
+      "id": 497
     },
     {
       "title": "PDX Songwriters Open Mic (FREE)",
@@ -4590,7 +4980,7 @@
       "date": "2026-08-17",
       "time": "7:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/86650163/pdx-songwriters-open-mic-free-portland-show-bar-at-revolution-hall",
-      "id": 459
+      "id": 498
     },
     {
       "title": "OLIVER TREE – LOVE YOU MADLY, HATE YOU BADLY WORLD’S FIRST WORLD TOUR",
@@ -4600,7 +4990,7 @@
       "date": "2026-08-17",
       "time": "",
       "venueUrl": "https://www.etix.com/ticket/p/30799301/oliver-tree-love-you-madlyhate-you-badly-worlds-first-world-tour-portland-roseland-theater?partner_id=100",
-      "id": 460
+      "id": 499
     },
     {
       "title": "THE CYBERTRONIC SPREE with Spaceman Bob",
@@ -4610,7 +5000,7 @@
       "date": "2026-08-18",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/the-cybertronic-spree-with-spaceman-bob/",
-      "id": 461
+      "id": 500
     },
     {
       "title": "Daniel Caesar: Son of Spergy Tour",
@@ -4620,7 +5010,7 @@
       "date": "2026-08-18",
       "time": "",
       "venueUrl": "https://www.rosequarter.com/calendar-events/daniel-caesar-aug-18-2026",
-      "id": 462
+      "id": 501
     },
     {
       "title": "Quicksand & Bane",
@@ -4630,7 +5020,7 @@
       "date": "2026-08-18",
       "time": "8:00 PM",
       "venueUrl": "https://wonderballroom.com/event/quicksand-bane/wonder-ballroom/portland-oregon/",
-      "id": 463
+      "id": 502
     },
     {
       "title": "Hulvey",
@@ -4640,7 +5030,7 @@
       "date": "2026-08-19",
       "time": "",
       "venueUrl": "https://monqui.com/event/hulvey/crystal-ballroom/portland-oregon/",
-      "id": 464
+      "id": 503
     },
     {
       "title": "Casket Cassette, Stare Away – 21+",
@@ -4650,7 +5040,7 @@
       "date": "2026-08-19",
       "time": "9:00 PM",
       "venueUrl": "https://www.holocene.org/event/casket-cassette-stare-away-21/holocene/portland/",
-      "id": 465
+      "id": 504
     },
     {
       "title": "Los Mirlos",
@@ -4660,7 +5050,7 @@
       "date": "2026-08-20",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/59506673/los-mirlos-portland-aladdin-theater",
-      "id": 466
+      "id": 505
     },
     {
       "title": "DALE WATSON AND HIS LONE STARS with Guests",
@@ -4670,7 +5060,7 @@
       "date": "2026-08-20",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/dale-watson-and-his-lone-stars-with-guests/",
-      "id": 467
+      "id": 506
     },
     {
       "title": "LUST FOR LANA: A LANA DEL REY DANCE NIGHT – 21+",
@@ -4680,7 +5070,7 @@
       "date": "2026-08-20",
       "time": "8:00 PM",
       "venueUrl": "https://www.holocene.org/event/lust-for-lana-a-lana-del-rey-dance-night-21/holocene/portland/",
-      "id": 468
+      "id": 507
     },
     {
       "title": "Angine de Poitrine",
@@ -4690,7 +5080,7 @@
       "date": "2026-08-21",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/83966104/sold-outangine-de-poitrine-portland-aladdin-theater",
-      "id": 469
+      "id": 508
     },
     {
       "title": "HOTWAX disco~glam~metal~punk~hiphop",
@@ -4700,7 +5090,7 @@
       "date": "2026-08-21",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/hotwax-discoglammetalpunkhiphop-13/",
-      "id": 470
+      "id": 509
     },
     {
       "title": "Yesenia Then: Levántate Tour",
@@ -4710,7 +5100,7 @@
       "date": "2026-08-21",
       "time": "",
       "venueUrl": "https://www.portland5.com/event/yesenia-then-levantate-tour",
-      "id": 471
+      "id": 510
     },
     {
       "title": "BOYeurism",
@@ -4720,7 +5110,7 @@
       "date": "2026-08-22",
       "time": "8:00 PM",
       "venueUrl": "https://albertarosetheatre.com/event/boyeurism-9/alberta-rose-theatre/portland-oregon/",
-      "id": 472
+      "id": 511
     },
     {
       "title": "CANCERSLUG with Guests",
@@ -4730,7 +5120,7 @@
       "date": "2026-08-22",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/cancerslug-with-guests/",
-      "id": 473
+      "id": 512
     },
     {
       "title": "CRASHING OUT LIVE",
@@ -4740,7 +5130,7 @@
       "date": "2026-08-22",
       "time": "7:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/66282987/crashing-out-live-portland-revolution-hall",
-      "id": 474
+      "id": 513
     },
     {
       "title": "The Sword & Red Fang (w/ Spoon Benders with Spoon Benders end event sub header)",
@@ -4750,7 +5140,7 @@
       "date": "2026-08-22",
       "time": "",
       "venueUrl": "https://www.etix.com/ticket/p/88825889/the-sword-red-fang-portland-roseland-theater?partner_id=100",
-      "id": 475
+      "id": 514
     },
     {
       "title": "Todd Basil: Music Math Death Lasagna (Live Comedy Taping)",
@@ -4760,7 +5150,7 @@
       "date": "2026-08-23",
       "time": "7:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/75876666/todd-basilmusic-math-death-lasagna-live-comedy-taping-portland-show-bar-at-revolution-hall",
-      "id": 476
+      "id": 515
     },
     {
       "title": "KARAOKE FROM HELL",
@@ -4770,7 +5160,7 @@
       "date": "2026-08-24",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/karaoke-from-hell-103/",
-      "id": 477
+      "id": 516
     },
     {
       "title": "Max Amini Live in Portland!",
@@ -4780,7 +5170,7 @@
       "date": "2026-08-25",
       "time": "",
       "venueUrl": "https://www.portland5.com/event/max-amini-live-portland",
-      "id": 478
+      "id": 517
     },
     {
       "title": "Bill Callahan (w/ Lonnie Holley)",
@@ -4790,7 +5180,7 @@
       "date": "2026-08-25",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/97837409/bill-callahan-portland-revolution-hall",
-      "id": 479
+      "id": 518
     },
     {
       "title": "Diggy Graves – The No Vacancy Tour",
@@ -4800,7 +5190,7 @@
       "date": "2026-08-25",
       "time": "7:30 PM",
       "venueUrl": "https://wonderballroom.com/event/diggy-graves-the-no-vacancy-tour/wonder-ballroom/portland-oregon/",
-      "id": 480
+      "id": 519
     },
     {
       "title": "THE DARTS with Combobox & Unreal",
@@ -4810,7 +5200,7 @@
       "date": "2026-08-26",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/the-darts-with-combobox-guests/",
-      "id": 481
+      "id": 520
     },
     {
       "title": "BIKINI TRILL",
@@ -4820,7 +5210,7 @@
       "date": "2026-08-26",
       "time": "8:00 PM",
       "venueUrl": "https://www.jacklondonrevue.com/tm-event/bikini-trill/",
-      "id": 482
+      "id": 521
     },
     {
       "title": "Jordan Jensen",
@@ -4830,7 +5220,7 @@
       "date": "2026-08-26",
       "time": "7:30 PM",
       "venueUrl": "https://www.etix.com/ticket/p/91076477/sold-outjordan-jensen-portland-revolution-hall",
-      "id": 483
+      "id": 522
     },
     {
       "title": "Jordan Jensen",
@@ -4840,7 +5230,7 @@
       "date": "2026-08-27",
       "time": "7:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/88985202/sold-outjordan-jensen-portland-revolution-hall",
-      "id": 484
+      "id": 523
     },
     {
       "title": "Eagles of Death Metal – Death By Sexy Anniversary Tour",
@@ -4850,7 +5240,7 @@
       "date": "2026-08-27",
       "time": "8:00 PM",
       "venueUrl": "https://wonderballroom.com/event/eagles-of-death-metal-death-by-sexy-anniversary-tour/wonder-ballroom/portland-oregon/",
-      "id": 485
+      "id": 524
     },
     {
       "title": "HOTWAX disco~glam~metal~punk~hiphop",
@@ -4860,7 +5250,7 @@
       "date": "2026-08-28",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/hotwax-discoglammetalpunkhiphop-14/",
-      "id": 486
+      "id": 525
     },
     {
       "title": "MICRO MAIDENS BURLESQUE",
@@ -4870,7 +5260,7 @@
       "date": "2026-08-28",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/micro-maidens-burlesque/",
-      "id": 487
+      "id": 526
     },
     {
       "title": "Jonathan Van Ness: Hot & Healed Comedy Tour 2026",
@@ -4880,7 +5270,7 @@
       "date": "2026-08-28",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/96044181/jonathan-van-nesshot-healed-comedy-tour-2026-portland-revolution-hall",
-      "id": 488
+      "id": 527
     },
     {
       "title": "76TH STREET with Tornsey",
@@ -4890,7 +5280,7 @@
       "date": "2026-08-28",
       "time": "9:00 PM",
       "venueUrl": "https://www.startheaterportland.com/tm-event/76th-street/",
-      "id": 489
+      "id": 528
     },
     {
       "title": "Dare and Derriere: LET’S PLAY!",
@@ -4900,7 +5290,7 @@
       "date": "2026-08-29",
       "time": "7:00 PM",
       "venueUrl": "https://albertarosetheatre.com/event/dare-and-derriere-lets-play/alberta-rose-theatre/portland-oregon/",
-      "id": 490
+      "id": 529
     },
     {
       "title": "Red Clay Strays",
@@ -4910,7 +5300,7 @@
       "date": "2026-08-29",
       "time": "",
       "venueUrl": "https://www.rosequarter.com/calendar-events/red-clay-strays-aug-29-2026",
-      "id": 491
+      "id": 530
     },
     {
       "title": "Black Marble",
@@ -4920,7 +5310,7 @@
       "date": "2026-08-29",
       "time": "8:00 PM",
       "venueUrl": "https://wonderballroom.com/event/black-marble/wonder-ballroom/portland-oregon/",
-      "id": 492
+      "id": 531
     },
     {
       "title": "The Hip Abduction",
@@ -4930,7 +5320,7 @@
       "date": "2026-08-30",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/32146452/the-hip-abduction-portland-revolution-hall",
-      "id": 493
+      "id": 532
     },
     {
       "title": "ANJA HUWE (XMAL DEUSTCHLAND) LIVE IN PORTLAND",
@@ -4940,7 +5330,7 @@
       "date": "2026-08-30",
       "time": "7:00 PM",
       "venueUrl": "https://www.startheaterportland.com/tm-event/anja-huwe-xmal-deustchland-live-in-portland/",
-      "id": 494
+      "id": 533
     },
     {
       "title": "KARAOKE FROM HELL",
@@ -4950,7 +5340,7 @@
       "date": "2026-08-31",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/karaoke-from-hell-104/",
-      "id": 495
+      "id": 534
     },
     {
       "title": "Duane Betts & Palmetto Motel – ISLE OF HOPE TOUR",
@@ -4960,7 +5350,7 @@
       "date": "2026-09-01",
       "time": "7:30 PM",
       "venueUrl": "https://albertarosetheatre.com/event/duane-betts-palmetto-motel-isle-of-hope-tour/alberta-rose-theatre/portland-oregon/",
-      "id": 496
+      "id": 535
     },
     {
       "title": "The People's Jam (FREE)",
@@ -4970,7 +5360,7 @@
       "date": "2026-09-02",
       "time": "7:30 PM",
       "venueUrl": "https://www.etix.com/ticket/p/89738728/the-peoples-jam-free-portland-show-bar-at-revolution-hall",
-      "id": 497
+      "id": 536
     },
     {
       "title": "Sonny Landreth presented by PDX Jazz",
@@ -4980,7 +5370,7 @@
       "date": "2026-09-03",
       "time": "8:00 PM",
       "venueUrl": "https://albertarosetheatre.com/event/sonny-landreth-presented-by-pdx-jazz/alberta-rose-theatre/portland-oregon/",
-      "id": 498
+      "id": 537
     },
     {
       "title": "Montavilla Jazz Festival 2026 Opening Night: PJCE presents Rebecca Sanborn’s Shadow Work w/ North Pole Studio’s Rhythm & Hues",
@@ -4990,7 +5380,7 @@
       "date": "2026-09-04",
       "time": "7:30 PM",
       "venueUrl": "https://albertarosetheatre.com/event/montavilla-jazz-festival-2026-opening-night-pjce-presents-rebecca-sanborns-shadow-work-w-north-pole-studios-rhythm-hues/alberta-rose-theatre/portland-oregon/",
-      "id": 499
+      "id": 538
     },
     {
       "title": "HOTWAX disco~glam~metal~punk~hiphop",
@@ -5000,7 +5390,7 @@
       "date": "2026-09-04",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/hotwax-discoglammetalpunkhiphop-15/",
-      "id": 500
+      "id": 539
     },
     {
       "title": "Blood Orange – Essex Honey Tour",
@@ -5010,7 +5400,7 @@
       "date": "2026-09-04",
       "time": "",
       "venueUrl": "https://monqui.com/event/blood-orange-essex-honey-tour/mcmenamins-edgefield/troutdale-oregon/",
-      "id": 501
+      "id": 540
     },
     {
       "title": "THE TAYLOR PARTY: TAYLOR SWIFT NIGHT (21+)",
@@ -5020,7 +5410,7 @@
       "date": "2026-09-04",
       "time": "9:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/47661427/the-taylor-partytaylor-swift-night-21-portland-revolution-hall",
-      "id": 502
+      "id": 541
     },
     {
       "title": "Zoh Amba",
@@ -5030,7 +5420,7 @@
       "date": "2026-09-04",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/35379472/zoh-amba-portland-show-bar-at-revolution-hall",
-      "id": 503
+      "id": 542
     },
     {
       "title": "Southern Culture on the Skids",
@@ -5040,7 +5430,7 @@
       "date": "2026-09-05",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/62954619/southern-culture-on-the-skids-portland-aladdin-theater",
-      "id": 504
+      "id": 543
     },
     {
       "title": "Earth, Wind & Fire",
@@ -5050,7 +5440,7 @@
       "date": "2026-09-05",
       "time": "",
       "venueUrl": "https://monqui.com/event/earth-wind-fire/mcmenamins-edgefield/troutdale-oregon/",
-      "id": 505
+      "id": 544
     },
     {
       "title": "WITCH",
@@ -5060,7 +5450,7 @@
       "date": "2026-09-05",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/75648949/witch-portland-revolution-hall",
-      "id": 506
+      "id": 545
     },
     {
       "title": "Montavilla Jazz Festival 2026: Domo Branch Quintet with Orbits Trio",
@@ -5070,7 +5460,7 @@
       "date": "2026-09-05",
       "time": "7:30 PM",
       "venueUrl": "https://www.etix.com/ticket/p/51996239/montavilla-jazz-festival-2026domo-branch-quintet-with-orbits-trio-portland-show-bar-at-revolution-hall",
-      "id": 507
+      "id": 546
     },
     {
       "title": "MOVED TO THE CRYSTAL BALLROOM: Slayyyter – WOR$T GIRL IN THE WORLD TOUR",
@@ -5080,7 +5470,7 @@
       "date": "2026-09-05",
       "time": "8:00 PM",
       "venueUrl": "https://wonderballroom.com/event/moved-to-the-crystal-ballroom-slayyyter-wort-girl-in-the-world-tour/wonder-ballroom/portland-oregon/",
-      "id": 508
+      "id": 547
     }
   ]
 }

@@ -71,6 +71,7 @@ VENUE_INFO = {
     "Veterans Memorial Coliseum": ("Lloyd/Rose Quarter", "300 N Winning Way"),
     "Theater of the Clouds": ("Lloyd/Rose Quarter", "1 N Center Ct St"),
     "Jack London Revue": ("Downtown", "529 SW 4th Ave"),
+    "Mississippi Pizza": ("Boise", "3552 N Mississippi Ave"),
     "Laurelthirst Public House": ("Kerns", "2958 NE Glisan St"),
     "Alberta Street Pub": ("Alberta Arts", "1036 NE Alberta St"),
 }
@@ -1192,7 +1193,40 @@ def parse_albertastreetpub(html, today):
     return out
 
 
+
+def parse_mississippipizza(html, today):
+    # Mississippi Pizza & Atlantis Lounge (mississippipizza.com) - WordPress + RHP
+    # events plugin. The /calendar/ page server-renders all events as
+    # .rhpSingleEvent blocks (no AJAX pagination needed, unlike Revolution Hall).
+    soup = BeautifulSoup(html, "html.parser")
+    nb, addr = VENUE_INFO["Mississippi Pizza"]
+    shows = []
+    for e in soup.select(".rhpSingleEvent"):
+        de = e.select_one("#eventDate") or e.select_one(".singleEventDate")
+        a = e.select_one("a.url") or e.select_one("a#eventTitle")
+        if not de or not a:
+            continue
+        mm = re.search(r"([A-Za-z]+)\s+(\d{1,2}),\s*(\d{4})", clean(de.get_text()))
+        if not mm:
+            continue
+        mo = MONTHS.get(mm.group(1)[:3].title())
+        if not mo:
+            continue
+        date = f"{int(mm.group(3)):04d}-{mo:02d}-{int(mm.group(2)):02d}"
+        h2 = a.select_one("h2")
+        title = clean(h2.get_text()) if h2 else clean(a.get("title") or a.get_text())
+        if not title:
+            continue
+        te = e.select_one(".eventDoorStartDate")
+        tm = to_time(clean(te.get_text())) if te else ""
+        shows.append({"title": title, "venue": "Mississippi Pizza",
+                      "neighborhood": nb, "address": addr,
+                      "date": date, "time": tm,
+                      "venueUrl": a.get("href", "")})
+    return shows
+
 SOURCES = [
+    {"name": "Mississippi Pizza (mississippipizza.com)", "parser": parse_mississippipizza, "urls": ["https://mississippipizza.com/calendar/"]},
     {"name": "Alberta Street Pub (albertastreetpub.com)", "parser": parse_albertastreetpub, "urls": ["https://www.albertastreetpub.com/music?format=json"]},
     {"name": "Laurelthirst (laurelthirst.com)", "parser": parse_laurelthirst, "urls": ["https://www.laurelthirst.com/"]},
     {"name": "Showdown Saloon", "parser": parse_showdown, "urls": ["https://showdownpdx.com/"]},
