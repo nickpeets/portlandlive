@@ -79,6 +79,7 @@ VENUE_INFO = {
     "Laurelthirst Public House": ("Kerns", "2958 NE Glisan St"),
     "Alberta Street Pub": ("Alberta Arts", "1036 NE Alberta St"),
     "Tomorrow's Verse": ("Beaumont-Wilshire", "4605 NE Fremont St, Portland, OR 97213"),
+    "Cascades Amphitheater": ("Ridgefield, WA", "17200 NE Delfel Rd, Ridgefield, WA 98642"),
 }
 
 def clean(s):
@@ -1589,6 +1590,65 @@ def parse_tomorrowsverse(html, today):
     return out
 
 
+
+# ---- Cascades Amphitheater (Ridgefield, WA) -- Live Nation / Ticketmaster, browserless.
+# First non-Oregon venue (regional destination amphitheater). Event data is server-rendered
+# into the Next.js __next_f RSC stream in the venue page HTML (no API key / token needed).
+_CASCADES_URL = "https://www.livenation.com/venue/KovZpZAJld6A/cascades-amphitheater-events"
+
+
+def _cascades_field(field, seg):
+    m = re.search(r'\\"' + field + r'\\":\\"(.*?)\\"', seg)
+    return m.group(1) if m else None
+
+
+def _cascades_unesc(v):
+    if not v:
+        return ""
+    v = re.sub(r'\\u([0-9a-fA-F]{4})', lambda m: chr(int(m.group(1), 16)), v)
+    return clean(v)
+
+
+def parse_cascades(html, today):
+    """Parse Live Nation venue page (__next_f RSC payload) for Cascades Amphitheater."""
+    idxs = [m.start() for m in re.finditer(r'\\"start_date_local\\"', html)]
+    if not idxs:
+        raise RuntimeError("Cascades: no event data (start_date_local) found in page HTML")
+    bounds = idxs + [len(html)]
+    out, seen = [], set()
+    for k in range(len(idxs)):
+        seg = html[max(0, idxs[k] - 1500):bounds[k + 1]]
+        name = _cascades_unesc(_cascades_field("name", seg))
+        date = _cascades_field("start_date_local", seg)   # YYYY-MM-DD, local
+        tl = _cascades_field("start_time_local", seg)      # HH:MM:SS, 24h local
+        slug = _cascades_field("slug", seg)
+        if not name or not date or not tl:
+            continue
+        low = name.lower()
+        if "season ticket" in low or "season pass" in low or "parking" in low:
+            continue
+        if date < today.isoformat():
+            continue
+        try:
+            hh, mm = int(tl.split(":")[0]), int(tl.split(":")[1])
+        except (ValueError, IndexError):
+            continue
+        tm = to_time("%d:%02d%s" % (hh % 12 or 12, mm, "am" if hh < 12 else "pm"))
+        title = re.sub(r"\s+", " ", re.sub(r"[\u2010-\u2015]", "-", name)).strip()
+        im = re.search(r'(https://s1\.ticketm\.net[^\\"]*TABLET_LANDSCAPE_LARGE_16_9[^\\"]*)', seg)
+        img = im.group(1) if im else ""
+        url = ("https://www.livenation.com/event/" + slug) if slug else _CASCADES_URL
+        key = (date, title.lower())
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append({"title": title, "venue": "Cascades Amphitheater",
+                    "neighborhood": "Ridgefield, WA",
+                    "address": "17200 NE Delfel Rd, Ridgefield, WA 98642",
+                    "date": date, "time": tm, "venueUrl": url, "imageUrl": img})
+    return out
+
+
 SOURCES = [
     {"name": "Pioneer Courthouse Square / PDX Live (pdx-live.com)", "parser": parse_pdxlive, "urls": ["https://pdx-live.com/wp-json/wlcr/v1/events/raw"]},
     {"name": "Twilight Cafe & Bar (twilightcafeandbar.com)", "parser": parse_twilight, "urls": ["https://twilightcafeandbar.com/calendar_list"]},
@@ -1597,6 +1657,7 @@ SOURCES = [
     {"name": "Mississippi Pizza (mississippipizza.com)", "parser": parse_mississippipizza, "urls": ["https://mississippipizza.com/calendar/"]},
     {"name": "Alberta Street Pub (albertastreetpub.com)", "parser": parse_albertastreetpub, "urls": ["https://www.albertastreetpub.com/music?format=json"]},
     {"name": "Tomorrow's Verse (youenjoymybeer.com)", "parser": parse_tomorrowsverse, "urls": ["https://www.youenjoymybeer.com/events"]},
+    {"name": "Cascades Amphitheater (livenation.com)", "parser": parse_cascades, "urls": [_CASCADES_URL]},
     {"name": "Laurelthirst (laurelthirst.com)", "parser": parse_laurelthirst, "urls": ["https://www.laurelthirst.com/"]},
     {"name": "Showdown Saloon", "parser": parse_showdown, "urls": ["https://showdownpdx.com/"]},
     {"name": "The Get Down", "parser": parse_getdown, "urls": ["https://thegetdownpdx.com/"]},
