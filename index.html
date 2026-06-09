@@ -227,11 +227,13 @@ body{
   padding:11px 4px;border-bottom:1px solid rgba(255,255,255,.16);
 }
 .row .rtime{font-family:'Oswald';font-weight:600;font-size:12px;color:var(--cream);min-width:64px;letter-spacing:.05em;opacity:.85}
-.row .rtitle{font-weight:600;color:#fff;font-size:15.5px;text-decoration:none}
+.row .rtitle{font-weight:600;color:#fff;font-size:15.5px;text-decoration:none;min-width:0;overflow-wrap:anywhere}
 .row .rtitle:hover{text-decoration:underline;text-underline-offset:3px}
 .row .rat{color:rgba(243,234,215,.78);font-size:14px}
-.row .rvenue{color:var(--cream);font-weight:600;font-size:14px;text-decoration:none}
-.row .rvenue:hover{text-decoration:underline;text-underline-offset:3px}
+.row .rvenue{color:var(--cream);font-weight:600;font-size:14px;cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-decoration-color:rgba(243,234,215,.5);text-underline-offset:3px}
+.row .rvenue:hover{text-decoration:underline;text-decoration-style:solid;text-underline-offset:3px}
+    .card .venue{cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-decoration-color:rgba(243,234,215,.5);text-underline-offset:3px}
+    .card a.venue:hover{text-decoration-style:solid}
 .row .rnb{font-family:'Oswald';font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:rgba(243,234,215,.65);margin-left:auto}
 
 .empty{text-align:center;padding:60px 20px;color:var(--cream)}
@@ -649,7 +651,7 @@ function renderVenues(){
         c.innerHTML = media + `
           <div class="when">${when}</div>
           <div class="title">${esc(s.title)}</div>
-          <div class="venue">${esc(s.venue)}</div>
+          <a class="venue" href="#" data-venue="${esc(s.venue)}" title="View this venue">${esc(s.venue)}</a>
           <div class="meta">${esc(s.address||'')}</div>
           <div class="foot">
             <span class="nbtag">${esc(s.neighborhood||'')}</span>
@@ -671,7 +673,7 @@ function listOf(items, showDate){
         ${showDate?`<span class="rdate">${ordinalDate(s.date)}</span>`:``}
       ${s.venueUrl?`<a class="rtitle" href="${s.venueUrl}" target="_blank" rel="noopener">${esc(s.title)}</a>`:`<span class="rtitle">${esc(s.title)}</span>`}
       <span class="rat">at</span>
-      ${s.venueUrl?`<a class="rvenue" href="${s.venueUrl}" target="_blank" rel="noopener">${esc(s.venue)}</a>`:`<span class="rvenue">${esc(s.venue)}</span>`}
+      <a class="rvenue" href="#" data-venue="${esc(s.venue)}" title="View this venue">${esc(s.venue)}</a>
       <span class="rnb">${esc(s.neighborhood||'')}</span>`;
     l.appendChild(r);
   });
@@ -713,7 +715,8 @@ $('#searchInput').addEventListener('input',e=>{state.q=e.target.value;render();}
 $('#sortSel').addEventListener('change',e=>{state.sort=e.target.value;render();});
 $('#venuesToggle').addEventListener('click',()=>{if(state.view==='venues'){state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');$('#viewingWord').textContent='Shows';}else{state.view='venues';state.selectedVenue=null;$('#venuesToggle').classList.add('on');$('#viewingWord').textContent='Venues';}render();});
       $('#myShowsToggle').addEventListener('click',e=>{state.myShows=!state.myShows;e.currentTarget.classList.toggle('on',state.myShows);render();});
-      $('#results').addEventListener('click',e=>{const h=e.target.closest('.heart');if(!h)return;e.preventDefault();e.stopPropagation();toggleFavKey(h.getAttribute('data-fav'));render();});
+      function openVenue(name){ state.view='venues'; state.selectedVenue=name; $('#venuesToggle').classList.add('on'); $('#viewingWord').textContent='Venues'; render(); }
+      $('#results').addEventListener('click',e=>{const vlink=e.target.closest('[data-venue]');if(vlink){e.preventDefault();e.stopPropagation();openVenue(vlink.getAttribute('data-venue'));return;}const h=e.target.closest('.heart');if(!h)return;e.preventDefault();e.stopPropagation();toggleFavKey(h.getAttribute('data-fav'));render();});
 $('#tonightToggle').addEventListener('click',e=>{state.tonight=!state.tonight;e.target.classList.toggle('on',state.tonight);render();});
 $('#thisWeekToggle').addEventListener('click',e=>{state.thisWeek=!state.thisWeek;$('#thisWeekToggle').classList.toggle('on',state.thisWeek);render();});
 $('#gridBtn').addEventListener('click',()=>{state.layout='grid';$('#gridBtn').classList.add('active');$('#listBtn').classList.remove('active');render();});
