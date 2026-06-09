@@ -58,6 +58,7 @@ VENUE_INFO = {
     "Arlene Schnitzer Concert Hall": ("Downtown", "1037 SW Broadway"),
     "Paramount Theatre": ("Downtown", "911 SW Salmon St"),
     "The Old Church": ("Downtown", "1422 SW 11th Ave"),
+    "Ponderosa Lounge & Grill": ("North Portland", "10350 N Vancouver Way"),
     "Wonder Ballroom": ("Eliot/Boise", "128 NE Russell St"),
     "Revolution Hall": ("Buckman", "1300 SE Stark St"),
     "Polaris Hall": ("Overlook/N Portland", "635 N Killingsworth Ct"),
@@ -2196,7 +2197,102 @@ def parse_artichoke(html_text, today):
     return out
 
 
+
+# ---- CitySpark (Willamette Week portal) -------------------------------------
+# One JSON API -> multiple venues. We pull Ponderosa + The Old Church out of a
+# feed that covers the whole metro. The documented {date,pageSize} body is
+# IGNORED by the server (it returns a stale fixed week); the live widget really
+# sends ISO-UTC Start/End, and the server answers a ~7-day window per request,
+# so we step the window forward across the horizon. Each query returns an
+# event's NEXT occurrence (often past-anchored / repeated across days), so we
+# dedupe by PId and keep only StartUTC >= today. Fetched JSON is untrusted:
+# we parse defensively and never execute anything from it.
+_CS_URL = "https://portal.cityspark.com/api/events/GetEventsByDay/WillametteWeek"
+_CS_BODY = {"ppid": 9934, "lat": 45.5115232, "lng": -122.6783853,
+            "distance": 60, "page": 0}
+_CS_VENUES = {"Ponderosa Lounge & Grill", "The Old Church"}
+
+def _cs_pacific_dt(start_utc):
+    """Parse a CitySpark StartUTC ('2026-08-08T04:00:00Z') into an aware UTC
+    datetime, then convert to US/Pacific. Returns None on anything unexpected."""
+    if not isinstance(start_utc, str):
+        return None
+    s = start_utc.strip().replace("Z", "+00:00")
+    try:
+        dt = datetime.datetime.fromisoformat(s)
+    except Exception:
+        return None
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=datetime.timezone.utc)
+    # US Pacific: PDT (-7) Mar-Nov, PST (-8) otherwise. The feed is summer-
+    # heavy; approximate DST by month to avoid a zoneinfo dependency.
+    off = -7 if 3 <= dt.month <= 10 else -8
+    return dt.astimezone(datetime.timezone(datetime.timedelta(hours=off)))
+
+def _cs_fetch_window(start_date, end_date):
+    body = dict(_CS_BODY)
+    body["Start"] = start_date.isoformat() + "T00:00:00Z"
+    body["End"] = end_date.isoformat() + "T23:59:00Z"
+    r = requests.post(_CS_URL, json=body,
+                      headers={"User-Agent": "PortlandLive/1.0 (listings aggregator)"},
+                      timeout=30)
+    r.raise_for_status()
+    data = r.json()
+    if not isinstance(data, dict):
+        return []
+    out = []
+    for bucket in (data.get("Value") or []):
+        if isinstance(bucket, dict):
+            out.extend(bucket.get("Events") or [])
+    return out
+
+def parse_cityspark(_html, today):
+    """Ignore the GET body passed by scrape(); drive the CitySpark JSON API
+    directly with Start/End windows. Yields show dicts for our two venues."""
+    by_pid = {}
+    for i in range(0, HORIZON_DAYS + 1, 7):
+        s = today + datetime.timedelta(days=i)
+        e = today + datetime.timedelta(days=i + 7)
+        for ev in _cs_fetch_window(s, e):
+            if isinstance(ev, dict) and ev.get("PId") is not None:
+                by_pid[ev.get("PId")] = ev   # dedupe by PId
+    shows = []
+    seen = set()
+    for ev in by_pid.values():
+        venue = (ev.get("Venue") or "").strip()
+        if venue not in _CS_VENUES:
+            continue
+        pac = _cs_pacific_dt(ev.get("StartUTC"))
+        if pac is None or pac.date() < today:          # StartUTC >= today
+            continue
+        date = pac.date().isoformat()
+        title = clean(ev.get("Name") or "")
+        if not title:
+            continue
+        has_time = ev.get("HasTime")
+        time = ""
+        if has_time:
+            h = pac.hour % 12 or 12
+            time = "%d:%02d %s" % (h, pac.minute, "AM" if pac.hour < 12 else "PM")
+        key = (venue, date, title.lower())            # belt-and-suspenders dedup
+        if key in seen:
+            continue
+        seen.add(key)
+        nb, addr = VENUE_INFO.get(venue, ("Portland", ""))
+        url = ev.get("PrimaryUrl") or ""
+        img = ev.get("LargeImg") or ev.get("MediumImg") or ev.get("SmallImg") or ""
+        shows.append({"title": title, "venue": venue, "neighborhood": nb,
+                      "address": addr, "date": date, "time": time,
+                      "venueUrl": url if isinstance(url, str) else "",
+                      "imageUrl": img if isinstance(img, str) else ""})
+    return shows
+
 SOURCES = [
+    # CitySpark JSON API (single feed -> 2 venues). The parser ignores the
+    # GET body below and drives the POST API itself; the URL is only a cheap
+    # liveness fetch so per-source isolation in scrape() behaves normally.
+    {"name": "CitySpark (Ponderosa + Old Church)", "parser": parse_cityspark,
+     "urls": ["https://portal.cityspark.com/PortalScripts/WillametteWeek"]},
     {"name": "Havalina (havalinapdx.com)", "parser": parse_havalina, "urls": ["https://havalinapdx.com/events?format=json"]},
     {"name": "Kelly's Olympian (kellysolympian.com)", "parser": parse_kellys_olympian, "urls": ["https://kellysolympian.com/events/"]},
     {"name": "Barrel Room (barrelroompdx.com)", "parser": parse_barrelroom, "urls": ["https://www.barrelroompdx.com/events"]},
