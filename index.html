@@ -418,7 +418,7 @@ body{
 const state = {
   shows: [], stamp: "",
   layout: "grid", view: "shows", selectedVenue: null, sort: "date",
-  q: "", nb: "", start: "", end: "", tixOnly: false, tonight: false,
+  q: "", tonight: false,
   myShows: false, favorites: loadFavorites(),
 };
 
@@ -469,15 +469,9 @@ function filtered(){
   let out = state.shows.slice();
   const q = state.q.trim().toLowerCase();
   if(q) out = out.filter(s => (s.title+" "+s.venue+" "+s.neighborhood).toLowerCase().includes(q));
-  if(state.nb) out = out.filter(s => s.neighborhood === state.nb);
-  if(state.start) out = out.filter(s => s.date >= state.start);
-  if(state.end) out = out.filter(s => s.date <= state.end);
-  if(state.tixOnly) out = out.filter(s => s.venueUrl);
    if(state.myShows) out = out.filter(s => isFav(s));
     if(state.tonight){
-      const now = new Date();
-      const pac = new Date(now.toLocaleString("en-US",{timeZone:"America/Los_Angeles"}));
-      const t = `${pac.getFullYear()}-${String(pac.getMonth()+1).padStart(2,'0')}-${String(pac.getDate()).padStart(2,'0')}`;
+      const t = new Intl.DateTimeFormat('en-CA',{timeZone:'America/Los_Angeles',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
       out = out.filter(s => s.date === t);
     }
 
@@ -641,10 +635,6 @@ function esc(x){return (x||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>'
 /* events */
 $('#searchInput').addEventListener('input',e=>{state.q=e.target.value;render();});
 $('#sortSel').addEventListener('change',e=>{state.sort=e.target.value;render();});
-$('#nbSel')?.addEventListener('change',e=>{state.nb=e.target.value;render();});
-$('#startDate')?.addEventListener('change',e=>{state.start=e.target.value;render();});
-$('#endDate')?.addEventListener('change',e=>{state.end=e.target.value;render();});
-$('#tixToggle')?.addEventListener('click',e=>{state.tixOnly=!state.tixOnly;e.target.classList.toggle('on',state.tixOnly);render();});
 $('#venuesToggle').addEventListener('click',()=>{if(state.view==='venues'){state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');$('#viewingWord').textContent='Shows';}else{state.view='venues';state.selectedVenue=null;$('#venuesToggle').classList.add('on');$('#viewingWord').textContent='Venues';}render();});
       $('#myShowsToggle').addEventListener('click',e=>{state.myShows=!state.myShows;e.currentTarget.classList.toggle('on',state.myShows);render();});
       $('#results').addEventListener('click',e=>{const h=e.target.closest('.heart');if(!h)return;e.preventDefault();e.stopPropagation();toggleFavKey(h.getAttribute('data-fav'));render();});
@@ -652,7 +642,7 @@ $('#tonightToggle').addEventListener('click',e=>{state.tonight=!state.tonight;e.
 $('#gridBtn').addEventListener('click',()=>{state.layout='grid';$('#gridBtn').classList.add('active');$('#listBtn').classList.remove('active');render();});
 $('#listBtn').addEventListener('click',()=>{state.layout='list';$('#listBtn').classList.add('active');$('#gridBtn').classList.remove('active');render();});
 $('#resetBtn').addEventListener('click',()=>{
-  state.q="";state.nb="";state.start="";state.end="";state.tixOnly=false;state.tonight=false;state.sort="date";state.view="shows";state.selectedVenue=null;$('#venuesToggle').classList.remove('on');$('#viewingWord').textContent='Shows';
+  state.q="";state.tonight=false;state.sort="date";state.view="shows";state.selectedVenue=null;$('#venuesToggle').classList.remove('on');$('#viewingWord').textContent='Shows';
   $('#searchInput').value="";
   $('#sortSel').value="date";$('#tonightToggle').classList.remove('on');state.myShows=false;$('#myShowsToggle').classList.remove('on');render();
 });
