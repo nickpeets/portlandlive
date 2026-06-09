@@ -372,6 +372,10 @@ body{
         <span class="toggle" id="tonightToggle"></span>
         <span>Tonight</span>
       </label>
+      <label class="pill" title="Shows happening in the next 7 days">
+        <span class="toggle" id="thisWeekToggle"></span>
+        <span>This Week</span>
+      </label>
       <label class="pill" title="Browse shows by venue">
         <span class="toggle" id="venuesToggle"></span>
         <span>Venues</span>
@@ -418,7 +422,7 @@ body{
 const state = {
   shows: [], stamp: "",
   layout: "grid", view: "shows", selectedVenue: null, sort: "date",
-  q: "", tonight: false,
+  q: "", tonight: false, thisWeek: false,
   myShows: false, favorites: loadFavorites(),
 };
 
@@ -473,6 +477,12 @@ function filtered(){
     if(state.tonight){
       const t = new Intl.DateTimeFormat('en-CA',{timeZone:'America/Los_Angeles',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
       out = out.filter(s => s.date === t);
+    }
+    if(state.thisWeek){
+      const today = new Intl.DateTimeFormat('en-CA',{timeZone:'America/Los_Angeles',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+      const upper = new Date(today + 'T00:00:00'); upper.setDate(upper.getDate() + 6);
+      const end = `${upper.getFullYear()}-${String(upper.getMonth()+1).padStart(2,'0')}-${String(upper.getDate()).padStart(2,'0')}`;
+      out = out.filter(s => s.date >= today && s.date <= end);
     }
 
   const by = state.sort;
@@ -639,12 +649,13 @@ $('#venuesToggle').addEventListener('click',()=>{if(state.view==='venues'){state
       $('#myShowsToggle').addEventListener('click',e=>{state.myShows=!state.myShows;e.currentTarget.classList.toggle('on',state.myShows);render();});
       $('#results').addEventListener('click',e=>{const h=e.target.closest('.heart');if(!h)return;e.preventDefault();e.stopPropagation();toggleFavKey(h.getAttribute('data-fav'));render();});
 $('#tonightToggle').addEventListener('click',e=>{state.tonight=!state.tonight;e.target.classList.toggle('on',state.tonight);render();});
+$('#thisWeekToggle').addEventListener('click',e=>{state.thisWeek=!state.thisWeek;$('#thisWeekToggle').classList.toggle('on',state.thisWeek);render();});
 $('#gridBtn').addEventListener('click',()=>{state.layout='grid';$('#gridBtn').classList.add('active');$('#listBtn').classList.remove('active');render();});
 $('#listBtn').addEventListener('click',()=>{state.layout='list';$('#listBtn').classList.add('active');$('#gridBtn').classList.remove('active');render();});
 $('#resetBtn').addEventListener('click',()=>{
   state.q="";state.tonight=false;state.sort="date";state.view="shows";state.selectedVenue=null;$('#venuesToggle').classList.remove('on');$('#viewingWord').textContent='Shows';
   $('#searchInput').value="";
-  $('#sortSel').value="date";$('#tonightToggle').classList.remove('on');state.myShows=false;$('#myShowsToggle').classList.remove('on');render();
+  $('#sortSel').value="date";$('#tonightToggle').classList.remove('on');state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');state.myShows=false;$('#myShowsToggle').classList.remove('on');render();
 });
 
 load();
