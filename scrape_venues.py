@@ -48,6 +48,9 @@ VENUE_INFO = {
     "Crystal Ballroom": ("Downtown", "1332 W Burnside St"),
     "McMenamins Edgefield": ("Troutdale", "2126 SW Halsey St, Troutdale"),
     "McMenamins Grand Lodge": ("Forest Grove", "3505 Pacific Ave, Forest Grove"),
+    "White Eagle Saloon": ("Boise/Eliot", "836 N Russell St, Portland, OR 97227"),
+    "Al's Den": ("West End/Downtown", "303 SW 12th Ave, Portland, OR 97205"),
+    "Mission Theater": ("Nob Hill/NW", "1624 NW Glisan St, Portland, OR 97209"),
     "Arlene Schnitzer Concert Hall": ("Downtown", "1037 SW Broadway"),
     "Paramount Theatre": ("Downtown", "911 SW Salmon St"),
     "The Old Church": ("Downtown", "1422 SW 11th Ave"),
@@ -1700,7 +1703,125 @@ def parse_novapdx(html, today):
     return shows
 
 
+MCMENAMINS_BASE = "https://www.mcmenamins.com/to-do/live-music-events/music-event-calendar"
+# Music-first McMenamins rooms only. Crystal Ballroom(2)/Edgefield(3)/Grand Lodge(4)
+# are intentionally OMITTED -- they already arrive via parse_monqui; including them
+# here would double-list. Kennedy School & the pubs are skipped (mostly non-music).
+MCMENAMINS_VENUES = {
+    "55": "White Eagle Saloon",
+    "154": "Al's Den",
+    "63": "Mission Theater",
+}
+_MCM_PROP_CTRL = "ctl00$MainContent$propertyfilters"
+
+
+def _mcmenamins_session_get(session, url):
+    """GET that seeds the ASP.NET session. The postback below ONLY returns 200 if the
+    POST carries the ASP.NET_SessionId + __AntiXsrfToken cookies set by THIS GET and the
+    VIEWSTATE tokens from the SAME response -- a bare POST (no shared session) returns
+    HTTP 500. So we do GET+POST inside one requests.Session rather than reusing the
+    harness's cookie-less fetch()."""
+    r = session.get(url, headers={"User-Agent":
+        "Mozilla/5.0 (compatible; PortlandLive/1.0; listings aggregator)"}, timeout=30)
+    r.raise_for_status()
+    return r.text
+
+
+def _mcmenamins_filter_html(session, token_html, vid):
+    """Replay the location-filter __doPostBack. We must POST the form's COMPLETE hidden
+    input set -- __VIEWSTATE, __VIEWSTATEGENERATOR, __EVENTVALIDATION AND every other
+    hidden field (__LASTFOCUS, filterdate, startDate, endDate, code, edl/sdl, ...);
+    a partial set 500s. __EVENTTARGET is the location <select> control; its value is the
+    venue id. token_html + session cookies must come from the same preceding GET."""
+    soup = BeautifulSoup(token_html, "html.parser")
+    form = {}
+    for inp in soup.select("input"):
+        name = inp.get("name")
+        if name:
+            form[name] = inp.get("value") or ""
+    form["__EVENTTARGET"] = _MCM_PROP_CTRL
+    form["__EVENTARGUMENT"] = ""
+    form[_MCM_PROP_CTRL] = vid
+    r = session.post(MCMENAMINS_BASE, data=form, headers={"User-Agent":
+        "Mozilla/5.0 (compatible; PortlandLive/1.0; listings aggregator)"}, timeout=30)
+    r.raise_for_status()
+    return r.text
+
+
+def parse_mcmenamins(html, today):
+    # McMenamins' calendar is custom ASP.NET WebForms (NEW pattern): no JSON API, and a
+    # plain GET yields only ~9 "today" events. Per-venue lists live behind an ASP.NET
+    # __doPostBack on the location <select>. We open our OWN requests.Session (the passed
+    # `html` came from a cookie-less fetch and cannot drive the postback), GET once to
+    # seed session cookies + VIEWSTATE, then postback per target venue id and parse the
+    # server-rendered cards. Crystal Ballroom(2)/Edgefield(3)/Grand Lodge(4) are omitted
+    # on purpose -- they already arrive via parse_monqui (including them double-lists).
+    out, seen = [], set()
+    try:
+        session = requests.Session()
+        token_html = _mcmenamins_session_get(session, MCMENAMINS_BASE)
+    except Exception as e:
+        print(f"  WARN: McMenamins seed GET failed: {e}")
+        return out
+    for vid, vname in MCMENAMINS_VENUES.items():
+        try:
+            page = _mcmenamins_filter_html(session, token_html, vid)
+        except Exception as e:
+            print(f"  WARN: McMenamins postback failed for {vname} ({vid}): {e}")
+            continue
+        soup = BeautifulSoup(page, "html.parser")
+        nb, addr = VENUE_INFO.get(vname, ("", ""))
+        for card in soup.select("div.tm-panel-card.event"):
+            a = card.find("a", href=lambda x: x and "/events/" in x)
+            if not a:
+                continue
+            # title = first uk-panel-title; date = uk-panel-title inside tm-card-content
+            th = card.select_one("h3.uk-panel-title")
+            title = clean(th.get_text(" ", strip=True)) if th else ""
+            title = re.sub(r"\^?(SOLD OUT|CANCELL?ED|MOVED TO)[:\s\*].*$", "",
+                           title, flags=re.I).strip()
+            content = card.select_one("div.tm-card-content")
+            dh = content.select_one("h3.uk-panel-title") if content else None
+            date_txt = dh.get_text(" ", strip=True) if dh else ""
+            tm = card.select_one("p.uk-panel-time")
+            time_txt = tm.get_text(" ", strip=True) if tm else ""
+            m = re.search(r"([A-Z][a-z]{2})[a-z]*\s+(\d{1,2})", date_txt)
+            if not m or not title:
+                continue
+            mon = MONTHS.get(m.group(1))
+            if not mon:
+                continue
+            yr = infer_year(mon, today)
+            try:
+                date = datetime.date(yr, mon, int(m.group(2))).isoformat()
+            except ValueError:
+                continue
+            tm_str = to_time(time_txt)
+            href = a.get("href") or ""
+            url = ("https://www.mcmenamins.com" + href) if href.startswith("/") else href
+            # Real art is the teaser div background-image; the <img> is a blank.gif
+            # placeholder. cloudfront "genericimage" = no real art -> "".
+            img = ""
+            teaser = card.select_one("div.uk-panel-teaser")
+            if teaser and teaser.get("style"):
+                im = re.search(r"url\(([^)]+)\)", teaser["style"])
+                if im:
+                    cand = im.group(1).strip("'\"")
+                    if "genericimage" not in cand:
+                        img = cand
+            key = (vname, date, title.lower())
+            if key in seen:
+                continue
+            seen.add(key)
+            out.append({"title": title, "venue": vname, "neighborhood": nb,
+                        "address": addr, "date": date, "time": tm_str,
+                        "venueUrl": url, "imageUrl": img})
+    return out
+
+
 SOURCES = [
+    {"name": "McMenamins (White Eagle/Al's Den/Mission)", "parser": parse_mcmenamins,
+     "urls": ["https://www.mcmenamins.com/to-do/live-music-events/music-event-calendar"]},
     {"name": "NOVA PDX", "parser": parse_novapdx, "urls": ["https://novapdxevents.com/event-calendar"]},
     {"name": "Pioneer Courthouse Square / PDX Live (pdx-live.com)", "parser": parse_pdxlive, "urls": ["https://pdx-live.com/wp-json/wlcr/v1/events/raw"]},
     {"name": "Twilight Cafe & Bar (twilightcafeandbar.com)", "parser": parse_twilight, "urls": ["https://twilightcafeandbar.com/calendar_list"]},
