@@ -1792,54 +1792,116 @@ def parse_starday(ics, today):
     # Records. The WordPress homepage embeds a public Google Calendar iframe;
     # the events live in that calendar public .ics feed (basic.ics), which we
     # fetch directly. DTSTART is UTC (Z), TZID=, or VALUE=DATE (all-day).
+    # Many events are recurring (RRULE) -- we expand each rule into its
+    # individual dated occurrences inside the today->horizon window, honoring
+    # UNTIL/COUNT and EXDATE, rather than emitting only the literal DTSTART.
+    from dateutil import rrule as _rrule
     out, seen = [], {}
     horizon = today + datetime.timedelta(days=120)
     lower = today
     nb, addr = VENUE_INFO.get("Starday Tavern", ("Brentwood-Darlington", ""))
     # unfold RFC5545 line folding (continuation lines begin with a space/tab)
     text = (ics or "").replace("\r\n", "\n").replace("\n ", "").replace("\n\t", "")
+
+    def _unescape(t):
+        # RFC5545 TEXT escapes use a SINGLE backslash: \, \; \n \\
+        # Process the literal "\\" first via a placeholder so it does not
+        # interfere with the comma/semicolon/newline replacements.
+        t = t.replace("\\\\", "\x00")
+        t = t.replace("\\,", ",").replace("\\;", ";")
+        t = t.replace("\\n", " ").replace("\\N", " ")
+        return t.replace("\x00", "\\")
+
+    def _local(y, mo, da, hh, mi, isZ):
+        # Return a naive Pacific-local datetime for the given wall fields.
+        if isZ:
+            return datetime.datetime(y, mo, da, hh, mi, tzinfo=datetime.timezone.utc).astimezone(_ASP_PDT).replace(tzinfo=None)
+        # TZID=America/Los_Angeles or floating: already Pacific-local
+        return datetime.datetime(y, mo, da, hh, mi)
+
+    def _parse_dt(val):
+        m = re.match(r"(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})(Z?))?", val)
+        if not m:
+            return None, None
+        y, mo, da = int(m.group(1)), int(m.group(2)), int(m.group(3))
+        if m.group(4) is None:
+            # all-day (VALUE=DATE): date only, no reliable time
+            return datetime.datetime(y, mo, da, 0, 0), True
+        return _local(y, mo, da, int(m.group(4)), int(m.group(5)), m.group(7) == "Z"), False
+
     for block in text.split("BEGIN:VEVENT")[1:]:
         block = block.split("END:VEVENT")[0]
         ms = re.search(r"\nSUMMARY(?:;[^:]*)?:(.*)", block)
         md = re.search(r"\nDTSTART([^:\n]*):([0-9TZ]+)", block)
         if not (ms and md):
             continue
-        params, val = md.group(1), md.group(2)
-        m = re.match(r"(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})(Z?))?", val)
-        if not m:
+        base, all_day = _parse_dt(md.group(2))
+        if base is None:
             continue
-        y, mo, da = int(m.group(1)), int(m.group(2)), int(m.group(3))
-        if m.group(4) is None:
-            # all-day (VALUE=DATE): date only, no reliable time
-            d = datetime.date(y, mo, da)
-            tm = ""
-        else:
-            hh, mi = int(m.group(4)), int(m.group(5))
-            if m.group(7) == "Z":
-                dt = datetime.datetime(y, mo, da, hh, mi, tzinfo=datetime.timezone.utc).astimezone(_ASP_PDT)
-            else:
-                # TZID=America/Los_Angeles (or floating): already Pacific-local
-                dt = datetime.datetime(y, mo, da, hh, mi)
-            d = dt.date()
-            tm = "%d:%02d %s" % (dt.hour % 12 or 12, dt.minute, "AM" if dt.hour < 12 else "PM")
-        if not (lower <= d <= horizon):
-            continue
-        date = d.isoformat()
-        # iCal escapes commas/semicolons with backslashes; unescape them
+
         raw_title = ms.group(1).strip()
-        raw_title = raw_title.replace("\\\\,", ",").replace("\\\\;", ";").replace("\\\\n", " ").replace("\\\\\\\\", "\\\\")
-        title = clean(raw_title.replace("&amp;", "&"))
+        title = clean(_unescape(raw_title).replace("&amp;", "&"))
         title = re.sub(r"\s+", " ", title).strip()
         if not title:
             continue
-        key = (date, title.lower())
-        if key in seen:
-            continue
-        seen[key] = 1
-        out.append({"title": title, "venue": "Starday Tavern",
-                    "neighborhood": nb, "address": addr,
-                    "date": date, "time": tm,
-                    "venueUrl": "https://www.stardaytavern.com/", "imageUrl": ""})
+
+        # Build the list of occurrence datetimes for this event.
+        rr = re.search(r"\nRRULE:(.*)", block)
+        if rr:
+            rulestr = rr.group(1).strip()
+            # rrulestr needs UNTIL in the same (naive-local) frame as dtstart;
+            # the feed stores UNTIL in UTC (trailing Z), so convert it.
+            def _fix_until(mm):
+                um = re.match(r"(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})(Z?))?", mm.group(1))
+                if not um:
+                    return mm.group(0)
+                uy, umo, uda = int(um.group(1)), int(um.group(2)), int(um.group(3))
+                if um.group(4) is None:
+                    return "UNTIL=%04d%02d%02d" % (uy, umo, uda)
+                ul = _local(uy, umo, uda, int(um.group(4)), int(um.group(5)), um.group(7) == "Z")
+                return "UNTIL=%04d%02d%02dT%02d%02d00" % (ul.year, ul.month, ul.day, ul.hour, ul.minute)
+            rulestr = re.sub(r"UNTIL=([0-9TZ]+)", _fix_until, rulestr)
+            try:
+                rule = _rrule.rrulestr(rulestr, dtstart=base)
+                win_s = datetime.datetime.combine(lower, datetime.time.min)
+                win_e = datetime.datetime.combine(horizon, datetime.time.max)
+                occ_dts = list(rule.between(win_s, win_e, inc=True))
+            except Exception:
+                occ_dts = [base]
+        else:
+            occ_dts = [base]
+
+        # EXDATE: collect excluded dates/datetimes to skip.
+        ex_dates = set()
+        for exm in re.finditer(r"\nEXDATE([^:\n]*):([^\n]*)", block):
+            for tok in exm.group(2).split(","):
+                em = re.match(r"(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})(Z?))?", tok.strip())
+                if not em:
+                    continue
+                ey, emo, eda = int(em.group(1)), int(em.group(2)), int(em.group(3))
+                ex_dates.add((ey, emo, eda))
+                if em.group(4) is not None:
+                    el = _local(ey, emo, eda, int(em.group(4)), int(em.group(5)), em.group(7) == "Z")
+                    ex_dates.add((el.year, el.month, el.day, el.hour, el.minute))
+
+        for occ in occ_dts:
+            if (occ.year, occ.month, occ.day) in ex_dates:
+                continue
+            if (occ.year, occ.month, occ.day, occ.hour, occ.minute) in ex_dates:
+                continue
+            d = occ.date()
+            if not (lower <= d <= horizon):
+                continue
+            tm = "" if all_day else "%d:%02d %s" % (occ.hour % 12 or 12, occ.minute, "AM" if occ.hour < 12 else "PM")
+            date = d.isoformat()
+            key = (date, title.lower())
+            if key in seen:
+                continue
+            seen[key] = 1
+            out.append({"title": title, "venue": "Starday Tavern",
+                        "neighborhood": nb, "address": addr,
+                        "date": date, "time": tm,
+                        "venueUrl": "https://www.stardaytavern.com/", "imageUrl": ""})
     return out
 
 
