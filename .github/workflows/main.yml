@@ -7,8 +7,8 @@ jobs:
   refresh:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
       - name: Install deps
@@ -22,8 +22,10 @@ jobs:
         run: |
           git config user.name "portlandlive-bot"
           git config user.email "bot@portlandlive.local"
-          git add shows.json manual_shows.json
+          git add shows.json manual_shows.json venue_baselines.json
           git diff --staged --quiet && echo "no changes" && exit 0
           git commit -m "Refresh listings $(date -u +%F)"
-          git pull --rebase origin main
-          git push
+          for i in 1 2 3; do
+            git pull --rebase origin main && git push && break
+            echo "push attempt $i failed, retrying"; sleep 5
+          done
