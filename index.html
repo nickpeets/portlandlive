@@ -548,7 +548,7 @@ function renderVenues(){
   }
   const groups = {};
   all.forEach(s=>{ const v=s.venue||'Unknown'; if(!groups[v]) groups[v]={name:v,neighborhood:s.neighborhood||'',count:0}; groups[v].count++; if(!groups[v].neighborhood && s.neighborhood) groups[v].neighborhood=s.neighborhood; });
-  const venues = Object.values(groups).sort((a,b)=> b.count-a.count || a.name.localeCompare(b.name));
+  const byName = (state.sort==="venue" || state.sort==="title"); const venues = Object.values(groups).sort((a,b)=> byName ? a.name.localeCompare(b.name, undefined, {sensitivity:'base'}) : (b.count-a.count || a.name.localeCompare(b.name)));
   $('#resultCount').textContent = venues.length ? `${venues.length} venue${venues.length>1?'s':''}` : "No results";
   if(!venues.length){ wrap.innerHTML = '<div class="empty"><h2>No Results Found.</h2></div>'; return; }
   let container;
