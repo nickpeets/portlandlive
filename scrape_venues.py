@@ -78,6 +78,7 @@ VENUE_INFO = {
     "Mississippi Pizza": ("Boise", "3552 N Mississippi Ave"),
     "Laurelthirst Public House": ("Kerns", "2958 NE Glisan St"),
     "Alberta Street Pub": ("Alberta Arts", "1036 NE Alberta St"),
+    "Tomorrow's Verse": ("Beaumont-Wilshire", "4605 NE Fremont St, Portland, OR 97213"),
 }
 
 def clean(s):
@@ -1495,6 +1496,99 @@ def parse_pdxlive(html, today):
                     "date": date, "time": tm, "venueUrl": url, "imageUrl": ((e.get("logo") or {}).get("url") or "")})
     return out
 
+# ---- Tomorrow's Verse (youenjoymybeer.com) -- Wix Events app, browserless.
+# Two-step chain: (1) GET the events page and pull the wix-events "instance"
+# token out of the SSR'd HTML (signed fresh per request), (2) POST it to the
+# Wix Events query API to get a clean JSON event list. Recurring series come
+# back as individual dated rows -- we keep each as its own dated show.
+_TV_APPDEF = "140603ad-af8d-84a5-2c80-a0f60cb47351"  # Wix Events appDefId
+_TV_EVENTS_PAGE = "https://www.youenjoymybeer.com/events"
+_TV_QUERY_API = "https://www.youenjoymybeer.com/_api/wix-events-web/v1/events/query"
+_TV_INSTANCE_RE = re.compile(r'"instance":"([\w-]+\.[\w-]+)"')
+
+def _tv_instance_token(html):
+    """Find the wix-events app instance token in the events page HTML.
+    Tolerant of surrounding JSON: scan every "instance":"a.b" candidate and
+    keep the one whose base64 payload decodes to the wix-events appDefId."""
+    import base64
+    for tok in _TV_INSTANCE_RE.findall(html):
+        try:
+            payload = tok.split(".", 1)[1]
+            payload += "=" * (-len(payload) % 4)
+            data = json.loads(base64.urlsafe_b64decode(payload))
+        except Exception:
+            continue
+        if data.get("appDefId") == _TV_APPDEF:
+            return tok
+    return None
+
+def parse_tomorrowsverse(html, today):
+    # `html` is the GET of _TV_EVENTS_PAGE supplied by fetch() in scrape().
+    try:
+        from zoneinfo import ZoneInfo
+    except Exception:
+        ZoneInfo = None
+    token = _tv_instance_token(html)
+    if not token:
+        raise RuntimeError("Tomorrow's Verse: wix-events instance token not found in page HTML")
+    headers = {
+        "User-Agent": "Mozilla/5.0 (compatible; PortlandLive/1.0; listings aggregator)",
+        "Authorization": token,
+        "Content-Type": "application/json",
+    }
+    raw = []
+    offset = 0
+    while True:
+        body = json.dumps({"limit": 100, "offset": offset, "fieldset": ["FULL"],
+                           "filter": {"status": ["SCHEDULED", "STARTED"]}})
+        resp = requests.post(_TV_QUERY_API, headers=headers, data=body, timeout=30)
+        resp.raise_for_status()
+        page = resp.json()
+        evs = page.get("events", []) or []
+        raw.extend(evs)
+        total = page.get("total", len(raw))
+        offset += len(evs)
+        if not evs or offset >= total or len(raw) >= 2000:
+            break
+    venue = "Tomorrow's Verse"
+    nb, addr = VENUE_INFO.get(venue, ("Beaumont-Wilshire", "4605 NE Fremont St, Portland, OR 97213"))
+    out, seen = [], set()
+    for e in raw:
+        cfg = (e.get("scheduling") or {}).get("config") or {}
+        sd = cfg.get("startDate")
+        if not sd:
+            continue
+        try:
+            dt = datetime.datetime.strptime(sd, "%Y-%m-%dT%H:%M:%SZ").replace(
+                tzinfo=datetime.timezone.utc)
+        except Exception:
+            continue
+        tzid = cfg.get("timeZoneId") or "America/Los_Angeles"
+        if ZoneInfo is not None:
+            try:
+                dt = dt.astimezone(ZoneInfo(tzid))
+            except Exception:
+                dt = dt.astimezone(datetime.timezone(datetime.timedelta(hours=-8)))
+        else:
+            dt = dt.astimezone(datetime.timezone(datetime.timedelta(hours=-8)))
+        date = dt.date().isoformat()
+        ampm = "am" if dt.hour < 12 else "pm"
+        tm = to_time("%d:%02d%s" % (dt.hour % 12 or 12, dt.minute, ampm))
+        title = clean(e.get("title") or "")
+        title = re.sub(r"\s+", " ", re.sub(r"[\u2010-\u2015]", "-", title)).strip()
+        if not title:
+            continue
+        slug = e.get("slug") or ""
+        url = "https://www.youenjoymybeer.com/events/" + slug if slug else _TV_EVENTS_PAGE
+        key = (date, title.lower())
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append({"title": title, "venue": venue, "neighborhood": nb, "address": addr,
+                    "date": date, "time": tm, "venueUrl": url, "imageUrl": ""})
+    return out
+
+
 SOURCES = [
     {"name": "Pioneer Courthouse Square / PDX Live (pdx-live.com)", "parser": parse_pdxlive, "urls": ["https://pdx-live.com/wp-json/wlcr/v1/events/raw"]},
     {"name": "Twilight Cafe & Bar (twilightcafeandbar.com)", "parser": parse_twilight, "urls": ["https://twilightcafeandbar.com/calendar_list"]},
@@ -1502,6 +1596,7 @@ SOURCES = [
     {"name": "Bunk Bar (shows.bunksandwiches.com)", "parser": parse_bunkbar, "urls": ["https://shows.bunksandwiches.com/"]},
     {"name": "Mississippi Pizza (mississippipizza.com)", "parser": parse_mississippipizza, "urls": ["https://mississippipizza.com/calendar/"]},
     {"name": "Alberta Street Pub (albertastreetpub.com)", "parser": parse_albertastreetpub, "urls": ["https://www.albertastreetpub.com/music?format=json"]},
+    {"name": "Tomorrow's Verse (youenjoymybeer.com)", "parser": parse_tomorrowsverse, "urls": ["https://www.youenjoymybeer.com/events"]},
     {"name": "Laurelthirst (laurelthirst.com)", "parser": parse_laurelthirst, "urls": ["https://www.laurelthirst.com/"]},
     {"name": "Showdown Saloon", "parser": parse_showdown, "urls": ["https://showdownpdx.com/"]},
     {"name": "The Get Down", "parser": parse_getdown, "urls": ["https://thegetdownpdx.com/"]},
