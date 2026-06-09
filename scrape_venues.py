@@ -39,6 +39,8 @@ VENUE_BY_SLUG = {
 }
 
 VENUE_INFO = {
+    "Kelly's Olympian": ("Downtown", "426 SW Washington St, Portland, OR 97204"),
+    "Barrel Room": ("Old Town/Chinatown", "120 NW Couch St, Portland, OR 97209"),
     "NOVA PDX": ("Buckman", "722 E Burnside St, Portland, OR 97214"),
     "Roseland Theater": ("Old Town/Chinatown", "8 NW 6th Ave"),
     "Peter's Room (Roseland)": ("Old Town/Chinatown", "8 NW 6th Ave"),
@@ -114,17 +116,32 @@ _CHALLENGE_STATUS = {202, 403, 415, 429}
 _CHALLENGE_SIGS = ("One moment", "Just a moment", "awsWafCookieDomainList", "gokuProps")
 
 
+_BROWSER_UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+               "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36")
+
+
+def _challenged(r):
+    if r.status_code in _CHALLENGE_STATUS:
+        return f"status {r.status_code}"
+    for sig in _CHALLENGE_SIGS:
+        if sig in r.text:
+            return f"signature {sig!r}"
+    return None
+
+
 def fetch(url):
     r = requests.get(url, headers={"User-Agent":
         "Mozilla/5.0 (compatible; PortlandLive/1.0; listings aggregator)"}, timeout=30)
-    if r.status_code in _CHALLENGE_STATUS:
-        raise ChallengeError(f"challenge status {r.status_code} from {url}")
-    body = r.text
-    for sig in _CHALLENGE_SIGS:
-        if sig in body:
-            raise ChallengeError(f"challenge signature {sig!r} in body from {url}")
+    why = _challenged(r)
+    if why:
+        # Some venues (e.g. WordPress hardened with a WAF) reject the aggregator UA.
+        # Retry once with a plain browser UA before giving up.
+        r = requests.get(url, headers={"User-Agent": _BROWSER_UA}, timeout=30)
+        why = _challenged(r)
+        if why:
+            raise ChallengeError(f"challenge {why} from {url}")
     r.raise_for_status()
-    return body
+    return r.text
 
 
 def _img_from(el, needle):
@@ -1976,8 +1993,117 @@ def parse_mcmenamins(html, today):
     return out
 
 
+
+def parse_kellys_olympian(html_text, today):
+    # Kelly's Olympian (kellysolympian.com), Downtown - WordPress + The Events Calendar.
+    # Events live in JSON-LD <script type="application/ld+json"> Event objects (Pacific offset dates).
+    import html as _html
+    out, seen = [], set()
+    horizon = today + datetime.timedelta(days=HORIZON_DAYS)
+    lower = today
+    nb, addr = VENUE_INFO.get("Kelly's Olympian", ("Downtown", ""))
+    blocks = re.findall(r'<script type="application/ld\+json">(.*?)</script>', html_text, re.S)
+    for b in blocks:
+        try:
+            data = json.loads(b)
+        except Exception:
+            continue
+        for e in (data if isinstance(data, list) else [data]):
+            if not isinstance(e, dict) or e.get("@type") != "Event":
+                continue
+            sd = e.get("startDate")
+            if not sd:
+                continue
+            try:
+                dt = datetime.datetime.fromisoformat(sd.replace("Z", "+00:00"))
+            except Exception:
+                continue
+            if dt.tzinfo:
+                dt = dt.astimezone(_ASP_PDT)
+            d = dt.date()
+            if not (lower <= d <= horizon):
+                continue
+            title = clean(_html.unescape(e.get("name") or ""))
+            title = re.sub(r"\s+", " ", title).strip()
+            if not title:
+                continue
+            date = d.isoformat()
+            tm = "%d:%02d %s" % (dt.hour % 12 or 12, dt.minute, "AM" if dt.hour < 12 else "PM")
+            url = e.get("url") or "https://kellysolympian.com/events/"
+            img = e.get("image") or ""
+            if isinstance(img, dict):
+                img = img.get("url", "")
+            key = (date, title.lower())
+            if key in seen:
+                continue
+            seen.add(key)
+            out.append({"title": title, "venue": "Kelly's Olympian", "neighborhood": nb,
+                        "address": addr, "date": date, "time": tm,
+                        "venueUrl": url, "imageUrl": img})
+    return out
+
+
+def parse_barrelroom(html_text, today):
+    # Barrel Room (barrelroompdx.com), Old Town/Chinatown - Squarespace + Eventbrite.
+    # JSON-LD is a single Place object whose "Events" list holds Event @type objects (UTC startDate).
+    # High volume (weekly residencies); today->horizon window + (date,title) dedupe trims it.
+    import html as _html
+    out, seen = [], set()
+    horizon = today + datetime.timedelta(days=HORIZON_DAYS)
+    lower = today
+    nb, addr = VENUE_INFO.get("Barrel Room", ("Old Town/Chinatown", ""))
+    blocks = re.findall(r'<script type="application/ld\+json">(.*?)</script>', html_text, re.S)
+    evs = []
+    for b in blocks:
+        try:
+            data = json.loads(b)
+        except Exception:
+            continue
+        if isinstance(data, dict) and isinstance(data.get("Events"), list):
+            evs.extend(data["Events"])
+        elif isinstance(data, list):
+            evs.extend([x for x in data if isinstance(x, dict) and x.get("@type") == "Event"])
+        elif isinstance(data, dict) and data.get("@type") == "Event":
+            evs.append(data)
+    for e in evs:
+        if not isinstance(e, dict) or e.get("@type") != "Event":
+            continue
+        sd = e.get("startDate")
+        if not sd:
+            continue
+        try:
+            dt = datetime.datetime.fromisoformat(sd.replace("Z", "+00:00"))
+        except Exception:
+            continue
+        if dt.tzinfo:
+            dt = dt.astimezone(_ASP_PDT)
+        d = dt.date()
+        if not (lower <= d <= horizon):
+            continue
+        title = clean(_html.unescape(e.get("name") or ""))
+        title = re.sub(r"\s+", " ", title).strip()
+        if not title:
+            continue
+        date = d.isoformat()
+        tm = "%d:%02d %s" % (dt.hour % 12 or 12, dt.minute, "AM" if dt.hour < 12 else "PM")
+        url = e.get("url") or "https://www.barrelroompdx.com/events"
+        img = e.get("image") or ""
+        if isinstance(img, dict):
+            img = img.get("url", "")
+        key = (date, title.lower())
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append({"title": title, "venue": "Barrel Room", "neighborhood": nb,
+                    "address": addr, "date": date, "time": tm,
+                    "venueUrl": url, "imageUrl": img})
+    return out
+
+
 SOURCES = [
     {"name": "Havalina (havalinapdx.com)", "parser": parse_havalina, "urls": ["https://havalinapdx.com/events?format=json"]},
+    {"name": "Kelly's Olympian (kellysolympian.com)", "parser": parse_kellys_olympian, "urls": ["https://kellysolympian.com/events/"]},
+    {"name": "Barrel Room (barrelroompdx.com)", "parser": parse_barrelroom, "urls": ["https://www.barrelroompdx.com/events"]},
     {"name": "Starday Tavern (stardaytavern.com / Genghis Records)", "parser": parse_starday, "urls": ["https://calendar.google.com/calendar/ical/m59vjhvcv0iflpv2iknoqlmuqo%40group.calendar.google.com/public/basic.ics"]},
     {"name": "McMenamins (White Eagle/Al's Den/Mission)", "parser": parse_mcmenamins,
      "urls": ["https://www.mcmenamins.com/to-do/live-music-events/music-event-calendar"]},
