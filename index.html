@@ -500,6 +500,31 @@ function buildNeighborhoods(){
   });
 }
 
+function applyTimeFilters(arr){
+  let out = arr;
+  if(state.myShows) out = out.filter(s => isFav(s));
+  if(state.tonight){
+    const t = new Intl.DateTimeFormat('en-CA',{timeZone:'America/Los_Angeles',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+    out = out.filter(s => s.date === t);
+  }
+  if(state.thisWeek){
+    const today = new Intl.DateTimeFormat('en-CA',{timeZone:'America/Los_Angeles',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+    const upper = new Date(today + 'T00:00:00'); upper.setDate(upper.getDate() + 6);
+    const end = `${upper.getFullYear()}-${String(upper.getMonth()+1).padStart(2,'0')}-${String(upper.getDate()).padStart(2,'0')}`;
+    out = out.filter(s => s.date >= today && s.date <= end);
+  }
+  return out;
+}
+function sortShows(arr){
+  const by = state.sort;
+  arr.sort((a,b)=>{
+    if(by==="venue") return a.venue.localeCompare(b.venue) || a.date.localeCompare(b.date);
+    if(by==="title") return a.title.localeCompare(b.title);
+    if(by==="neighborhood") return (a.neighborhood||'').localeCompare(b.neighborhood||'') || a.date.localeCompare(b.date);
+    return a.date.localeCompare(b.date) || a.venue.localeCompare(b.venue);
+  });
+  return arr;
+}
 function filtered(){
   // Hide past-dated shows client-side using the SAME Pacific-date method as the
   // filters, so the default view is correct 24/7 regardless of when shows.json was built.
@@ -507,25 +532,8 @@ function filtered(){
   let out = state.shows.filter(s => s.date >= todayPacific);
   const q = state.q.trim().toLowerCase();
   if(q) out = out.filter(s => (s.title+" "+s.venue+" "+s.neighborhood).toLowerCase().includes(q));
-   if(state.myShows) out = out.filter(s => isFav(s));
-    if(state.tonight){
-      const t = new Intl.DateTimeFormat('en-CA',{timeZone:'America/Los_Angeles',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
-      out = out.filter(s => s.date === t);
-    }
-    if(state.thisWeek){
-      const today = new Intl.DateTimeFormat('en-CA',{timeZone:'America/Los_Angeles',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
-      const upper = new Date(today + 'T00:00:00'); upper.setDate(upper.getDate() + 6);
-      const end = `${upper.getFullYear()}-${String(upper.getMonth()+1).padStart(2,'0')}-${String(upper.getDate()).padStart(2,'0')}`;
-      out = out.filter(s => s.date >= today && s.date <= end);
-    }
-
-  const by = state.sort;
-  out.sort((a,b)=>{
-    if(by==="venue") return a.venue.localeCompare(b.venue) || a.date.localeCompare(b.date);
-    if(by==="title") return a.title.localeCompare(b.title);
-    if(by==="neighborhood") return (a.neighborhood||'').localeCompare(b.neighborhood||'') || a.date.localeCompare(b.date);
-    return a.date.localeCompare(b.date) || a.venue.localeCompare(b.venue);
-  });
+   out = applyTimeFilters(out);
+   sortShows(out);
   return out;
 }
 
@@ -565,10 +573,12 @@ function renderVenues(){
   // current/upcoming shows; a venue with no remaining shows drops out entirely.
   const todayPacific = new Intl.DateTimeFormat('en-CA',{timeZone:'America/Los_Angeles',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
   let all = state.shows.filter(s => s.date >= todayPacific);
+  all = applyTimeFilters(all);
     const q = state.q.trim().toLowerCase();
   if(state.selectedVenue){
     let vshows = all.filter(s => s.venue === state.selectedVenue);
     if(q) vshows = vshows.filter(s => (s.title+" "+s.venue+" "+s.neighborhood).toLowerCase().includes(q));
+    vshows = sortShows(vshows);
     const first = vshows[0] || {};
     $('#resultCount').textContent = vshows.length ? `${vshows.length} show${vshows.length>1?'s':''} found` : "No results";
     const head = document.createElement('div');
