@@ -471,7 +471,10 @@ function buildNeighborhoods(){
 }
 
 function filtered(){
-  let out = state.shows.slice();
+  // Hide past-dated shows client-side using the SAME Pacific-date method as the
+  // filters, so the default view is correct 24/7 regardless of when shows.json was built.
+  const todayPacific = new Intl.DateTimeFormat('en-CA',{timeZone:'America/Los_Angeles',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+  let out = state.shows.filter(s => s.date >= todayPacific);
   const q = state.q.trim().toLowerCase();
   if(q) out = out.filter(s => (s.title+" "+s.venue+" "+s.neighborhood).toLowerCase().includes(q));
    if(state.myShows) out = out.filter(s => isFav(s));
@@ -528,7 +531,10 @@ function render(){
 function renderVenues(){
   const wrap = $('#results');
   wrap.innerHTML = "";
-  const all = state.shows;
+  // Same past-date guard so venue show-counts (and the venue list itself) reflect only
+  // current/upcoming shows; a venue with no remaining shows drops out entirely.
+  const todayPacific = new Intl.DateTimeFormat('en-CA',{timeZone:'America/Los_Angeles',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+  const all = state.shows.filter(s => s.date >= todayPacific);
   if(state.selectedVenue){
     const vshows = all.filter(s => s.venue === state.selectedVenue);
     const first = vshows[0] || {};
