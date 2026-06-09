@@ -41,6 +41,8 @@ VENUE_BY_SLUG = {
 VENUE_INFO = {
     "Kelly's Olympian": ("Downtown", "426 SW Washington St, Portland, OR 97204"),
     "Barrel Room": ("Old Town/Chinatown", "120 NW Couch St, Portland, OR 97209"),
+    "Arbor Beer Lodge": ("Arbor Lodge", "6550 N Interstate Ave, Portland, OR 97217"),
+    "Artichoke Music": ("Brooklyn", "2007 SE Powell Blvd, Portland, OR 97202"),
     "NOVA PDX": ("Buckman", "722 E Burnside St, Portland, OR 97214"),
     "Roseland Theater": ("Old Town/Chinatown", "8 NW 6th Ave"),
     "Peter's Room (Roseland)": ("Old Town/Chinatown", "8 NW 6th Ave"),
@@ -2100,10 +2102,106 @@ def parse_barrelroom(html_text, today):
     return out
 
 
+def parse_arbor(html, today):
+    # Arbor Beer Lodge (arborbeerlodge.com), Arbor Lodge / N Interstate - native
+    # Squarespace events collection. /events?format=json gives an "upcoming"
+    # list with epoch-ms startDate (UTC). Same shape as Havalina/No Fun.
+    out, seen = [], set()
+    horizon = today + datetime.timedelta(days=HORIZON_DAYS)
+    lower = today
+    try:
+        data = json.loads(html)
+    except Exception:
+        return out
+    nb, addr = VENUE_INFO.get("Arbor Beer Lodge", ("Arbor Lodge", ""))
+    for e in data.get("upcoming", []):
+        if not isinstance(e, dict):
+            continue
+        sd = e.get("startDate")
+        if not sd:
+            continue
+        dt = datetime.datetime.fromtimestamp(sd / 1000, tz=datetime.timezone.utc).astimezone(_ASP_PDT)
+        d = dt.date()
+        if not (lower <= d <= horizon):
+            continue
+        date = d.isoformat()
+        tm = "%d:%02d %s" % (dt.hour % 12 or 12, dt.minute, "AM" if dt.hour < 12 else "PM")
+        title = clean((e.get("title") or "").replace("&amp;", "&"))
+        title = re.sub(r"\s+", " ", title).strip()
+        if not title:
+            continue
+        fu = e.get("fullUrl") or ""
+        url = ("https://www.arborbeerlodge.com" + fu) if fu.startswith("/") else (fu or "https://www.arborbeerlodge.com/events")
+        img = e.get("assetUrl") or ""
+        key = (date, title.lower())
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append({"title": title, "venue": "Arbor Beer Lodge", "neighborhood": nb,
+                    "address": addr, "date": date, "time": tm,
+                    "venueUrl": url, "imageUrl": img})
+    return out
+
+
+def parse_artichoke(html_text, today):
+    # Artichoke Music (artichokemusic.org), Brooklyn/Powell (SE) - folk/acoustic
+    # nonprofit. Events are on Eventbrite; the live-music collection page embeds
+    # JSON-LD: an ItemList whose itemListElement[].item are Event @type objects
+    # (startDate carries a Pacific offset, e.g. -07:00). today->horizon + dedupe.
+    out, seen = [], set()
+    horizon = today + datetime.timedelta(days=HORIZON_DAYS)
+    lower = today
+    nb, addr = VENUE_INFO.get("Artichoke Music", ("Brooklyn", ""))
+    blocks = re.findall(r'<script type="application/ld\+json">(.*?)</script>', html_text, re.S)
+    evs = []
+    for b in blocks:
+        try:
+            data = json.loads(b)
+        except Exception:
+            continue
+        items = data.get("itemListElement") if isinstance(data, dict) else None
+        if isinstance(items, list):
+            for it in items:
+                obj = it.get("item") if isinstance(it, dict) else None
+                if isinstance(obj, dict) and obj.get("@type") == "Event":
+                    evs.append(obj)
+    for e in evs:
+        sd = e.get("startDate")
+        if not sd:
+            continue
+        try:
+            dt = datetime.datetime.fromisoformat(sd.replace("Z", "+00:00")).astimezone(_ASP_PDT)
+        except Exception:
+            continue
+        d = dt.date()
+        if not (lower <= d <= horizon):
+            continue
+        date = d.isoformat()
+        tm = "%d:%02d %s" % (dt.hour % 12 or 12, dt.minute, "AM" if dt.hour < 12 else "PM")
+        title = clean((e.get("name") or "").replace("&amp;", "&"))
+        title = re.sub(r"\s+", " ", title).strip()
+        if not title:
+            continue
+        url = e.get("url") or "https://www.artichokemusic.org/events"
+        img = e.get("image") or ""
+        if isinstance(img, dict):
+            img = img.get("url", "")
+        key = (date, title.lower())
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append({"title": title, "venue": "Artichoke Music", "neighborhood": nb,
+                    "address": addr, "date": date, "time": tm,
+                    "venueUrl": url, "imageUrl": img})
+    return out
+
+
 SOURCES = [
     {"name": "Havalina (havalinapdx.com)", "parser": parse_havalina, "urls": ["https://havalinapdx.com/events?format=json"]},
     {"name": "Kelly's Olympian (kellysolympian.com)", "parser": parse_kellys_olympian, "urls": ["https://kellysolympian.com/events/"]},
     {"name": "Barrel Room (barrelroompdx.com)", "parser": parse_barrelroom, "urls": ["https://www.barrelroompdx.com/events"]},
+    {"name": "Arbor Beer Lodge (arborbeerlodge.com)", "parser": parse_arbor, "urls": ["https://www.arborbeerlodge.com/events?format=json"]},
+    {"name": "Artichoke Music (artichokemusic.org)", "parser": parse_artichoke, "urls": ["https://www.eventbrite.com/cc/live-music-artichoke-4657563"]},
     {"name": "Starday Tavern (stardaytavern.com / Genghis Records)", "parser": parse_starday, "urls": ["https://calendar.google.com/calendar/ical/m59vjhvcv0iflpv2iknoqlmuqo%40group.calendar.google.com/public/basic.ics"]},
     {"name": "McMenamins (White Eagle/Al's Den/Mission)", "parser": parse_mcmenamins,
      "urls": ["https://www.mcmenamins.com/to-do/live-music-events/music-event-calendar"]},
