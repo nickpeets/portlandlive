@@ -58,6 +58,8 @@ VENUE_INFO = {
     "Revolution Hall": ("Buckman", "1300 SE Stark St"),
     "Polaris Hall": ("Overlook/N Portland", "635 N Killingsworth Ct"),
     "Mississippi Studios": ("Boise/Mississippi", "3939 N Mississippi Ave"),
+    "Havalina": ("St. Johns", "8927 N Lombard St, Portland, OR 97203"),
+    "Starday Tavern": ("Brentwood-Darlington", "6517 SE Foster Rd, Portland, OR 97206"),
     "Holocene": ("Central Eastside", "1001 SE Morrison St"),
     "Dante's": ("Old Town/Chinatown", "350 W Burnside St"),
     "Star Theater": ("Old Town/Chinatown", "13 NW 6th Ave"),
@@ -1748,6 +1750,99 @@ def _mcmenamins_filter_html(session, token_html, vid):
     return r.text
 
 
+def parse_havalina(html, today):
+    # Havalina (havalinapdx.com), St. Johns - Squarespace events collection.
+    # /events?format=json gives an upcoming list with epoch-ms startDate (UTC).
+    out, seen = [], {}
+    horizon = today + datetime.timedelta(days=120)
+    lower = today
+    try:
+        data = json.loads(html)
+    except Exception:
+        return out
+    nb, addr = VENUE_INFO.get("Havalina", ("St. Johns", ""))
+    for e in data.get("upcoming", []):
+        sd = e.get("startDate")
+        if not sd:
+            continue
+        dt = datetime.datetime.fromtimestamp(sd / 1000, tz=datetime.timezone.utc).astimezone(_ASP_PDT)
+        d = dt.date()
+        if not (lower <= d <= horizon):
+            continue
+        date = d.isoformat()
+        tm = "%d:%02d %s" % (dt.hour % 12 or 12, dt.minute, "AM" if dt.hour < 12 else "PM")
+        title = clean((e.get("title") or "").replace("&amp;", "&"))
+        title = re.sub(r"\s+", " ", title).strip()
+        if not title:
+            continue
+        fu = e.get("fullUrl") or ""
+        url = ("https://havalinapdx.com" + fu) if fu.startswith("/") else (fu or "https://havalinapdx.com/events")
+        key = (date, title.lower())
+        if key in seen:
+            continue
+        seen[key] = 1
+        out.append({"title": title, "venue": "Havalina",
+                    "neighborhood": nb, "address": addr,
+                    "date": date, "time": tm, "venueUrl": url, "imageUrl": (e.get("assetUrl") or "")})
+    return out
+
+
+def parse_starday(ics, today):
+    # Starday Tavern (stardaytavern.com), Brentwood-Darlington / aka Genghis
+    # Records. The WordPress homepage embeds a public Google Calendar iframe;
+    # the events live in that calendar public .ics feed (basic.ics), which we
+    # fetch directly. DTSTART is UTC (Z), TZID=, or VALUE=DATE (all-day).
+    out, seen = [], {}
+    horizon = today + datetime.timedelta(days=120)
+    lower = today
+    nb, addr = VENUE_INFO.get("Starday Tavern", ("Brentwood-Darlington", ""))
+    # unfold RFC5545 line folding (continuation lines begin with a space/tab)
+    text = (ics or "").replace("\r\n", "\n").replace("\n ", "").replace("\n\t", "")
+    for block in text.split("BEGIN:VEVENT")[1:]:
+        block = block.split("END:VEVENT")[0]
+        ms = re.search(r"\nSUMMARY(?:;[^:]*)?:(.*)", block)
+        md = re.search(r"\nDTSTART([^:\n]*):([0-9TZ]+)", block)
+        if not (ms and md):
+            continue
+        params, val = md.group(1), md.group(2)
+        m = re.match(r"(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})(Z?))?", val)
+        if not m:
+            continue
+        y, mo, da = int(m.group(1)), int(m.group(2)), int(m.group(3))
+        if m.group(4) is None:
+            # all-day (VALUE=DATE): date only, no reliable time
+            d = datetime.date(y, mo, da)
+            tm = ""
+        else:
+            hh, mi = int(m.group(4)), int(m.group(5))
+            if m.group(7) == "Z":
+                dt = datetime.datetime(y, mo, da, hh, mi, tzinfo=datetime.timezone.utc).astimezone(_ASP_PDT)
+            else:
+                # TZID=America/Los_Angeles (or floating): already Pacific-local
+                dt = datetime.datetime(y, mo, da, hh, mi)
+            d = dt.date()
+            tm = "%d:%02d %s" % (dt.hour % 12 or 12, dt.minute, "AM" if dt.hour < 12 else "PM")
+        if not (lower <= d <= horizon):
+            continue
+        date = d.isoformat()
+        # iCal escapes commas/semicolons with backslashes; unescape them
+        raw_title = ms.group(1).strip()
+        raw_title = raw_title.replace("\\\\,", ",").replace("\\\\;", ";").replace("\\\\n", " ").replace("\\\\\\\\", "\\\\")
+        title = clean(raw_title.replace("&amp;", "&"))
+        title = re.sub(r"\s+", " ", title).strip()
+        if not title:
+            continue
+        key = (date, title.lower())
+        if key in seen:
+            continue
+        seen[key] = 1
+        out.append({"title": title, "venue": "Starday Tavern",
+                    "neighborhood": nb, "address": addr,
+                    "date": date, "time": tm,
+                    "venueUrl": "https://www.stardaytavern.com/", "imageUrl": ""})
+    return out
+
+
 def parse_mcmenamins(html, today):
     # McMenamins' calendar is custom ASP.NET WebForms (NEW pattern): no JSON API, and a
     # plain GET yields only ~9 "today" events. Per-venue lists live behind an ASP.NET
@@ -1820,6 +1915,8 @@ def parse_mcmenamins(html, today):
 
 
 SOURCES = [
+    {"name": "Havalina (havalinapdx.com)", "parser": parse_havalina, "urls": ["https://havalinapdx.com/events?format=json"]},
+    {"name": "Starday Tavern (stardaytavern.com / Genghis Records)", "parser": parse_starday, "urls": ["https://calendar.google.com/calendar/ical/m59vjhvcv0iflpv2iknoqlmuqo%40group.calendar.google.com/public/basic.ics"]},
     {"name": "McMenamins (White Eagle/Al's Den/Mission)", "parser": parse_mcmenamins,
      "urls": ["https://www.mcmenamins.com/to-do/live-music-events/music-event-calendar"]},
     {"name": "NOVA PDX", "parser": parse_novapdx, "urls": ["https://novapdxevents.com/event-calendar"]},
