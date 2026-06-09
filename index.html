@@ -167,7 +167,7 @@ body{
 }
 .dayhead .count{font-family:'Oswald';font-weight:500;font-size:13px;color:rgba(243,234,215,.7);margin-left:10px;letter-spacing:.08em}
 
-.venue-card{cursor:pointer}
+.venue-card,.venue-row{cursor:pointer}
 .venue-header{margin-bottom:18px}
 .venue-header .venue-name{font-family:'Alfa Slab One',serif;font-size:26px;color:var(--cream);margin:6px 0 4px}
 .venue-header .venue-info{color:var(--cream);opacity:.85;font-size:14px}
@@ -551,17 +551,32 @@ function renderVenues(){
   const venues = Object.values(groups).sort((a,b)=> b.count-a.count || a.name.localeCompare(b.name));
   $('#resultCount').textContent = venues.length ? `${venues.length} venue${venues.length>1?'s':''}` : "No results";
   if(!venues.length){ wrap.innerHTML = '<div class="empty"><h2>No Results Found.</h2></div>'; return; }
-  const g = document.createElement('div'); g.className='grid';
-  venues.forEach(v=>{
-    const c = document.createElement('div'); c.className='card venue-card';
-    c.innerHTML = `<div class="when">${esc(v.neighborhood||'')}</div>`
-      + `<div class="title">${esc(v.name)}</div>`
-      + `<div class="venue">${v.count} upcoming show${v.count>1?'s':''}</div>`
-      + `<div class="foot"><span class="nbtag">${esc(v.name)} \u00b7 ${esc(v.neighborhood||'')} \u00b7 ${v.count} show${v.count>1?'s':''}</span></div>`;
-    c.addEventListener('click',()=>{ state.selectedVenue=v.name; render(); });
-    g.appendChild(c);
-  });
-  wrap.appendChild(g);
+  let container;
+  if(state.layout==="grid"){
+    const g = document.createElement('div'); g.className='grid';
+    venues.forEach(v=>{
+      const c = document.createElement('div'); c.className='card venue-card';
+      c.innerHTML = `<div class="when">${esc(v.neighborhood||'')}</div>`
+        + `<div class="title">${esc(v.name)}</div>`
+        + `<div class="venue">${v.count} upcoming show${v.count>1?'s':''}</div>`
+        + `<div class="foot"><span class="nbtag">${esc(v.name)} \u00b7 ${esc(v.neighborhood||'')} \u00b7 ${v.count} show${v.count>1?'s':''}</span></div>`;
+      c.addEventListener('click',()=>{ state.selectedVenue=v.name; render(); });
+      g.appendChild(c);
+    });
+    container = g;
+  } else {
+    const l = document.createElement('div'); l.className='list';
+    venues.forEach(v=>{
+      const r = document.createElement('div'); r.className='row venue-row';
+      r.innerHTML = `<span class="rtitle">${esc(v.name)}</span>`
+        + `<span class="rvenue">${v.count} upcoming show${v.count>1?'s':''}</span>`
+        + `<span class="rnb">${esc(v.neighborhood||'')}</span>`;
+      r.addEventListener('click',()=>{ state.selectedVenue=v.name; render(); });
+      l.appendChild(r);
+    });
+    container = l;
+  }
+  wrap.appendChild(container);
 }
     function tileColor(s){
       const pal=['var(--rust)','var(--rust-deep)','var(--forest)','var(--water)','var(--water-d)','var(--ink)'];
