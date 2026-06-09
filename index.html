@@ -183,6 +183,20 @@ body{
   padding:16px 16px 14px;
   box-shadow:0 6px 14px rgba(20,40,30,.18);
   border-top:4px solid var(--rust);
+  }
+  /* Pilot: venues in VENUE_LOGOS get their logo as a darkened tile background.
+     Layered bg (dark gradient over logo) is set inline in gridOf; here we make
+     all tile text white so it stays legible over bright logos. */
+  .card--logo{
+    background-color:#1a1a1a;background-size:cover;background-position:center;background-repeat:no-repeat;
+    border-top-color:rgba(255,255,255,.35);
+  }
+  .card--logo .when{color:#fff;opacity:.92;text-shadow:0 1px 3px rgba(0,0,0,.85);}
+  .card--logo .title{color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.9);}
+  .card--logo .venue{color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.85);}
+  .card--logo .meta{color:rgba(255,255,255,.85);text-shadow:0 1px 3px rgba(0,0,0,.85);}
+  .card--logo .nbtag{color:rgba(255,255,255,.85);text-shadow:0 1px 3px rgba(0,0,0,.85);}
+  .card--logo .tix{color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.85);}
   display:flex;flex-direction:column;
   transition:transform .12s,box-shadow .12s;
 }
@@ -452,6 +466,15 @@ body{
 
 <script>
     const SHOW_IMAGES = false;
+    // Venue name -> logo file in /logos/. Pilot set (5 venues) so Nick can
+    // judge the darkened-logo-background look before sourcing all ~45 logos.
+    const VENUE_LOGOS = {
+      "Starday Tavern": "logos/starday.png",
+      "Dante's": "logos/dantes.png",
+      "Holocene": "logos/holocene.png",
+      "Wonder Ballroom": "logos/wonder.png",
+      "Star Theater": "logos/startheater.png"
+    };
 const state = {
   shows: [], stamp: "",
   layout: "grid", view: "shows", selectedVenue: null, sort: "date",
@@ -646,6 +669,8 @@ function renderVenues(){
       const g=document.createElement('div'); g.className='grid';
       items.forEach(s=>{
         const c=document.createElement('div'); c.className=(SHOW_IMAGES?'card card--img':'card');
+        const _logo = VENUE_LOGOS[s.venue];
+        if(_logo){ c.classList.add('card--logo'); c.style.backgroundImage = `linear-gradient(rgba(0,0,0,.74), rgba(0,0,0,.74)), url(${_logo})`; }
         const when = `${fmtShort(s.date)}${s.time?' \u00b7 '+s.time:''}`;
         const media = SHOW_IMAGES ? cardMedia(s) : '';
         c.innerHTML = media + `
