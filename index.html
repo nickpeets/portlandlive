@@ -534,7 +534,9 @@ function renderVenues(){
   // Same past-date guard so venue show-counts (and the venue list itself) reflect only
   // current/upcoming shows; a venue with no remaining shows drops out entirely.
   const todayPacific = new Intl.DateTimeFormat('en-CA',{timeZone:'America/Los_Angeles',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
-  const all = state.shows.filter(s => s.date >= todayPacific);
+  let all = state.shows.filter(s => s.date >= todayPacific);
+    const q = state.q.trim().toLowerCase();
+    if(q) all = all.filter(s => (s.title+" "+s.venue+" "+s.neighborhood).toLowerCase().includes(q));
   if(state.selectedVenue){
     const vshows = all.filter(s => s.venue === state.selectedVenue);
     const first = vshows[0] || {};
