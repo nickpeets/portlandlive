@@ -112,6 +112,7 @@ body{
 }
 .pill:hover{background:rgba(255,255,255,.2)}
 .pill svg{width:16px;height:16px;flex:0 0 auto;opacity:.92}
+.pill-date{opacity:.6;font-size:13px;font-weight:400;margin-left:-2px;white-space:nowrap}
 .pill select,.pill input{
   background:transparent;border:0;color:var(--cream);
   font-family:'Oswald',sans-serif;font-size:15px;outline:none;cursor:pointer;
@@ -370,11 +371,11 @@ body{
     <div class="ctl-row">
       <label class="pill" title="Only shows happening tonight">
         <span class="toggle" id="tonightToggle"></span>
-        <span>Tonight</span>
+        <span>Tonight</span><span class="pill-date" id="tonightDate"></span>
       </label>
       <label class="pill" title="Shows happening in the next 7 days">
         <span class="toggle" id="thisWeekToggle"></span>
-        <span>This Week</span>
+        <span>This Week</span><span class="pill-date" id="thisWeekDate"></span>
       </label>
       <label class="pill" title="Browse shows by venue">
         <span class="toggle" id="venuesToggle"></span>
@@ -673,6 +674,22 @@ $('#resetBtn').addEventListener('click',()=>{
   $('#sortSel').value="date";$('#tonightToggle').classList.remove('on');state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');state.myShows=false;$('#myShowsToggle').classList.remove('on');render();
 });
 
+    // Compute the Pacific dates the Tonight / This Week filters resolve to,
+    // using the SAME Intl.DateTimeFormat('en-CA', America/Los_Angeles) method
+    // as the filters, so the pill labels match the filter logic exactly.
+    function setToggleDates(){
+      const todayISO = new Intl.DateTimeFormat('en-CA',{timeZone:'America/Los_Angeles',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+      const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const fmt = iso => { const [y,m,d] = iso.split('-').map(Number); return MON[m-1] + ' ' + d; };
+      const start = new Date(todayISO + 'T00:00:00');
+      const upper = new Date(todayISO + 'T00:00:00'); upper.setDate(upper.getDate() + 6);
+      const endISO = upper.getFullYear() + '-' + String(upper.getMonth()+1).padStart(2,'0') + '-' + String(upper.getDate()).padStart(2,'0');
+      const tn = $('#tonightDate'); if(tn) tn.textContent = '\u00b7 ' + fmt(todayISO);
+      const sameMonth = todayISO.slice(0,7) === endISO.slice(0,7);
+      const endLabel = sameMonth ? String(Number(endISO.split('-')[2])) : fmt(endISO);
+      const tw = $('#thisWeekDate'); if(tw) tw.textContent = '\u00b7 ' + fmt(todayISO) + '\u2013' + endLabel;
+    }
+    setToggleDates();
 load();
 </script>
 <style>
