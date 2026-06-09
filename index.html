@@ -547,7 +547,7 @@ function renderVenues(){
     wrap.appendChild(head);
     $('#backToVenues').addEventListener('click',(e)=>{e.preventDefault();state.selectedVenue=null;render();});
     if(vshows.length){
-      wrap.appendChild(state.layout==="grid"?gridOf(vshows):listOf(vshows));
+      wrap.appendChild(state.layout==="grid"?gridOf(vshows):listOf(vshows, true));
     } else {
       const em=document.createElement('div'); em.className='empty'; em.innerHTML='<h2>No Results Found.</h2>'; wrap.appendChild(em);
     }
@@ -618,13 +618,14 @@ function renderVenues(){
       return g;
     }
 
-function listOf(items){
+function listOf(items, showDate){
   const l=document.createElement('div'); l.className='list';
   items.forEach(s=>{
     const r=document.createElement('div'); r.className='row';
     r.innerHTML = `
       ${heartBtn(s)}
       <span class="rtime">${s.time||'—'}</span>
+        ${showDate?`<span class="rdate">${ordinalDate(s.date)}</span>`:``}
       ${s.venueUrl?`<a class="rtitle" href="${s.venueUrl}" target="_blank" rel="noopener">${esc(s.title)}</a>`:`<span class="rtitle">${esc(s.title)}</span>`}
       <span class="rat">at</span>
       ${s.venueUrl?`<a class="rvenue" href="${s.venueUrl}" target="_blank" rel="noopener">${esc(s.venue)}</a>`:`<span class="rvenue">${esc(s.venue)}</span>`}
