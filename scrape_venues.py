@@ -39,6 +39,7 @@ VENUE_BY_SLUG = {
 }
 
 VENUE_INFO = {
+    "NOVA PDX": ("Buckman", "722 E Burnside St, Portland, OR 97214"),
     "Roseland Theater": ("Old Town/Chinatown", "8 NW 6th Ave"),
     "Peter's Room (Roseland)": ("Old Town/Chinatown", "8 NW 6th Ave"),
     "Roseland Ballroom": ("Old Town/Chinatown", "8 NW 6th Ave"),
@@ -1649,7 +1650,58 @@ def parse_cascades(html, today):
     return out
 
 
+
+def parse_novapdx(html, today):
+    # NOVA PDX (Buckman, 722 E Burnside) -- venue's own Webflow site, Tixr buy-links.
+    # .b-venue holds the FULL date with year (e.g. 'June 14, 2026') -- parse directly, no year inference.
+    soup = BeautifulSoup(html, "html.parser")
+    venue = "NOVA PDX"
+    nb, addr = VENUE_INFO.get(venue, ("Central Eastside", ""))
+    shows = []
+    seen = set()
+    for item in soup.select(".w-dyn-item"):
+        a = item.find("a", href=True)
+        tixr = None
+        for link in item.find_all("a", href=True):
+            if "tixr.com" in link["href"]:
+                tixr = link["href"]
+                break
+        if not tixr:
+            continue
+        te = item.select_one(".b-show")
+        de = item.select_one(".b-venue")
+        if not te or not de:
+            continue
+        title = clean(te.get_text())
+        for pre in ("SOLD OUT", "CANCELLED", "CANCELED", "POSTPONED"):
+            if title.upper().startswith(pre):
+                title = clean(title[len(pre):].lstrip(" :-"))
+        if not title:
+            continue
+        raw = clean(de.get_text())
+        try:
+            d = datetime.datetime.strptime(raw, "%B %d, %Y")
+        except ValueError:
+            continue
+        date = d.strftime("%Y-%m-%d")
+        if d.date() < today:
+            continue
+        img = item.find("img")
+        image = ""
+        if img and img.get("src", "").startswith("http"):
+            image = img["src"]
+        key = (venue, date, title.lower())
+        if key in seen:
+            continue
+        seen.add(key)
+        shows.append({"title": title, "venue": venue, "neighborhood": nb,
+                      "address": addr, "date": date, "time": "",
+                      "venueUrl": tixr, "imageUrl": image})
+    return shows
+
+
 SOURCES = [
+    {"name": "NOVA PDX", "parser": parse_novapdx, "urls": ["https://novapdxevents.com/event-calendar"]},
     {"name": "Pioneer Courthouse Square / PDX Live (pdx-live.com)", "parser": parse_pdxlive, "urls": ["https://pdx-live.com/wp-json/wlcr/v1/events/raw"]},
     {"name": "Twilight Cafe & Bar (twilightcafeandbar.com)", "parser": parse_twilight, "urls": ["https://twilightcafeandbar.com/calendar_list"]},
     {"name": "No Fun (nofunportland.com)", "parser": parse_nofun, "urls": ["https://www.nofunportland.com/events?format=json"]},
