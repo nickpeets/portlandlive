@@ -39,6 +39,7 @@ VENUE_BY_SLUG = {
 }
 
 VENUE_INFO = {
+    "Dublin Pub": ("Raleigh Hills", "6821 SW Beaverton-Hillsdale Hwy, Portland, OR 97225"),
     "Kelly's Olympian": ("Downtown", "426 SW Washington St, Portland, OR 97204"),
     "Barrel Room": ("Old Town/Chinatown", "120 NW Couch St, Portland, OR 97209"),
     "Arbor Beer Lodge": ("Arbor Lodge", "6550 N Interstate Ave, Portland, OR 97217"),
