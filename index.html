@@ -673,7 +673,7 @@ function listOf(items, showDate){
       ${heartBtn(s)}
       <span class="rtime">${s.time||'—'}</span>
         ${showDate?`<span class="rdate">${ordinalDate(s.date)}</span>`:``}
-      ${s.venueUrl?`<a class="rtitle" href="${s.venueUrl}" target="_blank" rel="noopener">${esc(s.title)}</a>`:`<span class="rtitle">${esc(s.title)}</span>`}
+      ${s.venueUrl?`<a class="rtitle" href="${s.venueUrl}" target="_blank" rel="noopener">${formatTitle(s.title)}</a>`:`<span class="rtitle">${formatTitle(s.title)}</span>`}
       <span class="rat">at</span>
       <a class="rvenue" href="#" data-venue="${esc(s.venue)}" title="View this venue">${esc(s.venue)}</a>
       <span class="rnb">${esc(s.neighborhood||'')}</span>`;
@@ -684,7 +684,8 @@ function listOf(items, showDate){
 
 function esc(x){return (x||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
       const FAV_KEY = 'portlandlive:favorites';
-      function favKey(s){ return (s.venue||'') + '|' + (s.date||'') + '|' + (s.title||''); }
+      function formatTitle(t){t=t||'';if(t.length<=50)return esc(t);const re=/\s(&|\+|and)\s/g;let m,c=[];while((m=re.exec(t))){c.push(m.index+1);}if(!c.length)return esc(t);const mid=t.length/2;let b=c[0];for(const p of c)if(Math.abs(p-mid)<Math.abs(b-mid))b=p;return esc(t.slice(0,b).replace(/\s+$/,''))+'<br>'+esc(t.slice(b));}
+function favKey(s){ return (s.venue||'') + '|' + (s.date||'') + '|' + (s.title||''); }
       function loadFavorites(){
         try{ const raw = localStorage.getItem(FAV_KEY); const arr = raw ? JSON.parse(raw) : []; return new Set(Array.isArray(arr) ? arr : []); }
         catch(e){ return new Set(); }
