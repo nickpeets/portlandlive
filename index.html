@@ -555,8 +555,8 @@ function render(){
     return;
   }
 
-  // group by date only when sorting by date
-  if(state.sort === "date"){
+  // group by day only when sorting by date AND no time-window filter (This Week off)
+  if(state.sort === "date" && !state.thisWeek){
     const groups = {};
     list.forEach(s=>{(groups[s.date]=groups[s.date]||[]).push(s);});
     Object.keys(groups).sort().forEach(date=>{
@@ -566,7 +566,7 @@ function render(){
       wrap.appendChild(g);
     });
   } else {
-    wrap.appendChild(state.layout==="grid"?gridOf(list):listOf(list));
+    wrap.appendChild(state.layout==="grid"?gridOf(list):listOf(list, true));
   }
 }
 
