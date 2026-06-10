@@ -223,18 +223,20 @@ body{
 /* LIST */
 .list{display:flex;flex-direction:column;gap:2px}
 .row{
-  display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;
+  display:grid;grid-template-columns:auto auto auto 1fr auto auto auto;grid-template-areas:"heart time date title at venue nb";align-items:baseline;column-gap:12px;
   padding:11px 4px;border-bottom:1px solid rgba(255,255,255,.16);
 }
-.row .rtime{font-family:'Oswald';font-weight:600;font-size:12px;color:var(--cream);min-width:64px;letter-spacing:.05em;opacity:.85}
-.row .rtitle{font-weight:600;color:#fff;font-size:15.5px;text-decoration:none;min-width:0;overflow-wrap:anywhere}
+.row .heart{grid-area:heart;align-self:baseline}
+.row .rdate{grid-area:date}
+.row .rtime{grid-area:time;font-family:'Oswald';font-weight:600;font-size:12px;color:var(--cream);min-width:64px;letter-spacing:.05em;opacity:.85}
+.row .rtitle{grid-area:title;font-weight:600;color:#fff;font-size:15.5px;text-decoration:none;min-width:0;overflow-wrap:anywhere}
 .row .rtitle:hover{text-decoration:underline;text-underline-offset:3px}
-.row .rat{color:rgba(243,234,215,.78);font-size:14px}
-.row .rvenue{color:var(--cream);font-weight:600;font-size:14px;cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-decoration-color:rgba(243,234,215,.5);text-underline-offset:3px}
+.row .rat{grid-area:at;color:rgba(243,234,215,.78);font-size:14px}
+.row .rvenue{grid-area:venue;color:var(--cream);font-weight:600;font-size:14px;cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-decoration-color:rgba(243,234,215,.5);text-underline-offset:3px}
 .row .rvenue:hover{text-decoration:underline;text-decoration-style:solid;text-underline-offset:3px}
     .card .venue{cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-decoration-color:rgba(243,234,215,.5);text-underline-offset:3px}
     .card a.venue:hover{text-decoration-style:solid}
-.row .rnb{font-family:'Oswald';font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:rgba(243,234,215,.65);margin-left:auto}
+.row .rnb{grid-area:nb;justify-self:end;font-family:'Oswald';font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:rgba(243,234,215,.65)}
 
 .empty{text-align:center;padding:60px 20px;color:var(--cream)}
 .empty h2{font-family:'Alfa Slab One',serif;font-size:26px;margin-bottom:6px;text-shadow:0 1px 0 rgba(0,0,0,.12)}
