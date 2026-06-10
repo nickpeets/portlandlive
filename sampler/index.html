@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PortlandLive — Artist Sampler (prototype)</title>
+<!--
+  STANDALONE PROTOTYPE. Not wired into the live site (index.html untouched).
+  Static-Pages-safe: no server, no API keys, no secrets. Uses sampler/artist-resolver.js.
+  Eventual integration: index.html could import artist-resolver.js and call
+  sampleFor(row.title) to open this view in a modal / new tab. NOT wired yet.
+-->
+<style>
+  :root{--bg:#0f1115;--card:#1a1d24;--ink:#eef1f6;--mut:#9aa3b2;--acc:#ff5a5f;--line:#2a2f3a}
+  *{box-sizing:border-box}
+  body{margin:0;font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+  .wrap{max-width:760px;margin:0 auto;padding:28px 18px 64px}
+  h1{font-size:22px;margin:0 0 4px}
+  .sub{color:var(--mut);font-size:13px;margin:0 0 22px}
+  .row{display:flex;gap:8px}
+  input{flex:1;padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:15px}
+  button.go{padding:12px 18px;border:0;border-radius:10px;background:var(--acc);color:#fff;font-weight:600;cursor:pointer}
+  .examples{margin:12px 0 0;font-size:13px;color:var(--mut)}
+  .examples a{color:#8fb6ff;cursor:pointer;text-decoration:none;margin-right:10px}
+  .card{margin-top:22px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}
+  .tierbadge{display:inline-block;font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;margin-bottom:10px}
+  .t1{background:#13361f;color:#7ee29a}.t2{background:#3a2f10;color:#f2cf6b}.t3{background:#3a1416;color:#f2a0a3}
+  .derived{font-size:18px;font-weight:600;margin:2px 0 2px}
+  .meta{color:var(--mut);font-size:13px;margin-bottom:14px}
+  .links{display:flex;flex-wrap:wrap;gap:10px}
+  .links a{display:inline-block;padding:10px 14px;border-radius:10px;border:1px solid var(--line);color:var(--ink);text-decoration:none;font-size:14px;background:#202531}
+  .links a:hover{border-color:var(--acc)}
+  .embedwrap{position:relative;width:100%;aspect-ratio:16/9;margin:6px 0 14px;border-radius:10px;overflow:hidden;background:#000}
+  .embedwrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+  .playcard{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--ink);background:#202531;border:1px solid var(--line);border-radius:12px;padding:18px 16px;margin:6px 0 14px;font-weight:600}
+  .playcard:hover{border-color:var(--acc);background:#262c3a}
+  .ytlogo{display:inline-flex;align-items:center;justify-content:center;width:46px;height:32px;background:#ff0000;color:#fff;border-radius:7px;font-size:15px}
+  .nosample{color:var(--mut);font-style:italic}
+  .note{margin-top:14px;font-size:12px;color:var(--mut)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Artist Sampler <span style="color:var(--mut);font-weight:400;font-size:14px">prototype</span></h1>
+  <p class="sub">Type a show title (or an artist). Resolves to a YouTube preview, search links, or “no sample” — standalone, not on the live site.</p>
+  <div class="row">
+    <input id="q" placeholder="e.g. Tab Benoit w/ Ghalia Volt - Soul of the Swamp Tour" autocomplete="off">
+    <button class="go" id="go">Sample</button>
+  </div>
+  <div class="examples">Try:
+    <a data-ex="Tab Benoit w/ Ghalia Volt - Soul of the Swamp Tour">clean band</a>
+    <a data-ex="Portland Cello Project: Mixtape Pop vs Grunge">noisy name</a>
+    <a data-ex="Max Amini Live in Portland!">comedian</a>
+    <a data-ex="FREE! Trivia-sippi! Weekly Quiz Night!">trivia</a>
+  </div>
+  <div id="out"></div>
+</div>
+
+<script src="artist-resolver.js"></script>
+<script>
+(function(){
+  var R = window;
+  // artist-resolver.js assigns to module.exports under Node; in the browser its
+  // functions are globals. Guard for both.
+  var sampleFor = window.sampleFor || (typeof module!=='undefined'&&module.exports&&module.exports.sampleFor);
+  function esc(s){return (s||'').replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function render(title){
+    var out = document.getElementById('out');
+    if(!title){out.innerHTML='';return;}
+    var r = sampleFor(title);
+    var html = '<div class="card">';
+    if(r.tier===3){
+      html += '<span class="tierbadge t3">Tier 3 · no sample</span>';
+      html += '<div class="derived">'+esc(title)+'</div>';
+      html += '<div class="nosample">No sample available — this looks like a '+esc((r.reason||'').split(':')[1]||'non-music event')+'.</div>';
+    } else if(r.tier===1){
+      html += '<span class="tierbadge t1">Tier 1 · best match</span>';
+      html += '<div class="derived">'+esc(r.artist)+'</div>';
+      html += '<div class="meta">clean music match — play the top result on YouTube (no login):</div>';
+      html += '<a class="playcard" target="_blank" rel="noopener" href="'+esc(r.links.youtube)+'">'+
+              '<span class="ytlogo">▶</span><span>Play “'+esc(r.artist)+'” on YouTube</span></a>';
+      html += linksRow(r.links);
+    } else {
+      html += '<span class="tierbadge t2">Tier 2 · search links</span>';
+      html += '<div class="derived">'+esc(r.artist)+'</div>';
+      html += '<div class="meta">'+(r.mediaType==='spoken'?'spoken-word / non-music act':'name needs a human eye')+' — pick a service:</div>';
+      html += linksRow(r.links);
+    }
+    html += '</div>';
+    out.innerHTML = html;
+  }
+  function linksRow(l){
+    return '<div class="links">'+
+      '<a target="_blank" rel="noopener" href="'+esc(l.youtube)+'">YouTube ↗</a>'+
+      '<a target="_blank" rel="noopener" href="'+esc(l.spotify)+'">Spotify ↗</a>'+
+      '<a target="_blank" rel="noopener" href="'+esc(l.apple)+'">Apple Music ↗</a></div>';
+  }
+  document.getElementById('go').addEventListener('click',function(){render(document.getElementById('q').value.trim());});
+  document.getElementById('q').addEventListener('keydown',function(e){if(e.key==='Enter')render(this.value.trim());});
+  Array.prototype.forEach.call(document.querySelectorAll('.examples a'),function(a){
+    a.addEventListener('click',function(){var v=a.getAttribute('data-ex');document.getElementById('q').value=v;render(v);});
+  });
+})();
+</script>
+</body>
+</html>
