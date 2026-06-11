@@ -601,7 +601,7 @@ function renderVenues(){
   }
   const groups = {};
   all.forEach(s=>{ const v=s.venue||'Unknown'; if(!groups[v]) groups[v]={name:v,neighborhood:s.neighborhood||'',count:0}; groups[v].count++; if(!groups[v].neighborhood && s.neighborhood) groups[v].neighborhood=s.neighborhood; });
-  const byName = (state.sort==="venue" || state.sort==="title"); let venues = Object.values(groups).sort((a,b)=> byName ? a.name.localeCompare(b.name, undefined, {sensitivity:'base'}) : (b.count-a.count || a.name.localeCompare(b.name)));
+  const _ncmp=(a,b)=>(a.neighborhood||"").localeCompare(b.neighborhood||"",undefined,{sensitivity:"base"})||a.name.localeCompare(b.name,undefined,{sensitivity:"base"});const _vcmp=(a,b)=>a.name.localeCompare(b.name,undefined,{sensitivity:"base"});const _dcmp=(a,b)=>(b.count-a.count)||a.name.localeCompare(b.name);const _cmp=state.sort==="neighborhood"?_ncmp:(state.sort==="venue"||state.sort==="title")?_vcmp:_dcmp;let venues = Object.values(groups).sort(_cmp);
     if(q) venues = venues.filter(v => (v.name+" "+(v.neighborhood||"")).toLowerCase().includes(q));
   $('#resultCount').textContent = venues.length ? `${venues.length} venue${venues.length>1?'s':''}` : "No results";
   if(!venues.length){ wrap.innerHTML = '<div class="empty"><h2>No Results Found.</h2></div>'; return; }
