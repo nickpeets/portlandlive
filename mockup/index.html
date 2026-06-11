@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PortlandLive — V2 Row Concepts (mockup)</title>
+<!--
+  STANDALONE MOCKUP. Does NOT touch the live index.html. Static-Pages-safe, no secrets.
+  Renders the SAME real shows.json-derived rows three ways (Concepts A/B/C) so Nick can
+  pick a row direction before anything ports to the live site.
+  Data: mockup/sample-rows.json (curated real rows). Resolver: mockup/artist-resolver.js.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Oswald:wght@400;500;600;700&family=Bitter:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#4a3526; --rust:#b5562b; --rust-deep:#8f3f1f; --forest:#3d574a;
+    --water:#5b8a76; --water-d:#4a7563; --cream:#f3ead7;
+    --hill-mid:#7ba05a; --paper:#efe4cf; --line:rgba(74,53,38,.16);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#e9dcc4;color:var(--ink);
+       font-family:'Bitter',Georgia,serif;font-size:15px;line-height:1.4}
+  .page{max-width:760px;margin:0 auto;padding:26px 16px 80px}
+  .masthead h1{font-family:'Alfa Slab One',serif;color:var(--forest);font-size:24px;margin:0 0 2px}
+  .masthead p{font-family:'Oswald',sans-serif;font-size:12.5px;letter-spacing:.04em;color:rgba(74,53,38,.7);margin:0 0 22px;text-transform:uppercase}
+  .concept{margin:30px 0 8px}
+  .concept .ctag{font-family:'Alfa Slab One',serif;color:var(--rust-deep);font-size:18px}
+  .concept .cdesc{font-family:'Oswald',sans-serif;font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:rgba(74,53,38,.65);margin-top:2px}
+  .list{background:var(--cream);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .r{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--line)}
+  .r:last-child{border-bottom:0}
+  .title{font-family:'Alfa Slab One',serif;color:var(--ink);line-height:1.12}
+  .meta{font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);font-size:11.5px;font-weight:600}
+  .venue{font-family:'Oswald',sans-serif;font-size:11.5px;color:var(--water-d);letter-spacing:.03em}
+  .thumb{flex:0 0 auto;border-radius:8px;object-fit:cover;background:#dccfb4}
+  .thumb.ph{display:flex;align-items:center;justify-content:center;color:rgba(74,53,38,.4);font-family:'Alfa Slab One',serif}
+  .listen{flex:0 0 auto;border:0;cursor:pointer;font-family:'Oswald',sans-serif;font-weight:600;
+          text-transform:uppercase;letter-spacing:.05em;font-size:12px;color:#fff;background:var(--rust);
+          border-radius:999px;padding:8px 14px;white-space:nowrap}
+  .listen:hover{background:var(--rust-deep)}
+  .notag{flex:0 0 auto;font-family:'Oswald',sans-serif;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:rgba(74,53,38,.4);white-space:nowrap}
+  /* Concept A: text-led, no image */
+  .A .r .grow{flex:1;min-width:0}
+  .A .title{font-size:15px}
+  .A .meta{margin-bottom:2px}
+  /* Concept B: thumb-left */
+  .B .thumb{width:52px;height:52px}
+  .B .grow{flex:1;min-width:0}
+  .B .title{font-size:14.5px;margin-bottom:3px}
+  /* Concept C: image-as-accent, big title */
+  .C .r{align-items:flex-start;padding:14px}
+  .C .grow{flex:1;min-width:0}
+  .C .title{font-size:19px;margin-bottom:4px}
+  .C .titlerow{display:flex;align-items:center;gap:10px}
+  .C .thumb{width:64px;height:64px;order:2}
+  .C .venue{display:block;margin-top:3px}
+  /* Modal */
+  .ov{position:fixed;inset:0;background:rgba(40,28,18,.55);display:none;align-items:center;justify-content:center;padding:18px;z-index:50}
+  .ov.on{display:flex}
+  .modal{background:var(--cream);border-radius:14px;max-width:440px;width:100%;padding:18px;border:1px solid var(--line);box-shadow:0 16px 40px rgba(0,0,0,.3)}
+  .modal h3{font-family:'Alfa Slab One',serif;margin:0 0 2px;font-size:16px;color:var(--ink)}
+  .modal .sub{font-family:'Oswald',sans-serif;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:rgba(74,53,38,.6);margin-bottom:12px}
+  .badge{display:inline-block;font-family:'Oswald',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;padding:3px 9px;border-radius:999px;margin-bottom:10px}
+  .b1{background:#dcebdf;color:#2f6a3f}.b2{background:#f3e3c2;color:#9a6a16}.b3{background:#f1d9d4;color:#9a3b2a}
+  .playcard{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);background:#fff6e7;border:1px solid var(--line);border-radius:10px;padding:14px;margin:4px 0 12px;font-family:'Oswald',sans-serif;font-weight:600}
+  .playcard:hover{border-color:var(--rust)}
+  .ytlogo{display:inline-flex;align-items:center;justify-content:center;width:42px;height:30px;background:#ff0000;color:#fff;border-radius:6px}
+  .links{display:flex;flex-wrap:wrap;gap:8px}
+  .links a{font-family:'Oswald',sans-serif;font-size:12.5px;text-decoration:none;color:var(--ink);background:#fff6e7;border:1px solid var(--line);border-radius:8px;padding:8px 12px}
+  .links a:hover{border-color:var(--rust)}
+  .close{float:right;border:0;background:transparent;font-size:20px;cursor:pointer;color:rgba(74,53,38,.6);line-height:1;margin:-4px -4px 0 0}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="masthead">
+    <h1>V2 Row Concepts</h1>
+    <p>Same real shows, three row designs · mockup · not the live site</p>
+  </div>
+  <section class="concept A">
+    <div class="ctag">Concept A — Listen-forward, no image</div>
+    <div class="cdesc">Text-led · title + date are the headline · compact Listen at right</div>
+  </section>
+  <div class="list A" id="listA"></div>
+  <section class="concept B">
+    <div class="ctag">Concept B — Thumbnail-left + Listen</div>
+    <div class="cdesc">52px show image left · title/date/venue middle · Listen right · graceful no-image</div>
+  </section>
+  <div class="list B" id="listB"></div>
+  <section class="concept C">
+    <div class="ctag">Concept C — Image-as-accent + Listen</div>
+    <div class="cdesc">Big title+date · venue beneath · right-aligned thumb accent · Listen near title</div>
+  </section>
+  <div class="list C" id="listC"></div>
+</div>
+
+<div class="ov" id="ov"><div class="modal" id="modal"></div></div>
+
+<script src="artist-resolver.js"></script>
+<script>
+(function(){
+  var rows=[];
+  function esc(s){return (s||'').replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  function fmtDate(d){var p=(d||'').split('-');if(p.length!==3)return d||'';var dt=new Date(+p[0],+p[1]-1,+p[2]);var wd=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][dt.getDay()];return wd+', '+MON[+p[1]-1]+' '+(+p[2]);}
+  function listenBtn(title){
+    var r=window.sampleFor(title);
+    if(r.tier===3) return '<span class="notag">no sample</span>';
+    return '<button class="listen" data-title="'+esc(title)+'">\u25b6 Listen</button>';
+  }
+  function thumb(url,size,extra){
+    if(url) return '<img class="thumb" '+(extra||'')+' style="width:'+size+'px;height:'+size+'px" loading="lazy" src="'+esc(url)+'" alt="">';
+    return '<div class="thumb ph" '+(extra||'')+' style="width:'+size+'px;height:'+size+'px;font-size:'+(size/2.4)+'px">\u266a</div>';
+  }
+  function renderA(){
+    document.getElementById('listA').innerHTML = rows.map(function(s){
+      return '<div class="r"><div class="grow">'+
+        '<div class="meta">'+esc(fmtDate(s.date))+(s.time?' \u00b7 '+esc(s.time):'')+'</div>'+
+        '<div class="title">'+esc(s.title)+'</div>'+
+        '<div class="venue">'+esc(s.venue)+'</div></div>'+
+        listenBtn(s.title)+'</div>';
+    }).join('');
+  }
+  function renderB(){
+    document.getElementById('listB').innerHTML = rows.map(function(s){
+      return '<div class="r">'+thumb(s.imageUrl,52)+'<div class="grow">'+
+        '<div class="title">'+esc(s.title)+'</div>'+
+        '<div class="meta">'+esc(fmtDate(s.date))+(s.time?' \u00b7 '+esc(s.time):'')+'</div>'+
+        '<div class="venue">'+esc(s.venue)+(s.neighborhood?' \u00b7 '+esc(s.neighborhood):'')+'</div></div>'+
+        listenBtn(s.title)+'</div>';
+    }).join('');
+  }
+  function renderC(){
+    document.getElementById('listC').innerHTML = rows.map(function(s){
+      var img = s.imageUrl ? thumb(s.imageUrl,64) : '';
+      return '<div class="r">'+img+'<div class="grow">'+
+        '<div class="titlerow"><span class="title">'+esc(s.title)+'</span>'+listenBtn(s.title)+'</div>'+
+        '<div class="meta">'+esc(fmtDate(s.date))+(s.time?' \u00b7 '+esc(s.time):'')+'</div>'+
+        '<span class="venue">'+esc(s.venue)+(s.neighborhood?' \u00b7 '+esc(s.neighborhood):'')+'</span></div></div>';
+    }).join('');
+  }
+  function openModal(title){
+    var r=window.sampleFor(title); var h='';
+    h+='<button class="close" id="x">\u00d7</button>';
+    if(r.tier===1){
+      h+='<span class="badge b1">Tier 1 \u00b7 best match</span>';
+      h+='<h3>'+esc(r.artist)+'</h3><div class="sub">from: '+esc(title)+'</div>';
+      h+='<a class="playcard" target="_blank" rel="noopener" href="'+esc(r.links.youtube)+'"><span class="ytlogo">\u25b6</span><span>Play \u201c'+esc(r.artist)+'\u201d on YouTube</span></a>';
+      h+=linksRow(r.links);
+    } else if(r.tier===2){
+      h+='<span class="badge b2">Tier 2 \u00b7 search links</span>';
+      h+='<h3>'+esc(r.artist)+'</h3><div class="sub">'+(r.mediaType==='spoken'?'spoken-word / non-music act':'name needs a human eye')+'</div>';
+      h+=linksRow(r.links);
+    } else {
+      h+='<span class="badge b3">Tier 3 \u00b7 no sample</span><h3>'+esc(title)+'</h3><div class="sub">no sample available</div>';
+    }
+    document.getElementById('modal').innerHTML=h;
+    document.getElementById('ov').classList.add('on');
+    var x=document.getElementById('x'); if(x)x.onclick=closeModal;
+  }
+  function linksRow(l){return '<div class="links"><a target="_blank" rel="noopener" href="'+esc(l.youtube)+'">YouTube \u2197</a><a target="_blank" rel="noopener" href="'+esc(l.spotify)+'">Spotify \u2197</a><a target="_blank" rel="noopener" href="'+esc(l.apple)+'">Apple \u2197</a></div>';}
+  function closeModal(){document.getElementById('ov').classList.remove('on');}
+  document.getElementById('ov').addEventListener('click',function(e){if(e.target===this)closeModal();});
+  document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('.listen');if(b)openModal(b.getAttribute('data-title'));});
+  fetch('sample-rows.json').then(function(r){return r.json();}).then(function(data){rows=data;renderA();renderB();renderC();});
+})();
+</script>
+</body>
+</html>
