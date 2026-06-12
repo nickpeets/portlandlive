@@ -633,8 +633,45 @@ function applyTimeFilters(arr){
   }
   return out;
 }
+function parseTimeMin(t){
+  if(!t) return null;
+  var m = String(t).trim().match(/^(\d{1,2}):(\d{2})\s*([AaPp][Mm])$/);
+  if(!m) return null;
+  var h = parseInt(m[1],10), mi = parseInt(m[2],10);
+  if(h===12) h = 0;
+  if(m[3].toUpperCase()==='PM') h += 12;
+  return h*60 + mi;
+}
+function pacificTodayISO(){
+  return new Intl.DateTimeFormat('en-CA',{timeZone:'America/Los_Angeles',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+}
+function pacificNowMin(){
+  var parts = new Intl.DateTimeFormat('en-US',{timeZone:'America/Los_Angeles',hour:'2-digit',minute:'2-digit',hour12:false}).formatToParts(new Date());
+  var h=0, mi=0;
+  parts.forEach(function(x){ if(x.type==='hour') h=parseInt(x.value,10); if(x.type==='minute') mi=parseInt(x.value,10); });
+  if(h===24) h=0;
+  return h*60+mi;
+}
 function sortShows(arr){
-  arr.sort((a,b)=> a.date.localeCompare(b.date) || a.venue.localeCompare(b.venue));
+  var today = pacificTodayISO();
+  var nowMin = pacificNowMin();
+  var GRACE = 60;
+  function rank(s){
+    var tm = parseTimeMin(s.time);
+    if(tm===null) return {bucket:2, t:Infinity};
+    if(s.date === today){
+      if(tm >= nowMin - GRACE) return {bucket:0, t:tm};
+      return {bucket:1, t:tm};
+    }
+    return {bucket:0, t:tm};
+  }
+  arr.sort(function(a,b){
+    if(a.date !== b.date) return a.date < b.date ? -1 : 1;
+    var ra = rank(a), rb = rank(b);
+    if(ra.bucket !== rb.bucket) return ra.bucket - rb.bucket;
+    if(ra.t !== rb.t) return ra.t - rb.t;
+    return a.venue.toLowerCase().localeCompare(b.venue.toLowerCase());
+  });
   return arr;
 }
 function filtered(){
