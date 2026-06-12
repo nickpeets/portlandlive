@@ -125,8 +125,8 @@ body{
 .icon-btn:hover{background:rgba(255,255,255,.26)}
 .icon-btn svg{width:18px;height:18px}
 .icon-btn.active{background:var(--cream);color:var(--water-dd);border-color:var(--cream)}
-.spacer{flex:1}
-.view-toggle{display:flex;gap:8px}
+.reset-btn{flex:0 0 auto}
+.my-shows{margin-left:auto}
 
 .toggle{
   position:relative;width:34px;height:18px;border-radius:10px;
@@ -466,6 +466,9 @@ body{
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
         <input id="searchInput" type="text" placeholder="search bands, venues…">
       </div>
+      <button class="icon-btn reset-btn" id="resetBtn" title="Reset filters" aria-label="Reset">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+      </button>
     </div>
 
     <div class="ctl-row">
@@ -477,26 +480,18 @@ body{
         <span class="toggle" id="thisWeekToggle"></span>
         <span>This Week</span><span class="pill-date" id="thisWeekDate"></span>
       </label>
-      <label class="pill" title="Show only shows you have favorited">
-        <span class="toggle" id="myShowsToggle"></span>
-        <span>My Shows</span>
+      <label class="pill" title="Picks of the Week - curated, vertical showcase">
+        <span class="toggle" id="picksToggle"></span>
+        <span>Picks</span>
       </label>
-        <label class="pill" title="Picks of the Week - curated, vertical showcase">
-          <span class="toggle" id="picksToggle"></span>
-          <span>Picks</span>
-        </label>
       <label class="pill" title="Group shows by neighborhood">
         <span class="toggle" id="byHoodToggle"></span>
         <span>By Neighborhood</span>
       </label>
-
-      <span class="spacer"></span>
-
-      <div class="view-toggle">
-        <button class="icon-btn" id="resetBtn" title="Reset filters" aria-label="Reset">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
-        </button>
-      </div>
+      <label class="pill my-shows" title="Show only shows you have favorited">
+        <span class="toggle" id="myShowsToggle"></span>
+        <span>My Shows</span>
+      </label>
     </div>
   </div>
 </section>
