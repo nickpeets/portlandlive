@@ -542,8 +542,8 @@ body{
 <script src="/sampler/artist-resolver.js"></script>
 <script>
     const SHOW_IMAGES = true;
-      let PLACEHOLDER_MODE = (localStorage.getItem('phMode') === 'collapse') ? 'collapse' : 'note';
-let CARD_LAYOUT = (localStorage.getItem('cardLayout') === 'b') ? 'b' : 'a';
+      let PLACEHOLDER_MODE = 'note';
+let CARD_LAYOUT = 'a';
 
     /* ====================================================================
        PICKS OF THE WEEK  -  Nick edits the two lists below weekly.
@@ -919,33 +919,5 @@ load();
 @media(prefers-reduced-motion:reduce){.cloud,.bird,.note{animation:none}}
 </style>
 <div class="ov" id="smov"><div class="modal" id="smmodal"></div></div>
-<div id="layoutToggle" style="position:fixed;right:14px;bottom:54px;z-index:9999;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.04em;background:rgba(20,30,26,.92);color:#f3ead7;border:1px solid rgba(243,234,215,.3);border-radius:999px;padding:8px 14px;cursor:pointer;user-select:none;box-shadow:0 4px 14px rgba(0,0,0,.35)">layout: <b id="layoutToggleVal"></b></div>
-<script>
-(function(){
-  var el=document.getElementById('layoutToggle'), val=document.getElementById('layoutToggleVal');
-  function lbl(){ val.textContent = (state.cardLayout==='b') ? '2 \u00b7 VERTICAL' : '1 \u00b7 HORIZONTAL'; }
-  lbl();
-  el.addEventListener('click', function(){
-    state.cardLayout = (state.cardLayout==='b') ? 'a' : 'b';
-    try{ localStorage.setItem('cardLayout', state.cardLayout); }catch(e){}
-    lbl();
-    if(typeof render==='function') render();
-  });
-})();
-</script>
-<div id="phToggle" style="position:fixed;right:14px;bottom:14px;z-index:9999;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.04em;background:rgba(20,30,26,.92);color:#f3ead7;border:1px solid rgba(243,234,215,.3);border-radius:999px;padding:8px 14px;cursor:pointer;user-select:none;box-shadow:0 4px 14px rgba(0,0,0,.35)">imageless: <b id="phToggleVal"></b></div>
-<script>
-(function(){
-  var el=document.getElementById('phToggle'), val=document.getElementById('phToggleVal');
-  function lbl(){ val.textContent = (PLACEHOLDER_MODE==='collapse') ? 'CLEAN COLLAPSE' : '\u266a NOTE TILE'; }
-  lbl();
-  el.addEventListener('click', function(){
-    PLACEHOLDER_MODE = (PLACEHOLDER_MODE==='collapse') ? 'note' : 'collapse';
-    try{ localStorage.setItem('phMode', PLACEHOLDER_MODE); }catch(e){}
-    lbl();
-    if(typeof render==='function') render();
-  });
-})();
-</script>
 </body>
 </html>
