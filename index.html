@@ -508,6 +508,10 @@ body{
         <span class="toggle" id="myShowsToggle"></span>
         <span>My Shows</span>
       </label>
+        <label class="pill" title="Picks of the Week - curated, vertical showcase">
+          <span class="toggle" id="picksToggle"></span>
+          <span>Picks</span>
+        </label>
 
       <span class="spacer"></span>
 
@@ -540,10 +544,62 @@ body{
     const SHOW_IMAGES = true;
       let PLACEHOLDER_MODE = (localStorage.getItem('phMode') === 'collapse') ? 'collapse' : 'note';
 let CARD_LAYOUT = (localStorage.getItem('cardLayout') === 'b') ? 'b' : 'a';
+
+    /* ====================================================================
+       PICKS OF THE WEEK  -  Nick edits the two lists below weekly.
+       A show is a "Pick" if EITHER:
+         (1) MANUAL: its id is in MANUAL_PICKS  (always included), OR
+         (2) AUTO:   its venueUrl is on an affiliate-able ticketing platform
+                     AND its venue name is in MARQUEE_VENUES (a bigger room).
+       Auto-select biases toward bigger venues = more potential affiliate
+       ticket sales. Today it keys off the ticketing DOMAIN as a proxy; once
+       links are wrapped for an affiliate program the same logic favors them.
+       ==================================================================== */
+
+    // (1) MANUAL picks - hand-maintained list of show IDs. Always shown.
+    //     Add/remove the numeric "id" values from shows.json here each week.
+    const MANUAL_PICKS = new Set([
+      // e.g. 1, 42, 117
+    ]);
+
+    // (2a) Affiliate-able ticketing platforms (match on venueUrl domain).
+    //      Intentionally NOT eventbrite / etix / tixr - the affiliate value is the point.
+    const AFFILIATE_TICKETING = ['ticketmaster','ticketweb','axs','livenation'];
+
+    // (2b) Marquee / larger Portland rooms (exact venue names from shows.json).
+    //      Edit to taste - bigger rooms = more potential affiliate sales.
+    const MARQUEE_VENUES = new Set([
+      'Roseland Theater',
+      'Aladdin Theater',
+      'Revolution Hall',
+      'Revolution Hall (Show Bar)',
+      'Wonder Ballroom',
+      'Crystal Ballroom',
+      'Star Theater',
+      'Arlene Schnitzer Concert Hall',
+      'Keller Auditorium',
+      'Newmark Theatre',
+      'Winningstad Theatre',
+      'Alberta Rose Theatre',
+      'Hawthorne Theatre',
+      'Moda Center',
+      'Theater of the Clouds',
+      'Cascades Amphitheater',
+      'McMenamins Crystal Ballroom',
+      'Mission Theater'
+    ]);
+
+    function pickDomain(u){ try{ return new URL(u).hostname.replace(/^www\./,''); }catch(e){ return ''; } }
+    function isAffiliateTicketing(u){ const h=pickDomain(u); return AFFILIATE_TICKETING.some(d => h.includes(d)); }
+    // A show is a Pick if manual OR (affiliate-able ticketing domain AND marquee venue).
+    function isPick(s){
+      if(MANUAL_PICKS.has(s.id)) return true;
+      return isAffiliateTicketing(s.venueUrl) && MARQUEE_VENUES.has(s.venue);
+    }
 const state = {
   shows: [], stamp: "",
   layout: "grid", cardLayout: CARD_LAYOUT, view: "shows", selectedVenue: null, sort: "date",
-  q: "", tonight: false, thisWeek: false,
+  q: "", tonight: false, thisWeek: false, picks: false,
   myShows: false, favorites: loadFavorites(),
 };
 
@@ -622,7 +678,12 @@ function filtered(){
   let out = state.shows.filter(s => s.date >= todayPacific);
   const q = state.q.trim().toLowerCase();
   if(q) out = out.filter(s => (s.title+" "+s.venue+" "+s.neighborhood).toLowerCase().includes(q));
-   out = applyTimeFilters(out);
+   if(state.picks){
+     // Picks overrides time-window / favorites filters: it is the showcase view.
+     out = out.filter(isPick);
+   } else {
+     out = applyTimeFilters(out);
+   }
    sortShows(out);
   return out;
 }
@@ -637,12 +698,12 @@ function render(){
   wrap.innerHTML = "";
 
   if(!list.length){
-    wrap.innerHTML = state.myShows ? '<div class="empty"><h2>No favorites yet</h2><p>Tap the heart on a show to save it.</p></div>' : '<div class="empty"><h2>No Results Found.</h2><p>Try widening your dates or clearing the search.</p></div>';
+    wrap.innerHTML = state.picks ? '<div class="empty"><h2>No picks this week</h2><p>Check back soon — fresh picks are curated weekly.</p></div>' : state.myShows ? '<div class="empty"><h2>No favorites yet</h2><p>Tap the heart on a show to save it.</p></div>' : '<div class="empty"><h2>No Results Found.</h2><p>Try widening your dates or clearing the search.</p></div>';
     return;
   }
 
   // group by day only when sorting by date AND no time-window filter (This Week off)
-  if(state.sort === "date" && !state.thisWeek){
+  if(state.sort === "date" && !state.thisWeek && !state.picks){
     const groups = {};
     list.forEach(s=>{(groups[s.date]=groups[s.date]||[]).push(s);});
     Object.keys(groups).sort().forEach(date=>{
@@ -731,7 +792,8 @@ function smediaFor(s){
 
 function listOf(items, showDate){
   const l=document.createElement('div');
-  l.className = 'list ' + (state.cardLayout==='b' ? 'list--b' : 'list--a');
+  const eff = state.picks ? 'b' : state.cardLayout;
+  l.className = 'list ' + (eff==='b' ? 'list--b' : 'list--a');
   items.forEach(s=>{
     const c=document.createElement('div'); c.className='scard';
     const media = smediaFor(s);
@@ -745,7 +807,7 @@ function listOf(items, showDate){
     const venueLink = `<a class="s-venue" href="#" data-venue="${esc(s.venue)}" title="View this venue">${esc(s.venue)}</a>`;
     const nb = s.neighborhood ? `<span class="s-nb">${esc(s.neighborhood)}</span>` : '';
 
-    if(state.cardLayout === 'b'){
+    if(eff === 'b'){
       // VERTICAL: image on top, text below, listen + heart in foot row
       c.innerHTML = media
         + `<div class="s-body">`
@@ -801,16 +863,29 @@ function favKey(s){ return (s.venue||'') + '|' + (s.date||'') + '|' + (s.title||
 /* events */
 $('#searchInput').addEventListener('input',e=>{state.q=e.target.value;render();});
 $('#sortSel').addEventListener('change',e=>{state.sort=e.target.value;render();});
-$('#venuesToggle').addEventListener('click',()=>{if(state.view==='venues'){state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');$('#viewingWord').textContent='Shows';}else{state.view='venues';state.selectedVenue=null;$('#venuesToggle').classList.add('on');$('#viewingWord').textContent='Venues';}render();});
-      $('#myShowsToggle').addEventListener('click',e=>{state.myShows=!state.myShows;e.currentTarget.classList.toggle('on',state.myShows);render();});
+$('#venuesToggle').addEventListener('click',()=>{state.picks=false;$('#picksToggle').classList.remove('on');if(state.view==='venues'){state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');$('#viewingWord').textContent='Shows';}else{state.view='venues';state.selectedVenue=null;$('#venuesToggle').classList.add('on');$('#viewingWord').textContent='Venues';}render();});
+      $('#myShowsToggle').addEventListener('click',e=>{state.picks=false;$('#picksToggle').classList.remove('on');state.myShows=!state.myShows;e.currentTarget.classList.toggle('on',state.myShows);render();});
+        // Picks of the Week: dominant filter. Turning it on switches to the curated, vertical showcase
+        // and clears the Tonight / This Week / My Shows / Venues filters so only picks are shown.
+        $('#picksToggle').addEventListener('click',e=>{
+          state.picks=!state.picks;
+          e.currentTarget.classList.toggle('on',state.picks);
+          if(state.picks){
+            state.tonight=false;$('#tonightToggle').classList.remove('on');
+            state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');
+            state.myShows=false;$('#myShowsToggle').classList.remove('on');
+            state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');$('#viewingWord').textContent='Shows';
+          }
+          render();
+        });
       function openVenue(name){ state.view='venues'; state.selectedVenue=name; $('#venuesToggle').classList.add('on'); $('#viewingWord').textContent='Venues'; render(); document.querySelector('.controls').scrollIntoView({block:'start',behavior:'instant'}); }
       $('#results').addEventListener('click',e=>{const vlink=e.target.closest('[data-venue]');if(vlink){e.preventDefault();e.stopPropagation();openVenue(vlink.getAttribute('data-venue'));return;}const h=e.target.closest('.heart');if(!h)return;e.preventDefault();e.stopPropagation();toggleFavKey(h.getAttribute('data-fav'));render();});
-$('#tonightToggle').addEventListener('click',()=>{state.tonight=!state.tonight;if(state.tonight){state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');}$('#tonightToggle').classList.toggle('on',state.tonight);render();});
-$('#thisWeekToggle').addEventListener('click',()=>{state.thisWeek=!state.thisWeek;if(state.thisWeek){state.tonight=false;$('#tonightToggle').classList.remove('on');}$('#thisWeekToggle').classList.toggle('on',state.thisWeek);render();});
+$('#tonightToggle').addEventListener('click',()=>{state.picks=false;$('#picksToggle').classList.remove('on');state.tonight=!state.tonight;if(state.tonight){state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');}$('#tonightToggle').classList.toggle('on',state.tonight);render();});
+$('#thisWeekToggle').addEventListener('click',()=>{state.picks=false;$('#picksToggle').classList.remove('on');state.thisWeek=!state.thisWeek;if(state.thisWeek){state.tonight=false;$('#tonightToggle').classList.remove('on');}$('#thisWeekToggle').classList.toggle('on',state.thisWeek);render();});
 $('#resetBtn').addEventListener('click',()=>{
   state.q="";state.tonight=false;state.sort="date";state.view="shows";state.selectedVenue=null;$('#venuesToggle').classList.remove('on');$('#viewingWord').textContent='Shows';
   $('#searchInput').value="";
-  $('#sortSel').value="date";$('#tonightToggle').classList.remove('on');state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');state.myShows=false;$('#myShowsToggle').classList.remove('on');render();
+  $('#sortSel').value="date";$('#tonightToggle').classList.remove('on');state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');state.myShows=false;$('#myShowsToggle').classList.remove('on');state.picks=false;$('#picksToggle').classList.remove('on');render();
 });
 
     // Compute the Pacific dates the Tonight / This Week filters resolve to,
