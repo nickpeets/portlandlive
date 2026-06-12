@@ -168,7 +168,6 @@ body{
 }
 .dayhead .count{font-family:'Oswald';font-weight:500;font-size:13px;color:rgba(243,234,215,.7);margin-left:10px;letter-spacing:.08em}
 
-.venue-card,.venue-row{cursor:pointer}
 .venue-header{margin-bottom:18px}
 .venue-header .venue-name{font-family:'Alfa Slab One',serif;font-size:26px;color:var(--cream);margin:6px 0 4px}
 .venue-header .venue-info{color:var(--cream);opacity:.85;font-size:14px}
@@ -339,19 +338,6 @@ body{
 
 
 /* venue browse rows (kept compact, distinct from show cards) */
-.venues-list{display:flex;flex-direction:column;gap:10px}
-.venues-list .row{display:flex;align-items:center;gap:14px;background:var(--cream);border-radius:9px;border-top:4px solid var(--forest);box-shadow:0 5px 12px rgba(20,40,30,.16);padding:13px 16px;cursor:pointer;transition:transform .12s,box-shadow .12s}
-.venues-list .row:hover{transform:translateY(-2px);box-shadow:0 10px 20px rgba(20,40,30,.24)}
-.venues-list .row-img-wrap{flex:0 0 auto}
-.venues-list .row-img{width:52px;height:52px;border-radius:10px;display:block}
-.venues-list .row-img--ph{display:flex;align-items:center;justify-content:center;color:var(--cream);font-family:'Alfa Slab One',serif;font-size:20px}
-.venues-list .row-mid{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:3px}
-.venues-list .row-title .rtitle{font-family:'Alfa Slab One',serif;font-size:17px;color:var(--forest)}
-.venues-list .row-sub{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px;font-size:12.5px;color:var(--ink)}
-.venues-list .row-sub .rvenue-static{font-weight:600}
-.venues-list .row-sub .rdot{opacity:.4}
-.venues-list .row-sub .rnb{font-family:'Oswald';font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:#7c6a55}
-.venues-list .row-chev{flex:0 0 auto;font-size:22px;line-height:1;color:rgba(74,53,38,.35)}
 
 /* === LISTEN (Concept A) + sample modal === */
 .row .listen{grid-area:listen;justify-self:end;align-self:center}
@@ -499,10 +485,6 @@ body{
       <label class="pill" title="Shows happening in the next 7 days">
         <span class="toggle" id="thisWeekToggle"></span>
         <span>This Week</span><span class="pill-date" id="thisWeekDate"></span>
-      </label>
-      <label class="pill" title="Browse shows by venue">
-        <span class="toggle" id="venuesToggle"></span>
-        <span>Venues</span>
       </label>
       <label class="pill" title="Show only shows you have favorited">
         <span class="toggle" id="myShowsToggle"></span>
@@ -689,7 +671,7 @@ function filtered(){
 }
 
 function render(){
-  if(state.view === "venues"){ renderVenues(); return; }
+  if(state.view === "venues" && state.selectedVenue){ renderVenues(); return; }
   const list = filtered();
   $('#resultCount').textContent = list.length
     ? `${list.length} show${list.length>1?'s':''} found`
@@ -734,11 +716,11 @@ function renderVenues(){
     $('#resultCount').textContent = vshows.length ? `${vshows.length} show${vshows.length>1?'s':''} found` : "No results";
     const head = document.createElement('div');
     head.className = 'venue-header';
-    head.innerHTML = `<a class="back-link" id="backToVenues" href="#">\u2190 All venues</a>`
+    head.innerHTML = `<a class="back-link" id="backToVenues" href="#">\u2190 All shows</a>`
       + `<h2 class="venue-name">${esc(state.selectedVenue)}</h2>`
       + `<div class="venue-info">${esc(first.neighborhood||'')}${first.address?' \u00b7 '+esc(first.address):''}</div>`;
     wrap.appendChild(head);
-    $('#backToVenues').addEventListener('click',(e)=>{e.preventDefault();state.selectedVenue=null;render();});
+    $('#backToVenues').addEventListener('click',(e)=>{e.preventDefault();state.selectedVenue=null;state.view='shows';$('#viewingWord').textContent='Shows';render();});
     if(vshows.length){
       wrap.appendChild(listOf(vshows, true));
     } else {
@@ -746,27 +728,6 @@ function renderVenues(){
     }
     return;
   }
-  const groups = {};
-  all.forEach(s=>{ const v=s.venue||'Unknown'; if(!groups[v]) groups[v]={name:v,neighborhood:s.neighborhood||'',count:0}; groups[v].count++; if(!groups[v].neighborhood && s.neighborhood) groups[v].neighborhood=s.neighborhood; });
-  const _ncmp=(a,b)=>(a.neighborhood||"").localeCompare(b.neighborhood||"",undefined,{sensitivity:"base"})||a.name.localeCompare(b.name,undefined,{sensitivity:"base"});const _vcmp=(a,b)=>a.name.localeCompare(b.name,undefined,{sensitivity:"base"});const _dcmp=(a,b)=>(b.count-a.count)||a.name.localeCompare(b.name);const _cmp=state.sort==="neighborhood"?_ncmp:(state.sort==="venue"||state.sort==="title")?_vcmp:_dcmp;let venues = Object.values(groups).sort(_cmp);
-    if(q) venues = venues.filter(v => (v.name+" "+(v.neighborhood||"")).toLowerCase().includes(q));
-  $('#resultCount').textContent = venues.length ? `${venues.length} venue${venues.length>1?'s':''}` : "No results";
-  if(!venues.length){ wrap.innerHTML = '<div class="empty"><h2>No Results Found.</h2></div>'; return; }
-  let container;
-        {
-          const l = document.createElement('div'); l.className='list venues-list';
-          venues.forEach(v=>{
-            const r = document.createElement('div'); r.className='row venue-row';
-            r.innerHTML = `<div class="row-img-wrap"><div class="row-img row-img--ph" style="background:${tileColor({venue:v.name,title:v.name})}" aria-hidden="true"></div></div>`
-              + `<div class="row-mid"><div class="row-title"><span class="rtitle">${esc(v.name)}</span></div>`
-              + `<div class="row-sub"><span class="rvenue-static">${v.count} upcoming show${v.count>1?'s':''}</span><span class="rdot">\u00b7</span><span class="rnb">${esc(v.neighborhood||'')}</span></div></div>`
-              + `<span class="row-chev" aria-hidden="true">\u203a</span>`;
-            r.addEventListener('click',()=>{ openVenue(v.name); });
-            l.appendChild(r);
-          });
-          container = l;
-        }
-        wrap.appendChild(container);
 }
     function tileColor(s){
       const pal=['var(--rust)','var(--rust-deep)','var(--forest)','var(--water)','var(--water-d)','var(--ink)'];
@@ -863,7 +824,6 @@ function favKey(s){ return (s.venue||'') + '|' + (s.date||'') + '|' + (s.title||
 /* events */
 $('#searchInput').addEventListener('input',e=>{state.q=e.target.value;render();});
 $('#sortSel').addEventListener('change',e=>{state.sort=e.target.value;render();});
-$('#venuesToggle').addEventListener('click',()=>{state.picks=false;$('#picksToggle').classList.remove('on');if(state.view==='venues'){state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');$('#viewingWord').textContent='Shows';}else{state.view='venues';state.selectedVenue=null;$('#venuesToggle').classList.add('on');$('#viewingWord').textContent='Venues';}render();});
       $('#myShowsToggle').addEventListener('click',e=>{state.picks=false;$('#picksToggle').classList.remove('on');state.myShows=!state.myShows;e.currentTarget.classList.toggle('on',state.myShows);render();});
         // Picks of the Week: dominant filter. Turning it on switches to the curated, vertical showcase
         // and clears the Tonight / This Week / My Shows / Venues filters so only picks are shown.
@@ -874,16 +834,16 @@ $('#venuesToggle').addEventListener('click',()=>{state.picks=false;$('#picksTogg
             state.tonight=false;$('#tonightToggle').classList.remove('on');
             state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');
             state.myShows=false;$('#myShowsToggle').classList.remove('on');
-            state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');$('#viewingWord').textContent='Shows';
+            state.view='shows';state.selectedVenue=null;$('#viewingWord').textContent='Shows';
           }
           render();
         });
-      function openVenue(name){ state.view='venues'; state.selectedVenue=name; $('#venuesToggle').classList.add('on'); $('#viewingWord').textContent='Venues'; render(); document.querySelector('.controls').scrollIntoView({block:'start',behavior:'instant'}); }
+      function openVenue(name){ state.view='venues'; state.selectedVenue=name; $('#viewingWord').textContent='Venues'; render(); document.querySelector('.controls').scrollIntoView({block:'start',behavior:'instant'}); }
       $('#results').addEventListener('click',e=>{const vlink=e.target.closest('[data-venue]');if(vlink){e.preventDefault();e.stopPropagation();openVenue(vlink.getAttribute('data-venue'));return;}const h=e.target.closest('.heart');if(!h)return;e.preventDefault();e.stopPropagation();toggleFavKey(h.getAttribute('data-fav'));render();});
 $('#tonightToggle').addEventListener('click',()=>{state.picks=false;$('#picksToggle').classList.remove('on');state.tonight=!state.tonight;if(state.tonight){state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');}$('#tonightToggle').classList.toggle('on',state.tonight);render();});
 $('#thisWeekToggle').addEventListener('click',()=>{state.picks=false;$('#picksToggle').classList.remove('on');state.thisWeek=!state.thisWeek;if(state.thisWeek){state.tonight=false;$('#tonightToggle').classList.remove('on');}$('#thisWeekToggle').classList.toggle('on',state.thisWeek);render();});
 $('#resetBtn').addEventListener('click',()=>{
-  state.q="";state.tonight=false;state.sort="date";state.view="shows";state.selectedVenue=null;$('#venuesToggle').classList.remove('on');$('#viewingWord').textContent='Shows';
+  state.q="";state.tonight=false;state.sort="date";state.view="shows";state.selectedVenue=null;$('#viewingWord').textContent='Shows';
   $('#searchInput').value="";
   $('#sortSel').value="date";$('#tonightToggle').classList.remove('on');state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');state.myShows=false;$('#myShowsToggle').classList.remove('on');state.picks=false;$('#picksToggle').classList.remove('on');render();
 });
