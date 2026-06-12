@@ -94,12 +94,6 @@ body{
 .ctl-row{display:flex;align-items:center;gap:14px 20px;flex-wrap:wrap}
 .ctl-row + .ctl-row{margin-top:16px}
 
-.ctl-label{
-  font-family:'Alfa Slab One',serif;
-  color:var(--cream);font-size:24px;letter-spacing:.01em;
-  text-shadow:0 1px 0 rgba(0,0,0,.15);
-}
-.ctl-label .reg{font-family:'Bitter';font-weight:600;font-size:18px;margin-left:6px;color:#eef3ec}
 
 .pill{
   display:inline-flex;align-items:center;gap:8px;
@@ -316,7 +310,6 @@ body{
 @media(max-width:640px){
   .hero{min-height:400px}
   .hero-inner{padding-top:34px}
-  .ctl-label{font-size:19px}
   .statusbar{font-size:11px}
 }
 
@@ -462,7 +455,6 @@ body{
 <section class="controls">
   <div class="controls-inner">
     <div class="ctl-row">
-      <span class="ctl-label">Viewing <span class="reg" id="viewingWord">Shows</span></span>
       <label class="pill">
         <select id="sortSel">
           <option value="date">Date (soonest)</option>
@@ -720,7 +712,7 @@ function renderVenues(){
       + `<h2 class="venue-name">${esc(state.selectedVenue)}</h2>`
       + `<div class="venue-info">${esc(first.neighborhood||'')}${first.address?' \u00b7 '+esc(first.address):''}</div>`;
     wrap.appendChild(head);
-    $('#backToVenues').addEventListener('click',(e)=>{e.preventDefault();state.selectedVenue=null;state.view='shows';$('#viewingWord').textContent='Shows';render();});
+    $('#backToVenues').addEventListener('click',(e)=>{e.preventDefault();state.selectedVenue=null;state.view='shows';render();});
     if(vshows.length){
       wrap.appendChild(listOf(vshows, true));
     } else {
@@ -834,16 +826,16 @@ $('#sortSel').addEventListener('change',e=>{state.sort=e.target.value;render();}
             state.tonight=false;$('#tonightToggle').classList.remove('on');
             state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');
             state.myShows=false;$('#myShowsToggle').classList.remove('on');
-            state.view='shows';state.selectedVenue=null;$('#viewingWord').textContent='Shows';
+            state.view='shows';state.selectedVenue=null;
           }
           render();
         });
-      function openVenue(name){ state.view='venues'; state.selectedVenue=name; $('#viewingWord').textContent='Venues'; render(); document.querySelector('.controls').scrollIntoView({block:'start',behavior:'instant'}); }
+      function openVenue(name){ state.view='venues'; state.selectedVenue=name;  render(); document.querySelector('.controls').scrollIntoView({block:'start',behavior:'instant'}); }
       $('#results').addEventListener('click',e=>{const vlink=e.target.closest('[data-venue]');if(vlink){e.preventDefault();e.stopPropagation();openVenue(vlink.getAttribute('data-venue'));return;}const h=e.target.closest('.heart');if(!h)return;e.preventDefault();e.stopPropagation();toggleFavKey(h.getAttribute('data-fav'));render();});
 $('#tonightToggle').addEventListener('click',()=>{state.picks=false;$('#picksToggle').classList.remove('on');state.tonight=!state.tonight;if(state.tonight){state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');}$('#tonightToggle').classList.toggle('on',state.tonight);render();});
 $('#thisWeekToggle').addEventListener('click',()=>{state.picks=false;$('#picksToggle').classList.remove('on');state.thisWeek=!state.thisWeek;if(state.thisWeek){state.tonight=false;$('#tonightToggle').classList.remove('on');}$('#thisWeekToggle').classList.toggle('on',state.thisWeek);render();});
 $('#resetBtn').addEventListener('click',()=>{
-  state.q="";state.tonight=false;state.sort="date";state.view="shows";state.selectedVenue=null;$('#viewingWord').textContent='Shows';
+  state.q="";state.tonight=false;state.sort="date";state.view="shows";state.selectedVenue=null;
   $('#searchInput').value="";
   $('#sortSel').value="date";$('#tonightToggle').classList.remove('on');state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');state.myShows=false;$('#myShowsToggle').classList.remove('on');state.picks=false;$('#picksToggle').classList.remove('on');render();
 });
