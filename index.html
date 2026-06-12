@@ -362,7 +362,15 @@ body{
   .listen{padding:6px 10px;font-size:10.5px}
 }
 
-</style>
+    /* Venue-page chips: tappable venue links surfaced above results on venue-name search match */
+    .venue-chips{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 18px}
+    .venue-chip{display:inline-flex;align-items:center;gap:10px;cursor:pointer;text-align:left;font-family:inherit;color:var(--ink);background:var(--cream);border:1px solid rgba(74,53,38,.18);border-left:4px solid var(--rust);border-radius:10px;padding:9px 14px;box-shadow:0 2px 6px rgba(0,0,0,.12);transition:transform .08s ease,box-shadow .08s ease}
+    .venue-chip:hover{transform:translateY(-1px);box-shadow:0 4px 10px rgba(0,0,0,.18)}
+    .venue-chip:active{transform:translateY(0)}
+    .venue-chip .vc-name{font-weight:600;font-size:15px}
+    .venue-chip .vc-hood{font-size:12px;opacity:.7;text-transform:uppercase;letter-spacing:.03em}
+    .venue-chip .vc-count{font-size:12px;font-weight:600;color:var(--rust);background:rgba(181,86,43,.10);padding:2px 8px;border-radius:20px;white-space:nowrap}
+  </style>
 </head>
 <body>
 
@@ -675,6 +683,33 @@ function render(){
     wrap.innerHTML = state.picks ? '<div class="empty"><h2>No picks this week</h2><p>Check back soon — fresh picks are curated weekly.</p></div>' : state.myShows ? '<div class="empty"><h2>No favorites yet</h2><p>Tap the heart on a show to save it.</p></div>' : '<div class="empty"><h2>No Results Found.</h2><p>Try widening your dates or clearing the search.</p></div>';
     return;
   }
+
+  // Venue-page chips: when search matches venue name(s), surface tappable venue link(s) above the show results
+  (function(){
+    const vq = state.q.trim().toLowerCase();
+    if(!vq) return;
+    if(state.view === "venues" && state.selectedVenue) return;
+    const vToday = new Intl.DateTimeFormat('en-CA',{timeZone:'America/Los_Angeles',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+    const vmap = {};
+    state.shows.forEach(s=>{
+      if(!s.venue || s.date < vToday) return;
+      if(!s.venue.toLowerCase().includes(vq)) return;
+      if(!vmap[s.venue]) vmap[s.venue] = {name:s.venue, neighborhood:s.neighborhood||'', count:0};
+      vmap[s.venue].count++;
+    });
+    const vlist = Object.values(vmap).sort((a,b)=> b.count - a.count || a.name.localeCompare(b.name)).slice(0,3);
+    if(!vlist.length) return;
+    const box = document.createElement('div');
+    box.className = 'venue-chips';
+    box.innerHTML = vlist.map(v=>
+      `<button type="button" class="venue-chip" data-venue="${esc(v.name)}" title="View ${esc(v.name)} venue page">`
+      + `<span class="vc-name">${esc(v.name)}</span>`
+      + (v.neighborhood ? `<span class="vc-hood">${esc(v.neighborhood)}</span>` : '')
+      + `<span class="vc-count">${v.count} show${v.count>1?'s':''}</span>`
+      + `</button>`
+    ).join('');
+    wrap.appendChild(box);
+  })();
 
   // group by day only when sorting by date AND no time-window filter (This Week off)
   if(state.sort === "date" && !state.thisWeek && !state.picks){
