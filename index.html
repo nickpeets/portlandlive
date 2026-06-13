@@ -758,7 +758,7 @@ function render(){
       });
       wrap.appendChild(g);
     });
-  } else if(!state.thisWeek && !state.picks){
+  } else if(!state.picks){
     // group by day (default view), no time-window filter
     const groups = {};
     list.forEach(s=>{(groups[s.date]=groups[s.date]||[]).push(s);});
