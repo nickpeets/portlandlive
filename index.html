@@ -317,6 +317,13 @@ body{
 
 /* MOBILE: restack show rows vertically on phones (desktop unchanged) */
 @media (max-width:600px){
+    /* controls: full-width search + reset, even toggle rows on phones */
+    .controls-inner{padding:0 16px}
+    .ctl-row{gap:10px}
+    .search-pill{flex:1 1 auto;min-width:0}
+    .reset-btn{flex:0 0 44px;width:44px;height:44px}
+    .controls-inner .ctl-row + .ctl-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:stretch}
+    .controls-inner .ctl-row + .ctl-row .pill{min-height:44px;box-sizing:border-box}
   .results{overflow-x:hidden}
   .results-inner{padding:0 16px}
   .row{gap:11px;padding:9px 10px}
