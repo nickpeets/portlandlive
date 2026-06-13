@@ -380,6 +380,15 @@ body{
     .venue-chip .vc-name{font-weight:600;font-size:15px}
     .venue-chip .vc-hood{font-size:12px;opacity:.7;text-transform:uppercase;letter-spacing:.03em}
     .venue-chip .vc-count{font-size:12px;font-weight:600;color:var(--rust);background:rgba(181,86,43,.10);padding:2px 8px;border-radius:20px;white-space:nowrap}
+  /* ---- TEMP: classification audit/debug panel (dev verification tool) ---- */
+  .audit-panel{border:2px dashed #f7c948;background:rgba(40,28,18,.96);color:#f4e8d0;border-radius:10px;padding:14px 16px;margin:0 0 18px;font-size:13px;line-height:1.45}
+  .audit-panel h2{margin:0 0 4px;font-size:16px;color:#f7c948}
+  .audit-panel .audit-note{opacity:.8;font-size:12px;margin:0 0 10px}
+  .audit-bucket{margin:10px 0;border-top:1px solid rgba(247,201,72,.25);padding-top:8px}
+  .audit-bucket h3{margin:0 0 4px;font-size:14px;text-transform:uppercase;letter-spacing:.04em}
+  .audit-bucket.b-music h3{color:#7ee0a1}.audit-bucket.b-comedy h3{color:#9ad0db}.audit-bucket.b-trivia h3{color:#f59e9e}.audit-bucket.b-other h3{color:#c9b6ff}
+  .audit-bucket ol{margin:4px 0 0;padding-left:22px;max-height:240px;overflow:auto}
+  .audit-bucket li{margin:1px 0;word-break:break-word}
   </style>
 </head>
 <body>
@@ -503,6 +512,12 @@ body{
         <span class="toggle" id="myShowsToggle"></span>
         <span>My Shows</span>
       </label>
+        <!-- TEMP DEV TOOL: classification audit panel toggle. Remove once the
+             music/non-music separation is verified and trusted. -->
+        <label class="pill audit-pill" title="DEV: show classification buckets to verify accuracy">
+          <span class="toggle" id="auditToggle"></span>
+          <span>&#9888; Audit (dev)</span>
+        </label>
     </div>
   </div>
 </section>
@@ -584,6 +599,7 @@ const state = {
   layout: "grid", cardLayout: CARD_LAYOUT, view: "shows", selectedVenue: null, byHood: false,
   q: "", tonight: false, thisWeek: false, picks: false,
   myShows: false, favorites: loadFavorites(),
+  comedy: false, audit: false, // comedy: future Comedy-shows toggle; audit: temporary verification panel
 };
 
 const $ = s => document.querySelector(s);
@@ -602,11 +618,65 @@ function ordinalDate(iso){
   return fmtDay(iso).replace(String(n), n+s);
 }
 
+// ===== CONTENT-TYPE CLASSIFIER =====================================
+// Tags each show with a content TYPE: 'music' | 'comedy' | 'trivia' | 'other'.
+// Aggressive policy: anything not clearly music is treated as non-music.
+// Reads the show title (and, when available, the sampler resolver's Tier-3
+// signal via window.sampleFor -> mediaType 'spoken' => non-music act).
+function classifyType(s){
+  const title = (s && s.title) ? String(s.title) : '';
+  const url   = (s && s.venueUrl) ? String(s.venueUrl) : '';
+
+  // MUSIC OVERRIDE: genre-tag lists like "disco~glam~metal~punk~hiphop"
+  // are music-night branding, NOT a dance party -> keep as music.
+  const genreTag = /(disco|glam|metal|punk|hiphop|hip-hop|funk|soul|techno|house|indie|rock|pop|jazz|blues|folk|country|emo|synth|wave|garage)\s*[~\/]\s*(disco|glam|metal|punk|hiphop|hip-hop|funk|soul|techno|house|indie|rock|pop|jazz|blues|folk|country|emo|synth|wave|garage)/i;
+  const isGenreTagged = genreTag.test(title);
+
+  // TRIVIA / QUIZ / BINGO (incl. "-issi"/"-sippi"-style quiz-night branding)
+  if(/\btrivia\b|\bquiz(zo)?\b|geeks who drink|pub quiz|\bbingo\b|trivia[\s-]?(sippi|ssippi)|[a-z]+-issi\b|[a-z]+-sippi\b/i.test(title)) return 'trivia';
+
+  // COMEDY / STANDUP / IMPROV (tagged specifically, not lumped into 'other')
+  if(/\bcomedy\b|stand[\s-]?up|standup|\bimprov\b|\bsketch\b|\broast\b|comedy showcase|comedy night|comedy tour/i.test(title)) return 'comedy';
+
+  // OTHER non-music buckets
+  if(/\bkaraoke\b/i.test(title)) return 'other';                                   // karaoke
+  if(/world cup|watch party|game watch|viewing party|fight night|\bufc\b|\bnfl\b|\bnba\b|super bowl|premier league|\bblazers?\b|\btimbers\b/i.test(title)) return 'other'; // sports viewing
+  if(/board game|game night|\bd&d\b|dungeons.{0,3}dragons|tabletop|magic.{0,3}the gathering/i.test(title)) return 'other'; // board / tabletop games
+
+  // DJ / DANCE-PARTY judgment call:
+  //  - a DJ alongside a named live bill (live-act signal) STAYS music
+  //  - a pure DJ-only set / dance party / disco / club night => 'other'
+  if(!isGenreTagged){
+    const danceOnly = /dance party|silent disco|\bdiscotheque\b|club night|\bdj night\b/i;
+    const liveAct   = /\bwith\b|\bw\/|\bft\.?\b|feat\.?|featuring|\+|\/\/|\|\|\|| presents | plays |&| support| live band| live music/i;
+    if(danceOnly.test(title) && !liveAct.test(title)) return 'other';
+    if(/^dj\s+[a-z0-9.\-']+$/i.test(title.trim())) return 'other'; // bare "DJ Name"
+  }
+
+  // OPEN MIC without a music signal => 'other' (comedy open mics caught above)
+  if(/open[\s-]?mic/i.test(title)){
+    const musicSignal = /songwriter|musician|music|acoustic|\bjam\b|jazz|blues|\bband\b|singer|guitar|piano|folk|hip[\s-]?hop|\brap\b/i;
+    if(!musicSignal.test(title) && !/\/music\//i.test(url)) return 'other';
+  }
+
+  // SAMPLER TIER-3 SIGNAL: resolver flags spoken-word / non-music acts.
+  try{
+    if(typeof window!=='undefined' && typeof window.sampleFor==='function'){
+      const r = window.sampleFor(title);
+      if(r && r.mediaType === 'spoken') return 'other';
+    }
+  }catch(e){}
+
+  return 'music';
+}
+function classifyAll(){ for(const s of state.shows){ s.contentType = classifyType(s); } }
+
 async function load(){
   try{
     const res = await fetch('/shows.json',{cache:'no-store'});
     const data = await res.json();
     state.shows = data.shows || [];
+    classifyAll(); // tag each show with s.contentType
     state.stamp = data.generated || "";
     buildNeighborhoods();
     if(state.stamp){
@@ -690,6 +760,12 @@ function filtered(){
   // filters, so the default view is correct 24/7 regardless of when shows.json was built.
   const todayPacific = new Intl.DateTimeFormat('en-CA',{timeZone:'America/Los_Angeles',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
   let out = state.shows.filter(s => s.date >= todayPacific);
+  // Content-type gate: music only by default. Comedy toggle shows comedy.
+  // The audit panel bypasses this gate so ALL buckets stay visible.
+  if(!state.audit){
+    if(state.comedy) out = out.filter(s => s.contentType === 'comedy');
+    else out = out.filter(s => s.contentType === 'music');
+  }
   const q = state.q.trim().toLowerCase();
   if(q) out = out.filter(s => (s.title+" "+s.venue+" "+s.neighborhood).toLowerCase().includes(q));
    if(state.picks){
@@ -702,6 +778,24 @@ function filtered(){
   return out;
 }
 
+// TEMP: builds the classification audit panel (dev verification tool).
+function auditPanelHtml(){
+  const order=['music','comedy','trivia','other'];
+  const labels={music:'Music (shown by default)',comedy:'Comedy',trivia:'Trivia / Quiz / Bingo',other:'Other (karaoke, sports, DJ-only, board games, etc.)'};
+  const b={music:[],comedy:[],trivia:[],other:[]};
+  for(const s of state.shows){ (b[s.contentType]||b.other).push(s); }
+  const total=state.shows.length;
+  let h='<div class="audit-panel"><h2>\u26A0 Classification audit \u2014 dev verification tool</h2>';
+  h+='<p class="audit-note">TEMPORARY. Buckets below show how every show is tagged so you can spot false positives (real bands wrongly tagged non-music) and false negatives (non-music leaking into Music). Total shows: '+total+' \u2014 Music '+b.music.length+' / Comedy '+b.comedy.length+' / Trivia '+b.trivia.length+' / Other '+b.other.length+'.</p>';
+  for(const k of order){
+    h+='<div class="audit-bucket b-'+k+'"><h3>'+labels[k]+' \u00B7 '+b[k].length+'</h3><ol>';
+    const seen=[...b[k]].sort((x,y)=>String(x.title).localeCompare(String(y.title)));
+    for(const s of seen){ h+='<li>'+esc(s.title)+' <span style="opacity:.5">\u2014 '+esc(s.venue||'')+'</span></li>'; }
+    h+='</ol></div>';
+  }
+  h+='</div>';
+  return h;
+}
 function render(){
   if(state.view === "venues" && state.selectedVenue){ renderVenues(); return; }
   const list = filtered();
@@ -710,6 +804,10 @@ function render(){
     : "No results";
   const wrap = $('#results');
   wrap.innerHTML = "";
+      // TEMP audit/debug panel: lists every classification bucket (music /
+      // comedy / trivia / other) with counts + titles so Nick can eyeball the
+      // music/non-music separation before trusting it to hide shows.
+      if(state.audit){ wrap.insertAdjacentHTML('beforeend', auditPanelHtml()); }
 
   if(!list.length){
     wrap.innerHTML = state.picks ? '<div class="empty"><h2>No picks this week</h2><p>Check back soon — fresh picks are curated weekly.</p></div>' : state.myShows ? '<div class="empty"><h2>No favorites yet</h2><p>Tap the heart on a show to save it.</p></div>' : '<div class="empty"><h2>No Results Found.</h2><p>Try widening your dates or clearing the search.</p></div>';
@@ -923,6 +1021,7 @@ $('#byHoodToggle').addEventListener('click',()=>{state.byHood=!state.byHood;$('#
       $('#results').addEventListener('click',e=>{const vlink=e.target.closest('[data-venue]');if(vlink){e.preventDefault();e.stopPropagation();openVenue(vlink.getAttribute('data-venue'));return;}const h=e.target.closest('.heart');if(!h)return;e.preventDefault();e.stopPropagation();toggleFavKey(h.getAttribute('data-fav'));render();});
 $('#tonightToggle').addEventListener('click',()=>{state.picks=false;$('#picksToggle').classList.remove('on');state.tonight=!state.tonight;if(state.tonight){state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');}$('#tonightToggle').classList.toggle('on',state.tonight);render();});
 $('#thisWeekToggle').addEventListener('click',()=>{state.picks=false;$('#picksToggle').classList.remove('on');state.thisWeek=!state.thisWeek;if(state.thisWeek){state.tonight=false;$('#tonightToggle').classList.remove('on');}$('#thisWeekToggle').classList.toggle('on',state.thisWeek);render();});
+$('#auditToggle').addEventListener('click',()=>{state.audit=!state.audit;$('#auditToggle').classList.toggle('on',state.audit);render();});
 $('#resetBtn').addEventListener('click',()=>{
   state.q="";state.tonight=false;state.byHood=false;state.view="shows";state.selectedVenue=null;
   $('#searchInput').value="";
