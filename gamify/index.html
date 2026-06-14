@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Live Music Passport &middot; PortlandLive</title>
+<meta name="description" content="Earn a personal live-music history by showing up at Portland venues. A local prototype.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Oswald:wght@400;500;600;700&family=Bitter:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#4a3526; --rust:#b5562b; --rust-deep:#8f3f1f; --forest:#3d574a;
+  --water:#5b8a76; --water-d:#4a7563; --water-dd:#3f6555; --cream:#f3ead7;
+  --sky-top:#9fd3d8; --sky-mid:#bfe0d4; --sky-warm:#f0e3a8;
+  --hill-far:#8fae6b; --hill-mid:#7ba05a; --hill-near:#6b9b54;
+  --paper:#efe4ce; --line:rgba(74,53,38,.16);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  font-family:'Bitter',Georgia,serif;color:var(--ink);
+  background:var(--cream);
+  background-image:radial-gradient(circle at 18% -10%, rgba(143,174,107,.18), transparent 45%),
+                   radial-gradient(circle at 90% 8%, rgba(91,138,118,.14), transparent 40%);
+  min-height:100vh;line-height:1.5;
+  padding:0 0 calc(env(safe-area-inset-bottom) + 40px);
+}
+.wrap{max-width:560px;margin:0 auto;padding:0 18px}
+
+/* ---- header ---- */
+header{
+  background:linear-gradient(180deg,var(--forest),var(--water-dd));
+  color:var(--cream);padding:calc(env(safe-area-inset-top) + 22px) 18px 26px;
+  position:relative;overflow:hidden;
+}
+header .stamp-bg{position:absolute;right:-30px;top:-20px;font-size:170px;opacity:.10;transform:rotate(12deg);line-height:1;pointer-events:none}
+.kicker{font-family:'Oswald',sans-serif;font-weight:500;letter-spacing:.22em;text-transform:uppercase;font-size:11px;opacity:.8}
+h1{font-family:'Alfa Slab One',serif;font-weight:400;font-size:clamp(28px,8vw,40px);line-height:1.02;margin:6px 0 4px;color:var(--cream)}
+.sub{font-size:14px;opacity:.9;max-width:34ch}
+.home-link{position:absolute;top:calc(env(safe-area-inset-top) + 16px);right:16px;color:var(--cream);text-decoration:none;font-family:'Oswald',sans-serif;font-weight:600;font-size:12px;letter-spacing:.05em;opacity:.85;border:1px solid rgba(243,234,215,.35);border-radius:6px;padding:5px 9px}
+.proto-note{display:inline-block;margin-top:12px;font-family:'Oswald',sans-serif;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;background:rgba(181,86,43,.9);color:var(--cream);padding:3px 8px;border-radius:4px}
+
+/* ---- cards ---- */
+.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:18px;margin-top:18px;box-shadow:0 2px 0 rgba(74,53,38,.06)}
+.card h2{font-family:'Alfa Slab One',serif;font-weight:400;font-size:20px;margin-bottom:4px;color:var(--forest)}
+.card .h2note{font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.04em;color:rgba(74,53,38,.6);margin-bottom:14px}
+
+/* ---- buttons ---- */
+button{font-family:'Oswald',sans-serif;cursor:pointer;border:0;border-radius:9px;font-weight:600}
+.btn-primary{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;background:var(--rust);color:var(--cream);font-size:17px;letter-spacing:.03em;padding:15px;transition:background .15s}
+.btn-primary:hover{background:var(--rust-deep)}
+.btn-primary:disabled{opacity:.6;cursor:default}
+.btn-ghost{background:transparent;color:var(--rust);border:1px solid rgba(181,86,43,.4);padding:11px 14px;font-size:14px;letter-spacing:.03em}
+.btn-ghost:hover{background:rgba(181,86,43,.08)}
+
+/* ---- check-in status / result ---- */
+.status{margin-top:14px;font-size:14px;min-height:1.2em}
+.status.err{color:var(--rust-deep)}
+.match{margin-top:14px;border:1px dashed rgba(181,86,43,.55);border-radius:10px;padding:14px;background:rgba(181,86,43,.06)}
+.match .vname{font-family:'Alfa Slab One',serif;font-size:18px;color:var(--rust-deep)}
+.match .vmeta{font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.04em;color:rgba(74,53,38,.7);margin:2px 0 12px}
+.match .dist{font-weight:600;color:var(--forest)}
+
+/* ---- dev tools ---- */
+.dev{margin-top:18px;border:1px dashed rgba(74,53,38,.3);border-radius:12px;padding:14px;background:rgba(74,53,38,.04)}
+.dev .devlabel{font-family:'Oswald',sans-serif;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:rgba(74,53,38,.6);margin-bottom:9px}
+.dev .row{display:flex;gap:8px;flex-wrap:wrap}
+.dev select{flex:1 1 150px;font-family:'Oswald',sans-serif;font-size:14px;padding:10px;border-radius:8px;border:1px solid var(--line);background:var(--cream);color:var(--ink)}
+
+/* ---- passport stats ---- */
+.statgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px}
+.stat{background:var(--cream);border:1px solid var(--line);border-radius:11px;padding:14px 12px;text-align:center;position:relative;overflow:hidden}
+.stat .num{font-family:'Alfa Slab One',serif;font-size:30px;line-height:1;color:var(--rust)}
+.stat .lbl{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:rgba(74,53,38,.65);margin-top:6px}
+.stat.streak .num{color:var(--forest)}
+
+/* ---- progress / map fill ---- */
+.progress-wrap{margin-top:16px}
+.progress-top{display:flex;justify-content:space-between;align-items:baseline;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.05em;color:rgba(74,53,38,.7);margin-bottom:6px}
+.progress-top b{font-family:'Alfa Slab One',serif;font-weight:400;font-size:15px;color:var(--forest)}
+.bar{height:13px;background:rgba(74,53,38,.12);border-radius:7px;overflow:hidden}
+.bar > span{display:block;height:100%;background:linear-gradient(90deg,var(--hill-mid),var(--forest));border-radius:7px;transition:width .5s ease}
+
+/* ---- venue map (the fill-in-the-map vibe) ---- */
+.venuemap{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.vchip{font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.02em;padding:7px 11px;border-radius:20px;border:1px solid var(--line);background:var(--cream);color:rgba(74,53,38,.45);position:relative}
+.vchip.visited{background:var(--forest);color:var(--cream);border-color:var(--forest)}
+.vchip.visited::before{content:"\2713 ";font-weight:700}
+
+/* ---- neighborhoods ---- */
+.hoods{display:flex;flex-wrap:wrap;gap:7px;margin-top:6px}
+.hood{font-family:'Oswald',sans-serif;font-size:11.5px;letter-spacing:.03em;padding:5px 10px;border-radius:5px;background:rgba(143,174,107,.28);color:var(--forest);border:1px solid rgba(61,87,74,.2)}
+
+/* ---- history ---- */
+.history{list-style:none;margin-top:6px}
+.history li{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.history li:last-child{border-bottom:0}
+.history .tix{font-size:20px;line-height:1.2;flex:0 0 auto;filter:saturate(.8)}
+.history .hbody{flex:1}
+.history .hv{font-family:'Oswald',sans-serif;font-weight:600;font-size:15px;color:var(--ink)}
+.history .hm{font-size:12.5px;color:rgba(74,53,38,.65)}
+.history .hd{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:.04em;color:var(--rust);text-transform:uppercase;flex:0 0 auto;text-align:right;white-space:nowrap}
+.empty{font-size:14px;color:rgba(74,53,38,.6);font-style:italic;padding:8px 0}
+
+footer{text-align:center;font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:.06em;color:rgba(74,53,38,.5);margin-top:26px;line-height:1.7}
+footer a{color:var(--rust);text-decoration:none}
+.dangerlink{display:inline-block;margin-top:8px;color:rgba(143,30,30,.7);font-size:11px;cursor:pointer;text-decoration:underline}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="stamp-bg">&#9836;</div>
+  <a class="home-link" href="../index.html">&larr; PortlandLive</a>
+  <div class="kicker">PortlandLive</div>
+  <h1>Live Music<br>Passport</h1>
+  <p class="sub">Show up. Check in. Collect the city, one venue at a time.</p>
+  <span class="proto-note">Local Prototype &middot; Phase 1</span>
+</header>
+
+<main class="wrap">
+
+  <!-- CHECK-IN -->
+  <section class="card" id="checkinCard">
+    <h2>Check in</h2>
+    <div class="h2note">Catch a show? Tap to log it where you stand.</div>
+    <button class="btn-primary" id="checkinBtn">&#128205; Check in here</button>
+    <div class="status" id="status"></div>
+    <div id="matchSlot"></div>
+
+    <div class="dev">
+      <div class="devlabel">Dev &middot; simulate a check-in (no GPS needed)</div>
+      <div class="row">
+        <select id="simSelect"></select>
+        <button class="btn-ghost" id="simBtn">Simulate</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- PASSPORT -->
+  <section class="card" id="passportCard">
+    <h2>Your Passport</h2>
+    <div class="h2note">A collectible record of the nights you showed up.</div>
+
+    <div class="statgrid">
+      <div class="stat"><div class="num" id="stShows">0</div><div class="lbl">Shows caught</div></div>
+      <div class="stat"><div class="num" id="stVenues">0</div><div class="lbl">Venues visited</div></div>
+      <div class="stat"><div class="num" id="stHoods">0</div><div class="lbl">Neighborhoods</div></div>
+      <div class="stat streak"><div class="num" id="stStreak">0</div><div class="lbl">Week streak</div></div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-top"><span>City map filled</span><b id="progLabel">0 of 48 venues</b></div>
+      <div class="bar"><span id="progBar" style="width:0%"></span></div>
+    </div>
+
+    <div class="venuemap" id="venueMap"></div>
+  </section>
+
+  <!-- NEIGHBORHOODS -->
+  <section class="card" id="hoodCard">
+    <h2>Neighborhoods</h2>
+    <div class="h2note">Corners of Portland you've turned up in.</div>
+    <div class="hoods" id="hoodList"><span class="empty">None yet &mdash; go catch a show.</span></div>
+  </section>
+
+  <!-- HISTORY -->
+  <section class="card" id="historyCard">
+    <h2>Check-in history</h2>
+    <div class="h2note">Every stamp in the book.</div>
+    <ul class="history" id="historyList"></ul>
+    <span class="dangerlink" id="resetLink">Reset my passport (clear local data)</span>
+  </section>
+
+  <footer>
+    Prototype &middot; all data lives only in this browser (localStorage).<br>
+    Nothing is sent anywhere. <a href="../index.html">Back to PortlandLive</a>
+  </footer>
+
+</main>
+
+<script>
+"use strict";
+
+/* ============================================================
+   PortlandLive — Live Music Passport (Phase-1 prototype)
+   State: 100% browser localStorage. No backend, no accounts.
+   Phase 2 (out of scope here): persistence/gating + live-stream
+   unlock reward.
+   ============================================================ */
+
+/* ----- VENUE CHECK-IN TARGETS -----
+   The live site's venue data (shows.json) has venue names,
+   neighborhoods and addresses but no lat/long. For this prototype
+   we hardcode approximate coordinates for a handful of well-known
+   real Portland venues to act as check-in targets.
+   Neighborhood + address strings below match the live site's data.
+   PRODUCTION NOTE: a real launch needs lat/long for all ~48 venues
+   in VENUE_INFO (geocode the addresses once, store on each venue). */
+var VENUES = [
+  { name:"Aladdin Theater",     neighborhood:"Brooklyn",          address:"3017 SE Milwaukie Ave",         lat:45.49773, lng:-122.65393 },
+  { name:"Roseland Theater",    neighborhood:"Old Town/Chinatown",address:"8 NW 6th Ave",                  lat:45.52339, lng:-122.67449 },
+  { name:"Revolution Hall",     neighborhood:"Buckman",           address:"1300 SE Stark St",              lat:45.51905, lng:-122.65368 },
+  { name:"Dublin Pub",          neighborhood:"Raleigh Hills",     address:"6821 SW Beaverton-Hillsdale Hwy",lat:45.48683, lng:-122.72904 },
+  { name:"Mississippi Studios", neighborhood:"Boise/Mississippi", address:"3939 N Mississippi Ave",        lat:45.55196, lng:-122.67566 },
+  { name:"Doug Fir Lounge",     neighborhood:"Buckman",           address:"830 E Burnside St",             lat:45.52283, lng:-122.65660 },
+  { name:"Crystal Ballroom",    neighborhood:"Downtown",          address:"1332 W Burnside St",            lat:45.52264, lng:-122.68637 },
+  { name:"Wonder Ballroom",     neighborhood:"Eliot/Boise",       address:"128 NE Russell St",             lat:45.54401, lng:-122.66476 }
+];
+
+/* Total venues catalogued on the live site (shows.json) */
+var TOTAL_VENUES = 48;
+
+/* Check-in radius in metres. ~150m gives some GPS slack. */
+var CHECKIN_RADIUS_M = 150;
+
+var STORAGE_KEY = "plpassport.checkins.v1";
+
+/* ---------- storage ---------- */
+function loadCheckins(){
+  try{
+    var raw = localStorage.getItem(STORAGE_KEY);
+    var arr = raw ? JSON.parse(raw) : [];
+    return Array.isArray(arr) ? arr : [];
+  }catch(e){ return []; }
+}
+function saveCheckins(arr){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(arr)); }catch(e){}
+}
+function addCheckin(venue){
+  var arr = loadCheckins();
+  arr.push({
+    venue: venue.name,
+    neighborhood: venue.neighborhood,
+    address: venue.address,
+    ts: Date.now()
+  });
+  saveCheckins(arr);
+  return arr;
+}
+
+/* ---------- geo math (Haversine, metres) ---------- */
+function distanceMeters(lat1, lng1, lat2, lng2){
+  var R = 6371000;
+  var toRad = function(d){ return d * Math.PI / 180; };
+  var dLat = toRad(lat2 - lat1);
+  var dLng = toRad(lng2 - lng1);
+  var a = Math.sin(dLat/2)*Math.sin(dLat/2) +
+          Math.cos(toRad(lat1))*Math.cos(toRad(lat2)) *
+          Math.sin(dLng/2)*Math.sin(dLng/2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+function nearestVenue(lat, lng){
+  var best = null;
+  for(var i=0;i<VENUES.length;i++){
+    var d = distanceMeters(lat, lng, VENUES[i].lat, VENUES[i].lng);
+    if(best === null || d < best.dist){ best = { venue:VENUES[i], dist:d }; }
+  }
+  return best;
+}
+
+/* ---------- streak: consecutive ISO weeks with >=1 check-in ---------- */
+function isoWeekId(ts){
+  var d = new Date(ts);
+  d.setHours(0,0,0,0);
+  // Thursday in current week decides the year (ISO 8601)
+  d.setDate(d.getDate() + 3 - ((d.getDay() + 6) % 7));
+  var week1 = new Date(d.getFullYear(), 0, 4);
+  var weekNo = 1 + Math.round(((d - week1) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7);
+  return d.getFullYear() * 100 + weekNo;
+}
+function computeStreak(arr){
+  if(!arr.length) return 0;
+  var weeks = {};
+  arr.forEach(function(c){ weeks[isoWeekId(c.ts)] = true; });
+  var nowWk = isoWeekId(Date.now());
+  // streak counts back from this week (or last week if nothing this week yet)
+  var start = weeks[nowWk] ? nowWk : null;
+  if(start === null){
+    var prev = stepWeekBack(nowWk);
+    if(weeks[prev]) start = prev; else return 0;
+  }
+  var streak = 0, cur = start;
+  while(weeks[cur]){ streak++; cur = stepWeekBack(cur); }
+  return streak;
+}
+function stepWeekBack(wk){
+  var yr = Math.floor(wk/100), w = wk%100;
+  if(w > 1) return yr*100 + (w-1);
+  // wrap to last week of previous year (52 or 53)
+  var lastThu = new Date(yr-1, 11, 28); // Dec 28 is always in last ISO week
+  return isoWeekId(lastThu.getTime());
+}
+
+/* ---------- formatting ---------- */
+function fmtDate(ts){
+  var d = new Date(ts);
+  return d.toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});
+}
+function fmtRelative(ts){
+  var diff = Date.now() - ts, day = 86400000;
+  if(diff < day && new Date(ts).getDate() === new Date().getDate()) return "Today";
+  if(diff < 2*day) return "Yesterday";
+  return fmtDate(ts);
+}
+
+/* ---------- render ---------- */
+function render(){
+  var arr = loadCheckins();
+
+  var venueSet = {}, hoodSet = {};
+  arr.forEach(function(c){ venueSet[c.venue]=true; if(c.neighborhood) hoodSet[c.neighborhood]=true; });
+  var uniqueVenues = Object.keys(venueSet);
+  var uniqueHoods = Object.keys(hoodSet);
+
+  document.getElementById("stShows").textContent  = arr.length;
+  document.getElementById("stVenues").textContent = uniqueVenues.length;
+  document.getElementById("stHoods").textContent  = uniqueHoods.length;
+  document.getElementById("stStreak").textContent = computeStreak(arr);
+
+  var pct = Math.min(100, Math.round(uniqueVenues.length / TOTAL_VENUES * 100));
+  document.getElementById("progBar").style.width = pct + "%";
+  document.getElementById("progLabel").textContent =
+    uniqueVenues.length + " of " + TOTAL_VENUES + " venues";
+
+  // venue map chips (the hardcoded prototype targets)
+  var vmap = document.getElementById("venueMap");
+  vmap.innerHTML = "";
+  VENUES.forEach(function(v){
+    var chip = document.createElement("span");
+    chip.className = "vchip" + (venueSet[v.name] ? " visited" : "");
+    chip.textContent = v.name;
+    vmap.appendChild(chip);
+  });
+
+  // neighborhoods
+  var hoodEl = document.getElementById("hoodList");
+  if(uniqueHoods.length){
+    hoodEl.innerHTML = "";
+    uniqueHoods.sort().forEach(function(h){
+      var s = document.createElement("span");
+      s.className = "hood"; s.textContent = h;
+      hoodEl.appendChild(s);
+    });
+  }else{
+    hoodEl.innerHTML = '<span class="empty">None yet &mdash; go catch a show.</span>';
+  }
+
+  // history (newest first)
+  var hist = document.getElementById("historyList");
+  hist.innerHTML = "";
+  if(!arr.length){
+    var li = document.createElement("li");
+    li.innerHTML = '<span class="empty">No stamps yet. Your first check-in starts the book.</span>';
+    hist.appendChild(li);
+  }else{
+    arr.slice().reverse().forEach(function(c){
+      var li = document.createElement("li");
+      var tix = document.createElement("span"); tix.className="tix"; tix.textContent="\uD83C\uDFAB";
+      var body = document.createElement("div"); body.className="hbody";
+      var hv = document.createElement("div"); hv.className="hv"; hv.textContent=c.venue;
+      var hm = document.createElement("div"); hm.className="hm";
+      hm.textContent = (c.neighborhood?c.neighborhood+" \u00b7 ":"") + (c.address||"");
+      body.appendChild(hv); body.appendChild(hm);
+      var hd = document.createElement("span"); hd.className="hd"; hd.textContent=fmtRelative(c.ts);
+      li.appendChild(tix); li.appendChild(body); li.appendChild(hd);
+      hist.appendChild(li);
+    });
+  }
+}
+
+/* ---------- check-in actions ---------- */
+function setStatus(msg, isErr){
+  var s = document.getElementById("status");
+  s.textContent = msg || "";
+  s.className = "status" + (isErr ? " err" : "");
+}
+function showMatch(venue, dist){
+  var slot = document.getElementById("matchSlot");
+  slot.innerHTML = "";
+  var box = document.createElement("div"); box.className="match";
+  var name = document.createElement("div"); name.className="vname"; name.textContent=venue.name;
+  var meta = document.createElement("div"); meta.className="vmeta";
+  meta.innerHTML = venue.neighborhood + " &middot; " +
+    '<span class="dist">' + Math.round(dist) + "m away</span>";
+  var btn = document.createElement("button"); btn.className="btn-primary";
+  btn.innerHTML = "&#10003; Stamp this show";
+  btn.addEventListener("click", function(){
+    addCheckin(venue);
+    slot.innerHTML = "";
+    setStatus("Checked in at " + venue.name + ". Stamp added \uD83C\uDFAB");
+    render();
+  });
+  box.appendChild(name); box.appendChild(meta); box.appendChild(btn);
+  slot.appendChild(box);
+}
+
+function doCheckin(){
+  document.getElementById("matchSlot").innerHTML = "";
+  if(!("geolocation" in navigator)){
+    setStatus("This browser can't share location. Try the simulate button below.", true);
+    return;
+  }
+  var btn = document.getElementById("checkinBtn");
+  btn.disabled = true; setStatus("Finding you\u2026");
+  navigator.geolocation.getCurrentPosition(function(pos){
+    btn.disabled = false;
+    var best = nearestVenue(pos.coords.latitude, pos.coords.longitude);
+    if(best && best.dist <= CHECKIN_RADIUS_M){
+      setStatus("You're near a venue \u2014 confirm below.");
+      showMatch(best.venue, best.dist);
+    }else{
+      var d = best ? Math.round(best.dist) : null;
+      setStatus("No venue within " + CHECKIN_RADIUS_M + "m" +
+        (best ? " (nearest: " + best.venue.name + ", " + d + "m). Move closer or simulate below." : "."), true);
+    }
+  }, function(err){
+    btn.disabled = false;
+    if(err && err.code === 1){
+      setStatus("Location permission denied. You can still use the simulate button below.", true);
+    }else if(err && err.code === 2){
+      setStatus("Couldn't get your position. Try again or simulate below.", true);
+    }else if(err && err.code === 3){
+      setStatus("Location timed out. Try again or simulate below.", true);
+    }else{
+      setStatus("Location unavailable. Try the simulate button below.", true);
+    }
+  }, { enableHighAccuracy:true, timeout:10000, maximumAge:0 });
+}
+
+function doSimulate(){
+  var idx = document.getElementById("simSelect").value;
+  var v = VENUES[parseInt(idx,10)];
+  if(!v) return;
+  addCheckin(v);
+  setStatus("Simulated check-in at " + v.name + " \uD83C\uDFAB (dev)");
+  document.getElementById("matchSlot").innerHTML = "";
+  render();
+}
+
+function doReset(){
+  if(window.confirm("Clear all local passport data in this browser? This can't be undone.")){
+    try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
+    setStatus("");
+    document.getElementById("matchSlot").innerHTML = "";
+    render();
+  }
+}
+
+/* ---------- init ---------- */
+(function init(){
+  var sel = document.getElementById("simSelect");
+  VENUES.forEach(function(v,i){
+    var o = document.createElement("option");
+    o.value = i; o.textContent = v.name + " (" + v.neighborhood + ")";
+    sel.appendChild(o);
+  });
+  document.getElementById("checkinBtn").addEventListener("click", doCheckin);
+  document.getElementById("simBtn").addEventListener("click", doSimulate);
+  document.getElementById("resetLink").addEventListener("click", doReset);
+  render();
+})();
+</script>
+</body>
+</html>
