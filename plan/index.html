@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Who's In? &middot; PortlandLive</title>
+<meta name="description" content="Tap a show, make a plan, send it to your group chat. A local prototype.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Oswald:wght@400;500;600;700&family=Bitter:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#4a3526; --rust:#b5562b; --rust-deep:#8f3f1f; --forest:#3d574a;
+  --water:#5b8a76; --water-d:#4a7563; --water-dd:#3f6555; --cream:#f3ead7;
+  --hill-far:#8fae6b; --hill-mid:#7ba05a; --hill-near:#6b9b54;
+  --paper:#efe4ce; --line:rgba(74,53,38,.16);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  font-family:'Bitter',Georgia,serif;color:var(--ink);
+  background:var(--cream);
+  background-image:radial-gradient(circle at 15% -10%, rgba(143,174,107,.18), transparent 45%),
+                   radial-gradient(circle at 92% 6%, rgba(91,138,118,.14), transparent 40%);
+  min-height:100vh;line-height:1.5;
+  padding:0 0 calc(env(safe-area-inset-bottom) + 48px);
+}
+.wrap{max-width:560px;margin:0 auto;padding:0 16px}
+
+/* header */
+header{
+  background:linear-gradient(180deg,var(--forest),var(--water-dd));
+  color:var(--cream);padding:calc(env(safe-area-inset-top) + 22px) 18px 24px;
+  position:relative;overflow:hidden;
+}
+header .stamp-bg{position:absolute;right:-26px;top:-22px;font-size:150px;opacity:.10;transform:rotate(-10deg);line-height:1;pointer-events:none}
+.kicker{font-family:'Oswald',sans-serif;font-weight:500;letter-spacing:.22em;text-transform:uppercase;font-size:11px;opacity:.85}
+h1{font-family:'Alfa Slab One',serif;font-weight:400;font-size:clamp(27px,8vw,38px);line-height:1.04;margin:6px 0 5px;color:var(--cream)}
+.sub{font-size:14px;opacity:.92;max-width:36ch}
+.home-link{position:absolute;top:calc(env(safe-area-inset-top) + 16px);right:16px;color:var(--cream);text-decoration:none;font-family:'Oswald',sans-serif;font-weight:600;font-size:12px;letter-spacing:.05em;opacity:.85;border:1px solid rgba(243,234,215,.35);border-radius:6px;padding:5px 9px}
+.proto-note{display:inline-block;margin-top:12px;font-family:'Oswald',sans-serif;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;background:rgba(181,86,43,.92);color:var(--cream);padding:3px 8px;border-radius:4px}
+
+/* show list */
+.listhead{font-family:'Oswald',sans-serif;font-weight:600;letter-spacing:.12em;text-transform:uppercase;font-size:12px;color:rgba(74,53,38,.6);margin:22px 2px 8px}
+.show{display:flex;gap:13px;align-items:stretch;background:var(--paper);border:1px solid var(--line);border-radius:13px;padding:11px;margin-bottom:12px;box-shadow:0 2px 0 rgba(74,53,38,.05)}
+.show .thumb{flex:0 0 76px;width:76px;height:76px;border-radius:9px;object-fit:cover;background:rgba(74,53,38,.1)}
+.show .info{flex:1;min-width:0;display:flex;flex-direction:column}
+.show .stitle{font-family:'Oswald',sans-serif;font-weight:600;font-size:15.5px;color:var(--ink);line-height:1.22;margin-bottom:3px}
+.show .smeta{font-size:12.5px;color:rgba(74,53,38,.72);line-height:1.4}
+.show .smeta .dt{color:var(--rust-deep);font-weight:600}
+.show .plan-btn{margin-top:auto;align-self:flex-start;font-family:'Oswald',sans-serif;font-weight:600;font-size:13px;letter-spacing:.03em;color:var(--cream);background:var(--rust);border:0;border-radius:8px;padding:8px 14px;cursor:pointer;transition:background .15s}
+.show .plan-btn:hover{background:var(--rust-deep)}
+
+.loading,.errbox{font-size:14px;color:rgba(74,53,38,.65);font-style:italic;padding:18px 2px}
+
+/* modal / sheet */
+.overlay{position:fixed;inset:0;background:rgba(36,26,18,.55);display:none;align-items:flex-end;justify-content:center;z-index:50}
+.overlay.open{display:flex}
+.sheet{background:var(--cream);width:100%;max-width:560px;border-radius:18px 18px 0 0;padding:20px 18px calc(env(safe-area-inset-bottom) + 22px);max-height:92vh;overflow-y:auto;box-shadow:0 -8px 30px rgba(0,0,0,.25)}
+@media(min-width:600px){.overlay{align-items:center}.sheet{border-radius:16px;max-height:88vh}}
+.sheet .grip{width:42px;height:4px;border-radius:2px;background:rgba(74,53,38,.25);margin:0 auto 14px}
+.sheet h2{font-family:'Alfa Slab One',serif;font-weight:400;font-size:21px;color:var(--forest);line-height:1.1}
+.sheet .forshow{font-family:'Oswald',sans-serif;font-size:12.5px;letter-spacing:.04em;color:rgba(74,53,38,.7);margin:3px 0 16px}
+
+.fieldlabel{font-family:'Oswald',sans-serif;font-weight:600;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(74,53,38,.62);margin:14px 0 6px}
+textarea,input[type=text]{width:100%;font-family:'Bitter',Georgia,serif;font-size:15px;color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px;resize:vertical}
+textarea{min-height:118px;line-height:1.5}
+.hint{font-size:12px;color:rgba(74,53,38,.55);margin-top:5px}
+
+.actions{display:flex;flex-direction:column;gap:10px;margin-top:18px}
+.btn{display:flex;align-items:center;justify-content:center;gap:9px;font-family:'Oswald',sans-serif;font-weight:600;border:0;border-radius:11px;cursor:pointer;font-size:16px;letter-spacing:.02em;padding:14px}
+.btn-primary{background:var(--rust);color:var(--cream);transition:background .15s}
+.btn-primary:hover{background:var(--rust-deep)}
+.btn-row{display:flex;gap:10px}
+.btn-row .btn{flex:1;font-size:14px;padding:12px}
+.btn-ghost{background:transparent;color:var(--rust);border:1px solid rgba(181,86,43,.45)}
+.btn-ghost:hover{background:rgba(181,86,43,.08)}
+.btn-sms{background:var(--forest);color:var(--cream)}
+.btn-sms:hover{background:var(--water-dd)}
+.btn-close{background:transparent;color:rgba(74,53,38,.6);border:0;font-family:'Oswald',sans-serif;font-weight:600;font-size:13px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;padding:10px;margin-top:4px}
+.toast{margin-top:12px;text-align:center;font-size:13.5px;color:var(--forest);min-height:1.1em;font-weight:600}
+
+footer{text-align:center;font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:.06em;color:rgba(74,53,38,.5);margin-top:26px;line-height:1.7}
+footer a{color:var(--rust);text-decoration:none}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="stamp-bg">&#9993;</div>
+  <a class="home-link" href="../index.html">&larr; PortlandLive</a>
+  <div class="kicker">PortlandLive</div>
+  <h1>Who's in?</h1>
+  <p class="sub">Tap a show, make a plan, drop it straight into your group chat.</p>
+  <span class="proto-note">Local Prototype &middot; Share-to-Plan</span>
+</header>
+
+<main class="wrap">
+  <div class="listhead">Upcoming shows</div>
+  <div id="showList">
+    <div class="loading">Loading shows&hellip;</div>
+  </div>
+
+  <footer>
+    Prototype &middot; the plan happens in the chat you already use.<br>
+    Nothing is stored or sent by us. <a href="../index.html">Back to PortlandLive</a>
+  </footer>
+</main>
+
+<!-- share sheet -->
+<div class="overlay" id="overlay">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <div class="grip"></div>
+    <h2 id="sheetTitle">Send the invite</h2>
+    <div class="forshow" id="forShow"></div>
+
+    <div class="fieldlabel">Add a line (optional)</div>
+    <input type="text" id="extraLine" placeholder="pre-game at my place 7pm?">
+    <div class="hint">Turns a show-share into a hang. Added to the top of the message.</div>
+
+    <div class="fieldlabel">Your invite</div>
+    <textarea id="inviteText" spellcheck="true"></textarea>
+    <div class="hint">Edit freely before you send. The link points back to the show.</div>
+
+    <div class="actions">
+      <button class="btn btn-primary" id="shareBtn">&#128242; Send to a chat&hellip;</button>
+      <div class="btn-row">
+        <button class="btn btn-ghost" id="copyBtn">Copy invite</button>
+        <button class="btn btn-sms" id="smsBtn">Open Messages</button>
+      </div>
+      <div class="toast" id="toast"></div>
+      <button class="btn-close" id="closeBtn">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+/* ============================================================
+   PortlandLive — Share-to-Plan ("Who's in?") prototype
+   No backend, no accounts. The show is the excuse; the hang is
+   the point. We build a friendly invite and hand off to the
+   device share sheet (Web Share API) so it lands in the group
+   chat people already use. Desktop falls back to copy / sms:.
+   Reads real shows from ../shows.json.
+   ============================================================ */
+
+/* Production base for the "info" link back to the show.
+   Live site is published at this domain. */
+var SHOW_BASE = "https://shows.nickpeets.com/";
+
+var SHOWS = [];
+var current = null;
+
+/* ---------- load real show data ---------- */
+function loadShows(){
+  fetch("../shows.json", { cache:"no-store" })
+    .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); })
+    .then(function(data){
+      SHOWS = (data && data.shows) ? data.shows : [];
+      renderList();
+    })
+    .catch(function(e){
+      document.getElementById("showList").innerHTML =
+        '<div class="errbox">Couldn\u2019t load shows (' + e.message +
+        '). This prototype reads ../shows.json.</div>';
+    });
+}
+
+/* ---------- date formatting ---------- */
+function friendlyDate(dateStr){
+  // dateStr is "YYYY-MM-DD"; parse as local to avoid TZ shifts
+  var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateStr || "");
+  if(!m) return dateStr || "";
+  var d = new Date(parseInt(m[1],10), parseInt(m[2],10)-1, parseInt(m[3],10));
+  if(isNaN(d.getTime())) return dateStr;
+  return d.toLocaleDateString(undefined, { weekday:"short", month:"short", day:"numeric" });
+}
+
+/* ---------- escaping ---------- */
+function esc(s){
+  return String(s == null ? "" : s)
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;");
+}
+
+/* ---------- build the invite text ---------- */
+function showLink(show){
+  // Prefer a stable per-show link on the live site; fall back to venueUrl.
+  if(show.id != null) return SHOW_BASE + "#show-" + encodeURIComponent(show.id);
+  if(show.venueUrl) return show.venueUrl;
+  return SHOW_BASE;
+}
+function buildInvite(show, extra){
+  var when = friendlyDate(show.date) + (show.time ? " " + show.time : "");
+  var lines = [];
+  if(extra && extra.trim()) lines.push(extra.trim());
+  lines.push("Wanna go? " + show.title + " at " + show.venue + ", " + when + ".");
+  lines.push("Tickets/info: " + showLink(show));
+  return lines.join("\n");
+}
+
+/* ---------- render the list ---------- */
+function renderList(){
+  var host = document.getElementById("showList");
+  if(!SHOWS.length){
+    host.innerHTML = '<div class="errbox">No upcoming shows found.</div>';
+    return;
+  }
+  host.innerHTML = "";
+  SHOWS.slice(0, 12).forEach(function(show, i){
+    var row = document.createElement("div");
+    row.className = "show";
+    var img = show.imageUrl
+      ? '<img class="thumb" src="' + esc(show.imageUrl) + '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.visibility=\'hidden\'">'
+      : '<div class="thumb"></div>';
+    var when = esc(friendlyDate(show.date)) + (show.time ? " &middot; " + esc(show.time) : "");
+    var hood = show.neighborhood ? " &middot; " + esc(show.neighborhood) : "";
+    row.innerHTML =
+      img +
+      '<div class="info">' +
+        '<div class="stitle">' + esc(show.title) + '</div>' +
+        '<div class="smeta"><span class="dt">' + when + '</span><br>' +
+          esc(show.venue) + hood + '</div>' +
+        '<button class="plan-btn" data-i="' + i + '">Who\u2019s in?</button>' +
+      '</div>';
+    host.appendChild(row);
+  });
+  Array.prototype.forEach.call(host.querySelectorAll(".plan-btn"), function(b){
+    b.addEventListener("click", function(){ openSheet(SHOWS[parseInt(b.getAttribute("data-i"),10)]); });
+  });
+}
+
+/* ---------- sheet ---------- */
+function refreshInvite(){
+  if(!current) return;
+  document.getElementById("inviteText").value =
+    buildInvite(current, document.getElementById("extraLine").value);
+}
+function openSheet(show){
+  current = show;
+  document.getElementById("forShow").textContent =
+    show.title + " \u00b7 " + friendlyDate(show.date) + (show.time ? " " + show.time : "");
+  document.getElementById("extraLine").value = "";
+  setToast("");
+  refreshInvite();
+  document.getElementById("overlay").classList.add("open");
+}
+function closeSheet(){
+  document.getElementById("overlay").classList.remove("open");
+  current = null;
+}
+function setToast(msg){ document.getElementById("toast").textContent = msg || ""; }
+
+/* ---------- share / fallbacks ---------- */
+function doShare(){
+  var text = document.getElementById("inviteText").value;
+  if(navigator.share){
+    navigator.share({ title:"Wanna go?", text:text })
+      .then(function(){ setToast("Shared \u2014 finish in your chat app."); })
+      .catch(function(err){
+        if(err && err.name === "AbortError"){ setToast(""); }
+        else { setToast("Share unavailable here \u2014 try Copy or Messages."); }
+      });
+  }else{
+    setToast("No share sheet on this device \u2014 use Copy or Messages below.");
+  }
+}
+function doCopy(){
+  var text = document.getElementById("inviteText").value;
+  var done = function(){ setToast("Copied! Paste it into your group chat."); };
+  var fail = function(){ setToast("Couldn\u2019t copy automatically \u2014 select the text and copy."); };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(done).catch(function(){ legacyCopy(text)?done():fail(); });
+  }else{ legacyCopy(text)?done():fail(); }
+}
+function legacyCopy(text){
+  try{
+    var ta = document.getElementById("inviteText");
+    ta.focus(); ta.select();
+    var ok = document.execCommand("copy");
+    window.getSelection().removeAllRanges();
+    return ok;
+  }catch(e){ return false; }
+}
+function doSms(){
+  var text = document.getElementById("inviteText").value;
+  // sms: with no recipient opens the user's Messages app with body prefilled.
+  // "?&body=" form is the most broadly compatible across iOS/Android.
+  var href = "sms:?&body=" + encodeURIComponent(text);
+  window.location.href = href;
+  setToast("Opening your Messages app\u2026");
+}
+
+/* ---------- init ---------- */
+(function init(){
+  document.getElementById("extraLine").addEventListener("input", refreshInvite);
+  document.getElementById("shareBtn").addEventListener("click", doShare);
+  document.getElementById("copyBtn").addEventListener("click", doCopy);
+  document.getElementById("smsBtn").addEventListener("click", doSms);
+  document.getElementById("closeBtn").addEventListener("click", closeSheet);
+  document.getElementById("overlay").addEventListener("click", function(e){
+    if(e.target === document.getElementById("overlay")) closeSheet();
+  });
+  document.addEventListener("keydown", function(e){ if(e.key === "Escape") closeSheet(); });
+  // Hide the native-share button label nuance: keep it visible everywhere,
+  // it gracefully falls back via doShare() if navigator.share is missing.
+  loadShows();
+})();
+</script>
+</body>
+</html>
