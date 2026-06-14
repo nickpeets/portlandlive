@@ -379,6 +379,37 @@ body{
   .audit-bucket{margin:10px 0;border-top:1px solid rgba(247,201,72,.25);padding-top:8px}
   .audit-bucket h3{margin:0 0 4px;font-size:14px;text-transform:uppercase;letter-spacing:.04em}
   .audit-bucket.b-music h3{color:#7ee0a1}.audit-bucket.b-comedy h3{color:#9ad0db}.audit-bucket.b-trivia h3{color:#f59e9e}.audit-bucket.b-other h3{color:#c9b6ff}
+/* ===== WHO'S IN? share-to-plan (ported from /plan/) ===== */
+.plan-btn{flex:0 0 auto;border:0;cursor:pointer;font-family:'Oswald',sans-serif;font-weight:600;text-transform:uppercase;letter-spacing:.05em;font-size:11px;color:var(--rust);background:transparent;border:1px solid rgba(181,86,43,.5);border-radius:999px;padding:6px 12px;white-space:nowrap;transition:background .15s,color .15s}
+.plan-btn:hover{background:var(--rust);color:#fff}
+.list--a .s-foot .plan-btn{align-self:flex-end}
+.list--b .s-foot .plan-btn{order:2}
+.scard.wi-flash{animation:wiFlash 2.2s ease-out}
+@keyframes wiFlash{0%{box-shadow:0 0 0 3px var(--rust),0 6px 14px rgba(20,40,30,.18)}12%{box-shadow:0 0 0 3px var(--rust),0 0 22px 4px rgba(181,86,43,.55)}100%{box-shadow:0 6px 14px rgba(20,40,30,.18)}}
+.wi-overlay{position:fixed;inset:0;background:rgba(36,26,18,.55);display:none;align-items:flex-end;justify-content:center;z-index:60}
+.wi-overlay.open{display:flex}
+.wi-sheet{background:var(--cream);width:100%;max-width:560px;border-radius:18px 18px 0 0;padding:20px 18px calc(env(safe-area-inset-bottom) + 22px);max-height:92vh;overflow-y:auto;box-shadow:0 -8px 30px rgba(0,0,0,.25)}
+@media(min-width:600px){.wi-overlay{align-items:center}.wi-sheet{border-radius:16px;max-height:88vh}}
+.wi-sheet .wi-grip{width:42px;height:4px;border-radius:2px;background:rgba(74,53,38,.25);margin:0 auto 14px}
+.wi-sheet h2{font-family:'Alfa Slab One',serif;font-weight:400;font-size:21px;color:var(--forest);line-height:1.1}
+.wi-sheet .wi-forshow{font-family:'Oswald',sans-serif;font-size:12.5px;letter-spacing:.04em;color:rgba(74,53,38,.7);margin:3px 0 16px}
+.wi-sheet .wi-label{font-family:'Oswald',sans-serif;font-weight:600;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(74,53,38,.62);margin:14px 0 6px}
+.wi-sheet textarea,.wi-sheet input[type=text]{width:100%;font-family:'Bitter',Georgia,serif;font-size:15px;color:var(--ink);background:#fff;border:1px solid var(--line,rgba(74,53,38,.16));border-radius:10px;padding:12px;resize:vertical}
+.wi-sheet textarea{min-height:118px;line-height:1.5}
+.wi-sheet .wi-hint{font-size:12px;color:rgba(74,53,38,.55);margin-top:5px}
+.wi-actions{display:flex;flex-direction:column;gap:10px;margin-top:18px}
+.wi-btn{display:flex;align-items:center;justify-content:center;gap:9px;font-family:'Oswald',sans-serif;font-weight:600;border:0;border-radius:11px;cursor:pointer;font-size:16px;letter-spacing:.02em;padding:14px}
+.wi-btn-primary{background:var(--rust);color:var(--cream);transition:background .15s}
+.wi-btn-primary:hover{background:var(--rust-deep)}
+.wi-btn-row{display:flex;gap:10px}
+.wi-btn-row .wi-btn{flex:1;font-size:14px;padding:12px}
+.wi-btn-ghost{background:transparent;color:var(--rust);border:1px solid rgba(181,86,43,.45)}
+.wi-btn-ghost:hover{background:rgba(181,86,43,.08)}
+.wi-btn-sms{background:var(--forest);color:var(--cream)}
+.wi-btn-sms:hover{background:var(--water-dd)}
+.wi-btn-close{background:transparent;color:rgba(74,53,38,.6);border:0;font-family:'Oswald',sans-serif;font-weight:600;font-size:13px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;padding:10px;margin-top:4px}
+.wi-toast{margin-top:12px;text-align:center;font-size:13.5px;color:var(--forest);min-height:1.1em;font-weight:600}
+@media (max-width:600px){.plan-btn{padding:6px 10px;font-size:10.5px}}
   .audit-bucket ol{margin:4px 0 0;padding-left:22px;max-height:240px;overflow:auto}
   .audit-bucket li{margin:1px 0;word-break:break-word}
   </style>
@@ -675,6 +706,8 @@ async function load(){
       $('#dataStamp').textContent = "Updated " + d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
     }
     render();
+      // deep-link: if arriving at #show-{id}, scroll to + highlight that show
+      if(location.hash) setTimeout(wiDeepLink, 60);
   }catch(e){
     $('#results').innerHTML = '<div class="empty"><h2>Couldn\'t load listings</h2><p>shows.json failed to load. If you\'re opening this file directly, run it through a local server.</p></div>';
     $('#resultCount').textContent = "";
@@ -926,7 +959,7 @@ function listOf(items, showDate){
   const eff = state.picks ? 'b' : state.cardLayout;
   l.className = 'list ' + (eff==='b' ? 'list--b' : 'list--a');
   items.forEach(s=>{
-    const c=document.createElement('div'); c.className='scard';
+    const c=document.createElement('div'); c.className='scard'; if(s.id!=null){ c.id='show-'+s.id; c.dataset.showid=s.id; }
     const media = smediaFor(s);
     if(!media) c.classList.add('no-media');
     const dateBit = showDate ? `<span class="s-date rdate">${ordinalDate(s.date)}</span>` : '';
@@ -945,7 +978,7 @@ function listOf(items, showDate){
         +   `<div class="s-when">${dateBit||''}${(dateBit&&timeBit)?' \u00b7 ':''}${timeBit||''}</div>`
         +   `<div class="s-title">${titleHtml}</div>`
         +   `<div class="s-sub">${venueLink}${nb}</div>`
-        +   `<div class="s-foot">${listenBtn(s.title)||'<span></span>'}${heartBtn(s)}</div>`
+        +   `<div class="s-foot">${listenBtn(s.title)||'<span></span>'}${planBtn(s)}${heartBtn(s)}</div>`
         + `</div>`;
     } else {
       // HORIZONTAL: image left, body middle, listen+heart right
@@ -954,7 +987,7 @@ function listOf(items, showDate){
         +   `<div class="s-title">${titleHtml}</div>`
         +   `<div class="s-sub">${timeBit}${sep1}${dateBit}${(dateBit||timeBit)?`<span class="rdot">\u00b7</span>`:''}${venueLink}${nb}</div>`
         + `</div>`
-        + `<div class="s-foot">${heartBtn(s)}${listenBtn(s.title)}</div>`;
+        + `<div class="s-foot">${heartBtn(s)}${listenBtn(s.title)}${planBtn(s)}</div>`;
     }
     l.appendChild(c);
   });
@@ -1037,6 +1070,140 @@ $('#resetBtn').addEventListener('click',()=>{
     setToggleDates();
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('.listen');if(b){e.preventDefault();openSample(b.getAttribute('data-title'));return;}var o=document.getElementById('smov');if(o&&e.target===o)closeSample();});
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeSample();});
+/* ============================================================
+   WHO'S IN? share-to-plan — ported from /plan/index.html.
+   The show is the excuse; the hang is the point. Build a
+   friendly editable invite and hand off to the device share
+   sheet (Web Share API). Desktop falls back to copy / sms:.
+   Invite links deep-link back to a specific show via #show-{id}.
+   ============================================================ */
+var WI_SHOW_BASE = "https://shows.nickpeets.com/";
+var wiCurrent = null;
+
+function planBtn(s){
+  if(s.id==null) return '';
+  return '<button type="button" class="plan-btn" data-plan="'+esc(String(s.id))+'" aria-label="Make a plan for this show">Who\u2019s in?</button>';
+}
+function wiShowById(id){
+  return state.shows.find(function(x){ return String(x.id) === String(id); }) || null;
+}
+function wiFriendlyDate(iso){
+  try{ return fmtShort(iso); }catch(e){ return iso || ''; }
+}
+function wiShowLink(show){
+  if(show.id != null) return WI_SHOW_BASE + "#show-" + encodeURIComponent(show.id);
+  if(show.venueUrl) return show.venueUrl;
+  return WI_SHOW_BASE;
+}
+function wiBuildInvite(show, extra){
+  var when = wiFriendlyDate(show.date) + (show.time ? " " + show.time : "");
+  var lines = [];
+  if(extra && extra.trim()) lines.push(extra.trim());
+  lines.push("Wanna go? " + show.title + " at " + show.venue + ", " + when + ".");
+  lines.push("Tickets/info: " + wiShowLink(show));
+  return lines.join("\n");
+}
+function wiSetToast(m){ var t=document.getElementById("wiToast"); if(t) t.textContent = m || ""; }
+function wiRefresh(){
+  if(!wiCurrent) return;
+  document.getElementById("wiInviteText").value =
+    wiBuildInvite(wiCurrent, document.getElementById("wiExtraLine").value);
+}
+function wiOpen(show){
+  if(!show) return;
+  wiCurrent = show;
+  document.getElementById("wiForShow").textContent =
+    show.title + " \u00b7 " + wiFriendlyDate(show.date) + (show.time ? " " + show.time : "");
+  document.getElementById("wiExtraLine").value = "";
+  wiSetToast("");
+  wiRefresh();
+  document.getElementById("wiOverlay").classList.add("open");
+}
+function wiClose(){
+  var o=document.getElementById("wiOverlay");
+  if(o) o.classList.remove("open");
+  wiCurrent = null;
+}
+function wiShare(){
+  var text = document.getElementById("wiInviteText").value;
+  if(navigator.share){
+    navigator.share({ title:"Wanna go?", text:text })
+      .then(function(){ wiSetToast("Shared \u2014 finish in your chat app."); })
+      .catch(function(err){
+        if(err && err.name === "AbortError"){ wiSetToast(""); }
+        else { wiSetToast("Share unavailable here \u2014 try Copy or Messages."); }
+      });
+  }else{
+    wiSetToast("No share sheet on this device \u2014 use Copy or Messages below.");
+  }
+}
+function wiLegacyCopy(){
+  try{
+    var ta = document.getElementById("wiInviteText");
+    ta.focus(); ta.select();
+    var ok = document.execCommand("copy");
+    window.getSelection().removeAllRanges();
+    return ok;
+  }catch(e){ return false; }
+}
+function wiCopy(){
+  var text = document.getElementById("wiInviteText").value;
+  var done = function(){ wiSetToast("Copied! Paste it into your group chat."); };
+  var fail = function(){ wiSetToast("Couldn\u2019t copy automatically \u2014 select the text and copy."); };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(done).catch(function(){ wiLegacyCopy()?done():fail(); });
+  }else{ wiLegacyCopy()?done():fail(); }
+}
+function wiSms(){
+  var text = document.getElementById("wiInviteText").value;
+  var href = "sms:?&body=" + encodeURIComponent(text);
+  window.location.href = href;
+  wiSetToast("Opening your Messages app\u2026");
+}
+/* delegated open: plan button lives in every rendered row, all views */
+$('#results').addEventListener('click', function(e){
+  var b = e.target.closest && e.target.closest('.plan-btn');
+  if(!b) return;
+  e.preventDefault(); e.stopPropagation();
+  wiOpen(wiShowById(b.getAttribute('data-plan')));
+});
+function wiInit(){
+  if(!document.getElementById("wiOverlay")){ document.addEventListener("DOMContentLoaded", wiInit); return; }
+  var ex=document.getElementById("wiExtraLine"); if(ex) ex.addEventListener("input", wiRefresh);
+  var sb=document.getElementById("wiShareBtn"); if(sb) sb.addEventListener("click", wiShare);
+  var cb=document.getElementById("wiCopyBtn"); if(cb) cb.addEventListener("click", wiCopy);
+  var mb=document.getElementById("wiSmsBtn"); if(mb) mb.addEventListener("click", wiSms);
+  var xb=document.getElementById("wiCloseBtn"); if(xb) xb.addEventListener("click", wiClose);
+  var ov=document.getElementById("wiOverlay");
+  if(ov) ov.addEventListener("click", function(e){ if(e.target===ov) wiClose(); });
+  document.addEventListener("keydown", function(e){ if(e.key==="Escape") wiClose(); });
+}
+wiInit();
+
+/* ---- DEEP-LINK: a friend taps shows.nickpeets.com/#show-{id} and should
+   land ON that show. Scroll it into view + briefly highlight. If the show
+   has passed / aged out of the listings, fail gracefully (no scroll, no error). */
+function wiDeepLink(){
+  var m = /^#show-(.+)$/.exec(location.hash || "");
+  if(!m) return;
+  var id = decodeURIComponent(m[1]);
+  var el = document.getElementById("show-" + id);
+  if(!el){
+    // Linked show isn't currently rendered (passed, filtered, or aged out).
+    var exists = wiShowById(id);
+    var bar = $('#resultCount');
+    if(!exists && bar){ bar.textContent = bar.textContent + " \u00b7 that shared show has passed"; }
+    return;
+  }
+  try{ el.scrollIntoView({block:"center", behavior:"smooth"}); }
+  catch(e){ el.scrollIntoView(); }
+  el.classList.remove("wi-flash");
+  void el.offsetWidth; // reflow so the animation can replay
+  el.classList.add("wi-flash");
+  setTimeout(function(){ el.classList.remove("wi-flash"); }, 2400);
+}
+window.addEventListener("hashchange", wiDeepLink);
+
 load();
 </script>
 <style>
@@ -1049,6 +1216,29 @@ load();
 @keyframes notefloat{0%{opacity:0;transform:translate(0,4px)}30%{opacity:1}100%{opacity:0;transform:translate(8px,-14px)}}
 @media(prefers-reduced-motion:reduce){.cloud,.bird,.note{animation:none}}
 </style>
+<!-- WHO'S IN? share sheet (ported from /plan/) -->
+<div class="wi-overlay" id="wiOverlay">
+<div class="wi-sheet" role="dialog" aria-modal="true" aria-labelledby="wiTitle">
+<div class="wi-grip"></div>
+<h2 id="wiTitle">Send the invite</h2>
+<div class="wi-forshow" id="wiForShow"></div>
+<div class="wi-label">Add a line (optional)</div>
+<input type="text" id="wiExtraLine" placeholder="pre-game at my place 7pm?">
+<div class="wi-hint">Turns a show-share into a hang. Added to the top of the message.</div>
+<div class="wi-label">Your invite</div>
+<textarea id="wiInviteText" spellcheck="true"></textarea>
+<div class="wi-hint">Edit freely before you send. The link points back to the show.</div>
+<div class="wi-actions">
+<button class="wi-btn wi-btn-primary" id="wiShareBtn">&#128242; Send to a chat…</button>
+<div class="wi-btn-row">
+<button class="wi-btn wi-btn-ghost" id="wiCopyBtn">Copy invite</button>
+<button class="wi-btn wi-btn-sms" id="wiSmsBtn">Open Messages</button>
+</div>
+<div class="wi-toast" id="wiToast"></div>
+<button class="wi-btn-close" id="wiCloseBtn">Close</button>
+</div>
+</div>
+</div>
 <div class="ov" id="smov"><div class="modal" id="smmodal"></div></div>
 </body>
 </html>
