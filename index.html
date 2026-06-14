@@ -38,7 +38,7 @@ body{
 .hero{
   position:relative;
   width:100%;
-  min-height:520px;
+  min-height:260px;
   overflow:hidden;
   background:linear-gradient(180deg,var(--sky-top) 0%,var(--sky-mid) 38%,var(--sky-warm) 72%,#e9dd9a 100%);
 }
@@ -71,14 +71,6 @@ body{
 }
 @media(max-width:640px){.starts{transform:none}}
 
-/* watermark logo behind bird */
-.watermark{
-  position:absolute;z-index:2;
-  top:120px;left:50%;transform:translateX(-50%);
-  width:190px;height:190px;opacity:.16;
-  pointer-events:none;
-}
-.watermark img{width:100%;height:100%;object-fit:contain}
 
 /* ---------- CONTROL BAR (the "water") ---------- */
 .controls{
@@ -310,7 +302,7 @@ body{
 .foot-bar .brand span{font-family:'Alfa Slab One';font-size:17px;color:var(--cream)}
 
 @media(max-width:640px){
-  .hero{min-height:400px}
+  .hero{min-height:200px}
   .hero-inner{padding-top:34px}
   .statusbar{font-size:11px}
 }
@@ -395,7 +387,7 @@ body{
 
 <header class="hero">
   <!-- Illustrated scene -->
-  <svg class="scene" viewBox="0 0 1440 520" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <svg class="scene" viewBox="0 150 1440 300" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
     <defs>
       <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
         <stop offset="0" stop-color="#9fd3d8"/>
@@ -414,7 +406,7 @@ body{
     <circle cx="720" cy="300" r="230" fill="url(#sun)"/>
 
     <!-- clouds -->
-    <g fill="#ffffff" opacity="0.85">
+    <g fill="#ffffff" opacity="0.85" transform="translate(0,180)">
       <g class="cloud" style="--cd:0s">
         <ellipse cx="250" cy="70" rx="58" ry="22"/><ellipse cx="300" cy="60" rx="44" ry="26"/><ellipse cx="200" cy="78" rx="40" ry="18"/>
       </g>
@@ -469,7 +461,6 @@ body{
     </g>
   </svg>
 
-  <div class="watermark"><img src="/logo_trans.png" alt=""></div>
 
   <div class="hero-inner">
     <div class="eyebrow">Your search for</div>
