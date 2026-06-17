@@ -12,7 +12,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install deps
-        run: pip install requests beautifulsoup4
+        run: pip install requests beautifulsoup4 python-dateutil
       - name: Scrape venue calendars
         continue-on-error: true
         run: python3 scrape_venues.py
