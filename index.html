@@ -530,6 +530,10 @@ body{
         <span class="toggle" id="byHoodToggle"></span>
         <span>By Neighborhood</span>
       </label>
+            <label class="pill" title="Browse all venues we cover (coverage directory)">
+            <span class="toggle" id="venuesToggle"></span>
+            <span>Venues</span>
+            </label>
       <label class="pill my-shows" title="Show only shows you have favorited">
         <span class="toggle" id="myShowsToggle"></span>
         <span>My Shows</span>
@@ -821,7 +825,7 @@ function auditPanelHtml(){
   return h;
 }
 function render(){
-  if(state.view === "venues" && state.selectedVenue){ renderVenues(); return; }
+  if(state.view === "venues"){ renderVenues(); return; }
   const list = filtered();
   $('#resultCount').textContent = list.length
     ? `${list.length} show${list.length>1?'s':''} found`
@@ -923,13 +927,34 @@ function renderVenues(){
       + `<h2 class="venue-name">${esc(state.selectedVenue)}</h2>`
       + `<div class="venue-info">${esc(first.neighborhood||'')}${first.address?' \u00b7 '+esc(first.address):''}</div>`;
     wrap.appendChild(head);
-    $('#backToVenues').addEventListener('click',(e)=>{e.preventDefault();state.selectedVenue=null;state.view='shows';render();});
+    $('#backToVenues').addEventListener('click',(e)=>{e.preventDefault();state.selectedVenue=null;state.view='shows';$('#venuesToggle').classList.remove('on');render();});
     if(vshows.length){
       wrap.appendChild(listOf(vshows, true));
     } else {
       const em=document.createElement('div'); em.className='empty'; em.innerHTML='<h2>No Results Found.</h2>'; wrap.appendChild(em);
     }
     return;
+  } else {
+    const dir={};
+    state.shows.filter(x=>x.venue && x.date>=todayPacific).forEach(x=>{
+      if(!dir[x.venue]) dir[x.venue]={name:x.venue,neighborhood:x.neighborhood||"",count:0};
+      dir[x.venue].count++;
+      if(!dir[x.venue].neighborhood && x.neighborhood) dir[x.venue].neighborhood=x.neighborhood;
+    });
+    let dlist=Object.values(dir);
+    if(q) dlist=dlist.filter(v=>(v.name+" "+v.neighborhood).toLowerCase().includes(q));
+    dlist.sort((a,b)=>a.name.localeCompare(b.name));
+    $("#resultCount").textContent = dlist.length ? `${dlist.length} venue${dlist.length>1?"s":""}` : "No venues";
+    const dhead=document.createElement("div"); dhead.className="venue-header";
+    dhead.innerHTML = `<h2 class=\"venue-name\">All Venues</h2><div class=\"venue-info\">${dlist.length} venue${dlist.length>1?"s":""} with upcoming shows \u00b7 tap a venue to view its shows</div>`;
+    wrap.appendChild(dhead);
+    if(dlist.length){
+      const box=document.createElement("div"); box.className="venue-chips";
+      box.innerHTML = dlist.map(v=>`<button type=\"button\" class=\"venue-chip\" data-venue=\"${esc(v.name)}\" title=\"View ${esc(v.name)} venue page\"><span class=\"vc-name\">${esc(v.name)}</span>${v.neighborhood?`<span class=\"vc-hood\">${esc(v.neighborhood)}</span>`:""}<span class=\"vc-count\">${v.count} show${v.count>1?"s":""}</span></button>`).join("");
+      wrap.appendChild(box);
+    } else {
+      const em=document.createElement("div"); em.className="empty"; em.innerHTML="<h2>No venues found.</h2>"; wrap.appendChild(em);
+    }
   }
 }
     function tileColor(s){
@@ -1027,6 +1052,7 @@ function favKey(s){ return (s.venue||'') + '|' + (s.date||'') + '|' + (s.title||
 /* events */
 $('#searchInput').addEventListener('input',e=>{state.q=e.target.value;render();});
 $('#byHoodToggle').addEventListener('click',()=>{state.byHood=!state.byHood;$('#byHoodToggle').classList.toggle('on',state.byHood);render();});
+        $('#venuesToggle').addEventListener('click',()=>{const on=state.view!=='venues';state.view=on?'venues':'shows';state.selectedVenue=null;if(on){state.picks=false;$('#picksToggle').classList.remove('on');state.byHood=false;$('#byHoodToggle').classList.remove('on');state.myShows=false;$('#myShowsToggle').classList.remove('on');state.tonight=false;$('#tonightToggle').classList.remove('on');state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');state.q='';$('#searchInput').value='';}$('#venuesToggle').classList.toggle('on',on);render();});
       $('#myShowsToggle').addEventListener('click',e=>{state.picks=false;$('#picksToggle').classList.remove('on');state.myShows=!state.myShows;e.currentTarget.classList.toggle('on',state.myShows);render();});
         // Picks of the Week: dominant filter. Turning it on switches to the curated, vertical showcase
         // and clears the Tonight / This Week / My Shows / Venues filters so only picks are shown.
