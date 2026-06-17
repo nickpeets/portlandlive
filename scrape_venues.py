@@ -1636,23 +1636,132 @@ def _cascades_unesc(v):
     return clean(v)
 
 
+def _cascades_flight(html):
+    """Reassemble the Next.js RSC stream: concat all self.__next_f.push([N,"..."])
+    string chunks into one decoded 'flight' text. Robust (no regex field-plucking)."""
+    chunks = []
+    for m in re.finditer(r'self\.__next_f\.push\(\[\d+,', html):
+        j = m.end()
+        if j >= len(html) or html[j] != '"':
+            continue
+        k = j + 1
+        buf = ['"']
+        while k < len(html):
+            c = html[k]
+            buf.append(c)
+            if c == '\\':
+                if k + 1 < len(html):
+                    buf.append(html[k + 1])
+                k += 2
+                continue
+            if c == '"':
+                break
+            k += 1
+        try:
+            chunks.append(json.loads(''.join(buf)))
+        except Exception:
+            pass
+    return ''.join(chunks)
+
+
+def _cascades_enclosing_obj(text, pos):
+    """Return the smallest balanced {...} substring enclosing position `pos`."""
+    i = pos
+    depth = 0
+    while i >= 0:
+        c = text[i]
+        if c == '}':
+            depth += 1
+        elif c == '{':
+            if depth == 0:
+                break
+            depth -= 1
+        i -= 1
+    if i < 0:
+        return None
+    start = i
+    depth = 0
+    instr = False
+    esc = False
+    j = start
+    while j < len(text):
+        c = text[j]
+        if esc:
+            esc = False
+        elif c == '\\':
+            esc = True
+        elif c == '"':
+            instr = not instr
+        elif not instr:
+            if c == '{':
+                depth += 1
+            elif c == '}':
+                depth -= 1
+                if depth == 0:
+                    return text[start:j + 1]
+        j += 1
+    return None
+
+
+def _cascades_image_map(flight):
+    """Build {image_id: images[]} by json.loads-ing each wrapper object that holds
+    an 'images' array and an 'id'. The id equals the concert's discovery_id."""
+    img_map = {}
+    for m in re.finditer(r'"images":\[', flight):
+        sub = _cascades_enclosing_obj(flight, m.start())
+        if not sub:
+            continue
+        try:
+            obj = json.loads(sub)
+        except Exception:
+            continue
+        if isinstance(obj, dict) and obj.get('id') and isinstance(obj.get('images'), list):
+            img_map.setdefault(obj['id'], obj['images'])
+    return img_map
+
+
+def _cascades_pick_image(images):
+    """Pick TABLET_LANDSCAPE_LARGE_16_9; fall back to any other *_16_9; then ''."""
+    by_id = {}
+    for v in images:
+        if isinstance(v, dict) and v.get('identifier'):
+            by_id.setdefault(v['identifier'], v.get('url') or '')
+    if 'TABLET_LANDSCAPE_LARGE_16_9' in by_id:
+        return by_id['TABLET_LANDSCAPE_LARGE_16_9']
+    for ident, url in by_id.items():
+        if ident.endswith('16_9') and url:
+            return url
+    return ''
+
+
 def parse_cascades(html, today):
-    """Parse Live Nation venue page (__next_f RSC payload) for Cascades Amphitheater."""
+    """Parse Live Nation venue page (__next_f RSC payload) for Cascades Amphitheater.
+
+    Images are joined deterministically: each concert object carries a `discovery_id`,
+    and the RSC payload holds image-wrapper objects keyed by an `id` that equals that
+    discovery_id. We reassemble the RSC chunks, json.loads the image wrappers, and look
+    up each concert's poster by discovery_id (no fuzzy/slug/name matching).
+    """
     idxs = [m.start() for m in re.finditer(r'\\"start_date_local\\"', html)]
     if not idxs:
         raise RuntimeError("Cascades: no event data (start_date_local) found in page HTML")
     bounds = idxs + [len(html)]
+    # Robust, JSON-parsed image collection keyed by discovery_id (image wrapper 'id').
+    flight = _cascades_flight(html)
+    img_map = _cascades_image_map(flight)
     out, seen = [], set()
     for k in range(len(idxs)):
         seg = html[max(0, idxs[k] - 1500):bounds[k + 1]]
         name = _cascades_unesc(_cascades_field("name", seg))
         date = _cascades_field("start_date_local", seg)   # YYYY-MM-DD, local
-        tl = _cascades_field("start_time_local", seg)      # HH:MM:SS, 24h local
+        tl   = _cascades_field("start_time_local", seg)   # HH:MM:SS, 24h local
         slug = _cascades_field("slug", seg)
         if not name or not date or not tl:
             continue
         low = name.lower()
-        if "season ticket" in low or "season pass" in low or "parking" in low:
+        # Non-concert / upsell entries: parking, VIP packages, season tickets.
+        if ("season ticket" in low or "season pass" in low or "parking" in low
+                or "premium season" in low or "not a concert" in low):
             continue
         if date < today.isoformat():
             continue
@@ -1662,20 +1771,11 @@ def parse_cascades(html, today):
             continue
         tm = to_time("%d:%02d%s" % (hh % 12 or 12, mm, "am" if hh < 12 else "pm"))
         title = re.sub(r"\s+", " ", re.sub(r"[\u2010-\u2015]", "-", name)).strip()
-        # Each event's own hero image sits immediately BEFORE its start_date_local
-        # marker; the related-events carousel AFTER the marker repeats other shows'
-        # images. Anchor to THIS event: last hero in [idxs[k]-1500, idxs[k]); for the
-        # first event (none before) fall forward into [idxs[k], bounds[k+1]).
-        _imgre = r'(https://s1\.ticketm\.net[^\\"]*TABLET_LANDSCAPE_LARGE_16_9[^\\"]*)'
-        _before = re.findall(_imgre, html[max(0, idxs[k] - 1500):idxs[k]])
-        if _before:
-            img = _before[-1]
-        else:
-            _after = re.search(_imgre, html[idxs[k]:bounds[k + 1]])
-            img = _after.group(1) if _after else ""
-        # Live Nation event URLs need the id: /event/<discovery_id>/<slug>.
-        # A slug-only /event/<slug> URL 404s. discovery_id is in this event's object.
         disc = _cascades_field("discovery_id", seg)
+        # Deterministic image join: concert.discovery_id == image wrapper.id
+        img = ""
+        if disc and disc in img_map:
+            img = _cascades_pick_image(img_map[disc])
         if disc and slug:
             url = "https://www.livenation.com/event/" + disc + "/" + slug
         else:
@@ -1689,7 +1789,6 @@ def parse_cascades(html, today):
                     "address": "17200 NE Delfel Rd, Ridgefield, WA 98642",
                     "date": date, "time": tm, "venueUrl": url, "imageUrl": img})
     return out
-
 
 
 def parse_novapdx(html, today):
