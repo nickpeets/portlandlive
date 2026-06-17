@@ -1662,9 +1662,24 @@ def parse_cascades(html, today):
             continue
         tm = to_time("%d:%02d%s" % (hh % 12 or 12, mm, "am" if hh < 12 else "pm"))
         title = re.sub(r"\s+", " ", re.sub(r"[\u2010-\u2015]", "-", name)).strip()
-        im = re.search(r'(https://s1\.ticketm\.net[^\\"]*TABLET_LANDSCAPE_LARGE_16_9[^\\"]*)', seg)
-        img = im.group(1) if im else ""
-        url = ("https://www.livenation.com/event/" + slug) if slug else _CASCADES_URL
+        # Each event's own hero image sits immediately BEFORE its start_date_local
+        # marker; the related-events carousel AFTER the marker repeats other shows'
+        # images. Anchor to THIS event: last hero in [idxs[k]-1500, idxs[k]); for the
+        # first event (none before) fall forward into [idxs[k], bounds[k+1]).
+        _imgre = r'(https://s1\.ticketm\.net[^\\"]*TABLET_LANDSCAPE_LARGE_16_9[^\\"]*)'
+        _before = re.findall(_imgre, html[max(0, idxs[k] - 1500):idxs[k]])
+        if _before:
+            img = _before[-1]
+        else:
+            _after = re.search(_imgre, html[idxs[k]:bounds[k + 1]])
+            img = _after.group(1) if _after else ""
+        # Live Nation event URLs need the id: /event/<discovery_id>/<slug>.
+        # A slug-only /event/<slug> URL 404s. discovery_id is in this event's object.
+        disc = _cascades_field("discovery_id", seg)
+        if disc and slug:
+            url = "https://www.livenation.com/event/" + disc + "/" + slug
+        else:
+            url = _CASCADES_URL
         key = (date, title.lower())
         if key in seen:
             continue
