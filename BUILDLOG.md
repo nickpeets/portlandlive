@@ -1,0 +1,28 @@
+# Build Log
+
+Project history for **portlandlive**, newest first. Append a new entry at the top of the Changelog for each change.
+
+## Changelog
+
+### a3ba245 — Search from venue page exits venue + searches all shows
+Search initiated while viewing a venue now exits the venue and searches across all shows (mirror of the `openVenue` clear-search behavior). Fixes the Havalina "no results" dead-end.
+
+### dacb4cf — Restored Venues directory toggle
+Restored the Venues directory toggle: an alphabetical list of all 48 venues with neighborhood and show count; click a venue to open its detail view. For coverage auditing.
+
+### 1b12762 — Added python-dateutil to workflow deps
+Added `python-dateutil` to the workflow dependencies (fixes Starday Tavern 0-shows). The daily GitHub Action runs on a clean ubuntu runner, isolated from the broken codespace conda env (which has a requests/urllib3 break).
+
+### 9bf3862 — Cascade images + expanded lineup
+Cascade images now use a deterministic `image.id === discovery_id` join, done via RSC-chunk reassembly and `json.loads` (NOT regex). Expanded Cascade from 8 to 12 concerts (added Riley Green; Rob Zombie/Manson; Mötley/Carnival of Sins; uicideboy uicideboy; filtered out Season Tickets). Surgical patch to `shows.json`; fix code in `scrape_venues.py` for future runs.
+
+### dc1d4e3 — Cascade per-event image scoping + Live Nation URLs
+Cascade: per-event image scoping plus Live Nation `/event/<discovery_id>/<slug>` URLs (fixed 404 ticket links).
+
+## Open Items
+
+- **⚠ Audit (dev) toggle still live / user-visible** — remove once the classifier audit is done.
+- **Hatfield Hall 0-shows** — undiagnosed.
+- **Kelly's Olympian anti-bot block** — challenge 202.
+- **Codespace Python env broken** — requests/urllib3.
+- **Coverage audit pending** — Venues directory vs. rated venue list.
