@@ -30,3 +30,4 @@ Cascade: per-event image scoping plus Live Nation `/event/<discovery_id>/<slug>`
 - **Kelly's Olympian anti-bot block** — challenge 202.
 - **Codespace Python env broken** — requests/urllib3.
 - **Coverage audit pending** — Venues directory vs. rated venue list.
+- **Venues toggle reset-desync** — when the Venues directory toggle is ON and the user clicks the in-page Refresh/Reset button (not browser refresh), the listing reverts to today's shows BUT the Venues toggle pill stays visually ON; the pill active state is not cleared when reset returns to the default show list. Fix: the reset/refresh handler should clear the Venues view flag (state.venues) and un-highlight the pill so toggle state matches the view shown.
