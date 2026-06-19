@@ -365,6 +365,14 @@ body{
 }
 
     /* Venue-page chips: tappable venue links surfaced above results on venue-name search match */
+    /* favorites: chip+heart pairing and the grouped My Favorites view */
+    .venue-chip-wrap{display:inline-flex;align-items:center;gap:4px}
+    .fav-group{margin:0 0 18px}
+    .fav-group-head{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--rust);margin:18px 0 10px;display:flex;align-items:center;gap:8px}
+    .fav-group-head .count{font-size:12px;font-weight:600;color:var(--ink);opacity:.6}
+    .fav-band-list{display:flex;flex-direction:column;gap:6px}
+    .fav-band-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px;border:1px solid rgba(74,53,38,.18);border-left:4px solid var(--rust);border-radius:10px}
+    .fav-band-name{font-weight:600;color:var(--ink)}
     .venue-chips{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 18px}
     .venue-chip{display:inline-flex;align-items:center;gap:10px;cursor:pointer;text-align:left;font-family:inherit;color:var(--ink);background:var(--cream);border:1px solid rgba(74,53,38,.18);border-left:4px solid var(--rust);border-radius:10px;padding:9px 14px;box-shadow:0 2px 6px rgba(0,0,0,.12);transition:transform .08s ease,box-shadow .08s ease}
     .venue-chip:hover{transform:translateY(-1px);box-shadow:0 4px 10px rgba(0,0,0,.18)}
@@ -585,9 +593,9 @@ body{
             <span class="toggle" id="venuesToggle"></span>
             <span>Venues</span>
             </label>
-      <label class="pill my-shows" title="Show only shows you have favorited">
+      <label class="pill my-shows" title="Show everything you have favorited — shows, bands, and venues">
         <span class="toggle" id="myShowsToggle"></span>
-        <span>My Shows</span>
+        <span>My Favorites</span>
       </label>
       <!-- TICKET MODE: display toggle. Self-contained; remove this label + the ticketsToggle wiring + the ticketsOf branch + the fenced CSS block to fully revert. -->
       <label class="pill" title="Show comedy / stand-up shows instead of music">
@@ -680,6 +688,7 @@ let CARD_LAYOUT = 'a';
       if(MANUAL_PICKS.has(s.id)) return true;
       return isAffiliateTicketing(s.venueUrl) && MARQUEE_VENUES.has(s.venue);
     }
+const FAV_KEY = 'portlandlive:favorites';  // declared before state so loadFavorites() works at init
 const state = {
   shows: [], stamp: "",
   layout: "grid", cardLayout: CARD_LAYOUT, view: "shows", selectedVenue: null, byHood: false,
@@ -923,7 +932,42 @@ function auditPanelHtml(){
   h+='</div>';
   return h;
 }
+// Consolidated "My Favorites" view: shows + bands + venues the user has hearted,
+// grouped with sub-headers. Reads the same state.favorites Set the hearts write to.
+function renderFavorites(){
+  const wrap = $('#results');
+  wrap.innerHTML = "";
+  const keys = [...state.favorites];
+  const bandNames  = keys.filter(k => k.indexOf('band::')===0).map(k => k.slice(6)).sort((a,b)=>a.toLowerCase().localeCompare(b.toLowerCase()));
+  const venueNames = keys.filter(k => k.indexOf('venue::')===0).map(k => k.slice(7)).sort((a,b)=>a.toLowerCase().localeCompare(b.toLowerCase()));
+  const favShows = sortShows(state.shows.filter(s => state.favorites.has(favKey(s))));
+  const total = favShows.length + bandNames.length + venueNames.length;
+  $('#resultCount').textContent = total ? `${total} favorite${total>1?'s':''}` : "No favorites yet";
+  if(!total){
+    wrap.innerHTML = '<div class="empty"><h2>No favorites yet</h2><p>Tap the heart on a show, band, or venue to save it here.</p></div>';
+    return;
+  }
+  if(favShows.length){
+    const h=document.createElement('div'); h.className='fav-group';
+    h.innerHTML = `<h3 class="fav-group-head">Shows <span class="count">${favShows.length}</span></h3>`;
+    wrap.appendChild(h);
+    wrap.appendChild(listOf(favShows, true));
+  }
+  if(bandNames.length){
+    const h=document.createElement('div'); h.className='fav-group';
+    h.innerHTML = `<h3 class="fav-group-head">Bands <span class="count">${bandNames.length}</span></h3>`
+      + `<div class="fav-band-list">` + bandNames.map(n => `<div class="fav-band-row"><span class="fav-band-name">${esc(n)}</span>${heartFav(bandFavKey(n), n, 'band')}</div>`).join("") + `</div>`;
+    wrap.appendChild(h);
+  }
+  if(venueNames.length){
+    const h=document.createElement('div'); h.className='fav-group';
+    h.innerHTML = `<h3 class="fav-group-head">Venues <span class="count">${venueNames.length}</span></h3>`
+      + `<div class="venue-chips">` + venueNames.map(n => `<span class="venue-chip-wrap"><button type="button" class="venue-chip" data-venue="${esc(n)}" title="View ${esc(n)} venue page"><span class="vc-name">${esc(n)}</span></button>${heartFav(venueFavKey(n), n, 'venue')}</span>`).join("") + `</div>`;
+    wrap.appendChild(h);
+  }
+}
 function render(){
+  if(state.myShows){ renderFavorites(); return; }
   if(state.view === "venues"){ renderVenues(); return; }
   const list = filtered();
   $('#resultCount').textContent = list.length
@@ -1028,7 +1072,7 @@ function renderVenues(){
     const head = document.createElement('div');
     head.className = 'venue-header';
     head.innerHTML = `<a class="back-link" id="backToVenues" href="#">\u2190 All shows</a>`
-      + `<h2 class="venue-name">${esc(state.selectedVenue)}</h2>`
+      + `<h2 class="venue-name">${esc(state.selectedVenue)}${heartFav(venueFavKey(state.selectedVenue), state.selectedVenue, 'venue')}</h2>`
       + `<div class="venue-info">${esc(first.neighborhood||'')}${first.address?' \u00b7 '+esc(first.address):''}</div>`;
     wrap.appendChild(head);
     $('#backToVenues').addEventListener('click',(e)=>{e.preventDefault();state.selectedVenue=null;state.view='shows';$('#venuesToggle').classList.remove('on');render();});
@@ -1054,7 +1098,7 @@ function renderVenues(){
     wrap.appendChild(dhead);
     if(dlist.length){
       const box=document.createElement("div"); box.className="venue-chips";
-      box.innerHTML = dlist.map(v=>`<button type=\"button\" class=\"venue-chip\" data-venue=\"${esc(v.name)}\" title=\"View ${esc(v.name)} venue page\"><span class=\"vc-name\">${esc(v.name)}</span>${v.neighborhood?`<span class=\"vc-hood\">${esc(v.neighborhood)}</span>`:""}<span class=\"vc-count\">${v.count} show${v.count>1?"s":""}</span></button>`).join("");
+      box.innerHTML = dlist.map(v=>`<span class=\"venue-chip-wrap\"><button type=\"button\" class=\"venue-chip\" data-venue=\"${esc(v.name)}\" title=\"View ${esc(v.name)} venue page\"><span class=\"vc-name\">${esc(v.name)}</span>${v.neighborhood?`<span class=\"vc-hood\">${esc(v.neighborhood)}</span>`:""}<span class=\"vc-count\">${v.count} show${v.count>1?"s":""}</span></button>${heartFav(venueFavKey(v.name), v.name, 'venue')}</span>`).join("");
       wrap.appendChild(box);
     } else {
       const em=document.createElement("div"); em.className="empty"; em.innerHTML="<h2>No venues found.</h2>"; wrap.appendChild(em);
@@ -1137,10 +1181,10 @@ function listOf(items, showDate){
     const dateBit = showDate ? `<span class="s-date rdate">${ordinalDate(s.date)}</span>` : '';
     const timeBit = s.time ? `<span class="s-time">${esc(s.time)}</span>` : '';
     const sep1 = (dateBit && timeBit) ? `<span class="rdot">\u00b7</span>` : '';
-    const titleHtml = s.venueUrl
+    const titleHtml = (s.venueUrl
       ? `<a class="rtitle" href="${s.venueUrl}" target="_blank" rel="noopener">${formatTitle(s.title)}</a>`
-      : `<span class="rtitle">${formatTitle(s.title)}</span>`;
-    const venueLink = `<a class="s-venue" href="#" data-venue="${esc(s.venue)}" title="View this venue">${esc(s.venue)}</a>`;
+      : `<span class="rtitle">${formatTitle(s.title)}</span>`) + heartFav(bandFavKey(s.title), s.title, 'band');
+    const venueLink = `<a class="s-venue" href="#" data-venue="${esc(s.venue)}" title="View this venue">${esc(s.venue)}</a>` + heartFav(venueFavKey(s.venue), s.venue, 'venue');
     const nb = s.neighborhood ? `<span class="s-nb">${esc(s.neighborhood)}</span>` : '';
 
     if(eff === 'b'){
@@ -1166,8 +1210,7 @@ function listOf(items, showDate){
   return l;
 }
 function esc(x){return (x||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
-      const FAV_KEY = 'portlandlive:favorites';
-      function formatTitle(t){t=t||'';if(t.length<=50)return esc(t);const find=(re)=>{let m,c=[];re.lastIndex=0;while((m=re.exec(t))){c.push(m.index+1);}return c;};let c=find(/\s(\/\/)\s/g);if(!c.length)c=find(/\s(&|\+|and)\s/g);if(!c.length)return esc(t);const mid=t.length/2;let b=c[0];for(const p of c)if(Math.abs(p-mid)<Math.abs(b-mid))b=p;return esc(t.slice(0,b)).replace(/\s+$/,'')+'<br>'+esc(t.slice(b));}
+        function formatTitle(t){t=t||'';if(t.length<=50)return esc(t);const find=(re)=>{let m,c=[];re.lastIndex=0;while((m=re.exec(t))){c.push(m.index+1);}return c;};let c=find(/\s(\/\/)\s/g);if(!c.length)c=find(/\s(&|\+|and)\s/g);if(!c.length)return esc(t);const mid=t.length/2;let b=c[0];for(const p of c)if(Math.abs(p-mid)<Math.abs(b-mid))b=p;return esc(t.slice(0,b)).replace(/\s+$/,'')+'<br>'+esc(t.slice(b));}
 function favKey(s){ return (s.venue||'') + '|' + (s.date||'') + '|' + (s.title||''); }
       function loadFavorites(){
         try{ const raw = localStorage.getItem(FAV_KEY); const arr = raw ? JSON.parse(raw) : []; return new Set(Array.isArray(arr) ? arr : []); }
@@ -1177,13 +1220,27 @@ function favKey(s){ return (s.venue||'') + '|' + (s.date||'') + '|' + (s.title||
         try{ localStorage.setItem(FAV_KEY, JSON.stringify([...state.favorites])); }catch(e){}
       }
       function isFav(s){ return state.favorites.has(favKey(s)); }
+    // Distinct favorite-key namespaces so a later filter can separate the three
+    // kinds of hearts. Shows keep the bare "venue|date|title" key for back-compat;
+    // bands/venues are prefixed. All three live in the same state.favorites Set
+    // and the same localStorage record (FAV_KEY) the show-hearts already use.
+    function bandFavKey(name){ return 'band::' + (name||''); }
+    function venueFavKey(name){ return 'venue::' + (name||''); }
+    // Generic heart for any favorite key (band or venue). Mirrors heartBtn() but
+    // takes an explicit key; the shared #results click handler reads data-fav and
+    // calls toggleFavKey, so no extra wiring is needed.
+    function heartFav(key, name, kind){
+      const on = state.favorites.has(key);
+      const noun = kind === 'venue' ? 'venue' : 'band';
+      return `<button type="button" class="heart heart-${kind}${on?' on':''}" data-fav="${esc(key)}" aria-pressed="${on}" aria-label="${on?('Remove '+noun+' from favorites'):('Save '+noun+' to favorites')}" title="${on?('Remove '+esc(name)+' from favorites'):('Save '+esc(name)+' to favorites')}">${heartSvg(on)}</button>`;
+    }
       function toggleFavKey(k){
         if(state.favorites.has(k)) state.favorites.delete(k); else state.favorites.add(k);
         saveFavorites();
       }
       function heartBtn(s){
         const k = favKey(s); const on = state.favorites.has(k);
-        return `<button type="button" class="heart${on?' on':''}" data-fav="${esc(k)}" aria-pressed="${on}" aria-label="${on?'Remove from My Shows':'Save to My Shows'}" title="${on?'Remove from favorites':'Save to favorites'}">${heartSvg(on)}</button>`;
+        return `<button type="button" class="heart${on?' on':''}" data-fav="${esc(k)}" aria-pressed="${on}" aria-label="${on?'Remove from favorites':'Save to favorites'}" title="${on?'Remove from favorites':'Save to favorites'}">${heartSvg(on)}</button>`;
       }
       function toggleFav(s){
         const k = favKey(s);
@@ -1200,7 +1257,7 @@ function favKey(s){ return (s.venue||'') + '|' + (s.date||'') + '|' + (s.title||
 $('#searchInput').addEventListener('input',e=>{state.q=e.target.value;if(state.q && state.selectedVenue){state.selectedVenue=null;state.view='shows';}render();});
 $('#byHoodToggle').addEventListener('click',()=>{state.byHood=!state.byHood;$('#byHoodToggle').classList.toggle('on',state.byHood);render();});
         $('#venuesToggle').addEventListener('click',()=>{const on=state.view!=='venues';state.view=on?'venues':'shows';state.selectedVenue=null;if(on){state.picks=false;$('#picksToggle').classList.remove('on');state.byHood=false;$('#byHoodToggle').classList.remove('on');state.myShows=false;$('#myShowsToggle').classList.remove('on');state.tonight=false;$('#tonightToggle').classList.remove('on');state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');state.q='';$('#searchInput').value='';}$('#venuesToggle').classList.toggle('on',on);render();});
-      $('#myShowsToggle').addEventListener('click',e=>{state.picks=false;$('#picksToggle').classList.remove('on');state.myShows=!state.myShows;e.currentTarget.classList.toggle('on',state.myShows);render();});
+      $('#myShowsToggle').addEventListener('click',e=>{state.myShows=!state.myShows;if(state.myShows){state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');state.comedy=false;$('#comedyToggle').classList.remove('on');state.tickets=false;$('#ticketsToggle').classList.remove('on');state.tonight=false;$('#tonightToggle').classList.remove('on');state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');state.byHood=false;$('#byHoodToggle').classList.remove('on');state.picks=false;$('#picksToggle').classList.remove('on');}e.currentTarget.classList.toggle('on',state.myShows);render();});
         // Picks of the Week: dominant filter. Turning it on switches to the curated, vertical showcase
         // and clears the Tonight / This Week / My Shows / Venues filters so only picks are shown.
         $('#picksToggle').addEventListener('click',e=>{
@@ -1220,7 +1277,7 @@ $('#tonightToggle').addEventListener('click',()=>{state.picks=false;$('#picksTog
 $('#thisWeekToggle').addEventListener('click',()=>{state.picks=false;$('#picksToggle').classList.remove('on');state.thisWeek=!state.thisWeek;if(state.thisWeek){state.tonight=false;$('#tonightToggle').classList.remove('on');}$('#thisWeekToggle').classList.toggle('on',state.thisWeek);render();});
 $('#auditToggle').addEventListener('click',()=>{state.audit=!state.audit;$('#auditToggle').classList.toggle('on',state.audit);render();});
 // TICKET MODE: pure display toggle; leaves all filters untouched.
-$('#ticketsToggle').addEventListener('click',()=>{state.tickets=!state.tickets;$('#ticketsToggle').classList.toggle('on',state.tickets);render();});$('#comedyToggle').addEventListener('click',()=>{state.comedy=!state.comedy;if(state.comedy){state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');state.tickets=false;$('#ticketsToggle').classList.remove('on');}$('#comedyToggle').classList.toggle('on',state.comedy);render();});
+$('#ticketsToggle').addEventListener('click',()=>{state.tickets=!state.tickets;if(state.tickets){state.myShows=false;$('#myShowsToggle').classList.remove('on');}$('#ticketsToggle').classList.toggle('on',state.tickets);render();});$('#comedyToggle').addEventListener('click',()=>{state.comedy=!state.comedy;if(state.comedy){state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');state.tickets=false;$('#ticketsToggle').classList.remove('on');state.myShows=false;$('#myShowsToggle').classList.remove('on');}$('#comedyToggle').classList.toggle('on',state.comedy);render();});
 $('#resetBtn').addEventListener('click',()=>{
   state.q="";state.tonight=false;state.byHood=false;state.view="shows";state.selectedVenue=null;
   $('#searchInput').value="";
