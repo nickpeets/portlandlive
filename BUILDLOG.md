@@ -4,6 +4,24 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### 605b741 — Comedy toggle wired into the control bar
+Added a **Comedy** pill to the control bar, matching the existing view-toggle pattern (same
+`<label class="pill">` + `<span class="toggle" id="comedyToggle">` markup as Tickets, placed just
+before it). The data layer was already scaffolded: `state.comedy` existed and `filtered()` already
+had the content-type gate (`state.comedy` → comedy, else music). This change supplies the missing
+UI wiring — markup, click handler, and reset hook — without touching classifier logic.
+- ON filters the feed to shows tagged `comedy` (uses the existing classifier tag); OFF returns to
+  the default music-only view. Comedy view returns **18 shows** (incl. Ali Wong Live + Off Book,
+  correctly tagged via the overrides shipped in e3abb7e).
+- Reset wiring matches the corrected reset-desync pattern (the Venues/Tickets fix in d3fa40f):
+  reset clears `state.comedy` AND removes the `on` class from the pill, so no desync.
+- Interaction: turning Comedy on exits the Venues view and clears the Tickets display so two
+  conflicting views are never active at once (mirrors how Venues clears competitors).
+Verified against the served page: pill appears + highlights on click; feed filters to 18 comedy
+shows; reset reverts to music AND the pill goes inactive; Tonight/Tickets and other toggles still
+work. Audit (dev) toggle left in place.
+
+
 ### e3abb7e — Classifier name-based overrides live (initial entries)
 The FORCE_MUSIC / FORCE_NON_MUSIC override layer (scaffolded prior) is now populated and runs
 after the keyword classifier, taking precedence over it. Initial entries:
