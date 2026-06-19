@@ -4,6 +4,14 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### 8796ed2 — Favorites foundation: bands + venues + consolidated My Favorites view
+Extended favoriting beyond shows to bands and venues, and reworked the saved view into a single grouped surface. Also fixed a pre-existing persistence bug that had silently disabled favorites rehydration.
+- **Band + venue favoriting added.** Heart toggles now appear on show cards, in the venue directory, and on the venue detail view (previously only show cards had hearts).
+- **"My Shows" reworked into "My Favorites".** Single view now groups saved items into Shows / Bands / Venues sections instead of a shows-only list.
+- **Storage model.** Uses the existing `state.favorites` Set persisted to `portlandlive:favorites` in localStorage. Keys are namespaced: `band::<id>`, `venue::<id>`, and bare `<id>` for shows. Existing show-heart entries are preserved as-is (no migration needed).
+- **Fixed pre-existing persistence bug (TDZ).** `FAV_KEY` was declared *after* `state`, so the rehydrate-on-load path hit a temporal-dead-zone ReferenceError that was swallowed by the surrounding try/catch — favorites silently never rehydrated across a reload. Moved the `FAV_KEY` declaration above `state`. **Note:** this means show-favorites persistence was actually broken before this commit; it is now genuinely working for the first time.
+- **Planned follow-on (not yet built):** a favorites-based filter toggle (show only favorited items in the main listings).
+
 ### 605b741 — Comedy toggle wired into the control bar
 Added a **Comedy** pill to the control bar, matching the existing view-toggle pattern (same
 `<label class="pill">` + `<span class="toggle" id="comedyToggle">` markup as Tickets, placed just
