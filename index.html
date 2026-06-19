@@ -1182,7 +1182,7 @@ $('#ticketsToggle').addEventListener('click',()=>{state.tickets=!state.tickets;$
 $('#resetBtn').addEventListener('click',()=>{
   state.q="";state.tonight=false;state.byHood=false;state.view="shows";state.selectedVenue=null;
   $('#searchInput').value="";
-  $('#byHoodToggle').classList.remove('on');$('#tonightToggle').classList.remove('on');state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');state.myShows=false;$('#myShowsToggle').classList.remove('on');state.picks=false;$('#picksToggle').classList.remove('on');render();
+  $('#byHoodToggle').classList.remove('on');$('#tonightToggle').classList.remove('on');state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');state.myShows=false;$('#myShowsToggle').classList.remove('on');state.picks=false;$('#picksToggle').classList.remove('on');state.tickets=false;$('#ticketsToggle').classList.remove('on');$('#venuesToggle').classList.remove('on');render();
 });
 
     // Compute the Pacific dates the Tonight / This Week filters resolve to,
