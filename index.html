@@ -706,7 +706,45 @@ function ordinalDate(iso){
 // Aggressive policy: anything not clearly music is treated as non-music.
 // Reads the show title (and, when available, the sampler resolver's Tier-3
 // signal via window.sampleFor -> mediaType 'spoken' => non-music act).
+/* ── NAME-BASED CLASSIFICATION OVERRIDES ────────────────────
+   These run AFTER the keyword classifier (classifyByKeyword) and take
+   precedence over it. Add a title/band name fragment to force a result.
+   Matching is case-insensitive substring on the normalized show title.
+   Lists ship EMPTY — they change nothing until populated. */
+
+// Force a show INTO music regardless of keywords (fixes real bands buried as non-music).
+// Add a lowercase name fragment, one per line, e.g.:  // "xmal deutschland",
+const FORCE_MUSIC = [
+  "anja huwe",
+  "xmal",
+];
+
+// Force a show OUT of music regardless of keywords (fixes non-music tagged Music).
+// Entry is either a fragment string (-> 'other') OR [fragment, tag] to pick the tag.
+// e.g.:  // "ali wong",      or      // ["ali wong", "comedy"],
+const FORCE_NON_MUSIC = [
+  ["ali wong", "comedy"],
+  ["off book", "comedy"],
+  "poetry slam",
+  "drag brunch",
+];
+
+// Normalize a title for matching: lowercase + collapse whitespace.
+function _normTitle(t){ return String(t||'').toLowerCase().replace(/\s+/g,' ').trim(); }
+
+// Public classifier: keyword result first, then name-based overrides take precedence.
 function classifyType(s){
+  const nt = _normTitle(s && s.title);
+  for(const e of FORCE_MUSIC){ if(e && nt.includes(_normTitle(e))) return "music"; }
+  for(const e of FORCE_NON_MUSIC){
+    const frag = Array.isArray(e) ? e[0] : e;
+    const tag  = Array.isArray(e) ? (e[1]||"other") : "other";
+    if(frag && nt.includes(_normTitle(frag))) return tag;
+  }
+  return classifyByKeyword(s);
+}
+
+function classifyByKeyword(s){
   const title = (s && s.title) ? String(s.title) : '';
   const url   = (s && s.venueUrl) ? String(s.venueUrl) : '';
 
