@@ -606,6 +606,11 @@ body{
         <span class="toggle" id="ticketsToggle"></span>
         <span>Tickets</span>
       </label>
+      <!-- FOLLOWING FILTER pill: collapses the show feed to bands/venues you've hearted. Distinct from the "My Favorites" view, which DISPLAYS hearted items. Self-contained; removable. -->
+      <label class="pill following-pill" title="Filter the feed to shows by the bands & venues you've hearted">
+        <span class="toggle" id="followingToggle"></span>
+        <span>&#9733; Following</span>
+      </label>
         <!-- TEMP DEV TOOL: classification audit panel toggle. Remove once the
              music/non-music separation is verified and trusted. -->
         <label class="pill audit-pill" title="DEV: show classification buckets to verify accuracy">
@@ -695,7 +700,8 @@ const state = {
   q: "", tonight: false, thisWeek: false, picks: false,
   myShows: false, favorites: loadFavorites(),
   comedy: false, audit: false, // comedy: future Comedy-shows toggle; audit: temporary verification panel
-  tickets: false, // TICKET MODE: collectible ticket-stub display of the filtered set (self-contained; removable)
+  tickets: false,
+  following: false, // FOLLOWING FILTER: collapse feed to shows by hearted bands/venues (self-contained, removable) // TICKET MODE: collectible ticket-stub display of the filtered set (self-contained; removable)
 };
 
 const $ = s => document.querySelector(s);
@@ -904,6 +910,11 @@ function filtered(){
   }
   const q = state.q.trim().toLowerCase();
   if(q) out = out.filter(s => (s.title+" "+s.venue+" "+s.neighborhood).toLowerCase().includes(q));
+   // FOLLOWING FILTER: hide-style collapse to shows whose band (band:: key) OR venue
+   // (venue:: key) is hearted. Uses the SAME key construction as favoriting
+   // (bandFavKey(s.title) / venueFavKey(s.venue)) so a hearted band/venue reliably
+   // catches its shows. Ordering stays time-anchored via sortShows() below.
+   if(state.following){ const _normFav = new Set([...state.favorites].map(function(k){ var i=k.indexOf('::'); return i<0 ? k : k.slice(0,i+2)+_normTitle(k.slice(i+2)); })); out = out.filter(s => _normFav.has('band::'+_normTitle(s.title)) || _normFav.has('venue::'+_normTitle(s.venue))); }
    if(state.picks){
      // Picks overrides time-window / favorites filters: it is the showcase view.
      out = out.filter(isPick);
@@ -981,7 +992,7 @@ function render(){
       if(state.audit){ wrap.insertAdjacentHTML('beforeend', auditPanelHtml()); }
 
   if(!list.length){
-    wrap.innerHTML = state.picks ? '<div class="empty"><h2>No picks this week</h2><p>Check back soon — fresh picks are curated weekly.</p></div>' : state.myShows ? '<div class="empty"><h2>No favorites yet</h2><p>Tap the heart on a show to save it.</p></div>' : '<div class="empty"><h2>No Results Found.</h2><p>Try widening your dates or clearing the search.</p></div>';
+    wrap.innerHTML = state.picks ? '<div class="empty"><h2>No picks this week</h2><p>Check back soon — fresh picks are curated weekly.</p></div>' : state.following ? '<div class="empty"><h2>Nothing here yet</h2><p>Heart some bands and venues to see their shows here.</p></div>' : state.myShows ? '<div class="empty"><h2>No favorites yet</h2><p>Tap the heart on a show to save it.</p></div>' : '<div class="empty"><h2>No Results Found.</h2><p>Try widening your dates or clearing the search.</p></div>';
     return;
   }
 
@@ -1098,7 +1109,7 @@ function renderVenues(){
     wrap.appendChild(dhead);
     if(dlist.length){
       const box=document.createElement("div"); box.className="venue-chips";
-      box.innerHTML = dlist.map(v=>`<span class=\"venue-chip-wrap\"><button type=\"button\" class=\"venue-chip\" data-venue=\"${esc(v.name)}\" title=\"View ${esc(v.name)} venue page\"><span class=\"vc-name\">${esc(v.name)}</span>${v.neighborhood?`<span class=\"vc-hood\">${esc(v.neighborhood)}</span>`:""}<span class=\"vc-count\">${v.count} show${v.count>1?"s":""}</span></button>${heartFav(venueFavKey(v.name), v.name, 'venue')}</span>`).join("");
+      box.innerHTML = dlist.map(v=>`<span class=\"venue-chip-wrap\"><button type=\"button\" class=\"venue-chip\" data-venue=\"${esc(v.name)}\" title=\"View ${esc(v.name)} venue page\"><span class=\"vc-name\">${esc(v.name)}</span>${v.neighborhood?`<span class=\"vc-hood\">${esc(v.neighborhood)}</span>`:""}<span class=\"vc-count\">${v.count} show${v.count>1?"s":""}</span></button></span>`).join("");
       wrap.appendChild(box);
     } else {
       const em=document.createElement("div"); em.className="empty"; em.innerHTML="<h2>No venues found.</h2>"; wrap.appendChild(em);
@@ -1184,7 +1195,7 @@ function listOf(items, showDate){
     const titleHtml = (s.venueUrl
       ? `<a class="rtitle" href="${s.venueUrl}" target="_blank" rel="noopener">${formatTitle(s.title)}</a>`
       : `<span class="rtitle">${formatTitle(s.title)}</span>`) + heartFav(bandFavKey(s.title), s.title, 'band');
-    const venueLink = `<a class="s-venue" href="#" data-venue="${esc(s.venue)}" title="View this venue">${esc(s.venue)}</a>` + heartFav(venueFavKey(s.venue), s.venue, 'venue');
+    const venueLink = `<a class="s-venue" href="#" data-venue="${esc(s.venue)}" title="View this venue">${esc(s.venue)}</a>`;
     const nb = s.neighborhood ? `<span class="s-nb">${esc(s.neighborhood)}</span>` : '';
 
     if(eff === 'b'){
@@ -1256,8 +1267,8 @@ function favKey(s){ return (s.venue||'') + '|' + (s.date||'') + '|' + (s.title||
 /* events */
 $('#searchInput').addEventListener('input',e=>{state.q=e.target.value;if(state.q && state.selectedVenue){state.selectedVenue=null;state.view='shows';}render();});
 $('#byHoodToggle').addEventListener('click',()=>{state.byHood=!state.byHood;$('#byHoodToggle').classList.toggle('on',state.byHood);render();});
-        $('#venuesToggle').addEventListener('click',()=>{const on=state.view!=='venues';state.view=on?'venues':'shows';state.selectedVenue=null;if(on){state.picks=false;$('#picksToggle').classList.remove('on');state.byHood=false;$('#byHoodToggle').classList.remove('on');state.myShows=false;$('#myShowsToggle').classList.remove('on');state.tonight=false;$('#tonightToggle').classList.remove('on');state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');state.q='';$('#searchInput').value='';}$('#venuesToggle').classList.toggle('on',on);render();});
-      $('#myShowsToggle').addEventListener('click',e=>{state.myShows=!state.myShows;if(state.myShows){state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');state.comedy=false;$('#comedyToggle').classList.remove('on');state.tickets=false;$('#ticketsToggle').classList.remove('on');state.tonight=false;$('#tonightToggle').classList.remove('on');state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');state.byHood=false;$('#byHoodToggle').classList.remove('on');state.picks=false;$('#picksToggle').classList.remove('on');}e.currentTarget.classList.toggle('on',state.myShows);render();});
+        $('#venuesToggle').addEventListener('click',()=>{const on=state.view!=='venues';state.view=on?'venues':'shows';state.selectedVenue=null;if(on){state.picks=false;$('#picksToggle').classList.remove('on');state.byHood=false;$('#byHoodToggle').classList.remove('on');state.myShows=false;$('#myShowsToggle').classList.remove('on');state.tonight=false;$('#tonightToggle').classList.remove('on');state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');state.q='';$('#searchInput').value='';state.following=false;$('#followingToggle').classList.remove('on');}$('#venuesToggle').classList.toggle('on',on);render();});
+      $('#myShowsToggle').addEventListener('click',e=>{state.myShows=!state.myShows;if(state.myShows){state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');state.comedy=false;$('#comedyToggle').classList.remove('on');state.tickets=false;$('#ticketsToggle').classList.remove('on');state.tonight=false;$('#tonightToggle').classList.remove('on');state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');state.byHood=false;$('#byHoodToggle').classList.remove('on');state.picks=false;$('#picksToggle').classList.remove('on');state.following=false;$('#followingToggle').classList.remove('on');}e.currentTarget.classList.toggle('on',state.myShows);render();});
         // Picks of the Week: dominant filter. Turning it on switches to the curated, vertical showcase
         // and clears the Tonight / This Week / My Shows / Venues filters so only picks are shown.
         $('#picksToggle').addEventListener('click',e=>{
@@ -1268,6 +1279,7 @@ $('#byHoodToggle').addEventListener('click',()=>{state.byHood=!state.byHood;$('#
             state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');
             state.myShows=false;$('#myShowsToggle').classList.remove('on');
             state.view='shows';state.selectedVenue=null;
+            state.following=false;$('#followingToggle').classList.remove('on');
           }
           render();
         });
@@ -1277,11 +1289,27 @@ $('#tonightToggle').addEventListener('click',()=>{state.picks=false;$('#picksTog
 $('#thisWeekToggle').addEventListener('click',()=>{state.picks=false;$('#picksToggle').classList.remove('on');state.thisWeek=!state.thisWeek;if(state.thisWeek){state.tonight=false;$('#tonightToggle').classList.remove('on');}$('#thisWeekToggle').classList.toggle('on',state.thisWeek);render();});
 $('#auditToggle').addEventListener('click',()=>{state.audit=!state.audit;$('#auditToggle').classList.toggle('on',state.audit);render();});
 // TICKET MODE: pure display toggle; leaves all filters untouched.
-$('#ticketsToggle').addEventListener('click',()=>{state.tickets=!state.tickets;if(state.tickets){state.myShows=false;$('#myShowsToggle').classList.remove('on');}$('#ticketsToggle').classList.toggle('on',state.tickets);render();});$('#comedyToggle').addEventListener('click',()=>{state.comedy=!state.comedy;if(state.comedy){state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');state.tickets=false;$('#ticketsToggle').classList.remove('on');state.myShows=false;$('#myShowsToggle').classList.remove('on');}$('#comedyToggle').classList.toggle('on',state.comedy);render();});
+$('#ticketsToggle').addEventListener('click',()=>{state.tickets=!state.tickets;if(state.tickets){state.myShows=false;$('#myShowsToggle').classList.remove('on');state.following=false;$('#followingToggle').classList.remove('on');}$('#ticketsToggle').classList.toggle('on',state.tickets);render();});$('#comedyToggle').addEventListener('click',()=>{state.comedy=!state.comedy;if(state.comedy){state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');state.tickets=false;$('#ticketsToggle').classList.remove('on');state.myShows=false;$('#myShowsToggle').classList.remove('on');state.following=false;$('#followingToggle').classList.remove('on');}$('#comedyToggle').classList.toggle('on',state.comedy);render();});
 $('#resetBtn').addEventListener('click',()=>{
   state.q="";state.tonight=false;state.byHood=false;state.view="shows";state.selectedVenue=null;
   $('#searchInput').value="";
-  $('#byHoodToggle').classList.remove('on');$('#tonightToggle').classList.remove('on');state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');state.myShows=false;$('#myShowsToggle').classList.remove('on');state.picks=false;$('#picksToggle').classList.remove('on');state.tickets=false;$('#ticketsToggle').classList.remove('on');$('#venuesToggle').classList.remove('on');state.comedy=false;$('#comedyToggle').classList.remove('on');render();
+  $('#byHoodToggle').classList.remove('on');$('#tonightToggle').classList.remove('on');state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');state.myShows=false;$('#myShowsToggle').classList.remove('on');state.picks=false;$('#picksToggle').classList.remove('on');state.tickets=false;$('#ticketsToggle').classList.remove('on');$('#venuesToggle').classList.remove('on');state.comedy=false;$('#comedyToggle').classList.remove('on');state.following=false;$('#followingToggle').classList.remove('on');render();
+});
+
+// FOLLOWING FILTER toggle: hide-style filter that collapses the feed to hearted
+// bands/venues. Turning it on clears the alternate views/modes; the other view
+// toggles + reset clear it back (see Edit 5 / reset). Self-contained; removable.
+$('#followingToggle').addEventListener('click',()=>{
+  state.following=!state.following;
+  if(state.following){
+    state.myShows=false;$('#myShowsToggle').classList.remove('on');
+    state.picks=false;$('#picksToggle').classList.remove('on');
+    state.tickets=false;$('#ticketsToggle').classList.remove('on');
+    state.comedy=false;$('#comedyToggle').classList.remove('on');
+    state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');
+  }
+  $('#followingToggle').classList.toggle('on',state.following);
+  render();
 });
 
     // Compute the Pacific dates the Tonight / This Week filters resolve to,
