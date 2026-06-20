@@ -71,6 +71,12 @@ Reset/Refresh handler reverted the listing (state.view="shows") but never remove
 
 Hand-added three shows (one per day) for the 2026 Waterfront Blues Festival via `manual_shows.json`, then regenerated `shows.json` with `build_shows.py` (1087 → 1090 shows). Festival runs Thu Jul 2, Fri Jul 3, and Sat Jul 4, 2026 at Tom McCall Waterfront Park / Downtown; each entry starts 1:00 PM with the ticket link https://waterfrontbluesfest.com/tickets. Titles are kept parallel and clean ("Waterfront Blues Festival — Day 1/2/3") with no lineup names or fireworks crammed in — the flat per-show schema has no field for those. A proper festival section is the planned follow-on, where the full lineup, per-act set times, and the Jul 4 fireworks detail will live.
 
+### 3165194 — Favorites filter: Following toggle (hide-style) + venue hearts limited to venue page + normalized band/venue matching
+- **"★ Following" filter pill added** — hide-style: collapses the feed to shows by hearted bands OR at hearted venues. Applied *before* sort so time-anchored ordering is preserved.
+- **Venue hearts relocated** — now appear ONLY on the venue detail page (removed from show cards and the venue directory). Band hearts remain on show cards. The My Favorites view retains venue chips as an un-heart affordance.
+- **Normalized matching** — band/venue matching now runs through `_normTitle` at compare-time (case/whitespace-insensitive); stored key format unchanged, so prior hearts still match.
+- **Verified** against the live feed, incl. the Waterfront Blues Festival surfacing via its venue heart.
+
 ## Open Items
 
 - **⚠ Audit (dev) toggle still live / user-visible** — **retained on purpose** for a later re-audit pass after the override layer (e3abb7e); remove once the classifier audit is fully signed off.
@@ -80,3 +86,4 @@ Hand-added three shows (one per day) for the 2026 Waterfront Blues Festival via 
 - **Codespace Python env broken** — requests/urllib3.
 - **Coverage audit pending** — Venues directory vs. rated venue list.
 - **Venues toggle reset-desync** — when the Venues directory toggle is ON and the user clicks the in-page Refresh/Reset button (not browser refresh), the listing reverts to today's shows BUT the Venues toggle pill stays visually ON; the pill active state is not cleared when reset returns to the default show list. Fix: the reset/refresh handler should clear the Venues view flag (state.venues) and un-highlight the pill so toggle state matches the view shown. — **RESOLVED in d3fa40f.**
+- **Band favorites key on full show title** — band hearts match against the full show title, not a separate artist field. Follow-up: introduce a dedicated artist field for cleaner band-level favoriting.
