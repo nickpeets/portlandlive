@@ -67,6 +67,10 @@ Cascade: per-event image scoping plus Live Nation `/event/<discovery_id>/<slug>`
 ### d3fa40f — Fix Venues + Tickets toggle reset-desync
 Reset/Refresh handler reverted the listing (state.view="shows") but never removed the 'on' class from #venuesToggle, so the Venues pill stayed visually active after reset. Added $('#venuesToggle').classList.remove('on') in the reset handler. While auditing the other control-bar toggles, found Tickets shared the same gap: reset cleared neither state.tickets nor the #ticketsToggle 'on' class — fixed both (state.tickets=false; $('#ticketsToggle').classList.remove('on')). Tonight / This Week / Picks / By Neighborhood / My Shows already cleared their flag and un-highlighted their pill correctly, so no change needed. (Audit (dev) toggle is a temp dev tool and out of scope.) Verified against the live served page (port 8000): toggled Venues on → pill highlighted + venues directory shown; hit reset → list reverted to today's shows AND pill went inactive. Same confirmed for Tickets.
 
+### 1b6f8f7 — 2026 Waterfront Blues Festival added to listings
+
+Hand-added three shows (one per day) for the 2026 Waterfront Blues Festival via `manual_shows.json`, then regenerated `shows.json` with `build_shows.py` (1087 → 1090 shows). Festival runs Thu Jul 2, Fri Jul 3, and Sat Jul 4, 2026 at Tom McCall Waterfront Park / Downtown; each entry starts 1:00 PM with the ticket link https://waterfrontbluesfest.com/tickets. Titles are kept parallel and clean ("Waterfront Blues Festival — Day 1/2/3") with no lineup names or fireworks crammed in — the flat per-show schema has no field for those. A proper festival section is the planned follow-on, where the full lineup, per-act set times, and the Jul 4 fireworks detail will live.
+
 ## Open Items
 
 - **⚠ Audit (dev) toggle still live / user-visible** — **retained on purpose** for a later re-audit pass after the override layer (e3abb7e); remove once the classifier audit is fully signed off.
