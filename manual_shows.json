@@ -302,24 +302,584 @@
       "imageUrl": "https://citysparkstorage.blob.core.windows.net/portalimages/portalimages/rAzyLrcmZEWVeiAmEEcsjg.large.png"
     },
     {
-      "title": "Renée Muzquiz",
-      "venue": "Havalina",
-      "neighborhood": "St. Johns",
-      "address": "8927 N Lombard St, Portland, OR 97203",
-      "date": "2026-07-10",
-      "time": "6:00 PM",
-      "venueUrl": "https://havalinapdx.com/events/rene-muzquiz-2-dafya-xdjhl-am856",
-      "imageUrl": "https://images.squarespace-cdn.com/content/v1/64bad396e6ad2c1216a9ada5/1722877900684-1Z566W6SJX9DC0GVEXVO/286073048_426107642857721_2146553987298589604_n.jpg"
+      "title": "Bill Frisell Tribute",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-07-18",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/bill-frisell-tribute",
+      "imageUrl": ""
     },
     {
-      "title": "Pine Mettle",
-      "venue": "Havalina",
-      "neighborhood": "St. Johns",
-      "address": "8927 N Lombard St, Portland, OR 97203",
+      "title": "Garcia Birthday Band - Days Between",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-08-06",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/garcia-birthday-band-days-between",
+      "imageUrl": ""
+    },
+    {
+      "title": "Phish Webcast",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-09-06",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/phish-webcast-2026-09-06-19-00",
+      "imageUrl": ""
+    },
+    {
+      "title": "Phish Webcast",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-09-05",
+      "time": "7:30 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/phish-webcast-2026-09-05-19-30",
+      "imageUrl": ""
+    },
+    {
+      "title": "Phish Webcast",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-07-27",
+      "time": "4:30 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/phish-webcast-2026-07-27-16-30",
+      "imageUrl": ""
+    },
+    {
+      "title": "Phish Webcast",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-07-25",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/phish-webcast-2026-07-25-19-00",
+      "imageUrl": ""
+    },
+    {
+      "title": "Phish Webcast",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-07-21",
+      "time": "4:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/phish-webcast-2026-07-21-16-00",
+      "imageUrl": ""
+    },
+    {
+      "title": "Phish Webcast",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-07-19",
+      "time": "4:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/phish-webcast-2026-07-19-16-00",
+      "imageUrl": ""
+    },
+    {
+      "title": "Phish Webcast",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-07-14",
+      "time": "4:30 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/phish-webcast-2026-07-14-16-30",
+      "imageUrl": ""
+    },
+    {
+      "title": "Phish Webcast",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-07-12",
+      "time": "4:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/phish-webcast-2026-07-12-16-00",
+      "imageUrl": ""
+    },
+    {
+      "title": "Phish Webcast",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-07-11",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/phish-webcast-2026-07-11-19-00",
+      "imageUrl": ""
+    },
+    {
+      "title": "Friday Night Trivia With Sam",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-10-02",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/friday-night-trivia-with-sam-2026-10-02-19-00",
+      "imageUrl": ""
+    },
+    {
+      "title": "Friday Night Trivia With Sam",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-09-25",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/friday-night-trivia-with-sam-2026-09-25-19-00",
+      "imageUrl": ""
+    },
+    {
+      "title": "Friday Night Trivia With Sam",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-09-18",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/friday-night-trivia-with-sam-2026-09-18-19-00",
+      "imageUrl": ""
+    },
+    {
+      "title": "Friday Night Trivia With Sam",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-09-11",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/friday-night-trivia-with-sam-2026-09-11-19-00",
+      "imageUrl": ""
+    },
+    {
+      "title": "Friday Night Trivia With Sam",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-09-04",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/friday-night-trivia-with-sam-2026-09-04-19-00",
+      "imageUrl": ""
+    },
+    {
+      "title": "Friday Night Trivia With Sam",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-08-28",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/friday-night-trivia-with-sam-2026-08-28-19-00",
+      "imageUrl": ""
+    },
+    {
+      "title": "Friday Night Trivia With Sam",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-08-21",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/friday-night-trivia-with-sam-2026-08-21-19-00",
+      "imageUrl": ""
+    },
+    {
+      "title": "Friday Night Trivia With Sam",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-08-14",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/friday-night-trivia-with-sam-2026-08-14-19-00",
+      "imageUrl": ""
+    },
+    {
+      "title": "Friday Night Trivia With Sam",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-08-07",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/friday-night-trivia-with-sam-2026-08-07-19-00",
+      "imageUrl": ""
+    },
+    {
+      "title": "Friday Night Trivia With Sam",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-07-31",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/friday-night-trivia-with-sam-2026-07-31-19-00",
+      "imageUrl": ""
+    },
+    {
+      "title": "Friday Night Trivia With Sam",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-07-24",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/friday-night-trivia-with-sam-2026-07-24-19-00",
+      "imageUrl": ""
+    },
+    {
+      "title": "Friday Night Trivia With Sam",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-07-17",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/friday-night-trivia-with-sam-2026-07-17-19-00",
+      "imageUrl": ""
+    },
+    {
+      "title": "Friday Night Trivia With Sam",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
       "date": "2026-07-10",
-      "time": "9:00 PM",
-      "venueUrl": "https://havalinapdx.com/events/pine-mettle-2-hrbf5-t62da",
-      "imageUrl": "https://images.squarespace-cdn.com/content/v1/64bad396e6ad2c1216a9ada5/1745771774842-I5BHIHS0VY2KMM85U4VW/492005238_10235422240600585_5560611268455823640_n.jpeg"
+      "time": "7:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/friday-night-trivia-with-sam-2026-07-10-19-00",
+      "imageUrl": ""
+    },
+    {
+      "title": "Music Bingo",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-10-07",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/music-bingo-2026-10-07-19-00",
+      "imageUrl": ""
+    },
+    {
+      "title": "Music Bingo",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-09-30",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/music-bingo-2026-09-30-19-00",
+      "imageUrl": ""
+    },
+    {
+      "title": "Music Bingo",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-09-23",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/music-bingo-2026-09-23-19-00",
+      "imageUrl": ""
+    },
+    {
+      "title": "Music Bingo",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-09-16",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/music-bingo-2026-09-16-19-00",
+      "imageUrl": ""
+    },
+    {
+      "title": "Music Bingo",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-09-09",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/music-bingo-2026-09-09-19-00",
+      "imageUrl": ""
+    },
+    {
+      "title": "Music Bingo",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-09-02",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/music-bingo-2026-09-02-19-00",
+      "imageUrl": ""
+    },
+    {
+      "title": "Music Bingo",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-08-26",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/music-bingo-2026-08-26-19-00",
+      "imageUrl": ""
+    },
+    {
+      "title": "Music Bingo",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-08-19",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/music-bingo-2026-08-19-19-00",
+      "imageUrl": ""
+    },
+    {
+      "title": "Music Bingo",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-08-12",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/music-bingo-2026-08-12-19-00",
+      "imageUrl": ""
+    },
+    {
+      "title": "Music Bingo",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-08-05",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/music-bingo-2026-08-05-19-00",
+      "imageUrl": ""
+    },
+    {
+      "title": "Music Bingo",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-07-29",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/music-bingo-2026-07-29-19-00",
+      "imageUrl": ""
+    },
+    {
+      "title": "Music Bingo",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-07-22",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/music-bingo-2026-07-22-19-00",
+      "imageUrl": ""
+    },
+    {
+      "title": "Music Bingo",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-07-15",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/music-bingo-2026-07-15-19-00",
+      "imageUrl": ""
+    },
+    {
+      "title": "Bluegrass & Brews",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-10-06",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/bluegrass-brews-2026-10-06-19-00-1",
+      "imageUrl": ""
+    },
+    {
+      "title": "Bluegrass & Brews",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-09-29",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/bluegrass-brews-2026-09-29-19-00-1",
+      "imageUrl": ""
+    },
+    {
+      "title": "Bluegrass & Brews",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-09-22",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/bluegrass-brews-2026-09-22-19-00-1",
+      "imageUrl": ""
+    },
+    {
+      "title": "Bluegrass & Brews",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-09-15",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/bluegrass-brews-2026-09-15-19-00-1",
+      "imageUrl": ""
+    },
+    {
+      "title": "Bluegrass & Brews",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-09-08",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/bluegrass-brews-2026-09-08-19-00-1",
+      "imageUrl": ""
+    },
+    {
+      "title": "Bluegrass & Brews",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-09-01",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/bluegrass-brews-2026-09-01-19-00-1",
+      "imageUrl": ""
+    },
+    {
+      "title": "Bluegrass & Brews",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-08-25",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/bluegrass-brews-2026-08-25-19-00-1",
+      "imageUrl": ""
+    },
+    {
+      "title": "Bluegrass & Brews",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-08-18",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/bluegrass-brews-2026-08-18-19-00-1",
+      "imageUrl": ""
+    },
+    {
+      "title": "Bluegrass & Brews",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-08-11",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/bluegrass-brews-2026-08-11-19-00-1",
+      "imageUrl": ""
+    },
+    {
+      "title": "Bluegrass & Brews",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-08-04",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/bluegrass-brews-2026-08-04-19-00-1",
+      "imageUrl": ""
+    },
+    {
+      "title": "Bluegrass & Brews",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-07-28",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/bluegrass-brews-2026-07-28-19-00-1",
+      "imageUrl": ""
+    },
+    {
+      "title": "Bluegrass & Brews",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-07-21",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/bluegrass-brews-2026-07-21-19-00-1",
+      "imageUrl": ""
+    },
+    {
+      "title": "Bluegrass & Brews",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-07-14",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/bluegrass-brews-2026-07-14-19-00-1",
+      "imageUrl": ""
+    },
+    {
+      "title": "Classic Simpsons Trivia",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-10-08",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/classic-simpsons-trivia-2026-10-08-19-00",
+      "imageUrl": ""
+    },
+    {
+      "title": "Classic Simpsons Trivia",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-09-10",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/classic-simpsons-trivia-2026-09-10-19-00",
+      "imageUrl": ""
+    },
+    {
+      "title": "Classic Simpsons Trivia",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-08-13",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/classic-simpsons-trivia-2026-08-13-19-00",
+      "imageUrl": ""
+    },
+    {
+      "title": "Brazilian Choro Music (Brazilian Jazz)",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-09-27",
+      "time": "2:30 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/brazilian-choro-music-brazilian-jazz-2026-09-27-14-30",
+      "imageUrl": ""
+    },
+    {
+      "title": "Brazilian Choro Music (Brazilian Jazz)",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-08-23",
+      "time": "2:30 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/brazilian-choro-music-brazilian-jazz-2026-08-23-14-30",
+      "imageUrl": ""
+    },
+    {
+      "title": "Brazilian Choro Music (Brazilian Jazz)",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-07-26",
+      "time": "2:30 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/brazilian-choro-music-brazilian-jazz-2026-07-26-14-30",
+      "imageUrl": ""
+    },
+    {
+      "title": "Sea Shanty Sing Along",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-08-27",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/sea-shanty-sing-along-2026-08-27-19-00",
+      "imageUrl": ""
+    },
+    {
+      "title": "Sea Shanty Sing Along",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-07-23",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/sea-shanty-sing-along-2026-07-23-19-00",
+      "imageUrl": ""
     },
     {
       "title": "The Tire Kickers",
@@ -520,16 +1080,6 @@
       "time": "7:00 PM",
       "venueUrl": "https://havalinapdx.com/events/michelle-malone-duo",
       "imageUrl": "https://images.squarespace-cdn.com/content/v1/64bad396e6ad2c1216a9ada5/1777056257182-S48JBPILLEZPJIUT3OFX/MMDuo+dustbowl.jpeg"
-    },
-    {
-      "title": "WITHHOLDEN, THE SECOND HALF WALTERS, BURNT CITRUS",
-      "venue": "Kelly's Olympian",
-      "neighborhood": "Downtown",
-      "address": "426 SW Washington St, Portland, OR 97204",
-      "date": "2026-07-10",
-      "time": "8:00 PM",
-      "venueUrl": "https://kellysolympian.com/show/withholden-the-second-half-walters-burnt-citrus/",
-      "imageUrl": "https://kellysolympian.com/wp-content/uploads/2026/06/image-copy.jpg"
     },
     {
       "title": "DYLAN OWEN X JZAC: STILL BUILDING TOUR w BEAMIN & BODIZZ",
@@ -740,16 +1290,6 @@
       "time": "8:00 PM",
       "venueUrl": "https://kellysolympian.com/show/hi-im-chris-alex-unkown-astrid-ztar-kidd-nostalgia/",
       "imageUrl": "https://kellysolympian.com/wp-content/uploads/2026/06/1000019916-scaled.jpg"
-    },
-    {
-      "title": "Dueling Piano Show",
-      "venue": "Barrel Room",
-      "neighborhood": "Old Town/Chinatown",
-      "address": "120 NW Couch St, Portland, OR 97209",
-      "date": "2026-07-10",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.barrelroompdx.com/shows/375556",
-      "imageUrl": "https://files.seatengine.com/talent/headshots/photos/57244/full/data"
     },
     {
       "title": "Dueling Piano Show",
@@ -1512,6 +2052,16 @@
       "imageUrl": "https://files.seatengine.com/talent/headshots/photos/81184/full/data"
     },
     {
+      "title": "Dueling Piano Show",
+      "venue": "Barrel Room",
+      "neighborhood": "Old Town/Chinatown",
+      "address": "120 NW Couch St, Portland, OR 97209",
+      "date": "2026-10-09",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.barrelroompdx.com/shows/375582",
+      "imageUrl": "https://files.seatengine.com/talent/headshots/photos/57244/full/data"
+    },
+    {
       "title": "Live Music: Little Radio",
       "venue": "Arbor Beer Lodge",
       "neighborhood": "Arbor Lodge",
@@ -1600,16 +2150,6 @@
       "time": "7:00 PM",
       "venueUrl": "https://www.arborbeerlodge.com/events/writers-round-pdx-gktsf-65dpa-6cp86-dd5ff-myea8-fp9bt-y9yb7-8ytez-a3a4j-rrza3",
       "imageUrl": "https://images.squarespace-cdn.com/content/v1/63001f9e35d48c42972b93ab/1732995966299-PB6BAR01N5P2YMBEW38W/Writers+Round+PDX+Light.jpg"
-    },
-    {
-      "title": "Edie Carey",
-      "venue": "Artichoke Music",
-      "neighborhood": "Brooklyn",
-      "address": "2007 SE Powell Blvd, Portland, OR 97202",
-      "date": "2026-07-10",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.eventbrite.com/e/edie-carey-tickets-1980832542457",
-      "imageUrl": "https://img.evbuc.com/https%3A%2F%2Fcdn.evbuc.com%2Fimages%2F1175201450%2F285096093051%2F1%2Foriginal.20260119-002733?crop=focalpoint&fit=crop&auto=format%2Ccompress&q=75&sharp=10&fp-x=0.5&fp-y=0.5&s=6fab48b9bdc48bd7e773862059c5f14c"
     },
     {
       "title": "Gary Ogan Trio / featuring Tony Carr & Ted Swenson",
@@ -1799,7 +2339,7 @@
       "date": "2026-08-07",
       "time": "7:00 PM",
       "venueUrl": "https://www.eventbrite.com/e/destinie-lynn-tickets-1993382959091",
-      "imageUrl": "https://img.evbuc.com/https%3A%2F%2Fcdn.evbuc.com%2Fimages%2F1188331186%2F2792921854121%2F1%2Foriginal.20260706-233330?crop=focalpoint&fit=crop&w=309&auto=format%2Ccompress&q=75&sharp=10&fp-x=0.501&fp-y=0.35&s=1d63f7962864ce6bc4ead61cb8abcbc2"
+      "imageUrl": "https://img.evbuc.com/https%3A%2F%2Fcdn.evbuc.com%2Fimages%2F1188331186%2F2792921854121%2F1%2Foriginal.20260706-233330?crop=focalpoint&fit=crop&auto=format%2Ccompress&q=75&sharp=10&fp-x=0.501&fp-y=0.35&s=247fac4f8a5ad9cf5e6d26827d1969a7"
     },
     {
       "title": "Curtis Salgado",
@@ -1842,6 +2382,16 @@
       "imageUrl": "https://img.evbuc.com/https%3A%2F%2Fcdn.evbuc.com%2Fimages%2F1185302473%2F2792921854121%2F1%2Foriginal.20260524-050037?crop=focalpoint&fit=crop&auto=format%2Ccompress&q=75&sharp=10&fp-x=0.498&fp-y=0.302&s=6a7b63753243b5cce932922a5dc005b4"
     },
     {
+      "title": "Artichoke Music Presents Walter Parks",
+      "venue": "Artichoke Music",
+      "neighborhood": "Brooklyn",
+      "address": "2007 SE Powell Blvd, Portland, OR 97202",
+      "date": "2026-08-29",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.eventbrite.com/e/artichoke-music-presents-walter-parks-tickets-1990675876133",
+      "imageUrl": "https://img.evbuc.com/https%3A%2F%2Fcdn.evbuc.com%2Fimages%2F1171298422%2F2792921854121%2F1%2Foriginal.20251119-020425?crop=focalpoint&fit=crop&w=200&auto=format%2Ccompress&q=75&sharp=10&fp-x=0.494&fp-y=0.211&s=26125ba9fe3a94e9f80893ec106e4694"
+    },
+    {
       "title": "James T & Friends",
       "venue": "Starday Tavern",
       "neighborhood": "Brentwood-Darlington",
@@ -1872,6 +2422,66 @@
       "imageUrl": ""
     },
     {
+      "title": "Dj Mike Moses",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-09-11",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Casper The Hoax + TBA",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-08-12",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Emo Night w Reggie",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-07-29",
+      "time": "10:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Emo Night w Reggie",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-08-26",
+      "time": "10:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Emo Night w Reggie",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-09-30",
+      "time": "10:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Monkey + Systemic Collapse + Friends With Salad + Colectivo Caskada(San Jose) $10-$15",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-07-16",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
       "title": "Deer Lodge",
       "venue": "Starday Tavern",
       "neighborhood": "Brentwood-Darlington",
@@ -1898,426 +2508,6 @@
       "address": "6517 SE Foster Rd, Portland, OR 97206",
       "date": "2026-09-24",
       "time": "5:30 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Mike Coykendall + Taxi + Born Too Lates",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-07-30",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Riley & The Other Guys",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-08-22",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Circling Saturn + TBA",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-08-21",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Cat positive + Systemic Collapse Album Release",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-09-12",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Elvis Birthday Show",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-10-01",
-      "time": "",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Open Mic with Lucas Benoit",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-07-20",
-      "time": "6:30 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Open Mic with Lucas Benoit",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-07-27",
-      "time": "6:30 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Open Mic with Lucas Benoit",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-08-03",
-      "time": "6:30 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Open Mic with Lucas Benoit",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-08-10",
-      "time": "6:30 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Open Mic with Lucas Benoit",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-08-17",
-      "time": "6:30 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Open Mic with Lucas Benoit",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-08-24",
-      "time": "6:30 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Open Mic with Lucas Benoit",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-08-31",
-      "time": "6:30 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Open Mic with Lucas Benoit",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-09-07",
-      "time": "6:30 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Open Mic with Lucas Benoit",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-09-14",
-      "time": "6:30 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Open Mic with Lucas Benoit",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-09-21",
-      "time": "6:30 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Open Mic with Lucas Benoit",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-09-28",
-      "time": "6:30 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Open Mic with Lucas Benoit",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-10-05",
-      "time": "6:30 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Machete Mouth + TBA",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-09-17",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Noah Powell Band",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-07-22",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Sauce Policy",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-08-08",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Gnosis",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-07-15",
-      "time": "9:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Gnosis",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-08-19",
-      "time": "9:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Gnosis",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-09-16",
-      "time": "9:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Heather Christie & The Starlettes",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-07-10",
-      "time": "5:30 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Heather Christie & The Starlettes",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-08-14",
-      "time": "5:30 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Heather Christie & The Starlettes",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-09-11",
-      "time": "5:30 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Dj Mike Moses",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-09-11",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "The Waysides + Izy Kactus + TBA",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-07-24",
-      "time": "9:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Beezlebabes/Baby Graves/Velvet Merkin",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-08-01",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "DJ Nordictrak",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-07-18",
-      "time": "9:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Pat Hull Trio",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-07-28",
-      "time": "7:30 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Paul Brainard",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-07-14",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Paul Brainard",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-08-11",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Paul Brainard",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-09-08",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "The Skrimps + Eric Keely's Hot Dog Band",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-07-10",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Colleen Johnson + TBA + TBA",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-08-20",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "The Crawlers + The Barf Bags + Bad Channels",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-08-14",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Ike Fonseca + William Surly+ TBA",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-08-15",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Duck Races",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-07-26",
-      "time": "4:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Funkanalia Residency",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-09-05",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Flightless Birds",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-07-19",
-      "time": "5:30 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Blackslage Runners",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-09-19",
-      "time": "8:00 PM",
       "venueUrl": "https://www.stardaytavern.com/",
       "imageUrl": ""
     },
@@ -2402,312 +2592,32 @@
       "imageUrl": ""
     },
     {
-      "title": "Heather Christie & The Starlettes",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-07-24",
-      "time": "5:30 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Heather Christie & The Starlettes",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-08-28",
-      "time": "5:30 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Heather Christie & The Starlettes",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-09-25",
-      "time": "5:30 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Karaoke",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-07-26",
-      "time": "9:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Karaoke",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-08-23",
-      "time": "9:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Karaoke",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-09-27",
-      "time": "9:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "An Evening w/ Tyler Bird + Noah Powell",
+      "title": "Claes Almroth Trio",
       "venue": "Starday Tavern",
       "neighborhood": "Brentwood-Darlington",
       "address": "6517 SE Foster Rd, Portland, OR 97206",
       "date": "2026-08-13",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Gleneden + Phantom Canyon + 2nd Base",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-07-31",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Monkey + Systemic Collapse + Friends With Salad + Colectivo Caskada(San Jose) $10-$15",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-07-16",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Gnosis Drum & Bass",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-08-05",
-      "time": "9:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "2nd Base",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-09-25",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Emo Night w Reggie",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-07-29",
-      "time": "10:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Emo Night w Reggie",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-08-26",
-      "time": "10:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Emo Night w Reggie",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-09-30",
-      "time": "10:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "LAMP + Sad Boy Union + Systemic Collapse",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-07-13",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "DJ Jankey",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-07-12",
       "time": "5:30 PM",
       "venueUrl": "https://www.stardaytavern.com/",
       "imageUrl": ""
     },
     {
-      "title": "Karaoke",
+      "title": "Claes Almroth Trio",
       "venue": "Starday Tavern",
       "neighborhood": "Brentwood-Darlington",
       "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-07-12",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Karaoke",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-07-19",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Clarke Allen Rose + Gabe Ballard and Any Given Session",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-08-29",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Steve Wilkinson + Kevin Kraft",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-07-15",
+      "date": "2026-09-10",
       "time": "5:30 PM",
       "venueUrl": "https://www.stardaytavern.com/",
       "imageUrl": ""
     },
     {
-      "title": "Teeth For Eyes + Touring band",
+      "title": "Claes Almroth Trio",
       "venue": "Starday Tavern",
       "neighborhood": "Brentwood-Darlington",
       "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-09-18",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "The Foilies",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-07-17",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "The Flowtenders",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-09-04",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Noah Powell & The Fantastic Happy Hour Band",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-07-22",
-      "time": "6:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Noah Powell & The Fantastic Happy Hour Band",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-08-26",
-      "time": "6:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Noah Powell & The Fantastic Happy Hour Band",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-09-23",
-      "time": "6:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Tunnel Boss",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-07-18",
-      "time": "6:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Josh Makosky",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-07-10",
+      "date": "2026-10-08",
       "time": "5:30 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Blue Flags Black Grass + Dumpster Joe & The Boys",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-08-06",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Blue Flags Black Grass + Dumpster Joe & The Boys",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-09-03",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Blue Flags Black Grass + Dumpster Joe & The Boys",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-10-01",
-      "time": "8:00 PM",
       "venueUrl": "https://www.stardaytavern.com/",
       "imageUrl": ""
     },
@@ -2842,42 +2752,412 @@
       "imageUrl": ""
     },
     {
-      "title": "Claes Almroth Trio",
+      "title": "The Foilies",
       "venue": "Starday Tavern",
       "neighborhood": "Brentwood-Darlington",
       "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-08-13",
-      "time": "5:30 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Claes Almroth Trio",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-09-10",
-      "time": "5:30 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Claes Almroth Trio",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-10-08",
-      "time": "5:30 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Scott Standly + TBA + TBA",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-10-03",
+      "date": "2026-07-17",
       "time": "8:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Karaoke",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-07-12",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Karaoke",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-07-19",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Noah Powell & The Fantastic Happy Hour Band",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-09-09",
+      "time": "6:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Noah Powell Band",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-07-22",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Heather Christie & The Starlettes",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-07-24",
+      "time": "5:30 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Heather Christie & The Starlettes",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-08-28",
+      "time": "5:30 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Heather Christie & The Starlettes",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-09-25",
+      "time": "5:30 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Heather Christie & The Starlettes",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-08-14",
+      "time": "5:30 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Heather Christie & The Starlettes",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-09-11",
+      "time": "5:30 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Heather Christie & The Starlettes",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-10-09",
+      "time": "5:30 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Flightless Birds",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-07-19",
+      "time": "5:30 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Sad Times Presents!",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-07-25",
+      "time": "9:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Sad Times Presents!",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-09-26",
+      "time": "9:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "The Crawlers + The Barf Bags + Bad Channels",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-08-14",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Circling Saturn + TBA",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-08-21",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Pomegranate Sunday + Jackson Warner + Kyle Glenn",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-08-07",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Paul Brainard",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-07-14",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Paul Brainard",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-08-11",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Paul Brainard",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-09-08",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Riley & The Other Guys",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-08-22",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Tunnel Boss",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-07-18",
+      "time": "6:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Country Side Ride",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-08-28",
+      "time": "9:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Trevor Giuliani",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-07-22",
+      "time": "5:30 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Blue Flags Black Grass + Dumpster Joe & The Boys",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-08-06",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Blue Flags Black Grass + Dumpster Joe & The Boys",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-09-03",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Blue Flags Black Grass + Dumpster Joe & The Boys",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-10-01",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "The Waysides + Izy Kactus + TBA",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-07-24",
+      "time": "9:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Blackslage Runners",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-09-19",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Fuck by fuck off 2026",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-10-09",
+      "time": "",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "LAMP + Sad Boy Union + Systemic Collapse",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-07-13",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Clarke Allen Rose + Gabe Ballard and Any Given Session",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-08-29",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "2nd Base",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-09-25",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Gnosis",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-07-15",
+      "time": "9:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Gnosis",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-08-19",
+      "time": "9:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Gnosis",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-09-16",
+      "time": "9:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Machete Mouth + TBA",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-09-17",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Teeth For Eyes + Touring band",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-09-18",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Funkanalia Residency",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-09-05",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Beezlebabes/Baby Graves/Velvet Merkin",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-08-01",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Pat Hull Trio",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-07-28",
+      "time": "7:30 PM",
       "venueUrl": "https://www.stardaytavern.com/",
       "imageUrl": ""
     },
@@ -2912,21 +3192,61 @@
       "imageUrl": ""
     },
     {
-      "title": "Noah Powell & The Fantastic Happy Hour Band",
+      "title": "Pine Hill Haints + The Invisible Teardrops + Build A Rocket",
       "venue": "Starday Tavern",
       "neighborhood": "Brentwood-Darlington",
       "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-09-09",
-      "time": "6:00 PM",
+      "date": "2026-07-11",
+      "time": "8:00 PM",
       "venueUrl": "https://www.stardaytavern.com/",
       "imageUrl": ""
     },
     {
-      "title": "The Blurry Stars + Die Right + Fawkes Glove",
+      "title": "Steve Wilkinson + Kevin Kraft",
       "venue": "Starday Tavern",
       "neighborhood": "Brentwood-Darlington",
       "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-07-23",
+      "date": "2026-07-15",
+      "time": "5:30 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Gnosis Drum & Bass",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-08-05",
+      "time": "9:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Elvis Birthday Show",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-10-01",
+      "time": "",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Mike Coykendall + Taxi + Born Too Lates",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-07-30",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "An Evening w/ Tyler Bird + Noah Powell",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-08-13",
       "time": "8:00 PM",
       "venueUrl": "https://www.stardaytavern.com/",
       "imageUrl": ""
@@ -2962,61 +3282,41 @@
       "imageUrl": ""
     },
     {
-      "title": "Pine Hill Haints + The Invisible Teardrops + Build A Rocket",
+      "title": "Sauce Policy",
       "venue": "Starday Tavern",
       "neighborhood": "Brentwood-Darlington",
       "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-07-11",
+      "date": "2026-08-08",
       "time": "8:00 PM",
       "venueUrl": "https://www.stardaytavern.com/",
       "imageUrl": ""
     },
     {
-      "title": "Claes Almroth Trio",
+      "title": "Karaoke",
       "venue": "Starday Tavern",
       "neighborhood": "Brentwood-Darlington",
       "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-07-30",
-      "time": "5:30 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Sad Times Presents!",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-07-25",
+      "date": "2026-07-26",
       "time": "9:00 PM",
       "venueUrl": "https://www.stardaytavern.com/",
       "imageUrl": ""
     },
     {
-      "title": "Sad Times Presents!",
+      "title": "Karaoke",
       "venue": "Starday Tavern",
       "neighborhood": "Brentwood-Darlington",
       "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-09-26",
+      "date": "2026-08-23",
       "time": "9:00 PM",
       "venueUrl": "https://www.stardaytavern.com/",
       "imageUrl": ""
     },
     {
-      "title": "Casper The Hoax + TBA",
+      "title": "Karaoke",
       "venue": "Starday Tavern",
       "neighborhood": "Brentwood-Darlington",
       "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-08-12",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Country Side Ride",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-08-28",
+      "date": "2026-09-27",
       "time": "9:00 PM",
       "venueUrl": "https://www.stardaytavern.com/",
       "imageUrl": ""
@@ -3032,32 +3332,202 @@
       "imageUrl": ""
     },
     {
-      "title": "Trevor Giuliani",
+      "title": "Open Mic with Lucas Benoit",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-07-20",
+      "time": "6:30 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Open Mic with Lucas Benoit",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-07-27",
+      "time": "6:30 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Open Mic with Lucas Benoit",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-08-03",
+      "time": "6:30 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Open Mic with Lucas Benoit",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-08-10",
+      "time": "6:30 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Open Mic with Lucas Benoit",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-08-17",
+      "time": "6:30 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Open Mic with Lucas Benoit",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-08-24",
+      "time": "6:30 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Open Mic with Lucas Benoit",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-08-31",
+      "time": "6:30 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Open Mic with Lucas Benoit",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-09-07",
+      "time": "6:30 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Open Mic with Lucas Benoit",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-09-14",
+      "time": "6:30 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Open Mic with Lucas Benoit",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-09-21",
+      "time": "6:30 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Open Mic with Lucas Benoit",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-09-28",
+      "time": "6:30 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Open Mic with Lucas Benoit",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-10-05",
+      "time": "6:30 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Duck Races",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-07-26",
+      "time": "4:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Scott Standly + TBA + TBA",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-10-03",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Colleen Johnson + TBA + TBA",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-08-20",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Ike Fonseca + William Surly+ TBA",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-08-15",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Gleneden + Phantom Canyon + 2nd Base",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-07-31",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Noah Powell & The Fantastic Happy Hour Band",
       "venue": "Starday Tavern",
       "neighborhood": "Brentwood-Darlington",
       "address": "6517 SE Foster Rd, Portland, OR 97206",
       "date": "2026-07-22",
-      "time": "5:30 PM",
+      "time": "6:00 PM",
       "venueUrl": "https://www.stardaytavern.com/",
       "imageUrl": ""
     },
     {
-      "title": "Pomegranate Sunday + Jackson Warner + Kyle Glenn",
+      "title": "Noah Powell & The Fantastic Happy Hour Band",
       "venue": "Starday Tavern",
       "neighborhood": "Brentwood-Darlington",
       "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-08-07",
-      "time": "8:00 PM",
+      "date": "2026-08-26",
+      "time": "6:00 PM",
       "venueUrl": "https://www.stardaytavern.com/",
       "imageUrl": ""
     },
     {
-      "title": "NONO San Pedro + TBA + TBA",
+      "title": "Noah Powell & The Fantastic Happy Hour Band",
       "venue": "Starday Tavern",
       "neighborhood": "Brentwood-Darlington",
       "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-09-24",
-      "time": "8:00 PM",
+      "date": "2026-09-23",
+      "time": "6:00 PM",
       "venueUrl": "https://www.stardaytavern.com/",
       "imageUrl": ""
     },
@@ -3082,14 +3552,74 @@
       "imageUrl": ""
     },
     {
-      "title": "Mercy Music USVSTHEM Pretty Deadly",
-      "venue": "White Eagle Saloon",
-      "neighborhood": "Boise/Eliot",
-      "address": "836 N Russell St, Portland, OR 97227",
-      "date": "2026-07-10",
-      "time": "7:30 PM",
-      "venueUrl": "https://www.mcmenamins.com/events/275694-mercy-music",
-      "imageUrl": "https://cdn.mcmenamins.com/system/uploads/MadborgAssets/_v/MecryMusic25.jpg/gallery_preview.jpg"
+      "title": "Claes Almroth Trio",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-07-30",
+      "time": "5:30 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "The Blurry Stars + Die Right + Fawkes Glove",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-07-23",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "DJ Jankey",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-07-12",
+      "time": "5:30 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "NONO San Pedro + TBA + TBA",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-09-24",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Cat positive + Systemic Collapse Album Release",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-09-12",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "DJ Nordictrak",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-07-18",
+      "time": "9:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "The Flowtenders",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-09-04",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
     },
     {
       "title": "Benefit & Awareness Concert for Neighborhood House with Avery Baz and Joseph Konty",
@@ -3182,6 +3712,16 @@
       "imageUrl": "https://cdn.mcmenamins.com/system/uploads/MadborgAssets/_v/PantsOnFire2019.jpg/gallery_preview.jpg"
     },
     {
+      "title": "The Sugar Roots Blues Jam",
+      "venue": "White Eagle Saloon",
+      "neighborhood": "Boise/Eliot",
+      "address": "836 N Russell St, Portland, OR 97227",
+      "date": "2026-07-20",
+      "time": "9:00 PM",
+      "venueUrl": "https://www.mcmenamins.com/events/274715-the-sugar-roots-blues-jam",
+      "imageUrl": "https://cdn.mcmenamins.com/system/uploads/MadborgAssets/_v/the-sugar-roots.jpg/gallery_preview.jpg"
+    },
+    {
       "title": "Poison Waters & Friends Drag Brunch",
       "venue": "Al's Den",
       "neighborhood": "West End/Downtown",
@@ -3200,16 +3740,6 @@
       "time": "7:00 PM",
       "venueUrl": "https://www.mcmenamins.com/events/277295-live-from-the-annex-sidewalk-bar-rachel-peters-of-valkerie",
       "imageUrl": "https://cdn.mcmenamins.com/system/uploads/MadborgAssets/_v/RachelPeters26.jpg/gallery_preview.jpg"
-    },
-    {
-      "title": "Mean Girls",
-      "venue": "Mission Theater",
-      "neighborhood": "Nob Hill/NW",
-      "address": "1624 NW Glisan St, Portland, OR 97209",
-      "date": "2026-07-10",
-      "time": "6:00 PM",
-      "venueUrl": "https://www.mcmenamins.com/events/277552-mean-girls",
-      "imageUrl": "https://cdn.mcmenamins.com/system/uploads/MadborgAssets/_v/MeanGirls26.jpg/gallery_preview.jpg"
     },
     {
       "title": "From Dusk till Dawn",
@@ -3300,6 +3830,16 @@
       "time": "6:00 PM",
       "venueUrl": "https://www.mcmenamins.com/events/277434-jousting",
       "imageUrl": "https://cdn.mcmenamins.com/system/uploads/MadborgAssets/_v/Jousting26.jpg/gallery_preview.jpg"
+    },
+    {
+      "title": "Mission Theater History & Art Tour",
+      "venue": "Mission Theater",
+      "neighborhood": "Nob Hill/NW",
+      "address": "1624 NW Glisan St, Portland, OR 97209",
+      "date": "2026-07-23",
+      "time": "1:00 PM",
+      "venueUrl": "https://www.mcmenamins.com/events/277387-mission-theater-history-art-tour",
+      "imageUrl": "https://cdn.mcmenamins.com/system/uploads/MadborgAssets/_v/MissionTours25.jpg/gallery_preview.jpg"
     },
     {
       "title": "CKY",
@@ -3692,6 +4232,16 @@
       "imageUrl": "https://cloudinary-a.akamaihd.net/holdmyticket/image/upload/w_600/uploads/flyers2/wp5zow0dbxngeizzv3zz"
     },
     {
+      "title": "Wet Thud w/ Woe Nelly, Giant Robot",
+      "venue": "Twilight Cafe & Bar",
+      "neighborhood": "Hosford-Abernethy",
+      "address": "1420 SE Powell Blvd",
+      "date": "2026-07-30",
+      "time": "",
+      "venueUrl": "https://twilightcafeandbar.com/event/465095/Wet-Thud-w-Woe-Nelly-Giant-Robot",
+      "imageUrl": "https://cloudinary-a.akamaihd.net/holdmyticket/image/upload/w_600/uploads/flyers2/id5ojrsjkbr1d6w6gu19"
+    },
+    {
       "title": "Spirits w/ Villains in Vain, Pitch Black Mass, Vampire Champagne",
       "venue": "Twilight Cafe & Bar",
       "neighborhood": "Hosford-Abernethy",
@@ -3792,14 +4342,14 @@
       "imageUrl": "https://cloudinary-a.akamaihd.net/holdmyticket/image/upload/w_600/uploads/flyers2/tbbm0a3wyc9pfhd8hbf8"
     },
     {
-      "title": "Pentagram String Band w/ Swamp Rats & Guest",
+      "title": "The Pentagram String Band w/ Swamp Rats & Beggars Canyon",
       "venue": "Twilight Cafe & Bar",
       "neighborhood": "Hosford-Abernethy",
       "address": "1420 SE Powell Blvd",
       "date": "2026-09-01",
       "time": "",
-      "venueUrl": "https://twilightcafeandbar.com/event/464737/Pentagram-String-Band-w-Swamp-Rats-Guest",
-      "imageUrl": "https://cloudinary-a.akamaihd.net/holdmyticket/image/upload/w_600/uploads/flyers2/qny1lubyzyvodkklrorj"
+      "venueUrl": "https://twilightcafeandbar.com/event/464737/The-Pentagram-String-Band-w-Swamp-Rats-Beggars-Canyon",
+      "imageUrl": "https://cloudinary-a.akamaihd.net/holdmyticket/image/upload/w_600/uploads/flyers2/n03v1fsko3k708y90qwd"
     },
     {
       "title": "Wicked Wednesday w/ DJ Barbie Saint & DJ Speedo",
@@ -3890,16 +4440,6 @@
       "time": "",
       "venueUrl": "https://twilightcafeandbar.com/event/463791/Wicked-Wednesday-w-DJ-Barbie-Saint-DJ-Speedo",
       "imageUrl": "https://cloudinary-a.akamaihd.net/holdmyticket/image/upload/w_600/uploads/flyers2/z6sudwzayuy6mxnpel4g"
-    },
-    {
-      "title": "Jason Lenyer Buchanan (with Brian Hiltner & Drew Hitzman) • Jackson Warner",
-      "venue": "No Fun",
-      "neighborhood": "Buckman",
-      "address": "1709 SE Hawthorne Blvd",
-      "date": "2026-07-10",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.nofunportland.com/events/jason-lenyer-buchanan-with-brian-hiltner-drew-hitzman-jackson-warner",
-      "imageUrl": "https://images.squarespace-cdn.com/content/v1/65973d9d92af572923b87cfc/1781661552006-CZAVGW3RRT97QLSVJBWF/jasonbuchananFB.jpg"
     },
     {
       "title": "Corduroy Gangsters • Kj Moore & The Calamity",
@@ -4202,14 +4742,14 @@
       "imageUrl": "https://static1.squarespace.com/static/65973d9d92af572923b87cfc/659742a51cb0463477baafcc/6a1c14486af2ef7ddd5d23a2/1780225128100/"
     },
     {
-      "title": "When We Met • TBA • TBA",
+      "title": "When We Met • Masonique • Subvert Savant",
       "venue": "No Fun",
       "neighborhood": "Buckman",
       "address": "1709 SE Hawthorne Blvd",
       "date": "2026-08-14",
       "time": "7:00 PM",
-      "venueUrl": "https://www.nofunportland.com/events/when-we-met-tba-tba",
-      "imageUrl": "https://static1.squarespace.com/static/65973d9d92af572923b87cfc/659742a51cb0463477baafcc/69daffe3a5f1532312c02a01/1775960068671/"
+      "venueUrl": "https://www.nofunportland.com/events/when-we-met-masonique-subvert-savant",
+      "imageUrl": "https://images.squarespace-cdn.com/content/v1/65973d9d92af572923b87cfc/1783739694845-1VZ3WULAQL95NMT7EILD/whenwemetFB.jpg"
     },
     {
       "title": "Bonita Fishwife • TBA • TBA",
@@ -4542,14 +5082,14 @@
       "imageUrl": "https://static1.squarespace.com/static/65973d9d92af572923b87cfc/659742a51cb0463477baafcc/6a114c7ce578c46cd074ca30/1779759633552/"
     },
     {
-      "title": "Veradas, Rayon, Orbit 17",
-      "venue": "Bunk Bar",
-      "neighborhood": "Central Eastside",
-      "address": "1028 SE Water Ave",
-      "date": "2026-07-10",
-      "time": "8:00 PM",
-      "venueUrl": "https://shows.bunksandwiches.com/",
-      "imageUrl": ""
+      "title": "Bad To Worse • TBA • TBA",
+      "venue": "No Fun",
+      "neighborhood": "Buckman",
+      "address": "1709 SE Hawthorne Blvd",
+      "date": "2026-10-09",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.nofunportland.com/events/bad-to-worse-tba-tba",
+      "imageUrl": "https://static1.squarespace.com/static/65973d9d92af572923b87cfc/659742a51cb0463477baafcc/6a3a32e3a59d2c09071d2278/1782199042248/"
     },
     {
       "title": "Colin Jenkins, You the Audience, Alan Singley",
@@ -4639,16 +5179,6 @@
       "date": "2026-10-06",
       "time": "7:00 PM",
       "venueUrl": "https://shows.bunksandwiches.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Wilcone",
-      "venue": "Mississippi Pizza",
-      "neighborhood": "Boise",
-      "address": "3552 N Mississippi Ave",
-      "date": "2026-07-10",
-      "time": "8:00 PM",
-      "venueUrl": "https://mississippipizza.com/event/wilcone/",
       "imageUrl": ""
     },
     {
@@ -5052,36 +5582,6 @@
       "imageUrl": ""
     },
     {
-      "title": "TITS UP",
-      "venue": "Alberta Street Pub",
-      "neighborhood": "Alberta Arts",
-      "address": "1036 NE Alberta St",
-      "date": "2026-07-10",
-      "time": "5:00 PM",
-      "venueUrl": "https://www.albertastreetpub.com/music/2024/2/9/tits-up-3y8x8-z9wpc-wa6yf-6sspp-serrr-xgchh-yckjg-xal9h-ch8p7-6745k",
-      "imageUrl": "https://images.squarespace-cdn.com/content/v1/54109e68e4b06b163549a8dc/1706127624455-F6BFVC7NIKN94IY3650S/2.jpg"
-    },
-    {
-      "title": "2 Cent Fridays - Open Mic Night G-Wade // Deangelo // Doolie",
-      "venue": "Alberta Street Pub",
-      "neighborhood": "Alberta Arts",
-      "address": "1036 NE Alberta St",
-      "date": "2026-07-10",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.albertastreetpub.com/music/2026/1/23/2-cent-fridays-open-mic-night-g-wade-deangelo-doolie",
-      "imageUrl": "https://images.squarespace-cdn.com/content/v1/54109e68e4b06b163549a8dc/1768074417733-GLVBPS3NKNJKB8AIOLLV/2+cent.jpg"
-    },
-    {
-      "title": "Tyrone Hendrix 50th Birthday all white attire party with The Othership Connection",
-      "venue": "Alberta Street Pub",
-      "neighborhood": "Alberta Arts",
-      "address": "1036 NE Alberta St",
-      "date": "2026-07-10",
-      "time": "9:00 PM",
-      "venueUrl": "https://www.albertastreetpub.com/music/2026/7/10/tyrone-hendrix-50th-birthday-all-white-attire-party-with-the-othership-connection",
-      "imageUrl": "https://images.squarespace-cdn.com/content/v1/54109e68e4b06b163549a8dc/1782668387843-IXILVAPKOQ5ZCUQ5DAB8/Tyrone.png"
-    },
-    {
       "title": "Lunch & Soul with the Mel Brown Organ Trio",
       "venue": "Alberta Street Pub",
       "neighborhood": "Alberta Arts",
@@ -5480,586 +5980,6 @@
       "time": "4:00 PM",
       "venueUrl": "https://www.albertastreetpub.com/music/2026/8/24/nuwave-model-casting-event",
       "imageUrl": "https://images.squarespace-cdn.com/content/v1/54109e68e4b06b163549a8dc/1782671431326-I0IYOTP9R1T3WA9AGQSG/NuWave.jpg"
-    },
-    {
-      "title": "Bill Frisell Tribute",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-07-18",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/bill-frisell-tribute",
-      "imageUrl": ""
-    },
-    {
-      "title": "Garcia Birthday Band - Days Between",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-08-06",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/garcia-birthday-band-days-between",
-      "imageUrl": ""
-    },
-    {
-      "title": "Phish Webcast",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-09-06",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/phish-webcast-2026-09-06-19-00",
-      "imageUrl": ""
-    },
-    {
-      "title": "Phish Webcast",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-09-05",
-      "time": "7:30 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/phish-webcast-2026-09-05-19-30",
-      "imageUrl": ""
-    },
-    {
-      "title": "Phish Webcast",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-07-27",
-      "time": "4:30 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/phish-webcast-2026-07-27-16-30",
-      "imageUrl": ""
-    },
-    {
-      "title": "Phish Webcast",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-07-25",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/phish-webcast-2026-07-25-19-00",
-      "imageUrl": ""
-    },
-    {
-      "title": "Phish Webcast",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-07-21",
-      "time": "4:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/phish-webcast-2026-07-21-16-00",
-      "imageUrl": ""
-    },
-    {
-      "title": "Phish Webcast",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-07-19",
-      "time": "4:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/phish-webcast-2026-07-19-16-00",
-      "imageUrl": ""
-    },
-    {
-      "title": "Phish Webcast",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-07-14",
-      "time": "4:30 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/phish-webcast-2026-07-14-16-30",
-      "imageUrl": ""
-    },
-    {
-      "title": "Phish Webcast",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-07-12",
-      "time": "4:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/phish-webcast-2026-07-12-16-00",
-      "imageUrl": ""
-    },
-    {
-      "title": "Phish Webcast",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-07-11",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/phish-webcast-2026-07-11-19-00",
-      "imageUrl": ""
-    },
-    {
-      "title": "Friday Night Trivia With Sam",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-10-02",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/friday-night-trivia-with-sam-2026-10-02-19-00",
-      "imageUrl": ""
-    },
-    {
-      "title": "Friday Night Trivia With Sam",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-09-25",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/friday-night-trivia-with-sam-2026-09-25-19-00",
-      "imageUrl": ""
-    },
-    {
-      "title": "Friday Night Trivia With Sam",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-09-18",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/friday-night-trivia-with-sam-2026-09-18-19-00",
-      "imageUrl": ""
-    },
-    {
-      "title": "Friday Night Trivia With Sam",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-09-11",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/friday-night-trivia-with-sam-2026-09-11-19-00",
-      "imageUrl": ""
-    },
-    {
-      "title": "Friday Night Trivia With Sam",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-09-04",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/friday-night-trivia-with-sam-2026-09-04-19-00",
-      "imageUrl": ""
-    },
-    {
-      "title": "Friday Night Trivia With Sam",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-08-28",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/friday-night-trivia-with-sam-2026-08-28-19-00",
-      "imageUrl": ""
-    },
-    {
-      "title": "Friday Night Trivia With Sam",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-08-21",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/friday-night-trivia-with-sam-2026-08-21-19-00",
-      "imageUrl": ""
-    },
-    {
-      "title": "Friday Night Trivia With Sam",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-08-14",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/friday-night-trivia-with-sam-2026-08-14-19-00",
-      "imageUrl": ""
-    },
-    {
-      "title": "Friday Night Trivia With Sam",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-08-07",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/friday-night-trivia-with-sam-2026-08-07-19-00",
-      "imageUrl": ""
-    },
-    {
-      "title": "Friday Night Trivia With Sam",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-07-31",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/friday-night-trivia-with-sam-2026-07-31-19-00",
-      "imageUrl": ""
-    },
-    {
-      "title": "Friday Night Trivia With Sam",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-07-24",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/friday-night-trivia-with-sam-2026-07-24-19-00",
-      "imageUrl": ""
-    },
-    {
-      "title": "Friday Night Trivia With Sam",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-07-17",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/friday-night-trivia-with-sam-2026-07-17-19-00",
-      "imageUrl": ""
-    },
-    {
-      "title": "Friday Night Trivia With Sam",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-07-10",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/friday-night-trivia-with-sam-2026-07-10-19-00",
-      "imageUrl": ""
-    },
-    {
-      "title": "Music Bingo",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-10-07",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/music-bingo-2026-10-07-19-00",
-      "imageUrl": ""
-    },
-    {
-      "title": "Music Bingo",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-09-30",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/music-bingo-2026-09-30-19-00",
-      "imageUrl": ""
-    },
-    {
-      "title": "Music Bingo",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-09-23",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/music-bingo-2026-09-23-19-00",
-      "imageUrl": ""
-    },
-    {
-      "title": "Music Bingo",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-09-16",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/music-bingo-2026-09-16-19-00",
-      "imageUrl": ""
-    },
-    {
-      "title": "Music Bingo",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-09-09",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/music-bingo-2026-09-09-19-00",
-      "imageUrl": ""
-    },
-    {
-      "title": "Music Bingo",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-09-02",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/music-bingo-2026-09-02-19-00",
-      "imageUrl": ""
-    },
-    {
-      "title": "Music Bingo",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-08-26",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/music-bingo-2026-08-26-19-00",
-      "imageUrl": ""
-    },
-    {
-      "title": "Music Bingo",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-08-19",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/music-bingo-2026-08-19-19-00",
-      "imageUrl": ""
-    },
-    {
-      "title": "Music Bingo",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-08-12",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/music-bingo-2026-08-12-19-00",
-      "imageUrl": ""
-    },
-    {
-      "title": "Music Bingo",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-08-05",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/music-bingo-2026-08-05-19-00",
-      "imageUrl": ""
-    },
-    {
-      "title": "Music Bingo",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-07-29",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/music-bingo-2026-07-29-19-00",
-      "imageUrl": ""
-    },
-    {
-      "title": "Music Bingo",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-07-22",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/music-bingo-2026-07-22-19-00",
-      "imageUrl": ""
-    },
-    {
-      "title": "Music Bingo",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-07-15",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/music-bingo-2026-07-15-19-00",
-      "imageUrl": ""
-    },
-    {
-      "title": "Bluegrass & Brews",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-10-06",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/bluegrass-brews-2026-10-06-19-00-1",
-      "imageUrl": ""
-    },
-    {
-      "title": "Bluegrass & Brews",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-09-29",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/bluegrass-brews-2026-09-29-19-00-1",
-      "imageUrl": ""
-    },
-    {
-      "title": "Bluegrass & Brews",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-09-22",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/bluegrass-brews-2026-09-22-19-00-1",
-      "imageUrl": ""
-    },
-    {
-      "title": "Bluegrass & Brews",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-09-15",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/bluegrass-brews-2026-09-15-19-00-1",
-      "imageUrl": ""
-    },
-    {
-      "title": "Bluegrass & Brews",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-09-08",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/bluegrass-brews-2026-09-08-19-00-1",
-      "imageUrl": ""
-    },
-    {
-      "title": "Bluegrass & Brews",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-09-01",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/bluegrass-brews-2026-09-01-19-00-1",
-      "imageUrl": ""
-    },
-    {
-      "title": "Bluegrass & Brews",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-08-25",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/bluegrass-brews-2026-08-25-19-00-1",
-      "imageUrl": ""
-    },
-    {
-      "title": "Bluegrass & Brews",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-08-18",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/bluegrass-brews-2026-08-18-19-00-1",
-      "imageUrl": ""
-    },
-    {
-      "title": "Bluegrass & Brews",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-08-11",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/bluegrass-brews-2026-08-11-19-00-1",
-      "imageUrl": ""
-    },
-    {
-      "title": "Bluegrass & Brews",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-08-04",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/bluegrass-brews-2026-08-04-19-00-1",
-      "imageUrl": ""
-    },
-    {
-      "title": "Bluegrass & Brews",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-07-28",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/bluegrass-brews-2026-07-28-19-00-1",
-      "imageUrl": ""
-    },
-    {
-      "title": "Bluegrass & Brews",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-07-21",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/bluegrass-brews-2026-07-21-19-00-1",
-      "imageUrl": ""
-    },
-    {
-      "title": "Bluegrass & Brews",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-07-14",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/bluegrass-brews-2026-07-14-19-00-1",
-      "imageUrl": ""
-    },
-    {
-      "title": "Classic Simpsons Trivia",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-10-08",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/classic-simpsons-trivia-2026-10-08-19-00",
-      "imageUrl": ""
-    },
-    {
-      "title": "Classic Simpsons Trivia",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-09-10",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/classic-simpsons-trivia-2026-09-10-19-00",
-      "imageUrl": ""
-    },
-    {
-      "title": "Classic Simpsons Trivia",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-08-13",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/classic-simpsons-trivia-2026-08-13-19-00",
-      "imageUrl": ""
-    },
-    {
-      "title": "Brazilian Choro Music (Brazilian Jazz)",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-09-27",
-      "time": "2:30 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/brazilian-choro-music-brazilian-jazz-2026-09-27-14-30",
-      "imageUrl": ""
-    },
-    {
-      "title": "Brazilian Choro Music (Brazilian Jazz)",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-08-23",
-      "time": "2:30 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/brazilian-choro-music-brazilian-jazz-2026-08-23-14-30",
-      "imageUrl": ""
-    },
-    {
-      "title": "Brazilian Choro Music (Brazilian Jazz)",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-07-26",
-      "time": "2:30 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/brazilian-choro-music-brazilian-jazz-2026-07-26-14-30",
-      "imageUrl": ""
-    },
-    {
-      "title": "Sea Shanty Sing Along",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-08-27",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/sea-shanty-sing-along-2026-08-27-19-00",
-      "imageUrl": ""
-    },
-    {
-      "title": "Sea Shanty Sing Along",
-      "venue": "Tomorrow's Verse",
-      "neighborhood": "Beaumont-Wilshire",
-      "address": "4605 NE Fremont St, Portland, OR 97213",
-      "date": "2026-07-23",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.youenjoymybeer.com/events/sea-shanty-sing-along-2026-07-23-19-00",
-      "imageUrl": ""
     },
     {
       "title": "Hilary Duff: the lucky me tour",
@@ -6462,16 +6382,6 @@
       "imageUrl": ""
     },
     {
-      "title": "The Reisch-o-lectrics: EXTENDED HH",
-      "venue": "Laurelthirst Public House",
-      "neighborhood": "Kerns",
-      "address": "2958 NE Glisan St",
-      "date": "2026-07-10",
-      "time": "6:00 PM",
-      "venueUrl": "https://laurelthirst.com/events/the-resolectrics-friday-edition/",
-      "imageUrl": ""
-    },
-    {
       "title": "OPEN MIC hosted by JAY RINGER!",
       "venue": "Laurelthirst Public House",
       "neighborhood": "Kerns",
@@ -6529,16 +6439,6 @@
       "date": "2026-08-01",
       "time": "6:00 PM",
       "venueUrl": "https://laurelthirst.com/events/the-resolectrics-24/",
-      "imageUrl": ""
-    },
-    {
-      "title": "The Onlies with Sarah Kate Morgan",
-      "venue": "Showdown Saloon",
-      "neighborhood": "Central Eastside",
-      "address": "",
-      "date": "2026-07-10",
-      "time": "9:00 PM",
-      "venueUrl": "https://www.showdownpdx.com/tm-event/the-onlies-with-sarah-kate-morgan/",
       "imageUrl": ""
     },
     {
@@ -6632,13 +6532,13 @@
       "imageUrl": ""
     },
     {
-      "title": "Music for the Masses: Dark 80's New Wave Nite",
-      "venue": "The Get Down",
+      "title": "Geometric Dance Party with Lessons from Bex Bee and Live Bands",
+      "venue": "Showdown Saloon",
       "neighborhood": "Central Eastside",
-      "address": "615 SE Alder St",
-      "date": "2026-07-10",
-      "time": "",
-      "venueUrl": "https://www.tixr.com/groups/thegetdownpdx/events/yacht-rock-remix-3-0-190694",
+      "address": "",
+      "date": "2026-07-18",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.showdownpdx.com/tm-event/geometric-dance-party-with-lessons-from-bex-bee-and-live-bands/",
       "imageUrl": ""
     },
     {
@@ -6717,6 +6617,16 @@
       "neighborhood": "Central Eastside",
       "address": "615 SE Alder St",
       "date": "2026-08-08",
+      "time": "",
+      "venueUrl": "https://www.tixr.com/groups/thegetdownpdx/events/pat-mcgann-seated-show--198351",
+      "imageUrl": ""
+    },
+    {
+      "title": "Pat McGann (seated show)",
+      "venue": "The Get Down",
+      "neighborhood": "Central Eastside",
+      "address": "615 SE Alder St",
+      "date": "2026-08-15",
       "time": "",
       "venueUrl": "https://www.tixr.com/groups/thegetdownpdx/events/tangerine-dream-195245",
       "imageUrl": ""
@@ -6828,7 +6738,27 @@
       "address": "615 SE Alder St",
       "date": "2026-10-04",
       "time": "",
+      "venueUrl": "https://www.tixr.com/groups/thegetdownpdx/events/bit-brigade-performs-mega-man-ii-castlevania-tetris-live-198444",
+      "imageUrl": ""
+    },
+    {
+      "title": "Bit Brigade Performs \"Mega Man II\" + \"Castlevania\" + \"Tetris\" LIVE",
+      "venue": "The Get Down",
+      "neighborhood": "Central Eastside",
+      "address": "615 SE Alder St",
+      "date": "2026-10-06",
+      "time": "",
       "venueUrl": "https://www.tixr.com/groups/thegetdownpdx/events/satin-jackets-192057",
+      "imageUrl": ""
+    },
+    {
+      "title": "Satin Jackets",
+      "venue": "The Get Down",
+      "neighborhood": "Central Eastside",
+      "address": "615 SE Alder St",
+      "date": "2026-10-09",
+      "time": "",
+      "venueUrl": "https://www.tixr.com/groups/thegetdownpdx/events/alborosie-193491",
       "imageUrl": ""
     },
     {
@@ -7202,16 +7132,6 @@
       "imageUrl": "https://i.ticketweb.com/i/00/13/58/05/63_Original.jpg?v=4"
     },
     {
-      "title": "HOLY LOCUST with Yes Ma'am, Beggars Canyon and Heaven Forever",
-      "venue": "Star Theater",
-      "neighborhood": "Old Town/Chinatown",
-      "address": "13 NW 6th Ave",
-      "date": "2026-07-10",
-      "time": "9:00 PM",
-      "venueUrl": "https://www.startheaterportland.com/tm-event/holy-locust-with-yes-maam/",
-      "imageUrl": "https://i.ticketweb.com/i/00/13/52/94/03_Original.jpg?v=4"
-    },
-    {
       "title": "PROVEN with Droplaw, These Cursed Hands, & Torn From Ashes",
       "venue": "Star Theater",
       "neighborhood": "Old Town/Chinatown",
@@ -7369,7 +7289,7 @@
       "date": "2026-08-01",
       "time": "8:30 PM",
       "venueUrl": "https://www.startheaterportland.com/tm-event/eve-6-with-stomach-sleeper/",
-      "imageUrl": "https://i.ticketweb.com/i/00/12/94/04/94_Original.jpg?v=3"
+      "imageUrl": "https://i.ticketweb.com/i/00/12/94/04/94_Original.jpg?v=4"
     },
     {
       "title": "CHURCH OF HIVE",
@@ -7429,7 +7349,7 @@
       "date": "2026-08-21",
       "time": "8:00 PM",
       "venueUrl": "https://www.startheaterportland.com/tm-event/deb-never/",
-      "imageUrl": "https://i.ticketweb.com/i/00/12/94/95/24_Original.jpg?v=2"
+      "imageUrl": "https://i.ticketweb.com/i/00/12/94/95/24_Original.jpg?v=4"
     },
     {
       "title": "LEMAT: Yūgen 幽玄 Æ LIVE Vinyl Release with Night Heron + Caicedo",
@@ -7660,6 +7580,16 @@
       "time": "8:00 PM",
       "venueUrl": "https://www.startheaterportland.com/tm-event/dua-saleh/",
       "imageUrl": "https://i.ticketweb.com/i/00/13/38/37/43_Original.jpg?v=9"
+    },
+    {
+      "title": "MIA ASANO & guest",
+      "venue": "Star Theater",
+      "neighborhood": "Old Town/Chinatown",
+      "address": "13 NW 6th Ave",
+      "date": "2026-10-09",
+      "time": "7:30 PM",
+      "venueUrl": "https://www.startheaterportland.com/tm-event/mia-asano-guest/",
+      "imageUrl": "https://i.ticketweb.com/i/00/12/94/85/34_Original.jpg?v=4"
     },
     {
       "title": "Strong Songs Live!",
@@ -8422,6 +8352,16 @@
       "imageUrl": ""
     },
     {
+      "title": "The Dresden Dolls - Yes, Virginia (Tailor’s Version)",
+      "venue": "Arlene Schnitzer Concert Hall",
+      "neighborhood": "Downtown",
+      "address": "1037 SW Broadway",
+      "date": "2026-10-09",
+      "time": "",
+      "venueUrl": "https://www.portland5.com/event/dresden-dolls-yes-virginia-tailors-version",
+      "imageUrl": ""
+    },
+    {
       "title": "Forrest Frank: The Jesus Generation Tour",
       "venue": "Moda Center",
       "neighborhood": "Lloyd/Rose Quarter",
@@ -8532,6 +8472,16 @@
       "imageUrl": ""
     },
     {
+      "title": "Bigger Than Life Fest featuring Kevin Gates and Friends",
+      "venue": "Moda Center",
+      "neighborhood": "Lloyd/Rose Quarter",
+      "address": "1 N Center Ct St",
+      "date": "2026-09-13",
+      "time": "",
+      "venueUrl": "https://www.rosequarter.com/calendar-events/bigger-than-life-fest-sep-13-2026",
+      "imageUrl": ""
+    },
+    {
       "title": "Journey: Final Frontier Tour",
       "venue": "Veterans Memorial Coliseum",
       "neighborhood": "Lloyd/Rose Quarter",
@@ -8609,6 +8559,16 @@
       "date": "2026-10-05",
       "time": "",
       "venueUrl": "https://www.rosequarter.com/calendar-events/the-neighbourhood-oct-5-2026",
+      "imageUrl": ""
+    },
+    {
+      "title": "Carin Leon: De Sonora Para El Mundo Tour 2026",
+      "venue": "Moda Center",
+      "neighborhood": "Lloyd/Rose Quarter",
+      "address": "1 N Center Ct St",
+      "date": "2026-10-09",
+      "time": "",
+      "venueUrl": "https://www.rosequarter.com/calendar-events/carin-leon-oct-9-2026",
       "imageUrl": ""
     },
     {
@@ -8910,6 +8870,26 @@
       "time": "9:00 PM",
       "venueUrl": "https://monqui.com/event/mountain-grass-unit/the-get-down/portland-oregon/",
       "imageUrl": "https://monqui.com/wp-content/uploads/2026/06/Screenshot-2026-06-15-120417.png"
+    },
+    {
+      "title": "The Dresden Dolls",
+      "venue": "Arlene Schnitzer Concert Hall",
+      "neighborhood": "Downtown",
+      "address": "1037 SW Broadway",
+      "date": "2026-10-09",
+      "time": "8:00 PM",
+      "venueUrl": "https://monqui.com/event/the-dresden-dolls/arlene-schnitzer-concert-hall/portland-oregon/",
+      "imageUrl": "https://monqui.com/wp-content/uploads/2026/05/The-Dresden-Dolls-LEAD-IMAGE-Photo-Credit_-Pixie-Vision-Photography-scaled.jpg"
+    },
+    {
+      "title": "Sammy Rae & The Friends",
+      "venue": "Crystal Ballroom",
+      "neighborhood": "Downtown",
+      "address": "1332 W Burnside St",
+      "date": "2026-10-09",
+      "time": "8:30 PM",
+      "venueUrl": "https://monqui.com/event/sammy-rae-the-friends-3/crystal-ballroom/portland-oregon/",
+      "imageUrl": "https://monqui.com/wp-content/uploads/2026/03/Untitled-design-14.png"
     },
     {
       "title": "Shinyribs",
@@ -9262,24 +9242,14 @@
       "imageUrl": "https://cdn.etix.com/etix/performance-image/performance_image_1200w/70760aaa4b29e5166894d6a9b51467a1.jpg"
     },
     {
-      "title": "Lucero: Celebrating “That Much Further West\" (w/ Thomas Dollbaum)",
-      "venue": "Revolution Hall",
-      "neighborhood": "Buckman",
-      "address": "1300 SE Stark St",
-      "date": "2026-07-10",
+      "title": "Hiss Golden Messenger - I'm People Tour",
+      "venue": "Aladdin Theater",
+      "neighborhood": "Brooklyn",
+      "address": "3017 SE Milwaukie Ave",
+      "date": "2026-10-09",
       "time": "8:00 PM",
-      "venueUrl": "https://www.etix.com/ticket/p/34258932/lucerocelebrating-that-much-further-west-portland-revolution-hall",
-      "imageUrl": "https://cdn.etix.com/etix/performance-image/performance_image_1200w/06fb25c51913a8559e566166a07929e7.jpg"
-    },
-    {
-      "title": "80s Video Dance Attack",
-      "venue": "Revolution Hall (Show Bar)",
-      "neighborhood": "Buckman",
-      "address": "1300 SE Stark St",
-      "date": "2026-07-10",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.etix.com/ticket/p/52111223/80s-video-dance-attack-portland-show-bar-at-revolution-hall",
-      "imageUrl": "https://cdn.etix.com/etix/performance-image/performance_image_1200w/23108f933e248b406e2817112cf4a10a.jpg"
+      "venueUrl": "https://www.etix.com/ticket/p/53454951/hiss-golden-messenger-im-people-tour-portland-aladdin-theater",
+      "imageUrl": "https://cdn.etix.com/etix/performance-image/performance_image_1200w/62a24ffcf95f5ba2f0c7151859d7a6dd.jpg"
     },
     {
       "title": "Sam Grisman Project",
@@ -9812,16 +9782,6 @@
       "imageUrl": "https://cdn.etix.com/etix/performance-image/performance_image_1200w/67235a9a1c176bf54c7d95d45f5451ba.jpg"
     },
     {
-      "title": "The Greyboy Allstars",
-      "venue": "Revolution Hall",
-      "neighborhood": "Buckman",
-      "address": "1300 SE Stark St",
-      "date": "2026-09-17",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.etix.com/ticket/p/74324725/the-greyboy-allstars-portland-revolution-hall",
-      "imageUrl": "https://cdn.etix.com/etix/performance-image/performance_image_1200w/b0661aff074ecf69efeed60a4750fef2.jpg"
-    },
-    {
       "title": "Dent May",
       "venue": "Revolution Hall (Show Bar)",
       "neighborhood": "Buckman",
@@ -9830,6 +9790,16 @@
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/59514374/dent-may-portland-show-bar-at-revolution-hall",
       "imageUrl": "https://cdn.etix.com/etix/performance-image/performance_image_1200w/23c231d6d4897bcb3d9d68566657a069.jpg"
+    },
+    {
+      "title": "The Greyboy Allstars",
+      "venue": "Revolution Hall",
+      "neighborhood": "Buckman",
+      "address": "1300 SE Stark St",
+      "date": "2026-09-17",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.etix.com/ticket/p/74324725/the-greyboy-allstars-portland-revolution-hall",
+      "imageUrl": "https://cdn.etix.com/etix/performance-image/performance_image_1200w/b0661aff074ecf69efeed60a4750fef2.jpg"
     },
     {
       "title": "The Airborne Toxic Event - The Way Home 20 Year Anniversary Tour",
@@ -10062,14 +10032,14 @@
       "imageUrl": "https://cdn.etix.com/etix/performance-image/performance_image_1200w/045a6bedfe954e20c911f0609ba82293.jpg"
     },
     {
-      "title": "Party Girl – A Night Of Party Girl Anthems – 21+",
-      "venue": "Holocene",
-      "neighborhood": "Central Eastside",
-      "address": "1001 SE Morrison St",
-      "date": "2026-07-10",
-      "time": "9:00 PM",
-      "venueUrl": "https://www.holocene.org/event/party-girl-a-night-of-party-girl-anthems-21-7/holocene/portland/",
-      "imageUrl": ""
+      "title": "Boy Harsher (w/ True Blue, Kassie Krut)",
+      "venue": "Revolution Hall",
+      "neighborhood": "Buckman",
+      "address": "1300 SE Stark St",
+      "date": "2026-10-09",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.etix.com/ticket/p/41697845/sold-outboy-harsher-portland-revolution-hall",
+      "imageUrl": "https://cdn.etix.com/etix/performance-image/performance_image_1200w/d6cf96d4177a7f1f9b311493de303bd5.jpg"
     },
     {
       "title": "SUMMERWEEN: La Fiesta Eterna del Verano – ft. DJ sets by Javi, Delune, Peligrosa & more – 21+",
@@ -10412,6 +10382,16 @@
       "imageUrl": ""
     },
     {
+      "title": "Turnabout + White Ring w/ Silicone Valley – Witness Protection Tour – 21+",
+      "venue": "Holocene",
+      "neighborhood": "Central Eastside",
+      "address": "1001 SE Morrison St",
+      "date": "2026-09-07",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.holocene.org/event/turnabout-white-ring-w-silicone-valley-witness-protection-tour-21/holocene/portland/",
+      "imageUrl": ""
+    },
+    {
       "title": "Failboat & Jaymoji: The Stupid Simple Gameshow – ALL AGES!",
       "venue": "Holocene",
       "neighborhood": "Central Eastside",
@@ -10562,22 +10542,12 @@
       "imageUrl": ""
     },
     {
-      "title": "Have A Nice Life",
-      "venue": "Wonder Ballroom",
-      "neighborhood": "Eliot/Boise",
-      "address": "128 NE Russell St",
-      "date": "2026-07-10",
-      "time": "8:00 PM",
-      "venueUrl": "https://wonderballroom.com/event/have-a-nice-life/wonder-ballroom/portland-oregon/",
-      "imageUrl": ""
-    },
-    {
       "title": "Earlybirds Club",
       "venue": "Wonder Ballroom",
       "neighborhood": "Eliot/Boise",
       "address": "128 NE Russell St",
       "date": "2026-07-11",
-      "time": "8:00 PM",
+      "time": "6:00 PM",
       "venueUrl": "https://wonderballroom.com/event/earlybirds-club-4/wonder-ballroom/portland-oregon/",
       "imageUrl": ""
     },
@@ -10892,23 +10862,13 @@
       "imageUrl": ""
     },
     {
-      "title": "Ramble On - Led Zeppelin Tribute",
-      "venue": "Polaris Hall",
-      "neighborhood": "Overlook/N Portland",
-      "address": "635 N Killingsworth Ct",
-      "date": "2026-07-10",
-      "time": "9:00 PM",
-      "venueUrl": "https://www.etix.com/ticket/p/57207582/ramble-on-led-zeppelin-tribute-portland-polaris-hall",
-      "imageUrl": ""
-    },
-    {
-      "title": "The Apricots (w/ Smokey Brights, Chipped Nail Polish)",
-      "venue": "Mississippi Studios",
-      "neighborhood": "Boise/Mississippi",
-      "address": "3939 N Mississippi Ave",
-      "date": "2026-07-10",
-      "time": "9:00 PM",
-      "venueUrl": "https://www.etix.com/ticket/p/59519306/the-apricots-portland-mississippi-studios",
+      "title": "Kishi Bashi: Sonderlust 10th Anniversary Tour",
+      "venue": "Wonder Ballroom",
+      "neighborhood": "Eliot/Boise",
+      "address": "128 NE Russell St",
+      "date": "2026-10-09",
+      "time": "8:00 PM",
+      "venueUrl": "https://wonderballroom.com/event/kishi-bashi-sonderlust-10th-anniversary-tour/wonder-ballroom/portland-oregon/",
       "imageUrl": ""
     },
     {
@@ -10972,16 +10932,6 @@
       "imageUrl": ""
     },
     {
-      "title": "Wic Whitney (w/ Zach Lloyd)",
-      "venue": "Polaris Hall",
-      "neighborhood": "Overlook/N Portland",
-      "address": "635 N Killingsworth Ct",
-      "date": "2026-07-16",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.etix.com/ticket/p/93293266/wic-whitney-portland-polaris-hall",
-      "imageUrl": ""
-    },
-    {
       "title": "The Lostines (w/ Lucas Benoit , Sequoia)",
       "venue": "Mississippi Studios",
       "neighborhood": "Boise/Mississippi",
@@ -10989,6 +10939,16 @@
       "date": "2026-07-16",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/53139025/the-lostines-portland-mississippi-studios",
+      "imageUrl": ""
+    },
+    {
+      "title": "Wic Whitney (w/ Zach Lloyd)",
+      "venue": "Polaris Hall",
+      "neighborhood": "Overlook/N Portland",
+      "address": "635 N Killingsworth Ct",
+      "date": "2026-07-16",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.etix.com/ticket/p/93293266/wic-whitney-portland-polaris-hall",
       "imageUrl": ""
     },
     {
@@ -11042,16 +11002,6 @@
       "imageUrl": ""
     },
     {
-      "title": "The Body (w/ BIG|BRAVE, Cinder Well)",
-      "venue": "Mississippi Studios",
-      "neighborhood": "Boise/Mississippi",
-      "address": "3939 N Mississippi Ave",
-      "date": "2026-07-22",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.etix.com/ticket/p/61129771/the-body-portland-mississippi-studios",
-      "imageUrl": ""
-    },
-    {
       "title": "sace6 (w/ Shyeye)",
       "venue": "Polaris Hall",
       "neighborhood": "Overlook/N Portland",
@@ -11062,13 +11012,23 @@
       "imageUrl": ""
     },
     {
+      "title": "The Body (w/ BIG|BRAVE, Cinder Well)",
+      "venue": "Mississippi Studios",
+      "neighborhood": "Boise/Mississippi",
+      "address": "3939 N Mississippi Ave",
+      "date": "2026-07-22",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.etix.com/ticket/p/61129771/the-body-portland-mississippi-studios",
+      "imageUrl": ""
+    },
+    {
       "title": "Chinese American Bear (w/ Camp Crush)",
       "venue": "Polaris Hall",
       "neighborhood": "Overlook/N Portland",
       "address": "635 N Killingsworth Ct",
       "date": "2026-07-23",
       "time": "8:00 PM",
-      "venueUrl": "https://www.etix.com/ticket/p/63101947/chinese-american-bear-portland-polaris-hall",
+      "venueUrl": "https://www.etix.com/ticket/p/63101947/sold-outchinese-american-bear-portland-polaris-hall",
       "imageUrl": ""
     },
     {
@@ -11102,16 +11062,6 @@
       "imageUrl": ""
     },
     {
-      "title": "Family Mystic & Deltaphonic",
-      "venue": "Mississippi Studios",
-      "neighborhood": "Boise/Mississippi",
-      "address": "3939 N Mississippi Ave",
-      "date": "2026-07-25",
-      "time": "9:00 PM",
-      "venueUrl": "https://www.etix.com/ticket/p/99318581/family-mystic-deltaphonic-portland-mississippi-studios",
-      "imageUrl": ""
-    },
-    {
       "title": "Starcrawler (w/ Sluttony)",
       "venue": "Polaris Hall",
       "neighborhood": "Overlook/N Portland",
@@ -11119,6 +11069,16 @@
       "date": "2026-07-25",
       "time": "9:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/80889012/starcrawler-portland-polaris-hall",
+      "imageUrl": ""
+    },
+    {
+      "title": "Family Mystic & Deltaphonic",
+      "venue": "Mississippi Studios",
+      "neighborhood": "Boise/Mississippi",
+      "address": "3939 N Mississippi Ave",
+      "date": "2026-07-25",
+      "time": "9:00 PM",
+      "venueUrl": "https://www.etix.com/ticket/p/99318581/family-mystic-deltaphonic-portland-mississippi-studios",
       "imageUrl": ""
     },
     {
@@ -11142,16 +11102,6 @@
       "imageUrl": ""
     },
     {
-      "title": "S.O.S. & DEVOtees",
-      "venue": "Mississippi Studios",
-      "neighborhood": "Boise/Mississippi",
-      "address": "3939 N Mississippi Ave",
-      "date": "2026-07-31",
-      "time": "9:00 PM",
-      "venueUrl": "https://www.etix.com/ticket/p/74574632/sosdevotees-portland-mississippi-studios",
-      "imageUrl": ""
-    },
-    {
       "title": "Tommy Newport - Face to Face Tour",
       "venue": "Polaris Hall",
       "neighborhood": "Overlook/N Portland",
@@ -11159,6 +11109,16 @@
       "date": "2026-07-31",
       "time": "9:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/41083278/tommy-newport-face-to-face-tour-portland-polaris-hall",
+      "imageUrl": ""
+    },
+    {
+      "title": "S.O.S. & DEVOtees",
+      "venue": "Mississippi Studios",
+      "neighborhood": "Boise/Mississippi",
+      "address": "3939 N Mississippi Ave",
+      "date": "2026-07-31",
+      "time": "9:00 PM",
+      "venueUrl": "https://www.etix.com/ticket/p/74574632/sosdevotees-portland-mississippi-studios",
       "imageUrl": ""
     },
     {
@@ -11182,6 +11142,16 @@
       "imageUrl": ""
     },
     {
+      "title": "Aaron Rowe (w/ Tommy McCrone)",
+      "venue": "Mississippi Studios",
+      "neighborhood": "Boise/Mississippi",
+      "address": "3939 N Mississippi Ave",
+      "date": "2026-08-02",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.etix.com/ticket/p/87616397/aaron-rowe-portland-mississippi-studios",
+      "imageUrl": ""
+    },
+    {
       "title": "Austin TV (w/ Blesst Chest)",
       "venue": "Polaris Hall",
       "neighborhood": "Overlook/N Portland",
@@ -11189,6 +11159,16 @@
       "date": "2026-08-02",
       "time": "8:00 PM",
       "venueUrl": "https://www.etix.com/ticket/p/52472590/austin-tv-portland-polaris-hall",
+      "imageUrl": ""
+    },
+    {
+      "title": "Anthony Green - This Tour Won't Save You (w/ Geoff Rickly, Keith Goodwin)",
+      "venue": "Polaris Hall",
+      "neighborhood": "Overlook/N Portland",
+      "address": "635 N Killingsworth Ct",
+      "date": "2026-08-04",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.etix.com/ticket/p/92620625/anthony-green-this-tour-wont-save-you-portland-polaris-hall",
       "imageUrl": ""
     },
     {
@@ -11482,26 +11462,6 @@
       "imageUrl": ""
     },
     {
-      "title": "FLYING WHAMMY with Side Note, Found Found Footage, & Slam Piece",
-      "venue": "Dante's",
-      "neighborhood": "Old Town/Chinatown",
-      "address": "350 W Burnside St",
-      "date": "2026-07-10",
-      "time": "",
-      "venueUrl": "https://www.danteslive.com/tm-event/flying-whammy-with-side-note-found-found-footage-guest/",
-      "imageUrl": ""
-    },
-    {
-      "title": "HOTWAX disco~glam~metal~punk~hiphop",
-      "venue": "Dante's",
-      "neighborhood": "Old Town/Chinatown",
-      "address": "350 W Burnside St",
-      "date": "2026-07-10",
-      "time": "",
-      "venueUrl": "https://www.danteslive.com/tm-event/hotwax-discoglammetalpunkhiphop-7/",
-      "imageUrl": ""
-    },
-    {
       "title": "PARADIGM SHYFT with Fear Of Dissolving, DJ Barbie Saint, & Particle Son",
       "venue": "Dante's",
       "neighborhood": "Old Town/Chinatown",
@@ -11612,6 +11572,16 @@
       "imageUrl": ""
     },
     {
+      "title": "ELVIS followed by Sinferno Cabaret",
+      "venue": "Dante's",
+      "neighborhood": "Old Town/Chinatown",
+      "address": "350 W Burnside St",
+      "date": "2026-07-19",
+      "time": "",
+      "venueUrl": "https://www.danteslive.com/tm-event/elvis-followed-by-sinferno-cabaret/",
+      "imageUrl": ""
+    },
+    {
       "title": "SINFERNO CABARET",
       "venue": "Dante's",
       "neighborhood": "Old Town/Chinatown",
@@ -11682,6 +11652,16 @@
       "imageUrl": ""
     },
     {
+      "title": "THE BIRTHDAY SUITS followed by Sinferno Cabaret",
+      "venue": "Dante's",
+      "neighborhood": "Old Town/Chinatown",
+      "address": "350 W Burnside St",
+      "date": "2026-07-26",
+      "time": "",
+      "venueUrl": "https://www.danteslive.com/tm-event/the-birthday-suits-followed-by-sinferno-cabaret/",
+      "imageUrl": ""
+    },
+    {
       "title": "SINFERNO CABARET",
       "venue": "Dante's",
       "neighborhood": "Old Town/Chinatown",
@@ -11702,7 +11682,7 @@
       "imageUrl": ""
     },
     {
-      "title": "EDGE OF PARADISE & STARKILL with Vintersea & Guests",
+      "title": "EDGE OF PARADISE & STARKILL with Vintersea & Before The Fallen",
       "venue": "Dante's",
       "neighborhood": "Old Town/Chinatown",
       "address": "350 W Burnside St",
@@ -11782,6 +11762,16 @@
       "imageUrl": ""
     },
     {
+      "title": "BOTCHED BURIAL with Gorestorm Massacre, At Peace, Berator, & a live wrestling performance by The Lucha Project",
+      "venue": "Dante's",
+      "neighborhood": "Old Town/Chinatown",
+      "address": "350 W Burnside St",
+      "date": "2026-08-12",
+      "time": "",
+      "venueUrl": "https://www.danteslive.com/tm-event/botched-burial-with-gorestorm-massacre-at-peace-berator-a-live-wrestling-performance-by-the-lucha-project/",
+      "imageUrl": ""
+    },
+    {
       "title": "ODDBALLS AND OUTLAWS: IV and The Strange Band + Clownvis Presley",
       "venue": "Dante's",
       "neighborhood": "Old Town/Chinatown",
@@ -11809,6 +11799,16 @@
       "date": "2026-08-20",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/dale-watson-and-his-lone-stars-with-guests/",
+      "imageUrl": ""
+    },
+    {
+      "title": "STAINLESS – Album Release Show with Solicitor & Wizard Cage",
+      "venue": "Dante's",
+      "neighborhood": "Old Town/Chinatown",
+      "address": "350 W Burnside St",
+      "date": "2026-08-21",
+      "time": "",
+      "venueUrl": "https://www.danteslive.com/tm-event/stainless-album-release-show-with-solicitor-wizard-cage/",
       "imageUrl": ""
     },
     {
@@ -11879,6 +11879,16 @@
       "date": "2026-09-04",
       "time": "",
       "venueUrl": "https://www.danteslive.com/tm-event/skitz-kraven-with-figure-8/",
+      "imageUrl": ""
+    },
+    {
+      "title": "OATHBOUND with guests",
+      "venue": "Dante's",
+      "neighborhood": "Old Town/Chinatown",
+      "address": "350 W Burnside St",
+      "date": "2026-09-09",
+      "time": "",
+      "venueUrl": "https://www.danteslive.com/tm-event/oathbound-with-guests/",
       "imageUrl": ""
     },
     {
