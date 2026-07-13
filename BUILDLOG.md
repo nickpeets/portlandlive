@@ -4,6 +4,27 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### 5d5f348 — Remove artist heart from show cards (entry point only)
+Removed the band/artist heart from the show cards while leaving the entire band-favorite data model
+and matching logic untouched. This mirrors the earlier venue-heart cleanup: only the entry point on
+the card was removed, not the underlying feature.
+
+- **Artist heart removed from both card layouts.** The heart was appended in the shared `titleHtml`
+builder (`heartFav(bandFavKey(s.title), s.title, 'band')`), so dropping it there removes the artist
+heart from both the imageless (`scard`) and horizontal (`s-body`) card layouts at once.
+- **Hearts now live in exactly two places.** Show cards keep their save-heart (`heartBtn(s)`); venues
+are heartable only on the venue detail page. There is no longer any way to heart an artist from the UI.
+- **Data model deliberately preserved.** `bandFavKey`, the `band::` key format, the Following filter's
+band-matching (including `_normTitle` normalization), and the My Favorites view's band display + un-heart
+control are all intact. Legacy `band::` favorites still match in the Following filter and remain
+un-heartable from My Favorites.
+- **Follow-on (not built):** artist-hearting has no entry point pending a future proper artist field
+(currently band identity is derived from the show title).
+
+Verified against the served page before commit: no artist hearts on show cards (both layouts), save-heart
+still present, venue heart works only on the venue detail page, and the Following filter still matches a
+`band::` favorite (incl. case/space-normalized). Audit (dev) toggle left in place.
+
 ### 8796ed2 — Favorites foundation: bands + venues + consolidated My Favorites view
 Extended favoriting beyond shows to bands and venues, and reworked the saved view into a single grouped surface. Also fixed a pre-existing persistence bug that had silently disabled favorites rehydration.
 - **Band + venue favoriting added.** Heart toggles now appear on show cards, in the venue directory, and on the venue detail view (previously only show cards had hearts).
