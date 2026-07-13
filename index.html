@@ -1194,7 +1194,7 @@ function listOf(items, showDate){
     const sep1 = (dateBit && timeBit) ? `<span class="rdot">\u00b7</span>` : '';
     const titleHtml = (s.venueUrl
       ? `<a class="rtitle" href="${s.venueUrl}" target="_blank" rel="noopener">${formatTitle(s.title)}</a>`
-      : `<span class="rtitle">${formatTitle(s.title)}</span>`) + heartFav(bandFavKey(s.title), s.title, 'band');
+      : `<span class="rtitle">${formatTitle(s.title)}</span>`);
     const venueLink = `<a class="s-venue" href="#" data-venue="${esc(s.venue)}" title="View this venue">${esc(s.venue)}</a>`;
     const nb = s.neighborhood ? `<span class="s-nb">${esc(s.neighborhood)}</span>` : '';
 
