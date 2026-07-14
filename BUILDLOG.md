@@ -98,6 +98,12 @@ Hand-added three shows (one per day) for the 2026 Waterfront Blues Festival via 
 - **Normalized matching** — band/venue matching now runs through `_normTitle` at compare-time (case/whitespace-insensitive); stored key format unchanged, so prior hearts still match.
 - **Verified** against the live feed, incl. the Waterfront Blues Festival surfacing via its venue heart.
 
+### 980dc1d — Poster lightbox on show cards
+Artwork on show cards now opens a reused dimmed overlay; the image is capped at max 90vw / 90vh with object-fit:contain, and closes via the X button, backdrop click, or Escape. Cards with no art are inert, and stopPropagation guards keep card actions from firing when the poster is clicked.
+
+### 2f90395 — Following clarity: match-reason chips + summary line
+Matched cards show a muted reason chip (venue priority on a double-match), computed with the same _normTitle comparison the filter uses. A summary line reads "Following N venues · N bands · N shows" (the band segment is omitted at zero). Display-only; no data-model changes.
+
 ## Open Items
 
 - **⚠ Audit (dev) toggle still live / user-visible** — **retained on purpose** for a later re-audit pass after the override layer (e3abb7e); remove once the classifier audit is fully signed off.
@@ -108,3 +114,4 @@ Hand-added three shows (one per day) for the 2026 Waterfront Blues Festival via 
 - **Coverage audit pending** — Venues directory vs. rated venue list.
 - **Venues toggle reset-desync** — when the Venues directory toggle is ON and the user clicks the in-page Refresh/Reset button (not browser refresh), the listing reverts to today's shows BUT the Venues toggle pill stays visually ON; the pill active state is not cleared when reset returns to the default show list. Fix: the reset/refresh handler should clear the Venues view flag (state.venues) and un-highlight the pill so toggle state matches the view shown. — **RESOLVED in d3fa40f.**
 - **Band favorites key on full show title** — band hearts match against the full show title, not a separate artist field. Follow-up: introduce a dedicated artist field for cleaner band-level favoriting.
+- **My Favorites vs ★ Following pill naming (UX)** — the two share the same heart data but behave differently: *My Favorites* is a collection view (everything hearted, grouped) while *★ Following* is a feed filter (collapse listings to hearted matches). The pill names don't communicate this split. Candidate fix: rename (e.g. "Saved" vs "Following") or eventually merge the two. Display/naming only; no behavior change decided yet.
