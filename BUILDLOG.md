@@ -4,6 +4,18 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### ba9c448 — Remove Hatfield Hall Rotunda; add Oregon Zoo
+
+Venue-directory cleanup plus a new manually-maintained venue. Hatfield Hall Rotunda is gone from the scraper, its baseline, and the hand-added data; the Oregon Zoo joins as a manual venue because its event pages are not machine-readable. This entry also honestly records a Rose Quarter false start and resolves a stale open item.
+
+- **Hatfield Hall Rotunda fully removed.** Dropped from `VENUE_INFO` in `scrape_venues.py`, deleted from `venue_baselines.json`, purged from `manual_shows.json`, and a defensive `continue` guard was added to the Portland'5 card parser so it can never re-enter. This closes the standing "Hatfield 0-shows" open item by retiring the venue outright.
+- **Rose Quarter scraping already existed — net code change: none.** While adding Rose Quarter support I discovered a working `parse_rosequarter` parser and SOURCES entry already committed. A duplicate parser was briefly added, immediately caught via doubled rows + baseline alerts, and fully reverted (`git checkout`). The pre-existing scraper contributes 20 in-horizon shows (Moda Center 13 / Theater of the Clouds 5 / Veterans Memorial Coliseum 2), neighborhood "Lloyd/Rose Quarter", with Music-tag filtering plus a defensive title blocklist (`vs.`, `Winterhawks`, `Blazers`, `Disney On Ice`, etc.) verified against the live feed.
+- **Kelly's Olympian open item RESOLVED.** The live feed already carries the venue (visible as "Kelly's Olympian — Downtown — 20 shows") and the daily Action scrapes it without issue; the old anti-bot note was stale and has been retired.
+- **Oregon Zoo added as a manually-maintained venue.** The zoo's event pages are Drupal free-text prose with no structured markup, so scraping was not viable; instead 6 verified 2026 ZooNights headliners were hand-added (Jul 17 Norman Sylvester, Jul 24 Ural Thomas & the Pain, Jul 31 Hit Machine, Aug 7 Garcia Birthday Band, Aug 14 Taken by the Sky, Aug 21 Jujuba Entertainment), all 6:30 PM, address 4001 SW Canyon Rd. Neighborhood "Washington Park" is a new convention — no prior Washington Park entries existed.
+- **Coliseum/Moda address discrepancy reviewed, existing config retained.** The task specified Coliseum "300 N Ramsay Way" / Moda "1 N Center Court St", but the already-committed config carries "300 N Winning Way" / "1 N Center Ct St", which match the venue's own ticketing listing; the existing values were kept.
+
+Result after the change: 1146 → 1171 shows (+25) across 49 → 50 venues (+1 Oregon Zoo). Hatfield is absent from the rendered Venues directory.
+
 ### 0577e72 — Build hygiene: strip HTML from titles, strengthen dedupe key, merge fields on collision
 
 Tightened the `build_shows.py` scrape/build hygiene so raw markup never reaches `shows.json` and near-duplicate rows can no longer slip through the dedupe. This work was found already staged from a prior session; it was reviewed line-by-line and validated against the live data before committing, then extended with the field-merge fix below.
