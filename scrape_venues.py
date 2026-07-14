@@ -77,7 +77,6 @@ VENUE_INFO = {
     "Newmark Theatre": ("Downtown", "1111 SW Broadway"),
     "Brunish Theatre": ("Downtown", "1111 SW Broadway"),
     "Winningstad Theatre": ("Downtown", "1111 SW Broadway"),
-    "Hatfield Hall Rotunda": ("Downtown", "1111 SW Broadway"),
     "Main Street": ("Downtown", "SW Main St"),
     "Moda Center": ("Lloyd/Rose Quarter", "1 N Center Ct St"),
     "Veterans Memorial Coliseum": ("Lloyd/Rose Quarter", "300 N Winning Way"),
@@ -889,6 +888,10 @@ def _p5_cards(html, today, out, seen):
     for c in cards:
         vn = c.select_one(".teaser__venue-name") or c.select_one(".teaser__venue")
         venue = clean(vn.get_text(" ")) if vn else ""
+        # Hatfield Hall Rotunda removed as a tracked venue (closed "0-shows"
+        # open item): drop any Portland'5 card that still lists it.
+        if venue == "Hatfield Hall Rotunda":
+            continue
         t = c.select_one(".teaser__title")
         title = clean(t.get_text(" ")) if t else ""
         a = c.select_one(".teaser__link") or c.find("a", href=True)
