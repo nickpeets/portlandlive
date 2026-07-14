@@ -4,6 +4,18 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### 0577e72 — Build hygiene: strip HTML from titles, strengthen dedupe key, merge fields on collision
+
+Tightened the `build_shows.py` scrape/build hygiene so raw markup never reaches `shows.json` and near-duplicate rows can no longer slip through the dedupe. This work was found already staged from a prior session; it was reviewed line-by-line and validated against the live data before committing, then extended with the field-merge fix below.
+
+- **`clean_title()` strips tags + decodes entities, applied before dedupe keying.** Titles are decoded, tag-stripped (`<[^>]+>`), decoded again, and whitespace-collapsed at build time, so a `<span>` (or an entity) from a source feed can't reach `shows.json`. Sanitization runs in the row loop *before* the dedupe key is computed, so the cleaned title also feeds the key.
+- **`_norm_key()` makes the dedupe key punctuation/dash/HTML-insensitive.** The `(title, venue, date)` key now strips HTML, dash-normalizes, lowercases, and collapses every run of non-alphanumerics to one space. This closes the class of duplicate that let the "Drag Brunch Hosted by Nicoleonoscopi" show survive as two rows (a markup/punctuation variant produced a distinct key under the old title-only normalization). The source has since been cleaned, so on current data this change removes nothing extra — it is prophylactic.
+- **Same-day time-collision FLAG path (flags, never silently merges).** When two rows share the normalized title/venue/date and *both* carry a non-empty, differing `time`, the build prints a `WARNING`/`FLAG` and keeps the first rather than merging — these may be two real shows the same day and need a human to confirm.
+- **New: field-merge on collision (keep the most-complete row).** When a duplicate is dropped, any field the kept (first-seen) row left empty is back-filled from the dropped row (currently `time`, `imageUrl`, `venueUrl`). Motivating case: `Mountain Grass Unit @ The Get Down 2026-10-03` existed as an empty-time row plus a `9:00 PM` row; the old logic kept the empty-time row and discarded the time. Now the kept row adopts `9:00 PM` (and the image URL) before the dup is dropped. Dedupe no longer discards information.
+- **Known residual edge (logged, acceptable for now).** Two *genuinely distinct* same-title/venue/date shows where one row lacks a `time` would still merge (the FLAG guard only fires when both times are present and differ). Not observed in current data; left as-is intentionally.
+
+Build after the change: 1146 shows across 49 venues, no duplicate-removal beyond the one true dupe, and no time-collision flags. Old vs new total unchanged at 1146; the only content delta vs the prior `shows.json` is the two merged fields on the Mountain Grass Unit row.
+
 ### 5d5f348 — Remove artist heart from show cards (entry point only)
 Removed the band/artist heart from the show cards while leaving the entire band-favorite data model
 and matching logic untouched. This mirrors the earlier venue-heart cleanup: only the entry point on
