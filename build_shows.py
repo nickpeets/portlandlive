@@ -12,14 +12,39 @@ The GitHub Action runs both in order, then commits shows.json.
 """
 import json, os, datetime
 import re
+import html as _html
 
 _DASHES = re.compile(r"[\u2010-\u2015]")
+_TAG_RE = re.compile(r"<[^>]+>")
+_NONALNUM = re.compile(r"[^0-9a-z]+")
+
+
+def clean_title(t):
+    # Strip HTML tags and decode entities so raw markup (e.g. a <span> from
+    # a source feed) never reaches shows.json. Decode first (entities can
+    # reveal tag chars), strip tags, decode again, then collapse whitespace.
+    t = _html.unescape(t or "")
+    t = _TAG_RE.sub("", t)
+    t = _html.unescape(t)
+    return re.sub(r"\s+", " ", t).strip()
+
+
+def _norm_key(s):
+    # Aggressive normalization used ONLY for the dedupe key (not display):
+    # strip HTML, dash-normalize, lower, and collapse every run of
+    # non-alphanumerics to one space so punctuation/spacing/markup variants
+    # of the same title or venue can never form a distinct key.
+    s = _TAG_RE.sub("", _html.unescape(s or ""))
+    s = _DASHES.sub("-", s).lower()
+    return _NONALNUM.sub(" ", s).strip()
 
 
 def _norm_title(t):
-    # dash-normalize + collapse whitespace + lower so unicode-dash variants
-    # (the JLR phantom-dup bug) can never produce a distinct dedupe key.
-    return re.sub(r"\s+", " ", _DASHES.sub("-", t or "")).strip().lower()
+    return _norm_key(t)
+
+
+def _norm_venue(v):
+    return _norm_key(v)
 
 HERE = os.path.dirname(__file__)
 MANUAL = os.path.join(HERE, "manual_shows.json")
@@ -103,20 +128,52 @@ def main():
     cutoff = today_pacific.isoformat()
     shows = [s for s in shows if s.get("date", "") >= cutoff]
 
-    # dedupe on (title, venue, date)
-    seen, deduped = set(), []
+    # Sanitize titles: strip HTML tags + decode entities at build time.
+    for s in shows:
+        if s.get("title"):
+            s["title"] = clean_title(s["title"])
+
+    # dedupe on (normalized title, normalized venue, date)
+    seen, deduped = {}, []
+    time_collisions = []
     for s in shows:
         k = (_norm_title(s.get("title","")),
-             s.get("venue","").lower().strip(),
+             _norm_venue(s.get("venue","")),
              s.get("date",""))
-        if k not in seen and s.get("title") and s.get("date"):
-            seen.add(k); deduped.append(s)
+        if not (s.get("title") and s.get("date")):
+            continue
+        if k not in seen:
+            seen[k] = s; deduped.append(s)
+        else:
+            # Same title/venue/date already kept. If BOTH rows carry a
+            # non-empty, differing time they may be two real shows that day
+            # -> flag instead of silently dropping.
+            kept = seen[k]
+            t_new = (s.get("time") or "").strip()
+            t_old = (kept.get("time") or "").strip()
+            if t_new and t_old and t_new != t_old:
+                time_collisions.append((s.get("title"), s.get("venue"), s.get("date"), t_old, t_new))
+            # Field-merge: the dropped duplicate may carry data the kept row
+            # lacks. Adopt the dup's value for any field the kept row left
+            # empty so dedupe never discards information (e.g. a missing time,
+            # image, or ticket link filled in by a second listing of the show).
+            for _f in ("time", "imageUrl", "venueUrl"):
+                if not (kept.get(_f) or "").strip() and (s.get(_f) or "").strip():
+                    kept[_f] = s[_f]
 
     deduped.sort(key=lambda s: (s["date"], s.get("venue",""), s.get("title","")))
     for i, s in enumerate(deduped, 1):
         s["id"] = i
 
     validate(deduped)
+
+    # Surface same title/venue/date rows that differ only by time. These are
+    # NOT auto-merged blindly here: the first row is kept, but each conflict
+    # is reported so a human can confirm they are not two distinct shows.
+    if time_collisions:
+        print(f"WARNING: {len(time_collisions)} same-day time collision(s) (kept first, flagged):")
+        for ti, ve, da, t_old, t_new in time_collisions:
+            print(f"  FLAG: {ti!r} @ {ve!r} {da} kept-time={t_old!r} dropped-time={t_new!r}")
 
     out = {
         "generated": datetime.datetime.now().astimezone().isoformat(timespec="seconds"),
