@@ -236,6 +236,7 @@ body{
 .scard .s-venue:hover{text-decoration-style:solid}
 .scard .s-meta{font-size:12.5px;color:#7c6a55}
 .scard .s-nb{font-family:'Oswald';font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;background:rgba(61,87,74,.1);color:var(--forest);padding:4px 8px;border-radius:20px;font-weight:600}
+    .scard .follow-reason{display:inline-flex;align-items:baseline;gap:4px;font-family:'Oswald';font-size:11px;letter-spacing:.02em;background:rgba(181,86,43,.1);color:var(--rust);padding:3px 9px;border-radius:20px;font-weight:600}
 .scard .heart{color:var(--ink);opacity:.5}
 .scard .heart.on{color:var(--rust);opacity:1}
 .scard .listen{align-self:center}
@@ -988,9 +989,20 @@ function render(){
   if(state.myShows){ renderFavorites(); return; }
   if(state.view === "venues"){ renderVenues(); return; }
   const list = filtered();
+  if(state.following){
+    const _fs = new Set([...state.favorites].map(function(k){ var i=k.indexOf('::'); return i<0 ? k : k.slice(0,i+2)+_normTitle(k.slice(i+2)); }));
+    const _vSet = new Set(), _bSet = new Set();
+    list.forEach(function(s){ if(_fs.has('venue::'+_normTitle(s.venue))){ _vSet.add(_normTitle(s.venue)); } else if(_fs.has('band::'+_normTitle(s.title))){ _bSet.add(_normTitle(s.title)); } });
+    const _seg = [];
+    _seg.push('Following ' + _vSet.size + ' venue' + (_vSet.size===1?'':'s'));
+    if(_bSet.size) _seg.push(_bSet.size + ' band' + (_bSet.size===1?'':'s'));
+    _seg.push(list.length + ' show' + (list.length===1?'':'s'));
+    $('#resultCount').textContent = list.length ? _seg.join(' \u00b7 ') : 'Following \u2014 no upcoming shows';
+  } else {
   $('#resultCount').textContent = list.length
     ? `${list.length} show${list.length>1?'s':''} found`
     : "No results";
+  }
   const wrap = $('#results');
   wrap.innerHTML = "";
       // TEMP audit/debug panel: lists every classification bucket (music /
@@ -1191,9 +1203,12 @@ function ticketsOf(items){
 function listOf(items, showDate){
   const l=document.createElement('div');
   const eff = state.picks ? 'b' : state.cardLayout;
+  const _followSet = state.following ? new Set([...state.favorites].map(function(k){ var i=k.indexOf('::'); return i<0 ? k : k.slice(0,i+2)+_normTitle(k.slice(i+2)); })) : null;
   l.className = 'list ' + (eff==='b' ? 'list--b' : 'list--a');
   items.forEach(s=>{
     const c=document.createElement('div'); c.className='scard'; if(s.id!=null){ c.id='show-'+s.id; c.dataset.showid=s.id; }
+    let reasonChip = '';
+    if(_followSet){ if(_followSet.has('venue::'+_normTitle(s.venue))){ reasonChip = `<span class="follow-reason" title="Followed venue">\u2665 ${esc(s.venue)}</span>`; } else if(_followSet.has('band::'+_normTitle(s.title))){ reasonChip = `<span class="follow-reason" title="Followed artist">\u2665 ${esc(s.title)}</span>`; } }
     const media = smediaFor(s);
     if(!media) c.classList.add('no-media');
     const dateBit = showDate ? `<span class="s-date rdate">${ordinalDate(s.date)}</span>` : '';
@@ -1211,7 +1226,7 @@ function listOf(items, showDate){
         + `<div class="s-body">`
         +   `<div class="s-when">${dateBit||''}${(dateBit&&timeBit)?' \u00b7 ':''}${timeBit||''}</div>`
         +   `<div class="s-title">${titleHtml}</div>`
-        +   `<div class="s-sub">${venueLink}${nb}</div>`
+        +   `<div class="s-sub">${venueLink}${nb}${reasonChip}</div>`
         +   `<div class="s-foot">${listenBtn(s.title)||'<span></span>'}${planBtn(s)}${heartBtn(s)}</div>`
         + `</div>`;
     } else {
@@ -1219,7 +1234,7 @@ function listOf(items, showDate){
       c.innerHTML = media
         + `<div class="s-body">`
         +   `<div class="s-title">${titleHtml}</div>`
-        +   `<div class="s-sub">${timeBit}${sep1}${dateBit}${(dateBit||timeBit)?`<span class="rdot">\u00b7</span>`:''}${venueLink}${nb}</div>`
+        +   `<div class="s-sub">${timeBit}${sep1}${dateBit}${(dateBit||timeBit)?`<span class="rdot">\u00b7</span>`:''}${venueLink}${nb}${reasonChip}</div>`
         + `</div>`
         + `<div class="s-foot">${heartBtn(s)}${listenBtn(s.title)}${planBtn(s)}</div>`;
     }
