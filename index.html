@@ -245,6 +245,13 @@ body{
 .s-tile{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:10px;text-align:center}
 .s-tile-t{font-family:'Alfa Slab One',serif;color:var(--cream);line-height:1.1;text-shadow:0 2px 6px rgba(0,0,0,.35);overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;line-clamp:3;-webkit-box-orient:vertical}
 .s-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;z-index:1}
+/* ===== Artwork lightbox (dependency-free; one reused overlay for all cards) ===== */
+.s-img--zoom,.s-media:has(>.s-img--zoom) .s-scrim{cursor:pointer}
+.lb-overlay{display:none;position:fixed;inset:0;z-index:9999;background:rgba(8,10,7,.86);align-items:center;justify-content:center;padding:24px;box-sizing:border-box}
+.lb-overlay.lb-open{display:flex}
+.lb-img{max-width:90vw;max-height:90vh;width:auto;height:auto;object-fit:contain;display:block;box-shadow:0 8px 40px rgba(0,0,0,.6);border-radius:4px}
+.lb-x{position:absolute;top:14px;right:18px;width:44px;height:44px;border:0;cursor:pointer;background:rgba(0,0,0,.5);color:#fff;font-size:26px;line-height:44px;text-align:center;border-radius:50%;padding:0}
+.lb-x:hover{background:rgba(0,0,0,.75)}
 .s-scrim{position:absolute;inset:0;z-index:2;background:linear-gradient(to top,rgba(20,12,6,.5) 0%,rgba(20,12,6,.06) 42%,rgba(20,12,6,0) 62%)}
 .s-img--broken{display:none}
 
@@ -1131,7 +1138,7 @@ function closeSample(){var o=document.getElementById('smov');if(o)o.classList.re
 function smediaFor(s){
   const tile = `<div class="s-tile" style="background:${tileColor(s)}"><span class="s-tile-t">${esc(s.title)}</span></div>`;
   if(SHOW_IMAGES && s.imageUrl){
-    return `<div class="s-media">${tile}<img class="s-img" loading="lazy" alt="" src="${esc(s.imageUrl)}" onerror="this.classList.add('s-img--broken')"><div class="s-scrim"></div></div>`;
+    return `<div class="s-media">${tile}<img class="s-img s-img--zoom" data-lb="1" loading="lazy" alt="" src="${esc(s.imageUrl)}" onerror="this.classList.add('s-img--broken')"><div class="s-scrim"></div></div>`;
   }
   // imageless: note-tile keeps a colored tile; clean-collapse drops media (card flagged no-media)
   if(PLACEHOLDER_MODE === 'collapse') return '';
@@ -1500,5 +1507,37 @@ load();
 </div>
 </div>
 <div class="ov" id="smov"><div class="modal" id="smmodal"></div></div>
+<div class="lb-overlay" id="lbOverlay" aria-hidden="true">
+  <button class="lb-x" id="lbClose" type="button" aria-label="Close">×</button>
+  <img class="lb-img" id="lbImg" alt="">
+</div>
+<script>
+(function(){
+  function lbInit(){
+    var ov = document.getElementById("lbOverlay");
+    if(!ov){ document.addEventListener("DOMContentLoaded", lbInit); return; }
+    var img = document.getElementById("lbImg");
+    var xb  = document.getElementById("lbClose");
+    function open(src){ img.setAttribute("src", src); ov.classList.add("lb-open"); ov.setAttribute("aria-hidden","false"); }
+    function close(){ ov.classList.remove("lb-open"); ov.setAttribute("aria-hidden","true"); img.removeAttribute("src"); }
+    // Delegate in capture phase: cards render dynamically, and stopPropagation keeps
+    // the click from reaching card handlers (heart / ticket / navigation).
+    document.addEventListener("click", function(e){
+      // The gradient .s-scrim sits above the img, so clicks land on it, not the img.
+      // Resolve to the enclosing .s-media and use its artwork img (if any).
+      var media = e.target && e.target.closest ? e.target.closest(".s-media") : null;
+      var zi = media ? media.querySelector('img.s-img--zoom[data-lb="1"]') : null;
+      if(zi){
+        var src = zi.getAttribute("src");
+        if(src){ e.preventDefault(); e.stopPropagation(); open(src); }
+      }
+    }, true);
+    if(xb) xb.addEventListener("click", function(e){ e.stopPropagation(); close(); });
+    ov.addEventListener("click", function(e){ if(e.target===ov) close(); });
+    document.addEventListener("keydown", function(e){ if(e.key==="Escape" && ov.classList.contains("lb-open")) close(); });
+  }
+  lbInit();
+})();
+</script>
 </body>
 </html>
