@@ -4,6 +4,14 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### 5569a05 — Rename "My Favorites" pill to "Saved"
+
+A display-only relabel of the favorites pill to clarify the split between the two heart-driven features. Nothing behavioral changed — this is purely the visible button text.
+
+- **Pill relabeled My Favorites → Saved.** The rename communicates the distinction between the two heart-driven views: **Saved** is the collection view (everything you've hearted, grouped by shows/bands/venues), while **★ Following** is the feed filter that collapses the show list to bands & venues you follow.
+- **Display text only — internals deliberately untouched.** All state variables, `localStorage` keys, element ids (`myShowsToggle`, class `my-shows`), and internal code comments were left as-is; the comments intentionally retain "My Favorites" as internal terminology documenting the distinction. One-line change in `index.html` (`<span>`), verified in preview with the toggle still functioning.
+- **Favorites/Following UX open item RESOLVED.** The confusing shared "favorites" labeling is closed out by this rename.
+
 ### ba9c448 — Remove Hatfield Hall Rotunda; add Oregon Zoo
 
 Venue-directory cleanup plus a new manually-maintained venue. Hatfield Hall Rotunda is gone from the scraper, its baseline, and the hand-added data; the Oregon Zoo joins as a manual venue because its event pages are not machine-readable. This entry also honestly records a Rose Quarter false start and resolves a stale open item.
