@@ -612,12 +612,6 @@ body{
         <span class="toggle" id="followingToggle"></span>
         <span>&#9733; Following</span>
       </label>
-        <!-- TEMP DEV TOOL: classification audit panel toggle. Remove once the
-             music/non-music separation is verified and trusted. -->
-        <label class="pill audit-pill" title="DEV: show classification buckets to verify accuracy">
-          <span class="toggle" id="auditToggle"></span>
-          <span>&#9888; Audit (dev)</span>
-        </label>
     </div>
   </div>
 </section>
@@ -700,7 +694,7 @@ const state = {
   layout: "grid", cardLayout: CARD_LAYOUT, view: "shows", selectedVenue: null, byHood: false,
   q: "", tonight: false, thisWeek: false, picks: false,
   myShows: false, favorites: loadFavorites(),
-  comedy: false, audit: false, // comedy: future Comedy-shows toggle; audit: temporary verification panel
+  comedy: false, audit: new URLSearchParams(location.search).has('audit'), // comedy: future Comedy-shows toggle; audit: dev-only panel, reachable via ?audit=1 (no UI toggle)
   following: false, // FOLLOWING FILTER: collapse feed to shows by hearted bands/venues (self-contained, removable)
 };
 
@@ -734,6 +728,7 @@ function ordinalDate(iso){
 // Force a show INTO music regardless of keywords (fixes real bands buried as non-music).
 // Add a lowercase name fragment, one per line, e.g.:  // "xmal deutschland",
 const FORCE_MUSIC = [
+  "greg holden & garrison starr",
   "anja huwe",
   "xmal",
 ];
@@ -742,6 +737,7 @@ const FORCE_MUSIC = [
 // Entry is either a fragment string (-> 'other') OR [fragment, tag] to pick the tag.
 // e.g.:  // "ali wong",      or      // ["ali wong", "comedy"],
 const FORCE_NON_MUSIC = [
+  ["fly fishing film", "other"],
   ["ali wong", "comedy"],
   ["off book", "comedy"],
   "poetry slam",
@@ -1530,7 +1526,7 @@ $('#byHoodToggle').addEventListener('click',()=>{state.byHood=!state.byHood;$('#
       $('#results').addEventListener('click',e=>{const _iwt=e.target.closest('.iwt-btn'); if(_iwt){ e.preventDefault(); e.stopPropagation(); if(!_iwt.disabled){ const g=n=>_iwt.getAttribute('data-iwt-'+n)||''; const snap={title:g('title'),venue:g('venue'),neighborhood:g('neighborhood'),address:g('address'),date:g('date'),time:g('time')}; const r=mintStub(snap); if(r.ok){ flashStub('Stub added to your shelf \u2014 '+(snap.title||'show')); } else { flashStub('Already on your shelf'); } render(); } return; } const vlink=e.target.closest('[data-venue]');if(vlink){e.preventDefault();e.stopPropagation();openVenue(vlink.getAttribute('data-venue'));return;}const h=e.target.closest('.heart');if(!h)return;e.preventDefault();e.stopPropagation();toggleFavKey(h.getAttribute('data-fav'));render();});
 $('#tonightToggle').addEventListener('click',()=>{state.picks=false;$('#picksToggle').classList.remove('on');state.tonight=!state.tonight;if(state.tonight){state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');}$('#tonightToggle').classList.toggle('on',state.tonight);render();});
 $('#thisWeekToggle').addEventListener('click',()=>{state.picks=false;$('#picksToggle').classList.remove('on');state.thisWeek=!state.thisWeek;if(state.thisWeek){state.tonight=false;$('#tonightToggle').classList.remove('on');}$('#thisWeekToggle').classList.toggle('on',state.thisWeek);render();});
-$('#auditToggle').addEventListener('click',()=>{state.audit=!state.audit;$('#auditToggle').classList.toggle('on',state.audit);render();});
+/* Audit (dev) toggle retired from the UI; audit view still reachable via ?audit=1 for dev. */
 $('#comedyToggle').addEventListener('click',()=>{state.comedy=!state.comedy;if(state.comedy){state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');state.myShows=false;$('#myShowsToggle').classList.remove('on');state.following=false;$('#followingToggle').classList.remove('on');}$('#comedyToggle').classList.toggle('on',state.comedy);render();});
 $('#resetBtn').addEventListener('click',()=>{
   state.q="";state.tonight=false;state.byHood=false;state.view="shows";state.selectedVenue=null;
