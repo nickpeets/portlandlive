@@ -4,6 +4,17 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### 1b6e485 — Retire Audit (dev) toggle; classifier re-audit
+
+The FORCE_MUSIC / FORCE_NON_MUSIC classifier overrides have been live and stable, so this closes the audit open item: one more pass over current data, two conservative override additions, and the dev toggle comes out of the user-facing control bar.
+
+- **Re-audit against current data (1170 shows).** Bucket counts before changes: Music 1063 / Trivia 45 / Other 52 / Comedy 10. Comedy and Trivia buckets were clean (no real music buried — e.g. "Music Bingo" and "Todd Basil: Music Math Death Lasagna (Live Comedy Taping)" carry "music" in the title but are correctly non-music). Skimming Music for leaks surfaced mostly correct band/DJ-set concerts; the "w/ DJ …" and songwriter-open-mic entries are genuinely music and were left alone.
+- **Two clear misclassifications fixed (conservative additions).** Added `"greg holden & garrison starr"` to **FORCE_MUSIC** — Greg Holden and Garrison Starr are touring singer-songwriters, and "Greg Holden & Garrison Starr Live in Portland" at Alberta Street Pub was sitting in Other (the keyword classifier defaulted it because neither name is a music keyword). Added `["fly fishing film", "other"]` to **FORCE_NON_MUSIC** — "International Fly Fishing Film Festival" at the Aladdin is a film festival that was leaking into Music. Both fragments were checked to match exactly one event each and nothing else; the two moves cancel in the totals, confirming nothing else shifted.
+- **Left in the report, not the lists (ambiguous).** "DJ Shadow" (a named electronic/hip-hop artist, but the app buckets "DJ"-prefixed events as Other by convention); "Max Amini Live in Portland!" (standup currently in Other rather than Comedy — a within-non-music refinement, not a music error); and the two "Hedwig And The Angry Inch … Movie Tour" entries (music-adjacent film screenings currently in Music). These are judgment calls, so per the brief they stay in the report rather than the override lists.
+- **Audit (dev) toggle retired from the UI.** Removed the "⚠ Audit (dev)" pill markup and its click handler from the control bar. The audit machinery is intentionally kept for dev use — `auditPanelHtml()` still renders and `state.audit` is now driven by a URL param, so the panel is reachable at `?audit=1` with no user-visible toggle.
+
+Verified against the served page before commit: pill gone from the control bar; the two override targets land in their new buckets (Greg Holden —>music, Fly Fishing Film Festival —>other) with counts otherwise unchanged; `?audit=1` still renders the full audit panel (Music 1063 / Comedy 10 / Trivia 45 / Other 52); all remaining toggles (Tonight, This Week, Picks, By Neighborhood, Venues, Saved, Comedy, Following) plus Reset run clean; grep for `audit-pill` / `auditToggle` returns zero orphans; no console errors.
+
 ### 0cd9831 — Stub Wall collage export + stubs JSON backup (export/import with merge)
 
 Phase 2 for the Stub Shelf: turn the collection into something you can take out of the browser. Two additions, both living in the Saved view's shelf section, both self-contained.
