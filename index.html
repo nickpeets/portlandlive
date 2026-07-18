@@ -428,6 +428,55 @@ body{
 @media (max-width:600px){.plan-btn{padding:6px 10px;font-size:10.5px}}
   .audit-bucket ol{margin:4px 0 0;padding-left:22px;max-height:240px;overflow:auto}
   .audit-bucket li{margin:1px 0;word-break:break-word}
+  /* ===== STUB SHELF START (authentic Ticketmaster-era stub; self-contained) ===== */
+  .stub-shelf{margin-top:28px}
+  .stub-shelf-head{font-family:'Alfa Slab One',serif;color:var(--cream);font-size:22px;margin:0 0 4px}
+  .stub-count{font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.06em;font-size:13px;color:var(--cream);opacity:.8;margin:0 0 14px}
+  .stub-empty{font-family:'Bitter',serif;color:var(--cream);opacity:.85;line-height:1.5;padding:8px 0 4px}
+  .stub-empty b{font-family:'Alfa Slab One',serif;font-weight:400;display:block;font-size:18px;margin-bottom:6px;opacity:1}
+  .stub-list{display:flex;flex-direction:column;gap:16px}
+  .iwt-btn{display:inline-flex;align-items:center;gap:5px;background:none;border:0;cursor:pointer;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.05em;font-size:11.5px;color:var(--rust);padding:2px 0;opacity:.9}
+  .iwt-btn:hover{opacity:1;text-decoration:underline}
+  .iwt-btn[disabled]{color:var(--forest);cursor:default;opacity:.75;text-decoration:none}
+  .iwt-tik{font-size:12px;line-height:1}
+  /* --- the stub itself --- */
+  .stub{position:relative;display:flex;background:#EFE9DA;color:#2b2b2b;border:1px solid #c7bfa8;border-radius:3px;overflow:hidden;font-family:'Courier New',ui-monospace,monospace;box-shadow:0 2px 6px rgba(0,0,0,.28);max-width:640px}
+  .stub-edge{flex:0 0 16px;background:repeating-linear-gradient(#EFE9DA,#EFE9DA 9px,#e4dcc6 9px,#e4dcc6 10px);border-right:1px solid #d8cfb6;display:flex;flex-direction:column;justify-content:space-between;padding:8px 0;writing-mode:vertical-rl;text-orientation:upright}
+  .stub-edge span{font-size:6.5px;letter-spacing:.18em;color:#8a8172;text-align:center;line-height:1}
+  .stub-core{flex:1 1 auto;display:flex;flex-direction:column;min-width:0}
+  .stub-band{display:flex;justify-content:space-between;align-items:center;padding:5px 10px;color:#fff;font-size:10px;letter-spacing:.13em;text-transform:uppercase}
+  .stub-band .pres{font-weight:700}
+  .stub-band .code{opacity:.85;font-size:9.5px}
+  .stub-v0 .stub-band,.stub-v0 .stub-tear-band{background:#123a6b}
+  .stub-v1 .stub-band,.stub-v1 .stub-tear-band{background:#6e1414}
+  .stub-v2 .stub-band,.stub-v2 .stub-tear-band{background:#123a1c}
+  .stub-v3 .stub-band,.stub-v3 .stub-tear-band{background:#161616}
+  .stub-body{padding:10px 12px 12px;display:flex;flex-direction:column;gap:6px}
+  .stub-title{font-size:17px;font-weight:700;text-transform:uppercase;letter-spacing:.01em;line-height:1.05;color:#1c1c1c;word-break:break-word}
+  .stub-venue{font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;color:#39332a}
+  .stub-addr{font-size:10px;text-transform:uppercase;letter-spacing:.03em;color:#6b6355}
+  .stub-dt{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#1c1c1c;margin-top:2px}
+  .stub-cols{display:flex;margin-top:8px;border-top:1px solid #cabf9f;padding-top:7px}
+  .stub-col{flex:1;padding:0 10px;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#4a4335;text-align:center}
+  .stub-col+.stub-col{border-left:1px solid #cabf9f}
+  .stub-col b{display:block;font-size:12px;letter-spacing:.05em;color:#1c1c1c;margin-top:2px}
+  /* --- perforation + tear-off stub end --- */
+  .stub-perf{flex:0 0 0;border-left:2px dashed #b3a986;align-self:stretch}
+  .stub-tear{flex:0 0 78px;background:#EFE9DA;position:relative;display:flex;flex-direction:column;overflow:hidden}
+  .stub-tear-band{color:#fff;font-size:8px;letter-spacing:.1em;text-transform:uppercase;text-align:center;padding:5px 4px;font-weight:700}
+  .stub-tear-body{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:5px;padding:6px 4px;text-align:center}
+  .stub-tear-date{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#1c1c1c;line-height:1.15}
+  .stub-tear-code{font-size:8px;letter-spacing:.12em;color:#6b6355}
+  .stub-tear::after{content:"";position:absolute;top:0;right:0;bottom:0;width:7px;background:#EFE9DA;-webkit-clip-path:polygon(100% 0,0 6%,100% 13%,0 20%,100% 27%,0 34%,100% 41%,0 48%,100% 55%,0 62%,100% 69%,0 76%,100% 83%,0 90%,100% 97%,0 100%);clip-path:polygon(100% 0,0 6%,100% 13%,0 20%,100% 27%,0 34%,100% 41%,0 48%,100% 55%,0 62%,100% 69%,0 76%,100% 83%,0 90%,100% 97%,0 100%)}
+  @media (max-width:560px){.stub-cols{flex-wrap:wrap}.stub-edge{display:none}.stub-title{font-size:15px}}
+  .past-saved-list{display:flex;flex-direction:column;gap:6px;margin-top:4px}
+  .past-saved-row{display:flex;align-items:center;flex-wrap:wrap;gap:6px 10px;padding:6px 0;border-bottom:1px solid rgba(243,234,215,.14)}
+  .ps-title{font-family:'Bitter',serif;color:var(--cream);font-size:14px}
+  .ps-meta{font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.04em;font-size:11px;color:var(--cream);opacity:.7}
+  .past-saved-row .iwt-btn{margin-left:auto}
+  .stub-flash{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(14px);background:#1c1c1c;color:#EFE9DA;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.05em;font-size:12.5px;padding:10px 16px;border-radius:4px;box-shadow:0 4px 14px rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;z-index:9999;max-width:88vw;text-align:center}
+  .stub-flash.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  /* ===== STUB SHELF END ===== */
   </style>
 </head>
 <body>
@@ -896,6 +945,27 @@ function auditPanelHtml(){
 }
 // Consolidated "My Favorites" view: shows + bands + venues the user has hearted,
 // grouped with sub-headers. Reads the same state.favorites Set the hearts write to.
+    // Renders the past-saved "I was there" affordances + the stub shelf. Called from
+    // both the empty and populated Saved states so the shelf always shows.
+    function renderShelfSection(wrap){
+        // Past saved shows (date has passed) can be minted from here. Their favorite
+        // key (venue|date|title) still holds enough to snapshot even after they leave the feed.
+        const pastSaved = pastSavedSnapshots();
+        if(pastSaved.length){
+          const h=document.createElement('div'); h.className='fav-group';
+          h.innerHTML = `<h3 class="fav-group-head">Past shows <span class="count">${pastSaved.length}</span></h3>`;
+          const ul=document.createElement('div'); ul.className='past-saved-list';
+          pastSaved.forEach(ps=>{
+            const row=document.createElement('div'); row.className='past-saved-row';
+            const minted = loadStubs().some(s=> stubIdOf(s)===stubIdOf(ps));
+            row.innerHTML = `<span class="ps-title">${esc(ps.title||'')}</span> <span class="ps-meta">${esc(ps.venue||'')} · ${esc(ps.date||'')}</span> ` + (minted ? '<button type="button" class="iwt-btn" disabled><span class="iwt-tik">✓</span> On your shelf</button>' : iWasThereBtn(ps));
+            ul.appendChild(row);
+          });
+          h.appendChild(ul); wrap.appendChild(h);
+        }
+        // The shelf itself lives at the bottom of the Saved view.
+        renderStubShelf(wrap);
+    }
 function renderFavorites(){
   const wrap = $('#results');
   wrap.innerHTML = "";
@@ -907,7 +977,7 @@ function renderFavorites(){
   $('#resultCount').textContent = total ? `${total} favorite${total>1?'s':''}` : "No favorites yet";
   if(!total){
     wrap.innerHTML = '<div class="empty"><h2>No favorites yet</h2><p>Tap the heart on a show, band, or venue to save it here.</p></div>';
-    return;
+    renderShelfSection(wrap); return;
   }
   if(favShows.length){
     const h=document.createElement('div'); h.className='fav-group';
@@ -927,6 +997,7 @@ function renderFavorites(){
       + `<div class="venue-chips">` + venueNames.map(n => `<span class="venue-chip-wrap"><button type="button" class="venue-chip" data-venue="${esc(n)}" title="View ${esc(n)} venue page"><span class="vc-name">${esc(n)}</span></button>${heartFav(venueFavKey(n), n, 'venue')}</span>`).join("") + `</div>`;
     wrap.appendChild(h);
   }
+      renderShelfSection(wrap);
 }
 function render(){
   if(state.myShows){ renderFavorites(); return; }
@@ -1120,7 +1191,7 @@ function listOf(items, showDate){
         + `<div class="s-body">`
         +   `<div class="s-when">${dateBit||''}${(dateBit&&timeBit)?' \u00b7 ':''}${timeBit||''}</div>`
         +   `<div class="s-title">${titleHtml}</div>`
-        +   `<div class="s-sub">${venueLink}${nb}${reasonChip}</div>`
+        +   `<div class="s-sub">${venueLink}${nb}${reasonChip}${(s.date===stubToday()?iWasThereBtn(s):'')}</div>`
         +   `<div class="s-foot">${listenBtn(s.title)||'<span></span>'}${planBtn(s)}${heartBtn(s)}</div>`
         + `</div>`;
     } else {
@@ -1128,7 +1199,7 @@ function listOf(items, showDate){
       c.innerHTML = media
         + `<div class="s-body">`
         +   `<div class="s-title">${titleHtml}</div>`
-        +   `<div class="s-sub">${timeBit}${sep1}${dateBit}${(dateBit||timeBit)?`<span class="rdot">\u00b7</span>`:''}${venueLink}${nb}${reasonChip}</div>`
+        +   `<div class="s-sub">${timeBit}${sep1}${dateBit}${(dateBit||timeBit)?`<span class="rdot">\u00b7</span>`:''}${venueLink}${nb}${reasonChip}${(s.date===stubToday()?iWasThereBtn(s):'')}</div>`
         + `</div>`
         + `<div class="s-foot">${heartBtn(s)}${listenBtn(s.title)}${planBtn(s)}</div>`;
     }
@@ -1146,6 +1217,133 @@ function favKey(s){ return (s.venue||'') + '|' + (s.date||'') + '|' + (s.title||
       function saveFavorites(){
         try{ localStorage.setItem(FAV_KEY, JSON.stringify([...state.favorites])); }catch(e){}
       }
+    // ===== STUB SHELF: collectible "I was there" ticket stubs (self-contained) =====
+    // Stubs are snapshots taken at mint time and stored separately from favorites.
+    // Past shows drop out of shows.json, so the shelf renders ONLY from its own store.
+    const STUBS_KEY = 'portlandlive:stubs';
+    function loadStubs(){ try{ const r=localStorage.getItem(STUBS_KEY); const a=r?JSON.parse(r):[]; return Array.isArray(a)?a:[]; }catch(e){ return []; } }
+    function saveStubs(a){ try{ localStorage.setItem(STUBS_KEY, JSON.stringify(a)); }catch(e){} }
+    // Dedupe identity: one stub per (title, venue, date).
+    function stubIdOf(o){ return (o.title||'')+'|'+(o.venue||'')+'|'+(o.date||''); }
+    // Today as an ISO YYYY-MM-DD string in Portland time (mirrors the feed's todayPacific).
+    function stubToday(){ return new Intl.DateTimeFormat('en-CA',{timeZone:'America/Los_Angeles'}).format(new Date()); }
+    // Deterministic 0..3 header-band color from the title (never changes between renders).
+    function stubVariant(o){ var k=(o.title||''), h=0; for(var i=0;i<k.length;i++){ h=(h*31+k.charCodeAt(i))>>>0; } return h%4; }
+    // Mint: snapshot a show into the permanent collection. Dedupe is a gentle no-op.
+    function mintStub(snap){
+      const stubs = loadStubs();
+      const id = stubIdOf(snap);
+      if(stubs.some(s => stubIdOf(s)===id)){ return {ok:false, reason:'dupe'}; }
+      const rec = { title:snap.title||'', venue:snap.venue||'', neighborhood:snap.neighborhood||'',
+                    address:snap.address||'', date:snap.date||'', time:snap.time||'', mintedAt:new Date().toISOString() };
+      stubs.push(rec); saveStubs(stubs);
+      return {ok:true, rec};
+    }
+    // Small "I was there" control markup. data-* carries the snapshot so a click can mint
+    // even for a saved show that has already left the live feed.
+    function iWasThereBtn(snap){
+      const d = k => esc(String(k==null?'':k));
+      return '<button type="button" class="iwt-btn" '
+        + 'data-iwt-title="'+d(snap.title)+'" data-iwt-venue="'+d(snap.venue)+'" '
+        + 'data-iwt-neighborhood="'+d(snap.neighborhood)+'" data-iwt-address="'+d(snap.address)+'" '
+        + 'data-iwt-date="'+d(snap.date)+'" data-iwt-time="'+d(snap.time)+'">'
+        + '<span class="iwt-tik">\u{1F39F}\uFE0F</span> I was there</button>';
+    }
+    // Format an ISO date + time into the stub's prominent line, e.g. "THU OCT 1 2026 8:00 PM".
+    function stubDateLine(dateStr, timeStr){
+      var out='';
+      if(dateStr && /^\d{4}-\d{2}-\d{2}$/.test(dateStr)){
+        var p=dateStr.split('-'), dt=new Date(Number(p[0]),Number(p[1])-1,Number(p[2]));
+        var dow=['SUN','MON','TUE','WED','THU','FRI','SAT'][dt.getDay()];
+        var mon=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'][dt.getMonth()];
+        out = dow+' '+mon+' '+dt.getDate()+' '+dt.getFullYear();
+      } else if(dateStr){ out = String(dateStr).toUpperCase(); }
+      if(timeStr){ out += (out?' ':'') + String(timeStr).toUpperCase(); }
+      return out;
+    }
+    // Short deterministic alphanumeric code for the band/tear (decorative, era-authentic).
+    function stubCode(o){ var k=stubIdOf(o), h=0; for(var i=0;i<k.length;i++){ h=(h*131+k.charCodeAt(i))>>>0; } var s=h.toString(36).toUpperCase(); return (s+'000000').slice(0,6); }
+    // Render one stub as an authentic Ticketmaster-era ticket.
+    function stubCard(o){
+      const v = stubVariant(o);
+      const code = stubCode(o);
+      const dl = stubDateLine(o.date, o.time);
+      const hood = (o.neighborhood||'GA').toUpperCase().replace(/[^A-Z0-9]+/g,'').slice(0,6) || 'GA';
+      var edge=''; for(var i=0;i<10;i++){ edge += '<span>'+((code.charCodeAt(i%code.length)*7+i*13)%100+'').padStart(2,'0')+'</span>'; }
+      const el=document.createElement('div');
+      el.className='stub stub-v'+v;
+      el.innerHTML =
+        '<div class="stub-edge">'+edge+'</div>'
+       +'<div class="stub-core">'
+         +'<div class="stub-band"><span class="pres">REALGOODTIME.COM PRESENTS</span><span class="code">'+esc(code)+'</span></div>'
+         +'<div class="stub-body">'
+           +'<div class="stub-title">'+esc(o.title||'')+'</div>'
+           +(o.venue?'<div class="stub-venue">'+esc(String(o.venue).toUpperCase())+'</div>':'')
+           +(o.address?'<div class="stub-addr">'+esc(String(o.address).toUpperCase())+'</div>':'')
+           +(dl?'<div class="stub-dt">'+esc(dl)+'</div>':'')
+           +'<div class="stub-cols">'
+             +'<div class="stub-col">SEC<b>GA</b></div>'
+             +'<div class="stub-col">ROW<b>GA</b></div>'
+             +'<div class="stub-col">ADM<b>'+esc(hood)+'</b></div>'
+           +'</div>'
+         +'</div>'
+       +'</div>'
+       +'<div class="stub-perf" aria-hidden="true"></div>'
+       +'<div class="stub-tear">'
+         +'<div class="stub-tear-band">ADMIT ONE</div>'
+         +'<div class="stub-tear-body">'
+           +'<div class="stub-tear-date">'+esc(dl||'')+'</div>'
+           +'<div class="stub-tear-code">'+esc(code)+'</div>'
+         +'</div>'
+       +'</div>';
+      return el;
+    }
+    // The shelf section: count line + newest-first stub cards, or a warm empty state.
+    function renderStubShelf(wrap){
+      const stubs = loadStubs().slice().sort((a,b)=> String(b.mintedAt||'').localeCompare(String(a.mintedAt||'')));
+      const sec=document.createElement('div'); sec.className='stub-shelf';
+      const head=document.createElement('h3'); head.className='stub-shelf-head'; head.textContent='Stubs';
+      sec.appendChild(head);
+      if(!stubs.length){
+        const em=document.createElement('div'); em.className='stub-empty';
+        em.innerHTML='<b>Your shelf is empty.</b>After a show, tap \u201CI was there\u201D and keep the stub.';
+        sec.appendChild(em); wrap.appendChild(sec); return;
+      }
+      const cnt=document.createElement('div'); cnt.className='stub-count';
+      cnt.textContent = stubs.length + (stubs.length===1?' stub':' stubs');
+      sec.appendChild(cnt);
+      const list=document.createElement('div'); list.className='stub-list';
+      stubs.forEach(s => list.appendChild(stubCard(s)));
+      sec.appendChild(list); wrap.appendChild(sec);
+    }
+    // Past saved shows have left the feed, but the favorite key (venue|date|title) still
+    // holds everything needed to mint. Parse those keys for date-passed saved shows.
+    function pastSavedSnapshots(){
+      const today = stubToday();
+      const out=[];
+      [...state.favorites].forEach(k=>{
+        if(k.indexOf('band::')===0 || k.indexOf('venue::')===0) return; // not a show fav
+        const i1=k.indexOf('|'); const i2=k.indexOf('|', i1+1);
+        if(i1<0||i2<0) return;
+        const venue=k.slice(0,i1), date=k.slice(i1+1,i2), title=k.slice(i2+1);
+        if(!date || date>=today) return; // only shows whose date has passed
+        // Enrich from the live feed if the show somehow still exists; else snapshot from key.
+        const live = state.shows.find(s=> favKey(s)===k);
+        out.push(live ? {title:live.title,venue:live.venue,neighborhood:live.neighborhood,address:live.address,date:live.date,time:live.time}
+                      : {title, venue, neighborhood:'', address:'', date, time:''});
+      });
+      return out.sort((a,b)=> String(b.date).localeCompare(String(a.date)));
+    }
+        // Gentle, non-blocking feedback for minting (and dedupe no-ops). Nothing punitive.
+    let _stubFlashT=null;
+    function flashStub(msg){
+      let el=document.getElementById('stub-flash');
+      if(!el){ el=document.createElement('div'); el.id='stub-flash'; el.className='stub-flash'; document.body.appendChild(el); }
+      el.textContent=msg; el.classList.add('show');
+      if(_stubFlashT) clearTimeout(_stubFlashT);
+      _stubFlashT=setTimeout(()=>{ el.classList.remove('show'); }, 2200);
+    }
+    // ===== END STUB SHELF helpers =====
       function isFav(s){ return state.favorites.has(favKey(s)); }
     // Distinct favorite-key namespaces so a later filter can separate the three
     // kinds of hearts. Shows keep the bare "venue|date|title" key for back-compat;
@@ -1200,7 +1398,7 @@ $('#byHoodToggle').addEventListener('click',()=>{state.byHood=!state.byHood;$('#
           render();
         });
       function openVenue(name){ state.view='venues'; state.selectedVenue=name; state.q='';$('#searchInput').value='';  render(); document.querySelector('.controls').scrollIntoView({block:'start',behavior:'instant'}); }
-      $('#results').addEventListener('click',e=>{const vlink=e.target.closest('[data-venue]');if(vlink){e.preventDefault();e.stopPropagation();openVenue(vlink.getAttribute('data-venue'));return;}const h=e.target.closest('.heart');if(!h)return;e.preventDefault();e.stopPropagation();toggleFavKey(h.getAttribute('data-fav'));render();});
+      $('#results').addEventListener('click',e=>{const _iwt=e.target.closest('.iwt-btn'); if(_iwt){ e.preventDefault(); e.stopPropagation(); if(!_iwt.disabled){ const g=n=>_iwt.getAttribute('data-iwt-'+n)||''; const snap={title:g('title'),venue:g('venue'),neighborhood:g('neighborhood'),address:g('address'),date:g('date'),time:g('time')}; const r=mintStub(snap); if(r.ok){ flashStub('Stub added to your shelf \u2014 '+(snap.title||'show')); } else { flashStub('Already on your shelf'); } render(); } return; } const vlink=e.target.closest('[data-venue]');if(vlink){e.preventDefault();e.stopPropagation();openVenue(vlink.getAttribute('data-venue'));return;}const h=e.target.closest('.heart');if(!h)return;e.preventDefault();e.stopPropagation();toggleFavKey(h.getAttribute('data-fav'));render();});
 $('#tonightToggle').addEventListener('click',()=>{state.picks=false;$('#picksToggle').classList.remove('on');state.tonight=!state.tonight;if(state.tonight){state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');}$('#tonightToggle').classList.toggle('on',state.tonight);render();});
 $('#thisWeekToggle').addEventListener('click',()=>{state.picks=false;$('#picksToggle').classList.remove('on');state.thisWeek=!state.thisWeek;if(state.thisWeek){state.tonight=false;$('#tonightToggle').classList.remove('on');}$('#thisWeekToggle').classList.toggle('on',state.thisWeek);render();});
 $('#auditToggle').addEventListener('click',()=>{state.audit=!state.audit;$('#auditToggle').classList.toggle('on',state.audit);render();});
