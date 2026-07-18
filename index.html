@@ -1223,6 +1223,113 @@ function favKey(s){ return (s.venue||'') + '|' + (s.date||'') + '|' + (s.title||
     const STUBS_KEY = 'portlandlive:stubs';
     function loadStubs(){ try{ const r=localStorage.getItem(STUBS_KEY); const a=r?JSON.parse(r):[]; return Array.isArray(a)?a:[]; }catch(e){ return []; } }
     function saveStubs(a){ try{ localStorage.setItem(STUBS_KEY, JSON.stringify(a)); }catch(e){} }
+    // ---- Stub Wall (canvas collage) + JSON backup (export/import) ----
+    const STUB_BAND_COLORS = ['#123a6b','#6e1414','#123a1c','#161616'];
+    function stubBandColor(o){ return STUB_BAND_COLORS[stubVariant(o)]; }
+    // Deterministic seeded rotation per stub, stable across renders.
+    function stubRot(o){ var k=stubIdOf(o), h=0; for(var i=0;i<k.length;i++){ h=(h*131+k.charCodeAt(i))>>>0; } return (((h%600)/100)-3); }
+    function downloadBlob(blob, filename){ const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),4000); }
+    // Draw one stub onto a canvas ctx at (x,y) with given w,h and rotation (rad).
+    function drawStubTile(ctx, o, x, y, w, h, rot){
+      ctx.save(); ctx.translate(x+w/2, y+h/2); ctx.rotate(rot);
+      ctx.shadowColor='rgba(0,0,0,.45)'; ctx.shadowBlur=14; ctx.shadowOffsetY=6;
+      // paper body
+      ctx.fillStyle='#efe9da'; ctx.fillRect(-w/2,-h/2,w,h);
+      ctx.shadowColor='transparent';
+      ctx.strokeStyle='#c7bfa8'; ctx.lineWidth=1; ctx.strokeRect(-w/2+.5,-h/2+.5,w-1,h-1);
+      const band=Math.round(h*0.24);
+      // header band
+      ctx.fillStyle=stubBandColor(o); ctx.fillRect(-w/2,-h/2,w,band);
+      ctx.fillStyle='#ffffff'; ctx.textBaseline='middle';
+      ctx.font='700 '+Math.round(band*0.42)+"px 'Courier New', monospace";
+      ctx.textAlign='left'; ctx.fillText('REALGOODTIME.COM PRESENTS', -w/2+10, -h/2+band/2);
+      ctx.textAlign='right'; ctx.fillText(stubCode(o), w/2-10, -h/2+band/2);
+      // body text
+      ctx.fillStyle='#2b2b2b'; ctx.textAlign='left';
+      const bx=-w/2+12; let by=-h/2+band+Math.round(h*0.16);
+      const title=(o.title||'').toUpperCase();
+      ctx.font='700 '+Math.round(h*0.15)+"px 'Courier New', monospace";
+      ctx.fillText(fitText(ctx,title,w-24), bx, by);
+      by+=Math.round(h*0.17);
+      ctx.font='600 '+Math.round(h*0.095)+"px 'Courier New', monospace";
+      ctx.fillText(fitText(ctx,(o.venue||'').toUpperCase(),w-24), bx, by);
+      by+=Math.round(h*0.14);
+      ctx.font='700 '+Math.round(h*0.105)+"px 'Courier New', monospace";
+      ctx.fillText(fitText(ctx,stubDateLine(o.date,o.time),w-24), bx, by);
+      // perforation
+      ctx.strokeStyle='#b7ad93'; ctx.setLineDash([3,3]); ctx.lineWidth=1;
+      const px=w/2-Math.round(w*0.16);
+      ctx.beginPath(); ctx.moveTo(px,-h/2+4); ctx.lineTo(px,h/2-4); ctx.stroke(); ctx.setLineDash([]);
+      ctx.restore();
+    }
+    function fitText(ctx,txt,maxW){ if(ctx.measureText(txt).width<=maxW) return txt; var t=txt; while(t.length>1 && ctx.measureText(t+'\u2026').width>maxW){ t=t.slice(0,-1); } return t+'\u2026'; }
+    // Build the whole collage; returns a Promise<Blob>.
+    function buildWallCanvas(stubs){
+      const n=stubs.length;
+      const cols = n<=1?1 : n<=4?2 : n<=9?3 : 4;
+      const tileW=360, tileH=150, gapX=26, gapY=34, pad=48, footer=64;
+      const rows=Math.ceil(n/cols);
+      let W=pad*2 + cols*tileW + (cols-1)*gapX;
+      let H=pad*2 + rows*tileH + (rows-1)*gapY + footer;
+      // Cap long edge ~2000px by scaling down.
+      const cap=2000, scale=Math.min(1, cap/Math.max(W,H));
+      const cv=document.createElement('canvas'); cv.width=Math.round(W*scale); cv.height=Math.round(H*scale);
+      const ctx=cv.getContext('2d'); ctx.scale(scale,scale);
+      // dark neutral background
+      ctx.fillStyle='#1a1a1c'; ctx.fillRect(0,0,W,H);
+      ctx.fillStyle='#232326'; for(let gy=0;gy<H;gy+=4){ ctx.fillRect(0,gy,W,1); }
+      stubs.forEach((s,i)=>{
+        const c=i%cols, r=Math.floor(i/cols);
+        const stag=(r%2)*Math.round(gapX*0.5);
+        const x=pad + c*(tileW+gapX) + stag;
+        const y=pad + r*(tileH+gapY);
+        drawStubTile(ctx, s, x, y, tileW, tileH, stubRot(s)*Math.PI/180);
+      });
+      // footer strip
+      ctx.fillStyle='#efe9da'; ctx.font="700 20px 'Courier New', monospace"; ctx.textBaseline='middle';
+      ctx.textAlign='left'; ctx.fillText('REALGOODTIME.COM', pad, H-footer/2);
+      ctx.textAlign='right'; ctx.fillStyle='#b7ad93'; ctx.font="600 16px 'Courier New', monospace";
+      ctx.fillText(n+(n===1?' stub':' stubs'), W-pad, H-footer/2);
+      return new Promise(res=> cv.toBlob(b=>res(b),'image/png'));
+    }
+    async function makeStubWall(){
+      const stubs=loadStubs().slice().sort((a,b)=> String(b.mintedAt||'').localeCompare(String(a.mintedAt||'')));
+      if(!stubs.length){ flashStub('No stubs to frame yet.'); return; }
+      let blob; try{ blob=await buildWallCanvas(stubs); }catch(e){ flashStub('Could not build the wall.'); return; }
+      if(!blob){ flashStub('Could not build the wall.'); return; }
+      const file=new File([blob],'realgoodtime-wall.png',{type:'image/png'});
+      if(navigator.canShare && navigator.canShare({files:[file]})){
+        try{ await navigator.share({files:[file], title:'My stub wall'}); flashStub('Shared your wall \u2014 nice collection.'); return; }
+        catch(err){ if(err && err.name==='AbortError'){ return; } /* fall through to download */ }
+      }
+      downloadBlob(blob,'realgoodtime-wall.png'); flashStub('Saved realgoodtime-wall.png');
+    }
+    // ---- Backup: export / import stubs JSON ----
+    function exportStubs(){
+      const stubs=loadStubs();
+      const blob=new Blob([JSON.stringify(stubs,null,2)],{type:'application/json'});
+      downloadBlob(blob,'portlandlive-stubs.json');
+      flashStub('Exported '+stubs.length+(stubs.length===1?' stub':' stubs'));
+    }
+    function validStub(s){ return s && typeof s==='object' && s.title && s.venue && s.date; }
+    function importStubsFromText(text){
+      let data; try{ data=JSON.parse(text); }catch(e){ flashStub('That file isn\u2019t valid stub JSON.'); return; }
+      if(!Array.isArray(data)){ flashStub('That file isn\u2019t a stub list.'); return; }
+      const cur=loadStubs(); const have=new Set(cur.map(stubIdOf));
+      let added=0, dupe=0, skipped=0;
+      data.forEach(raw=>{
+        if(!validStub(raw)){ skipped++; return; }
+        const s={title:raw.title,venue:raw.venue,neighborhood:raw.neighborhood||'',address:raw.address||'',date:raw.date,time:raw.time||'',mintedAt:raw.mintedAt||new Date().toISOString()};
+        const id=stubIdOf(s);
+        if(have.has(id)){ dupe++; return; }
+        have.add(id); cur.push(s); added++;
+      });
+      if(added) saveStubs(cur);
+      let msg='Imported '+added+(added===1?' stub':' stubs');
+      if(dupe) msg+=' ('+dupe+' already on your shelf)';
+      if(skipped) msg+=(dupe?'':' ')+(skipped?' \u2014 skipped '+skipped+' invalid':'');
+      flashStub(msg); render();
+    }
     // Dedupe identity: one stub per (title, venue, date).
     function stubIdOf(o){ return (o.title||'')+'|'+(o.venue||'')+'|'+(o.date||''); }
     // Today as an ISO YYYY-MM-DD string in Portland time (mirrors the feed's todayPacific).
@@ -1299,6 +1406,28 @@ function favKey(s){ return (s.venue||'') + '|' + (s.date||'') + '|' + (s.title||
       return el;
     }
     // The shelf section: count line + newest-first stub cards, or a warm empty state.
+    // Control row: Make my wall + Export (when stubs exist), Import (always).
+    function stubToolsRow(hasStubs){
+      const row=document.createElement('div'); row.className='stub-tools';
+      if(hasStubs){
+        const wall=document.createElement('button'); wall.type='button'; wall.className='stub-tool-btn primary'; wall.textContent='Make my wall';
+        wall.addEventListener('click', makeStubWall); row.appendChild(wall);
+        const exp=document.createElement('button'); exp.type='button'; exp.className='stub-tool-btn ghost'; exp.textContent='Export stubs';
+        exp.addEventListener('click', exportStubs); row.appendChild(exp);
+      }
+      const imp=document.createElement('button'); imp.type='button'; imp.className='stub-tool-btn ghost'; imp.textContent='Import stubs';
+      const inp=document.createElement('input'); inp.type='file'; inp.accept='application/json,.json'; inp.className='stub-import-input';
+      imp.addEventListener('click', ()=> inp.click());
+      inp.addEventListener('change', (e)=>{
+        const f=e.target.files && e.target.files[0]; if(!f){ return; }
+        const rd=new FileReader();
+        rd.onload=()=>{ importStubsFromText(String(rd.result||'')); };
+        rd.onerror=()=>{ flashStub('Could not read that file.'); };
+        rd.readAsText(f); inp.value='';
+      });
+      row.appendChild(imp); row.appendChild(inp);
+      return row;
+    }
     function renderStubShelf(wrap){
       const stubs = loadStubs().slice().sort((a,b)=> String(b.mintedAt||'').localeCompare(String(a.mintedAt||'')));
       const sec=document.createElement('div'); sec.className='stub-shelf';
@@ -1307,14 +1436,14 @@ function favKey(s){ return (s.venue||'') + '|' + (s.date||'') + '|' + (s.title||
       if(!stubs.length){
         const em=document.createElement('div'); em.className='stub-empty';
         em.innerHTML='<b>Your shelf is empty.</b>After a show, tap \u201CI was there\u201D and keep the stub.';
-        sec.appendChild(em); wrap.appendChild(sec); return;
+        sec.appendChild(em); sec.appendChild(stubToolsRow(false)); wrap.appendChild(sec); return;
       }
       const cnt=document.createElement('div'); cnt.className='stub-count';
       cnt.textContent = stubs.length + (stubs.length===1?' stub':' stubs');
       sec.appendChild(cnt);
       const list=document.createElement('div'); list.className='stub-list';
       stubs.forEach(s => list.appendChild(stubCard(s)));
-      sec.appendChild(list); wrap.appendChild(sec);
+      sec.appendChild(list); sec.appendChild(stubToolsRow(true)); wrap.appendChild(sec);
     }
     // Past saved shows have left the feed, but the favorite key (venue|date|title) still
     // holds everything needed to mint. Parse those keys for date-passed saved shows.
@@ -1588,6 +1717,15 @@ load();
 .note{animation:notefloat 2.6s ease-in-out infinite}
 @keyframes notefloat{0%{opacity:0;transform:translate(0,4px)}30%{opacity:1}100%{opacity:0;transform:translate(8px,-14px)}}
 @media(prefers-reduced-motion:reduce){.cloud,.bird,.note{animation:none}}
+    /* Stub Wall + backup controls */
+    .stub-tools{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 4px;align-items:center}
+    .stub-tool-btn{font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.04em;font-size:12px;padding:6px 12px;border:1px solid #c7bfa8;background:#efe9da;color:#2b2b2b;border-radius:4px;cursor:pointer;transition:background .15s}
+    .stub-tool-btn:hover{background:#e2dbc6}
+    .stub-tool-btn.primary{background:#123a6b;color:#fff;border-color:#123a6b}
+    .stub-tool-btn.primary:hover{background:#0e2e56}
+    .stub-tool-btn.ghost{background:transparent;border-color:#8a8a8a;color:#bbb;font-size:11px;padding:5px 10px}
+    .stub-tool-btn.ghost:hover{background:rgba(255,255,255,.06)}
+    .stub-import-input{display:none}
 </style>
 <!-- WHO'S IN? share sheet (ported from /plan/) -->
 <div class="wi-overlay" id="wiOverlay">
