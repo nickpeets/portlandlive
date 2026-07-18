@@ -4,6 +4,15 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### 6e5ccbc — Remove Tickets view (pill, view mode, stub rendering, CSS)
+
+Subtraction-only removal of the collectible ticket-stub view. Gone: the "Tickets" control-bar pill and its click handler; the `state.tickets` view mode with its early-return render branch and `ticketsOf()`/`tkVariant()` stub renderer; and the entire fenced stub CSS block (stub card styling, perforation, 4-tone header accents).
+- **Reversible-by-design, now removed.** The view was always self-contained and flagged as removable; taking it out required no refactoring elsewhere. Mutual-exclusivity wiring in the Saved, Comedy, Reset, and Following handlers had its `state.tickets` / `#ticketsToggle` references stripped so no handler points at a deleted id.
+- **Old decorative stub retrievable in git history.** The original carnival-style decorative stub design remains fully recoverable at its introducing commit `d1d64ad` (“Tickets view toggle (collectible ticket-stub cards)”).
+- **For the record — planned replacement design.** The upcoming stub-collection feature will NOT reuse this decorative style. It will render an authentic Ticketmaster-era stub: dense monospace data columns, a presenter band, and a torn perforation end.
+
+Verified against the served page before commit: no Tickets pill in the control bar; both inline `<script>` blocks parse clean; no console errors on load or while exercising every remaining toggle (Tonight, This Week, Picks, By Neighborhood, Saved, Venues, Comedy, Following, Audit) and Reset; grep of `index.html` for `state.tickets`, `ticketsOf`, `ticketsToggle`, `tkVariant`, `tk-*`, `stub`, and `perforation` returns zero. The Audit (dev) toggle, poster lightbox, Saved, Following, Comedy, and hearts are untouched. Line delta: 1558 → 1451 (−107).
+
 ### 5569a05 — Rename "My Favorites" pill to "Saved"
 
 A display-only relabel of the favorites pill to clarify the split between the two heart-driven features. Nothing behavioral changed — this is purely the visible button text.
