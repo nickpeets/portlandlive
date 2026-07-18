@@ -428,57 +428,6 @@ body{
 @media (max-width:600px){.plan-btn{padding:6px 10px;font-size:10.5px}}
   .audit-bucket ol{margin:4px 0 0;padding-left:22px;max-height:240px;overflow:auto}
   .audit-bucket li{margin:1px 0;word-break:break-word}
-
-  /* TICKET MODE START */
-  /* Self-contained styling for the collectible ticket-stub view. Removable as a
-     unit with zero impact on the default horizontal-card (.scard) views. */
-  .tk-stack{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:18px;align-items:start}
-  .tk{--tk-accent:var(--rust);position:relative;display:flex;align-items:stretch;background:var(--cream);border-radius:10px;box-shadow:0 6px 16px rgba(20,40,30,.20);overflow:hidden;transition:transform .12s,box-shadow .12s}
-  .tk:hover{transform:translateY(-3px) rotate(-.25deg);box-shadow:0 14px 26px rgba(20,40,30,.28)}
-  .tk-v0{--tk-accent:var(--rust)}
-  .tk-v1{--tk-accent:var(--forest)}
-  .tk-v2{--tk-accent:var(--water-d)}
-  .tk-v3{--tk-accent:var(--rust-deep)}
-  .tk::before{content:"";position:absolute;left:0;right:0;top:0;height:5px;background:var(--tk-accent);z-index:5}
-  .tk-main{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;padding:16px 16px 14px}
-  .tk-media{position:relative;width:100%;aspect-ratio:16/9;border-radius:7px;overflow:hidden;margin-bottom:12px;background:var(--ink)}
-  .tk-media .s-media{position:absolute;inset:0}
-  .tk-media .s-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-  .tk-media .s-tile{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:12px}
-  .tk-media .s-tile-t{font-family:'Alfa Slab One',serif;color:var(--cream);font-size:17px;line-height:1.1;text-shadow:0 2px 6px rgba(0,0,0,.35)}
-  .tk-media .s-scrim{position:absolute;inset:0;background:linear-gradient(to top,rgba(20,12,6,.45),rgba(20,12,6,0) 55%)}
-  .tk-media .s-img--broken{display:none}
-  .tk-admit{font-family:'Oswald',sans-serif;font-weight:600;font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--tk-accent);margin-bottom:4px}
-  .tk-title{font-family:'Alfa Slab One',serif;line-height:1.06;font-size:20px;margin-bottom:7px}
-  .tk-title .rtitle{color:var(--forest);text-decoration:none;overflow-wrap:anywhere}
-  .tk-title a.rtitle:hover{text-decoration:underline;text-underline-offset:3px}
-  .tk-venue{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:auto}
-  .tk-venue .s-venue{font-weight:600;font-size:14px;color:var(--ink);cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-decoration-color:rgba(74,53,38,.45);text-underline-offset:3px}
-  .tk-venue .s-venue:hover{text-decoration-style:solid}
-  .tk-nb{font-family:'Oswald',sans-serif;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;background:rgba(61,87,74,.1);color:var(--forest);padding:3px 8px;border-radius:20px;font-weight:600}
-  .tk-foot{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px}
-  .tk-perf{position:relative;flex:0 0 0;width:0;border-left:2px dashed rgba(74,53,38,.40);margin:10px 0}
-  .tk-perf::before,.tk-perf::after{content:"";position:absolute;left:-9px;width:16px;height:16px;border-radius:50%;background:var(--water)}
-  .tk-perf::before{top:-16px}
-  .tk-perf::after{bottom:-16px}
-  .tk-stub{flex:0 0 92px;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:14px 8px;text-align:center;background:linear-gradient(0deg,rgba(255,255,255,.35),rgba(255,255,255,.35)),var(--tk-accent);color:var(--ink)}
-  .tk-stub-label{font-family:'Oswald',sans-serif;font-size:9px;letter-spacing:.2em;text-transform:uppercase;opacity:.7}
-  .tk-stub-date{font-family:'Alfa Slab One',serif;font-size:13px;line-height:1.1;color:var(--forest)}
-  .tk-stub-time{font-family:'Oswald',sans-serif;font-weight:600;font-size:12px;letter-spacing:.04em;color:var(--ink)}
-  .tk-stub-no{margin-top:4px;font-family:'Oswald',sans-serif;font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;opacity:.55}
-  @media (max-width:600px){
-    .tk-stack{grid-template-columns:1fr;gap:16px}
-    .tk{flex-direction:column}
-    .tk-main{padding:14px 14px 12px}
-    .tk-title{font-size:19px}
-    .tk-perf{width:auto;height:0;border-left:0;border-top:2px dashed rgba(74,53,38,.40);margin:0 12px}
-    .tk-perf::before,.tk-perf::after{top:-9px;bottom:auto}
-    .tk-perf::before{left:-16px}
-    .tk-perf::after{right:-16px;left:auto}
-    .tk-stub{flex:0 0 auto;flex-direction:row;gap:8px;padding:9px 14px;justify-content:flex-start}
-    .tk-stub-no{margin-top:0;margin-left:auto}
-  }
-  /* TICKET MODE END */
   </style>
 </head>
 <body>
@@ -605,14 +554,9 @@ body{
         <span class="toggle" id="myShowsToggle"></span>
         <span>Saved</span>
       </label>
-      <!-- TICKET MODE: display toggle. Self-contained; remove this label + the ticketsToggle wiring + the ticketsOf branch + the fenced CSS block to fully revert. -->
       <label class="pill" title="Show comedy / stand-up shows instead of music">
         <span class="toggle" id="comedyToggle"></span>
         <span>Comedy</span>
-      </label>
-      <label class="pill" title="Flip the show list into collectible ticket-stub cards">
-        <span class="toggle" id="ticketsToggle"></span>
-        <span>Tickets</span>
       </label>
       <!-- FOLLOWING FILTER pill: collapses the show feed to bands/venues you've hearted. Distinct from the "My Favorites" view, which DISPLAYS hearted items. Self-contained; removable. -->
       <label class="pill following-pill" title="Filter the feed to shows by the bands & venues you've hearted">
@@ -708,8 +652,7 @@ const state = {
   q: "", tonight: false, thisWeek: false, picks: false,
   myShows: false, favorites: loadFavorites(),
   comedy: false, audit: false, // comedy: future Comedy-shows toggle; audit: temporary verification panel
-  tickets: false,
-  following: false, // FOLLOWING FILTER: collapse feed to shows by hearted bands/venues (self-contained, removable) // TICKET MODE: collectible ticket-stub display of the filtered set (self-contained; removable)
+  following: false, // FOLLOWING FILTER: collapse feed to shows by hearted bands/venues (self-contained, removable)
 };
 
 const $ = s => document.querySelector(s);
@@ -1042,11 +985,6 @@ function render(){
     wrap.appendChild(box);
   })();
 
-  // TICKET MODE: dedicated display branch. Renders the already-filtered set
-  // (Tonight/This Week/search/venue-chip still apply) as ticket-stub cards and
-  // returns early, bypassing the byHood/day/picks grouping below. Removable.
-  if(state.tickets){ wrap.appendChild(ticketsOf(list)); return; }
-
   if(state.byHood && !state.picks){
     // DAY-first, NEIGHBORHOOD-second: day headers in date order, each containing
     // alphabetical neighborhood sub-headers with that day's shows beneath.
@@ -1156,50 +1094,6 @@ function smediaFor(s){
   if(PLACEHOLDER_MODE === 'collapse') return '';
   return `<div class="s-media">${tile}</div>`;
 }
-
-// ===== TICKET MODE renderer (self-contained; delete with the toggle + CSS block to revert) =====
-function tkVariant(s){
-  var h=0, k=(s.venue||'')+'|'+(s.title||'');
-  for(var i=0;i<k.length;i++){ h=(h*31+k.charCodeAt(i))>>>0; }
-  return h % 4;
-}
-function ticketsOf(items){
-  var wrap=document.createElement('div');
-  wrap.className='tk-stack';
-  items.forEach(function(s){
-    var t=document.createElement('div');
-    t.className='tk tk-v'+tkVariant(s)+' show-'+s.id;
-    t.dataset.showid=s.id;
-    var media=smediaFor(s);
-    var title=s.venueUrl
-      ? '<a class="rtitle" href="'+s.venueUrl+'" target="_blank" rel="noopener">'+formatTitle(s.title)+'</a>'
-      : '<span class="rtitle">'+formatTitle(s.title)+'</span>';
-    var venue='<a class="s-venue" href="#" data-venue="'+esc(s.venue)+'" title="View this venue">'+esc(s.venue)+'</a>';
-    var nb=s.neighborhood ? '<span class="tk-nb">'+esc(s.neighborhood)+'</span>' : '';
-    var dateStr=ordinalDate(s.date);
-    var timeStr=s.time ? esc(s.time) : '';
-    t.innerHTML =
-      '<div class="tk-main">'
-    +   (media ? '<div class="tk-media">'+media+'</div>' : '')
-    +   '<div class="tk-body">'
-    +     '<div class="tk-admit">Admit One</div>'
-    +     '<div class="tk-title">'+title+'</div>'
-    +     '<div class="tk-venue">'+venue+nb+'</div>'
-    +     '<div class="tk-foot">'+listenBtn(s.title)+planBtn(s)+heartBtn(s)+'</div>'
-    +   '</div>'
-    + '</div>'
-    + '<div class="tk-perf" aria-hidden="true"></div>'
-    + '<div class="tk-stub">'
-    +   '<div class="tk-stub-label">Date</div>'
-    +   '<div class="tk-stub-date">'+dateStr+'</div>'
-    +   (timeStr ? '<div class="tk-stub-time">'+timeStr+'</div>' : '')
-    +   '<div class="tk-stub-no">No. '+esc(String(s.id))+'</div>'
-    + '</div>';
-    wrap.appendChild(t);
-  });
-  return wrap;
-}
-// ===== end TICKET MODE renderer =====
 function listOf(items, showDate){
   const l=document.createElement('div');
   const eff = state.picks ? 'b' : state.cardLayout;
@@ -1290,7 +1184,7 @@ function favKey(s){ return (s.venue||'') + '|' + (s.date||'') + '|' + (s.title||
 $('#searchInput').addEventListener('input',e=>{state.q=e.target.value;if(state.q && state.selectedVenue){state.selectedVenue=null;state.view='shows';}render();});
 $('#byHoodToggle').addEventListener('click',()=>{state.byHood=!state.byHood;$('#byHoodToggle').classList.toggle('on',state.byHood);render();});
         $('#venuesToggle').addEventListener('click',()=>{const on=state.view!=='venues';state.view=on?'venues':'shows';state.selectedVenue=null;if(on){state.picks=false;$('#picksToggle').classList.remove('on');state.byHood=false;$('#byHoodToggle').classList.remove('on');state.myShows=false;$('#myShowsToggle').classList.remove('on');state.tonight=false;$('#tonightToggle').classList.remove('on');state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');state.q='';$('#searchInput').value='';state.following=false;$('#followingToggle').classList.remove('on');}$('#venuesToggle').classList.toggle('on',on);render();});
-      $('#myShowsToggle').addEventListener('click',e=>{state.myShows=!state.myShows;if(state.myShows){state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');state.comedy=false;$('#comedyToggle').classList.remove('on');state.tickets=false;$('#ticketsToggle').classList.remove('on');state.tonight=false;$('#tonightToggle').classList.remove('on');state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');state.byHood=false;$('#byHoodToggle').classList.remove('on');state.picks=false;$('#picksToggle').classList.remove('on');state.following=false;$('#followingToggle').classList.remove('on');}e.currentTarget.classList.toggle('on',state.myShows);render();});
+      $('#myShowsToggle').addEventListener('click',e=>{state.myShows=!state.myShows;if(state.myShows){state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');state.comedy=false;$('#comedyToggle').classList.remove('on');state.tonight=false;$('#tonightToggle').classList.remove('on');state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');state.byHood=false;$('#byHoodToggle').classList.remove('on');state.picks=false;$('#picksToggle').classList.remove('on');state.following=false;$('#followingToggle').classList.remove('on');}e.currentTarget.classList.toggle('on',state.myShows);render();});
         // Picks of the Week: dominant filter. Turning it on switches to the curated, vertical showcase
         // and clears the Tonight / This Week / My Shows / Venues filters so only picks are shown.
         $('#picksToggle').addEventListener('click',e=>{
@@ -1310,12 +1204,11 @@ $('#byHoodToggle').addEventListener('click',()=>{state.byHood=!state.byHood;$('#
 $('#tonightToggle').addEventListener('click',()=>{state.picks=false;$('#picksToggle').classList.remove('on');state.tonight=!state.tonight;if(state.tonight){state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');}$('#tonightToggle').classList.toggle('on',state.tonight);render();});
 $('#thisWeekToggle').addEventListener('click',()=>{state.picks=false;$('#picksToggle').classList.remove('on');state.thisWeek=!state.thisWeek;if(state.thisWeek){state.tonight=false;$('#tonightToggle').classList.remove('on');}$('#thisWeekToggle').classList.toggle('on',state.thisWeek);render();});
 $('#auditToggle').addEventListener('click',()=>{state.audit=!state.audit;$('#auditToggle').classList.toggle('on',state.audit);render();});
-// TICKET MODE: pure display toggle; leaves all filters untouched.
-$('#ticketsToggle').addEventListener('click',()=>{state.tickets=!state.tickets;if(state.tickets){state.myShows=false;$('#myShowsToggle').classList.remove('on');state.following=false;$('#followingToggle').classList.remove('on');}$('#ticketsToggle').classList.toggle('on',state.tickets);render();});$('#comedyToggle').addEventListener('click',()=>{state.comedy=!state.comedy;if(state.comedy){state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');state.tickets=false;$('#ticketsToggle').classList.remove('on');state.myShows=false;$('#myShowsToggle').classList.remove('on');state.following=false;$('#followingToggle').classList.remove('on');}$('#comedyToggle').classList.toggle('on',state.comedy);render();});
+$('#comedyToggle').addEventListener('click',()=>{state.comedy=!state.comedy;if(state.comedy){state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');state.myShows=false;$('#myShowsToggle').classList.remove('on');state.following=false;$('#followingToggle').classList.remove('on');}$('#comedyToggle').classList.toggle('on',state.comedy);render();});
 $('#resetBtn').addEventListener('click',()=>{
   state.q="";state.tonight=false;state.byHood=false;state.view="shows";state.selectedVenue=null;
   $('#searchInput').value="";
-  $('#byHoodToggle').classList.remove('on');$('#tonightToggle').classList.remove('on');state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');state.myShows=false;$('#myShowsToggle').classList.remove('on');state.picks=false;$('#picksToggle').classList.remove('on');state.tickets=false;$('#ticketsToggle').classList.remove('on');$('#venuesToggle').classList.remove('on');state.comedy=false;$('#comedyToggle').classList.remove('on');state.following=false;$('#followingToggle').classList.remove('on');render();
+  $('#byHoodToggle').classList.remove('on');$('#tonightToggle').classList.remove('on');state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');state.myShows=false;$('#myShowsToggle').classList.remove('on');state.picks=false;$('#picksToggle').classList.remove('on');$('#venuesToggle').classList.remove('on');state.comedy=false;$('#comedyToggle').classList.remove('on');state.following=false;$('#followingToggle').classList.remove('on');render();
 });
 
 // FOLLOWING FILTER toggle: hide-style filter that collapses the feed to hearted
@@ -1326,7 +1219,7 @@ $('#followingToggle').addEventListener('click',()=>{
   if(state.following){
     state.myShows=false;$('#myShowsToggle').classList.remove('on');
     state.picks=false;$('#picksToggle').classList.remove('on');
-    state.tickets=false;$('#ticketsToggle').classList.remove('on');
+    
     state.comedy=false;$('#comedyToggle').classList.remove('on');
     state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');
   }
