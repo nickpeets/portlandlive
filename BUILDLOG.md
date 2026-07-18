@@ -4,6 +4,15 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### 0cd9831 — Stub Wall collage export + stubs JSON backup (export/import with merge)
+
+Phase 2 for the Stub Shelf: turn the collection into something you can take out of the browser. Two additions, both living in the Saved view's shelf section, both self-contained.
+
+- **Stub Wall as a share mechanic.** A "Make my wall" button (shown only when 1+ stubs exist) renders the whole collection to a single `<canvas>` collage — each stub drawn in the same authentic style (deterministic header-band color per title hash, mono caps title/venue/date, aged paper), laid out in a staggered grid with a small seeded rotation per stub (stable across re-renders), on a dark neutral background, with a `REALGOODTIME.COM` + stub-count footer strip. Output is `canvas.toBlob` — PNG (`realgoodtime-wall.png`); it prefers the Web Share API (`navigator.canShare({files})` guard, matching the existing share-to-plan pattern) and falls back to download. Canvas long edge is capped ~2000px — stubs shrink rather than the canvas growing unbounded.
+- **Backup because localStorage is fragile.** The shelf lives entirely in `portlandlive:stubs`; a cleared cache or a new device loses it. "Export stubs" downloads the raw array pretty-printed as `portlandlive-stubs.json`. "Import stubs" (always available, even on an empty shelf) parses a file, validates shape (array of objects with at least title/venue/date), skips invalid entries with a count, and **merges** into the existing collection using the same `(title, venue, date)` dedupe identity — it never overwrites or clears what's already there. Malformed files get a friendly toast and change nothing. Feedback stays in the honor-system spirit: "Imported 1 stub (2 already on your shelf) — skipped 1 invalid".
+
+Verified against the served page before commit: wall renders all stubs readably and produces a valid PNG blob; two renders are byte-identical (deterministic layout); share path guarded, download fallback works; export yields valid JSON matching the store; import merges + dedupes (5—>7 from a payload with a dup and two invalids) and survives a malformed file with no state change; empty shelf hides wall/export but keeps import; new classes (`stub-tools`, `stub-tool-btn`, `stub-import-input`) collide with nothing; no console errors across all toggles + Reset. Design principles unchanged — the collection only grows, nothing punishes absence.
+
 ### f125ee7 — Add Stub Shelf: 'I was there' minting, snapshot storage, authentic Ticketmaster-style stub rendering
 
 A collectible ticket-stub system. When a user marks a show “I was there,” the app mints a rendered stub into a permanent personal collection stored under the new `portlandlive:stubs` localStorage key.
