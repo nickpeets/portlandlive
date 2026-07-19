@@ -3,6 +3,10 @@
 Project history for **portlandlive**, newest first. Append a new entry at the top of the Changelog for each change.
 
 ## Changelog
+### 39eb1a0 — FORCE_MUSIC override: DJ Shadow
+
+Added `"dj shadow"` to **FORCE_MUSIC** in `index.html`. DJ Shadow is a major touring artist (Endtroducing) whose real Crystal Ballroom concert was wrongly caught by the DJ-prefix → Other convention and hidden from the default music-only view. This is exactly what FORCE_MUSIC exists for; the generic DJ-night convention stays correct for actual DJ nights. Verified: the show moves to Music, totals move by exactly 1 (1063 → 1064 music), only DJ Shadow reclassifies (other → music), nothing else shifts; all toggles (Tonight, This Week, Picks, By Neighborhood, Venues, Saved, Comedy, Following) and Reset clean, no console errors. Resolves the DJ Shadow item flagged for review in the prior re-audit; Max Amini (standup in Other) and the Hedwig sing-along tour (kept in Music) stand as previously reasoned — no override.
+
 
 ### 1b6e485 — Retire Audit (dev) toggle; classifier re-audit
 
