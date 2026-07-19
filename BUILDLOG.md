@@ -3,6 +3,20 @@
 Project history for **portlandlive**, newest first. Append a new entry at the top of the Changelog for each change.
 
 ## Changelog
+### PENDING — Stub lifecycle: saved→passed→claim→stub
+
+Reworked the Stub Shelf into an explicit saved-show **lifecycle** in the Saved view, built on one principle: **saved (intent) and went (proof) are different states.** A saved show never becomes a stub automatically — only when the user explicitly claims "I was there" — because people don't attend every show they save.
+
+Three states, all inside the Saved view:
+- **STATE 1 — upcoming saved:** renders as a normal listing (future date). No stub, no claim button.
+- **STATE 2 — passed but unclaimed:** stays saved, still in listing format, grouped under a new **"Did you make it?"** section (below upcoming saved) with a big, prominent primary "I was there" button. Rendered from the favorite key (venue|date|title) via pastSavedSnapshots(), so passed shows survive leaving shows.json.
+- **STATE 3 — claimed:** tapping "I was there" mints a stub (authentic Ticketmaster-style card, snapshot { title, venue, neighborhood, address, date, time, mintedAt }, dedupe by title|venue|date) into portlandlive:stubs; the row leaves "Did you make it?" and appears on the Stubs shelf. The listing→stub transformation is the reward. Unclaimed passed shows persist forever — no auto-convert, no age-out.
+
+**Delete everywhere** (all reversible, small unobtrusive controls): upcoming saved and passed-unclaimed both delete via the heart (removes the favorite key); stubs delete via a hover "×" on the stub card (removes from portlandlive:stubs — the show then returns to "Did you make it?" since the favorite is still saved).
+
+**Decisions:** (1) **Day-of card affordance removed** — the inline "I was there" on today's show cards is gone; claiming now lives only in the Saved view, so there is a single minting path (no divergent affordances). A show isn't "went" until it's over. (2) **Claiming leaves the favorite intact** — the stub is a separate store; a claimed show simply moves visually from "Did you make it?" onto the shelf while its stub is what persists.
+
+**Saved-view section order shipped:** Upcoming saved → "Did you make it?" → Stubs shelf (with Make my wall / Export / Import) → Bands → Venues. Bands/Venues (follows, not attendance) sit below the full show lifecycle so the saved→passed→claim→stub narrative stays contiguous at the top. Verified all three states, all three delete paths, reload persistence, no auto-convert/age-out, invitational empty states, and no console errors across toggles + Reset; removed the now-dead iWasThereBtn() helper so no orphaned affordance remains.
 ### 835b32f — FORCE_MUSIC override: DJ Shadow
 
 Added `"dj shadow"` to **FORCE_MUSIC** in `index.html`. DJ Shadow is a major touring artist (Endtroducing) whose real Crystal Ballroom concert was wrongly caught by the DJ-prefix → Other convention and hidden from the default music-only view. This is exactly what FORCE_MUSIC exists for; the generic DJ-night convention stays correct for actual DJ nights. Verified: the show moves to Music, totals move by exactly 1 (1063 → 1064 music), only DJ Shadow reclassifies (other → music), nothing else shifts; all toggles (Tonight, This Week, Picks, By Neighborhood, Venues, Saved, Comedy, Following) and Reset clean, no console errors. Resolves the DJ Shadow item flagged for review in the prior re-audit; Max Amini (standup in Other) and the Hedwig sing-along tour (kept in Music) stand as previously reasoned — no override.

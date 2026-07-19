@@ -469,11 +469,17 @@ body{
   .stub-tear-code{font-size:8px;letter-spacing:.12em;color:#6b6355}
   .stub-tear::after{content:"";position:absolute;top:0;right:0;bottom:0;width:7px;background:#EFE9DA;-webkit-clip-path:polygon(100% 0,0 6%,100% 13%,0 20%,100% 27%,0 34%,100% 41%,0 48%,100% 55%,0 62%,100% 69%,0 76%,100% 83%,0 90%,100% 97%,0 100%);clip-path:polygon(100% 0,0 6%,100% 13%,0 20%,100% 27%,0 34%,100% 41%,0 48%,100% 55%,0 62%,100% 69%,0 76%,100% 83%,0 90%,100% 97%,0 100%)}
   @media (max-width:560px){.stub-cols{flex-wrap:wrap}.stub-edge{display:none}.stub-title{font-size:15px}}
-  .past-saved-list{display:flex;flex-direction:column;gap:6px;margin-top:4px}
-  .past-saved-row{display:flex;align-items:center;flex-wrap:wrap;gap:6px 10px;padding:6px 0;border-bottom:1px solid rgba(243,234,215,.14)}
-  .ps-title{font-family:'Bitter',serif;color:var(--cream);font-size:14px}
-  .ps-meta{font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.04em;font-size:11px;color:var(--cream);opacity:.7}
-  .past-saved-row .iwt-btn{margin-left:auto}
+    /* SAVED-VIEW LIFECYCLE: 'Did you make it?' group (STATE 2) + stub delete (STATE 3) */
+    .dym-group{margin:0 0 18px}
+    .dym-row{display:flex;flex-direction:column;gap:8px;padding:8px 0;border-bottom:1px solid rgba(243,234,215,.14)}
+    .dym-row:last-child{border-bottom:0}
+    .iwt-btn.iwt-primary{align-self:stretch;justify-content:center;gap:8px;border:0;cursor:pointer;font-family:'Alfa Slab One',serif;text-transform:uppercase;letter-spacing:.04em;font-size:15px;padding:12px 16px;border-radius:4px;background:var(--rust);color:var(--cream);opacity:1;text-decoration:none}
+    .iwt-btn.iwt-primary:hover{filter:brightness(1.08);text-decoration:none}
+    .iwt-btn.iwt-primary .iwt-tik{font-size:16px}
+    .stub{position:relative}
+    .stub-del{position:absolute;top:6px;right:6px;z-index:2;width:22px;height:22px;line-height:20px;text-align:center;border:0;border-radius:50%;background:rgba(28,28,28,.55);color:#EFE9DA;font-size:15px;cursor:pointer;opacity:0;transition:opacity .15s;padding:0}
+    .stub:hover .stub-del,.stub-del:focus{opacity:1}
+    .stub-del:hover{background:var(--rust)}
   .stub-flash{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(14px);background:#1c1c1c;color:#EFE9DA;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.05em;font-size:12.5px;padding:10px 16px;border-radius:4px;box-shadow:0 4px 14px rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;z-index:9999;max-width:88vw;text-align:center}
   .stub-flash.show{opacity:1;transform:translateX(-50%) translateY(0)}
   /* ===== STUB SHELF END ===== */
@@ -942,60 +948,76 @@ function auditPanelHtml(){
 }
 // Consolidated "My Favorites" view: shows + bands + venues the user has hearted,
 // grouped with sub-headers. Reads the same state.favorites Set the hearts write to.
-    // Renders the past-saved "I was there" affordances + the stub shelf. Called from
-    // both the empty and populated Saved states so the shelf always shows.
-    function renderShelfSection(wrap){
-        // Past saved shows (date has passed) can be minted from here. Their favorite
-        // key (venue|date|title) still holds enough to snapshot even after they leave the feed.
-        const pastSaved = pastSavedSnapshots();
-        if(pastSaved.length){
-          const h=document.createElement('div'); h.className='fav-group';
-          h.innerHTML = `<h3 class="fav-group-head">Past shows <span class="count">${pastSaved.length}</span></h3>`;
-          const ul=document.createElement('div'); ul.className='past-saved-list';
-          pastSaved.forEach(ps=>{
-            const row=document.createElement('div'); row.className='past-saved-row';
-            const minted = loadStubs().some(s=> stubIdOf(s)===stubIdOf(ps));
-            row.innerHTML = `<span class="ps-title">${esc(ps.title||'')}</span> <span class="ps-meta">${esc(ps.venue||'')} · ${esc(ps.date||'')}</span> ` + (minted ? '<button type="button" class="iwt-btn" disabled><span class="iwt-tik">✓</span> On your shelf</button>' : iWasThereBtn(ps));
-            ul.appendChild(row);
-          });
-          h.appendChild(ul); wrap.appendChild(h);
-        }
-        // The shelf itself lives at the bottom of the Saved view.
-        renderStubShelf(wrap);
+    // ===== SAVED-VIEW LIFECYCLE: saved (intent) vs went (proof) =====
+    // A saved show becomes a stub ONLY when the user explicitly taps "I was there".
+    // STATE 1 upcoming saved -> normal listing. STATE 2 passed+unclaimed -> "Did you
+    // make it?" (listing + prominent claim button). STATE 3 claimed -> stub on shelf.
+    function claimedStubIds(){ return new Set(loadStubs().map(s=>stubIdOf(s))); }
+    // STATE 2 group: passed saved shows not yet claimed. Never auto-converts, never ages out.
+    function renderDidYouMakeIt(wrap){
+      const claimed = claimedStubIds();
+      const pending = pastSavedSnapshots().filter(ps => !claimed.has(stubIdOf(ps)));
+      if(!pending.length) return;
+      const sec = document.createElement('div'); sec.className='fav-group dym-group';
+      const h = document.createElement('div'); h.className='fav-group-head';
+      h.innerHTML = 'Did you make it? <span class="count">'+pending.length+'</span>';
+      sec.appendChild(h);
+      pending.forEach(ps=>{
+        const row = document.createElement('div'); row.className='dym-row';
+        row.appendChild(listOf([ps], true));
+        const btn = document.createElement('button');
+        btn.type='button'; btn.className='iwt-btn iwt-primary';
+        btn.setAttribute('data-iwt-title', ps.title||'');
+        btn.setAttribute('data-iwt-venue', ps.venue||'');
+        btn.setAttribute('data-iwt-neighborhood', ps.neighborhood||'');
+        btn.setAttribute('data-iwt-address', ps.address||'');
+        btn.setAttribute('data-iwt-date', ps.date||'');
+        btn.setAttribute('data-iwt-time', ps.time||'');
+        btn.innerHTML = '<span class="iwt-tik">\uD83C\uDF9F\uFE0F</span> I was there';
+        row.appendChild(btn);
+        sec.appendChild(row);
+      });
+      wrap.appendChild(sec);
     }
-function renderFavorites(){
-  const wrap = $('#results');
-  wrap.innerHTML = "";
-  const keys = [...state.favorites];
-  const bandNames  = keys.filter(k => k.indexOf('band::')===0).map(k => k.slice(6)).sort((a,b)=>a.toLowerCase().localeCompare(b.toLowerCase()));
-  const venueNames = keys.filter(k => k.indexOf('venue::')===0).map(k => k.slice(7)).sort((a,b)=>a.toLowerCase().localeCompare(b.toLowerCase()));
-  const favShows = sortShows(state.shows.filter(s => state.favorites.has(favKey(s))));
-  const total = favShows.length + bandNames.length + venueNames.length;
-  $('#resultCount').textContent = total ? `${total} favorite${total>1?'s':''}` : "No favorites yet";
-  if(!total){
-    wrap.innerHTML = '<div class="empty"><h2>No favorites yet</h2><p>Tap the heart on a show, band, or venue to save it here.</p></div>';
-    renderShelfSection(wrap); return;
-  }
-  if(favShows.length){
-    const h=document.createElement('div'); h.className='fav-group';
-    h.innerHTML = `<h3 class="fav-group-head">Shows <span class="count">${favShows.length}</span></h3>`;
-    wrap.appendChild(h);
-    wrap.appendChild(listOf(favShows, true));
-  }
-  if(bandNames.length){
-    const h=document.createElement('div'); h.className='fav-group';
-    h.innerHTML = `<h3 class="fav-group-head">Bands <span class="count">${bandNames.length}</span></h3>`
-      + `<div class="fav-band-list">` + bandNames.map(n => `<div class="fav-band-row"><span class="fav-band-name">${esc(n)}</span>${heartFav(bandFavKey(n), n, 'band')}</div>`).join("") + `</div>`;
-    wrap.appendChild(h);
-  }
-  if(venueNames.length){
-    const h=document.createElement('div'); h.className='fav-group';
-    h.innerHTML = `<h3 class="fav-group-head">Venues <span class="count">${venueNames.length}</span></h3>`
-      + `<div class="venue-chips">` + venueNames.map(n => `<span class="venue-chip-wrap"><button type="button" class="venue-chip" data-venue="${esc(n)}" title="View ${esc(n)} venue page"><span class="vc-name">${esc(n)}</span></button>${heartFav(venueFavKey(n), n, 'venue')}</span>`).join("") + `</div>`;
-    wrap.appendChild(h);
-  }
+    // Renders the two attendance sections: "Did you make it?" then the stub shelf.
+    // Called from both empty and populated Saved states so the shelf always shows.
+    function renderShelfSection(wrap){
+      renderDidYouMakeIt(wrap);
+      renderStubShelf(wrap);
+    }
+    function renderFavorites(){
+      const wrap = $('#results');
+      wrap.innerHTML = "";
+      const keys = [...state.favorites];
+      const bandNames  = keys.filter(k => k.indexOf('band::')===0).map(k => k.slice(6)).sort((a,b)=>a.toLowerCase().localeCompare(b.toLowerCase()));
+      const venueNames = keys.filter(k => k.indexOf('venue::')===0).map(k => k.slice(7)).sort((a,b)=>a.toLowerCase().localeCompare(b.toLowerCase()));
+      const favShows = sortShows(state.shows.filter(s => state.favorites.has(favKey(s))));
+      const total = favShows.length + bandNames.length + venueNames.length;
+      $('#resultCount').textContent = total ? `${total} favorite${total>1?'s':''}` : "No favorites yet";
+      if(!total){
+        wrap.innerHTML = '<div class="empty"><h2>No favorites yet</h2><p>Tap the heart on a show, band, or venue to save it here.</p></div>';
+        renderShelfSection(wrap); return;
+      }
+      if(favShows.length){
+        const h=document.createElement('div'); h.className='fav-group';
+        h.innerHTML = `<h3 class="fav-group-head">Upcoming saved <span class="count">${favShows.length}</span></h3>`;
+        wrap.appendChild(h);
+        wrap.appendChild(listOf(favShows, true));
+      }
       renderShelfSection(wrap);
-}
+      if(bandNames.length){
+        const h=document.createElement('div'); h.className='fav-group';
+        h.innerHTML = `<h3 class="fav-group-head">Bands <span class="count">${bandNames.length}</span></h3>`
+          + `<div class="fav-band-list">` + bandNames.map(n => `<div class="fav-band-row"><span class="fav-band-name">${esc(n)}</span>${heartFav(bandFavKey(n), n, 'band')}</div>`).join("") + `</div>`;
+        wrap.appendChild(h);
+      }
+      if(venueNames.length){
+        const h=document.createElement('div'); h.className='fav-group';
+        h.innerHTML = `<h3 class="fav-group-head">Venues <span class="count">${venueNames.length}</span></h3>`
+          + `<div class="venue-chips">` + venueNames.map(n => `<span class="venue-chip-wrap"><button type="button" class="venue-chip" data-venue="${esc(n)}" title="View ${esc(n)} venue page"><span class="vc-name">${esc(n)}</span></button>${heartFav(venueFavKey(n), n, 'venue')}</span>`).join("") + `</div>`;
+        wrap.appendChild(h);
+      }
+    }
 function render(){
   if(state.myShows){ renderFavorites(); return; }
   if(state.view === "venues"){ renderVenues(); return; }
@@ -1188,7 +1210,7 @@ function listOf(items, showDate){
         + `<div class="s-body">`
         +   `<div class="s-when">${dateBit||''}${(dateBit&&timeBit)?' \u00b7 ':''}${timeBit||''}</div>`
         +   `<div class="s-title">${titleHtml}</div>`
-        +   `<div class="s-sub">${venueLink}${nb}${reasonChip}${(s.date===stubToday()?iWasThereBtn(s):'')}</div>`
+        +   `<div class="s-sub">${venueLink}${nb}${reasonChip}</div>`
         +   `<div class="s-foot">${listenBtn(s.title)||'<span></span>'}${planBtn(s)}${heartBtn(s)}</div>`
         + `</div>`;
     } else {
@@ -1196,7 +1218,7 @@ function listOf(items, showDate){
       c.innerHTML = media
         + `<div class="s-body">`
         +   `<div class="s-title">${titleHtml}</div>`
-        +   `<div class="s-sub">${timeBit}${sep1}${dateBit}${(dateBit||timeBit)?`<span class="rdot">\u00b7</span>`:''}${venueLink}${nb}${reasonChip}${(s.date===stubToday()?iWasThereBtn(s):'')}</div>`
+        +   `<div class="s-sub">${timeBit}${sep1}${dateBit}${(dateBit||timeBit)?`<span class="rdot">\u00b7</span>`:''}${venueLink}${nb}${reasonChip}</div>`
         + `</div>`
         + `<div class="s-foot">${heartBtn(s)}${listenBtn(s.title)}${planBtn(s)}</div>`;
     }
@@ -1345,14 +1367,6 @@ function favKey(s){ return (s.venue||'') + '|' + (s.date||'') + '|' + (s.title||
     }
     // Small "I was there" control markup. data-* carries the snapshot so a click can mint
     // even for a saved show that has already left the live feed.
-    function iWasThereBtn(snap){
-      const d = k => esc(String(k==null?'':k));
-      return '<button type="button" class="iwt-btn" '
-        + 'data-iwt-title="'+d(snap.title)+'" data-iwt-venue="'+d(snap.venue)+'" '
-        + 'data-iwt-neighborhood="'+d(snap.neighborhood)+'" data-iwt-address="'+d(snap.address)+'" '
-        + 'data-iwt-date="'+d(snap.date)+'" data-iwt-time="'+d(snap.time)+'">'
-        + '<span class="iwt-tik">\u{1F39F}\uFE0F</span> I was there</button>';
-    }
     // Format an ISO date + time into the stub's prominent line, e.g. "THU OCT 1 2026 8:00 PM".
     function stubDateLine(dateStr, timeStr){
       var out='';
@@ -1400,6 +1414,7 @@ function favKey(s){ return (s.venue||'') + '|' + (s.date||'') + '|' + (s.title||
            +'<div class="stub-tear-code">'+esc(code)+'</div>'
          +'</div>'
        +'</div>';
+      const del=document.createElement('button'); del.type='button'; del.className='stub-del'; del.setAttribute('data-stubdel', stubIdOf(o)); del.title='Remove this stub'; del.setAttribute('aria-label','Remove '+(o.title||'stub')+' from your shelf'); del.textContent='\u00d7'; el.appendChild(del);
       return el;
     }
     // The shelf section: count line + newest-first stub cards, or a warm empty state.
@@ -1524,7 +1539,7 @@ $('#byHoodToggle').addEventListener('click',()=>{state.byHood=!state.byHood;$('#
           render();
         });
       function openVenue(name){ state.view='venues'; state.selectedVenue=name; state.q='';$('#searchInput').value='';  render(); document.querySelector('.controls').scrollIntoView({block:'start',behavior:'instant'}); }
-      $('#results').addEventListener('click',e=>{const _iwt=e.target.closest('.iwt-btn'); if(_iwt){ e.preventDefault(); e.stopPropagation(); if(!_iwt.disabled){ const g=n=>_iwt.getAttribute('data-iwt-'+n)||''; const snap={title:g('title'),venue:g('venue'),neighborhood:g('neighborhood'),address:g('address'),date:g('date'),time:g('time')}; const r=mintStub(snap); if(r.ok){ flashStub('Stub added to your shelf \u2014 '+(snap.title||'show')); } else { flashStub('Already on your shelf'); } render(); } return; } const vlink=e.target.closest('[data-venue]');if(vlink){e.preventDefault();e.stopPropagation();openVenue(vlink.getAttribute('data-venue'));return;}const h=e.target.closest('.heart');if(!h)return;e.preventDefault();e.stopPropagation();toggleFavKey(h.getAttribute('data-fav'));render();});
+      $('#results').addEventListener('click',e=>{const _del=e.target.closest('.stub-del'); if(_del){ e.preventDefault(); e.stopPropagation(); const id=_del.getAttribute('data-stubdel'); const kept=loadStubs().filter(s=>stubIdOf(s)!==id); saveStubs(kept); flashStub('Removed from your shelf'); render(); return; } const _iwt=e.target.closest('.iwt-btn'); if(_iwt){ e.preventDefault(); e.stopPropagation(); if(!_iwt.disabled){ const g=n=>_iwt.getAttribute('data-iwt-'+n)||''; const snap={title:g('title'),venue:g('venue'),neighborhood:g('neighborhood'),address:g('address'),date:g('date'),time:g('time')}; const r=mintStub(snap); if(r.ok){ flashStub('Stub added to your shelf \u2014 '+(snap.title||'show')); } else { flashStub('Already on your shelf'); } render(); } return; } const vlink=e.target.closest('[data-venue]');if(vlink){e.preventDefault();e.stopPropagation();openVenue(vlink.getAttribute('data-venue'));return;}const h=e.target.closest('.heart');if(!h)return;e.preventDefault();e.stopPropagation();toggleFavKey(h.getAttribute('data-fav'));render();});
 $('#tonightToggle').addEventListener('click',()=>{state.picks=false;$('#picksToggle').classList.remove('on');state.tonight=!state.tonight;if(state.tonight){state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');}$('#tonightToggle').classList.toggle('on',state.tonight);render();});
 $('#thisWeekToggle').addEventListener('click',()=>{state.picks=false;$('#picksToggle').classList.remove('on');state.thisWeek=!state.thisWeek;if(state.thisWeek){state.tonight=false;$('#tonightToggle').classList.remove('on');}$('#thisWeekToggle').classList.toggle('on',state.thisWeek);render();});
 /* Audit (dev) toggle retired from the UI; audit view still reachable via ?audit=1 for dev. */
