@@ -3,6 +3,18 @@
 Project history for **portlandlive**, newest first. Append a new entry at the top of the Changelog for each change.
 
 ## Changelog
+### 4d41f78 — Append-only show archive: accumulate past shows into archive.json with stable slugs
+
+Stage 0 of permanent show pages: a permanent, accumulative record of past shows that survives scraper churn. build_shows.py regenerates shows.json every run and drops past shows (date < cutoff), and manual_shows.json is overwritten by the scraper, so past shows source data disappears over time. This adds an append-only accumulation engine so history is never lost. Data foundation only; no UI.
+
+- **Append-only accumulation engine.** Before the live feed drops past shows, archive_past_shows() captures every show with date < cutoff and merges it into archive.json. The archive loads its existing contents, indexes them by slug, and only ever appends new entries; it never removes or overwrites existing ones, so it only grows. On first run (or a missing/unreadable file) it initializes an empty {generated, source, shows: []}. Survives manual_shows.json scraper churn.
+- **Stable deterministic slug = permanent identity.** Each show identity/URL is make_slug() computed from immutable facts only: date + normalized venue + normalized title, reusing the existing _norm_key/clean_title normalization (strip HTML/entities, dash-normalize, lowercase, collapse non-alphanumerics), joined with hyphens. The build sequential integer id is never part of identity (it is reassigned every build). Same show produces the same slug every run, so re-runs never duplicate. Example: 2026-06-09-the-goodfoot-greaterkind-8pm-doors.
+- **Append-only / never-overwrite with collision disambiguation.** Dedupe is on the stable slug, never the id. Two genuinely distinct shows that collide on slug (same date+venue+title) but differ by non-empty time get a base-2 / base-3 disambiguator instead of silently merging; identical repeats are skipped.
+- **Self-contained snapshots.** Each archived record stores the full show data (title, venue, neighborhood, address, date, time, venueUrl, imageUrl) plus the slug, so entries survive even after the show vanishes from manual_shows.json.
+- **Live feed unchanged.** shows.json output is untouched; past shows are still dropped from the forward-looking feed exactly as before. The archive step only reads the show list before the drop; it does not alter the live feed path.
+- **Provenance & validation.** The implementation was found uncommitted from a prior session and was NOT trusted on sight; it was reviewed line-by-line against the Stage 0 spec and proven idempotent before commit: a fresh double-build (deleted archive, rebuilt twice) yielded +28 then +0 with zero duplicate slugs, and every stored slug re-derived identically from make_slug.
+- **Known item (not addressed here).** The past/future cutoff uses a fixed UTC-8 offset inherited from the live build, so it is an hour off during PDT. Consistent with the live feed by design; flagged for a future build-wide timezone fix rather than a one-off change in the archive step.
+
 ### 0b886f5 — Stub lifecycle: saved→passed→claim→stub
 
 Reworked the Stub Shelf into an explicit saved-show **lifecycle** in the Saved view, built on one principle: **saved (intent) and went (proof) are different states.** A saved show never becomes a stub automatically — only when the user explicitly claims "I was there" — because people don't attend every show they save.
