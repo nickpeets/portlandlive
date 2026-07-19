@@ -3,7 +3,7 @@
 Project history for **portlandlive**, newest first. Append a new entry at the top of the Changelog for each change.
 
 ## Changelog
-### PENDING — Stub lifecycle: saved→passed→claim→stub
+### 0b886f5 — Stub lifecycle: saved→passed→claim→stub
 
 Reworked the Stub Shelf into an explicit saved-show **lifecycle** in the Saved view, built on one principle: **saved (intent) and went (proof) are different states.** A saved show never becomes a stub automatically — only when the user explicitly claims "I was there" — because people don't attend every show they save.
 
