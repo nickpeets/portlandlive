@@ -49,6 +49,112 @@ def _norm_venue(v):
 HERE = os.path.dirname(__file__)
 MANUAL = os.path.join(HERE, "manual_shows.json")
 OUT = os.path.join(HERE, "shows.json")
+ARCHIVE = os.path.join(HERE, "archive.json")
+
+
+# --- Append-only past-show archive -------------------------------------------
+# archive.json is an accumulative record of shows that have already happened.
+# It only ever GROWS: past shows are merged in before the live feed drops them,
+# so their data survives even after the scraper overwrites manual_shows.json.
+# Identity is a STABLE SLUG derived from immutable facts (date + venue + title),
+# NOT the build's sequential integer id (which is reassigned every run).
+
+_ARCHIVE_SOURCE = "Append-only archive of past shows (accumulated across builds)"
+_ARCHIVE_FIELDS = ("title", "venue", "neighborhood", "address",
+                   "date", "time", "venueUrl", "imageUrl")
+
+
+def make_slug(show):
+    """Deterministic permanent identity for a show.
+
+    Reuses the existing dedupe normalization (_norm_key -> strip HTML/entities,
+    dash-normalize, lowercase, collapse every non-alphanumeric run) so the slug
+    is immune to markup/punctuation/whitespace variants, then joins the tokens
+    with hyphens to form a URL-safe slug. Same show -> same slug on every run.
+    """
+    date = (show.get("date", "") or "").strip()
+    venue = _norm_key(show.get("venue", ""))
+    title = _norm_key(clean_title(show.get("title", "")))
+    raw = " ".join(p for p in (date, venue, title) if p)
+    slug = re.sub(r"\s+", "-", raw).strip("-")
+    slug = re.sub(r"-{2,}", "-", slug)
+    return slug
+
+
+def _snapshot(show, slug):
+    rec = {f: show.get(f, "") for f in _ARCHIVE_FIELDS}
+    rec["title"] = clean_title(show.get("title", ""))
+    rec["slug"] = slug
+    return rec
+
+
+def archive_past_shows(past_shows, generated_iso):
+    """Merge past shows into archive.json. Add-only; never remove/overwrite.
+
+    Dedupe is on the stable slug. If two GENUINELY DISTINCT past shows collide
+    on slug (same date+venue+title) but differ by time, a disambiguator is
+    appended so they don't silently merge. Returns (added, collisions)."""
+    data = {"generated": generated_iso, "source": _ARCHIVE_SOURCE, "shows": []}
+    if os.path.exists(ARCHIVE):
+        try:
+            existing = json.load(open(ARCHIVE))
+            if isinstance(existing, dict) and isinstance(existing.get("shows"), list):
+                data = existing
+        except Exception as e:
+            print(f"archive.json unreadable, starting fresh: {e}")
+            data = {"generated": generated_iso, "source": _ARCHIVE_SOURCE, "shows": []}
+
+    by_slug = {}
+    for rec in data.get("shows", []):
+        if rec.get("slug"):
+            by_slug[rec["slug"]] = rec
+
+    added = 0
+    collisions = []
+    for s in past_shows:
+        if not (s.get("title") and s.get("date")):
+            continue
+        base = make_slug(s)
+        if not base:
+            continue
+        slug = base
+        existing = by_slug.get(slug)
+        if existing is not None:
+            # Already archived. Only disambiguate if this is a genuinely
+            # different show (same date/venue/title, different non-empty time).
+            t_new = (s.get("time", "") or "").strip()
+            t_old = (existing.get("time", "") or "").strip()
+            if t_new and t_old and t_new != t_old:
+                n = 2
+                cand = f"{base}-{n}"
+                while cand in by_slug and not (
+                    by_slug[cand].get("time", "").strip() == t_new):
+                    n += 1
+                    cand = f"{base}-{n}"
+                if cand in by_slug:
+                    continue  # this exact time already archived under disambig slug
+                slug = cand
+                collisions.append((base, slug, t_old, t_new))
+            else:
+                continue  # true duplicate of an already-archived show -> skip
+        rec = _snapshot(s, slug)
+        by_slug[slug] = rec
+        data["shows"].append(rec)
+        added += 1
+
+    data["generated"] = generated_iso
+    data["source"] = _ARCHIVE_SOURCE
+    data["shows"].sort(key=lambda r: (r.get("date", ""), r.get("venue", ""),
+                                      r.get("title", ""), r.get("slug", "")))
+    with open(ARCHIVE, "w") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+    print(f"Archive: +{added} new past show(s), {len(data['shows'])} total in archive.json")
+    if collisions:
+        print(f"Archive: {len(collisions)} slug collision(s) disambiguated:")
+        for base, slug, t_old, t_new in collisions:
+            print(f"  COLLIDE base={base!r} -> {slug!r} (times {t_old!r} vs {t_new!r})")
+    return added, collisions
+
 
 _TIME_RE = re.compile(r"^\d{1,2}:\d{2} [AP]M$")
 _DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
@@ -126,6 +232,11 @@ def main():
     pacific = datetime.timezone(datetime.timedelta(hours=-8))
     today_pacific = datetime.datetime.now(pacific).date()
     cutoff = today_pacific.isoformat()
+    # Accumulate past shows into the append-only archive BEFORE the live
+    # feed drops them. Live feed (shows.json) is unchanged by this step.
+    _past = [s for s in shows if s.get("date", "") < cutoff]
+    _archive_gen = datetime.datetime.now().astimezone().isoformat(timespec="seconds")
+    archive_past_shows(_past, _archive_gen)
     shows = [s for s in shows if s.get("date", "") >= cutoff]
 
     # Sanitize titles: strip HTML tags + decode entities at build time.
