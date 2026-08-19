@@ -1,0 +1,101 @@
+name: Feed canary
+
+# Layer 5 - the alert channel that was missing.
+#
+# For 32 days the daily pipeline ran green while publishing nothing, and every
+# alarm it did raise went into an Actions log nobody reads. This workflow exists
+# to FAIL, on purpose, when the live site is stale or gutted - because GitHub
+# emails the repository owner when a scheduled workflow fails. The failure IS
+# the notification.
+#
+# It lives in its own file on purpose: if the main workflow is disabled, broken,
+# or deleted, this one keeps watching. It checks the PUBLISHED site, not the
+# repo, so it also catches a Pages deploy that silently stopped updating.
+# It uses only the Python standard library so it cannot fail for a missing dep.
+
+"on":
+  schedule:
+    - cron: '0 20 * * *'   # 20:00 UTC daily, ~6h after the 14:00 UTC refresh run
+  workflow_dispatch:
+    inputs:
+      simulate:
+        description: 'Test mode: force a failure condition (stale|low|fetchfail) to prove the alarm works'
+        required: false
+        default: ''
+
+jobs:
+  canary:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check the live feed
+        env:
+          SIMULATE: ${{ github.event.inputs.simulate }}
+        run: |
+          python3 - <<'PY'
+          import datetime, json, os, sys, urllib.request
+
+          FEED_URL = "https://shows.nickpeets.com/shows.json"
+          MAX_AGE_HOURS = 48
+          MIN_SHOWS = 600
+
+          simulate = (os.environ.get("SIMULATE") or "").strip().lower()
+          problems = []
+
+          if simulate == "fetchfail":
+              problems.append("SIMULATED: feed could not be fetched")
+              data = None
+          else:
+              try:
+                  req = urllib.request.Request(
+                      FEED_URL, headers={"User-Agent": "portlandlive-canary/1.0"})
+                  with urllib.request.urlopen(req, timeout=30) as r:
+                      data = json.loads(r.read().decode("utf-8"))
+              except Exception as e:
+                  problems.append(f"feed could not be fetched from {FEED_URL}: {type(e).__name__}: {e}")
+                  data = None
+
+          if data is not None:
+              shows = data.get("shows") or []
+              total = len(shows)
+              stamp = data.get("generated") or ""
+
+              if simulate == "low":
+                  total = 0
+                  print("SIMULATED: pretending the feed is empty")
+              if simulate == "stale":
+                  stamp = (datetime.datetime.now(datetime.timezone.utc)
+                           - datetime.timedelta(days=9)).isoformat()
+                  print("SIMULATED: pretending the feed is 9 days old")
+
+              print(f"live feed: {total} shows, generated {stamp!r}")
+
+              if total < MIN_SHOWS:
+                  problems.append(f"live feed has {total} shows, below the floor of {MIN_SHOWS}")
+
+              if not stamp:
+                  problems.append("live feed has no 'generated' timestamp")
+              else:
+                  try:
+                      gen = datetime.datetime.fromisoformat(stamp.replace("Z", "+00:00"))
+                      if gen.tzinfo is None:
+                          gen = gen.replace(tzinfo=datetime.timezone.utc)
+                      age_h = (datetime.datetime.now(datetime.timezone.utc) - gen).total_seconds() / 3600.0
+                      print(f"feed age: {age_h:.1f} hours (limit {MAX_AGE_HOURS})")
+                      if age_h > MAX_AGE_HOURS:
+                          problems.append(
+                              f"live feed is {age_h/24:.1f} days old (generated {stamp}); "
+                              f"the daily refresh has not published in over {MAX_AGE_HOURS}h")
+                  except Exception as e:
+                      problems.append(f"could not parse 'generated' ({stamp!r}): {e}")
+
+          if problems:
+              print("::error::FEED CANARY FAILED - the live listings feed is unhealthy")
+              for p in problems:
+                  print(f"  PROBLEM: {p}")
+              print("")
+              print("The daily 'Refresh listings' workflow is not publishing. Check its most")
+              print("recent runs, and whether a commit actually landed on main.")
+              sys.exit(1)
+
+          print("CANARY OK: live feed is fresh and populated.")
+          PY
