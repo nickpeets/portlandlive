@@ -483,9 +483,18 @@ body{
   .stub-flash{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(14px);background:#1c1c1c;color:#EFE9DA;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.05em;font-size:12.5px;padding:10px 16px;border-radius:4px;box-shadow:0 4px 14px rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;z-index:9999;max-width:88vw;text-align:center}
   .stub-flash.show{opacity:1;transform:translateX(-50%) translateY(0)}
   /* ===== STUB SHELF END ===== */
-  </style>
+  
+/* Layer 4: staleness banner */
+.stale-banner{display:block;background:#fff4e5;color:#5a3e00;border-bottom:1px solid #f0d3a0;
+  padding:10px 16px;font-size:14px;line-height:1.4;text-align:center;font-weight:500;}
+.stale-banner[hidden]{display:none;}
+</style>
 </head>
 <body>
+
+<!-- Layer 4: staleness banner. Hidden unless shows.json is measurably old.
+     The site must tell on itself rather than present a frozen feed as current. -->
+<div id="staleBanner" class="stale-banner" hidden role="status" aria-live="polite"></div>
 
 <header class="hero">
   <!-- Illustrated scene -->
@@ -814,6 +823,22 @@ function classifyByKeyword(s){
 }
 function classifyAll(){ for(const s of state.shows){ s.contentType = classifyType(s); } }
 
+// Layer 4: if the feed has not been rebuilt in a while, say so plainly.
+// The daily pipeline once ran green for 32 days while publishing nothing, and
+// the site showed month-old listings as if they were current. Never again.
+const STALE_AFTER_DAYS = 3;
+function showStalenessBanner(generatedDate){
+  try{
+    const el = document.getElementById('staleBanner');
+    if(!el || !(generatedDate instanceof Date) || isNaN(generatedDate)) return;
+    const ageDays = (Date.now() - generatedDate.getTime()) / 86400000;
+    if(ageDays < STALE_AFTER_DAYS){ el.hidden = true; return; }
+    const when = generatedDate.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+    el.textContent = "Listings may be out of date \u2014 last updated " + when + ".";
+    el.hidden = false;
+  }catch(e){ /* never let the banner break the page */ }
+}
+
 async function load(){
   try{
     const res = await fetch('/shows.json',{cache:'no-store'});
@@ -825,6 +850,7 @@ async function load(){
     if(state.stamp){
       const d=new Date(state.stamp);
       $('#dataStamp').textContent = "Updated " + d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+      showStalenessBanner(d);
     }
     render();
       // deep-link: if arriving at #show-{id}, scroll to + highlight that show
