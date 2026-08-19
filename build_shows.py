@@ -10,6 +10,7 @@ Pipeline:
     2. build_shows.py     -> reads that, writes shows.json
 The GitHub Action runs both in order, then commits shows.json.
 """
+import sys
 import json, os, datetime
 import re
 import html as _html
@@ -217,6 +218,46 @@ def validate(shows):
     return issues
 
 
+
+# --- Layer 1: build-side hard-fail guardrails ---------------------------------
+# A build that produces catastrophically less data than the last good one is a
+# failure, not a result. These checks run BEFORE shows.json is written, so a bad
+# build leaves the last good feed in place and fails the run RED instead of
+# quietly publishing a gutted feed. Thresholds are calibrated against observed
+# healthy runs (see BUILDLOG); they are deliberately loose enough that normal
+# variation never trips them.
+MIN_TOTAL_SHOWS = 600      # ~48% of the healthy 1239; lowest healthy run observed was 1070
+MAX_NEW_ZERO_VENUES = 3    # historical newly-zero-per-run: 0,0,0,0,0,1,2,4
+
+
+def guard_build(new_shows, out_path):
+    """Return a list of fatal problems with the freshly built feed. Empty = OK."""
+    from collections import Counter as _C
+    fatal = []
+    total = len(new_shows)
+    if total < MIN_TOTAL_SHOWS:
+        fatal.append(f"total upcoming shows {total} < floor {MIN_TOTAL_SHOWS}")
+
+    prev = []
+    if os.path.exists(out_path):
+        try:
+            prev = json.load(open(out_path)).get("shows", [])
+        except Exception as e:
+            print(f"  guard: previous shows.json unreadable ({e}); skipping zero-drop check")
+            prev = None
+    if prev:
+        old_c = _C(s.get("venue", "") for s in prev)
+        new_c = _C(s.get("venue", "") for s in new_shows)
+        newly_zero = sorted(v for v in old_c if v and old_c[v] > 0 and new_c.get(v, 0) == 0)
+        if len(newly_zero) >= MAX_NEW_ZERO_VENUES:
+            fatal.append(
+                f"{len(newly_zero)} venues with shows dropped to zero in one build "
+                f"(limit {MAX_NEW_ZERO_VENUES}): {', '.join(newly_zero)}")
+        elif newly_zero:
+            print(f"  guard: {len(newly_zero)} venue(s) newly zero (under limit): {', '.join(newly_zero)}")
+    return fatal
+
+
 def main():
     shows = []
     if os.path.exists(MANUAL):
@@ -285,6 +326,16 @@ def main():
         print(f"WARNING: {len(time_collisions)} same-day time collision(s) (kept first, flagged):")
         for ti, ve, da, t_old, t_new in time_collisions:
             print(f"  FLAG: {ti!r} @ {ve!r} {da} kept-time={t_old!r} dropped-time={t_new!r}")
+
+    # Layer 1: refuse to publish a catastrophically degraded feed. Checked
+    # BEFORE the write so the last good shows.json survives a bad build.
+    _fatal = guard_build(deduped, OUT)
+    if _fatal:
+        print("::error::BUILD GUARD FAILED - shows.json NOT written, last good feed left in place")
+        for f in _fatal:
+            print(f"  FATAL: {f}")
+        sys.exit(1)
+    print(f"Build guard OK: {len(deduped)} shows >= floor {MIN_TOTAL_SHOWS}")
 
     out = {
         "generated": datetime.datetime.now().astimezone().isoformat(timespec="seconds"),
