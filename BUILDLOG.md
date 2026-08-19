@@ -3,6 +3,16 @@
 Project history for **portlandlive**, newest first. Append a new entry at the top of the Changelog for each change.
 
 ## Changelog
+### e73bfb5 — Layer 2: slope-aware sustained-decline alarm
+
+`check_baselines()` in `scrape_venues.py` previously alarmed on only two shapes: a venue dropping to zero, or a single-run swing beyond ±60% of its trailing average. A scraper that bleeds slowly — a pagination selector that stops finding page 2, a feed that quietly truncates — slides under both forever. Laurelthirst went 34 → 25 (−23.5%) without a peep.
+
+- **Fires when all three hold:** trailing average ≥ 10 shows (`_DECLINE_MIN_AVG`, so ±2 shows at a small venue is not a trend), ≥ 3 separate declining steps (`_DECLINE_MIN_STEPS`, so one dip cannot trip it), and cumulative loss ≥ 20% versus the start of the window (`_DECLINE_CUM_PCT`). A minimum window of 5 runs (`_DECLINE_MIN_WINDOW`) is required before any judgement is made.
+- **Why 20% and not 25%.** At 25% the Laurelthirst 34 → 25 bleed — the exact case this check exists to catch — stays silent. Thresholds 15/18/20/22/25 were swept against the real 10-run windows in `venue_baselines.json`; 20 sits in the middle of the stable band, with zero false positives on flat, noisy, rising, or small-venue series.
+- **Existing checks kept.** Drop-to-zero and the ±60% single-run rule are unchanged; the new detector is additive, and all alerts print through the same block.
+
+**What it flags today.** Two venues, both real: **Barrel Room** `[76,71,71,71,71,71,70,70,0,0]` (−100%, already known dead) and **McMenamins Edgefield** `[18,18,18,18,17,16,16,16,6,6]` (−67%, 3 declining steps) — a genuine decline that no existing alarm had ever surfaced and that should be investigated as a parser regression. Every other venue in the file stays quiet, including the spiky ones (Havalina 11 → 36, Arlene Schnitzer 24 → 37) and the tiny ones (Al's Den, Brunish Theatre).
+
 ### bce596d + e60adb9 — Layer 1: build-side hard-fail guardrails
 
 `build_shows.py` now refuses to publish a catastrophically degraded feed. Two checks run in `guard_build()` **before** `shows.json` is written, so a bad build leaves the last good feed in place and fails the run RED instead of quietly replacing a healthy feed with a gutted one.
