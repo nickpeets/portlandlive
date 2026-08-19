@@ -3,6 +3,17 @@
 Project history for **portlandlive**, newest first. Append a new entry at the top of the Changelog for each change.
 
 ## Changelog
+### 85df697 — Layer 3: retention expiry + per-venue staleness report
+
+When a venue scrapes zero, its previous listings are retained in `manual_shows.json`. That is right for a transient blip — Kelly's Olympian scraped zero once behind an anti-bot challenge and recovered with real data on the next run — and wrong for a source that is permanently gone. Barrel Room migrated off its old site and served 44 fossil listings for 32 days because retention had no expiry.
+
+- **Retained entries now expire after `_RETENTION_MAX_ZERO_RUNS = 5` consecutive zero-scrape runs**, after which the venue goes honest-empty rather than continuing to serve a snapshot of a dead source.
+- **Why N = 5, and why N < 10 is a hard coupling constraint.** The DROPPED-TO-0 alert is computed against a 10-run trailing average, so it decays to silence as that window fills with zeros. If retention outlived the window, fossils would outlive their own alarm — which is exactly what happened to Barrel Room. Retention must die while the alert is still loud. N = 5 also leaves four runs of slack over Kelly's observed 1-zero transient.
+- **Safety rule (critical): only venues that have EVER scraped successfully can expire.** A venue whose entire baseline history is zeros was never scraped at all, which means its rows in `manual_shows.json` are genuinely hand-added — festival dates, one-off listings — and must never be deleted. `retention_status()` skips any venue with no positive entry in its history.
+- **Per-venue staleness report each run.** `SERVING RETAINED DATA` lists every venue being served from a previous scrape with a countdown (`n/5 zero runs before entries expire`); `RETENTION EXPIRED` lists venues just dropped. This is a standing signal that does not decay, unlike the trailing-average alert it backstops.
+
+**Verified against the live `venue_baselines.json`.** Barrel Room, Hawthorne Theatre and Main Street report as retained at 2/5 zero runs; Ponderosa Lounge & Grill (`[0]*10`, never successfully scraped) is correctly held as hand-added and exempt from expiry; nothing expires this run.
+
 ### e73bfb5 — Layer 2: slope-aware sustained-decline alarm
 
 `check_baselines()` in `scrape_venues.py` previously alarmed on only two shapes: a venue dropping to zero, or a single-run swing beyond ±60% of its trailing average. A scraper that bleeds slowly — a pagination selector that stops finding page 2, a feed that quietly truncates — slides under both forever. Laurelthirst went 34 → 25 (−23.5%) without a peep.
