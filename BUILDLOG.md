@@ -3,6 +3,17 @@
 Project history for **portlandlive**, newest first. Append a new entry at the top of the Changelog for each change.
 
 ## Changelog
+### 9e30a23 — Layer 4: staleness banner on the live site
+
+For 32 days the site presented month-old listings as current, because nothing in the page had any opinion about the age of the data it was rendering. `index.html` now tells on itself.
+
+- **On load, `showStalenessBanner()` compares `shows.json`'s `generated` stamp to now.** Older than `STALE_AFTER_DAYS = 3` and a quiet amber banner appears above the hero: *"Listings may be out of date — last updated &lt;date&gt;."* Fresh data leaves it hidden.
+- **Three days, not one.** The feed rebuilds daily, so a one-day threshold would cry wolf on any single missed run; three days means two consecutive failures — a pattern, not a hiccup.
+- **It can never break the page.** The whole body is wrapped in `try/catch`, the element is `hidden` by default in markup so the failure mode is an invisible banner rather than a false one, and a null, missing, or unparseable `generated` value returns early with no throw (`!(d instanceof Date) || isNaN(d)`).
+- **Styling is deliberately quiet** — amber `#fff4e5` on `#5a3e00`, one line, `role="status"` / `aria-live="polite"` so screen readers announce it without stealing focus. It informs; it does not alarm.
+
+This is the only one of the five layers a visitor can see. The other four tell Nick something is wrong; this one tells the people actually reading the listings.
+
 ### 85df697 — Layer 3: retention expiry + per-venue staleness report
 
 When a venue scrapes zero, its previous listings are retained in `manual_shows.json`. That is right for a transient blip — Kelly's Olympian scraped zero once behind an anti-bot challenge and recovered with real data on the next run — and wrong for a source that is permanently gone. Barrel Room migrated off its old site and served 44 fossil listings for 32 days because retention had no expiry.
