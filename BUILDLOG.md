@@ -3,6 +3,19 @@
 Project history for **portlandlive**, newest first. Append a new entry at the top of the Changelog for each change.
 
 ## Changelog
+### bce596d + e60adb9 — Layer 1: build-side hard-fail guardrails
+
+`build_shows.py` now refuses to publish a catastrophically degraded feed. Two checks run in `guard_build()` **before** `shows.json` is written, so a bad build leaves the last good feed in place and fails the run RED instead of quietly replacing a healthy feed with a gutted one.
+
+- **Floor: `MIN_TOTAL_SHOWS = 600`.** Calibrated against the healthy run of 1239 upcoming shows across 46 venues (48% of it) and against the lowest healthy run observed, 1070 (56% of it). Loose enough that seasonal troughs and single-scraper hiccups never trip it; tight enough that losing half the feed does.
+- **Blast radius: `MAX_NEW_ZERO_VENUES = 3`.** Fails when *more than* three previously-nonzero venues drop to zero in a single build — the signature of a shared-dependency break (a parser library, a user-agent block, a CitySpark-style backend change) rather than one venue going quiet. Observed newly-zero-per-run history is 0,0,0,0,0,1,2,4.
+- **Failure is loud and terminal.** `::error::BUILD GUARD FAILED` annotation, each fatal reason printed, `sys.exit(1)`. The Build step in `main.yml` has no `continue-on-error`, so a guard failure fails the job, which — with the owner's Actions email notifications on failed workflows — reaches a human.
+- **Ordering matters.** The guard reads the *existing* `shows.json` from disk for its per-venue comparison and runs before the write; if that file is unreadable the zero-drop check is skipped with a notice rather than throwing, and the floor check still applies.
+
+**Correction (e60adb9).** The comparison originally shipped as `>=`, which failed the build at exactly three newly-zero venues — one venue stricter than the constant's name and the calibration both intend. Now `>`: three passes with an under-limit notice, four fails.
+
+**Verification.** Against the live 1239-show feed: unmodified feed passes; 599 shows trips the floor; 600 passes it; 2 and 3 newly-zero venues pass, 4 and 5 fail.
+
 ### 6ac9884 — Fix pipeline push: stage archive.json + fail run on exhausted push retries
 
 The daily **Refresh listings** workflow reported green every day from 2026-07-19 onward while silently discarding its own work. 32 consecutive runs scraped, built, and committed a fresh feed, then failed to push it — and exited 0 anyway. The live site served 2026-07-18 listings for a month behind an unbroken wall of green checkmarks in Actions.
