@@ -249,7 +249,9 @@ def guard_build(new_shows, out_path):
         old_c = _C(s.get("venue", "") for s in prev)
         new_c = _C(s.get("venue", "") for s in new_shows)
         newly_zero = sorted(v for v in old_c if v and old_c[v] > 0 and new_c.get(v, 0) == 0)
-        if len(newly_zero) >= MAX_NEW_ZERO_VENUES:
+        # MAX_NEW_ZERO_VENUES is the largest count still ALLOWED, so the build
+        # fails only when strictly more than that many venues go to zero.
+        if len(newly_zero) > MAX_NEW_ZERO_VENUES:
             fatal.append(
                 f"{len(newly_zero)} venues with shows dropped to zero in one build "
                 f"(limit {MAX_NEW_ZERO_VENUES}): {', '.join(newly_zero)}")
