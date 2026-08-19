@@ -2480,6 +2480,15 @@ def scrape():
 _BASELINE_FILE = os.path.join(os.path.dirname(__file__), "venue_baselines.json")
 _BASELINE_HISTORY = 10   # rolling window of recent run counts per venue
 _ANOMALY_PCT = 0.60      # flag drop/spike beyond +/-60% of trailing average
+# Layer 2 - sustained-decline detector. Calibrated against the real 10-run
+# windows in venue_baselines.json: these values catch the Laurelthirst-style
+# bleed (-23% cumulative) and today flag only Barrel Room (known dead) and
+# McMenamins Edgefield (18 -> 6), with zero false positives on flat, noisy,
+# rising, or small-venue series.
+_DECLINE_MIN_WINDOW = 5   # need a real history before judging a trend
+_DECLINE_MIN_AVG = 10     # ignore small venues where +/-2 shows is noise
+_DECLINE_MIN_STEPS = 3    # separate declining steps, so one dip cannot trip it
+_DECLINE_CUM_PCT = 0.20   # cumulative loss vs the start of the window
 
 
 def check_baselines(scraped):
@@ -2507,18 +2516,44 @@ def check_baselines(scraped):
             elif avg > 0 and abs(now - avg) / avg > _ANOMALY_PCT:
                 direction = "spike" if now > avg else "drop"
                 alerts.append(f"{v}: {direction} {now} vs avg {avg:.1f} (>{int(_ANOMALY_PCT*100)}%)")
-    if alerts:
-        print(f"BASELINE ALERT: {len(alerts)} venue(s) anomalous:")
-        for a in alerts:
-            print(f"  ALERT: {a}")
-    else:
-        print(f"BASELINE: {len([v for v in counts if v])} venues OK, 0 anomalies")
     # roll the history forward (append this run, cap window); seed new venues
     new_hist = {}
     for v in venues:
         if not v:
             continue
         new_hist[v] = (hist.get(v, []) + [counts.get(v, 0)])[-_BASELINE_HISTORY:]
+
+    # Layer 2: slope-aware sustained-decline detector. The checks above only
+    # trip on drop-to-zero or a single-run swing beyond +/-60%, so a slow
+    # multi-week bleed slides under both (Laurelthirst went 34 -> 25, about
+    # -23%, and never alarmed). This catches a venue that has been quietly
+    # eroding: enough separate declining steps to rule out noise, a meaningful
+    # cumulative loss, and a big enough venue that +/-2 shows is not just churn.
+    for v in sorted(venues):
+        if not v:
+            continue
+        h = new_hist.get(v, [])
+        if len(h) < _DECLINE_MIN_WINDOW:
+            continue
+        prior = h[:-1]
+        if not prior or (sum(prior) / len(prior)) < _DECLINE_MIN_AVG:
+            continue
+        steps = sum(1 for i in range(1, len(h)) if h[i] < h[i - 1])
+        start = sum(h[:3]) / 3.0
+        if start <= 0:
+            continue
+        cum = (h[-1] - start) / start
+        if steps >= _DECLINE_MIN_STEPS and cum <= -_DECLINE_CUM_PCT:
+            alerts.append(
+                f"{v}: SUSTAINED DECLINE {h[-1]} vs {start:.1f} at window start "
+                f"({cum * 100:+.0f}%, {steps} declining steps) -- possible slow scraper bleed")
+
+    if alerts:
+        print(f"BASELINE ALERT: {len(alerts)} venue(s) anomalous:")
+        for a in alerts:
+            print(f"  ALERT: {a}")
+    else:
+        print(f"BASELINE: {len([v for v in counts if v])} venues OK, 0 anomalies")
     try:
         with open(_BASELINE_FILE, "w") as f:
             json.dump(new_hist, f, indent=2, sort_keys=True)
