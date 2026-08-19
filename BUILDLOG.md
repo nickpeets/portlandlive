@@ -3,6 +3,32 @@
 Project history for **portlandlive**, newest first. Append a new entry at the top of the Changelog for each change.
 
 ## Changelog
+### f98fe2b — Layer 5: an independent feed canary that fails on purpose
+
+The 32-day outage was not a monitoring gap so much as a *notification* gap: the pipeline did raise signals, into an Actions log nobody reads. `.github/workflows/canary.yml` closes that by turning a health check into a workflow failure — because GitHub emails the repository owner when a scheduled workflow fails. **The failure is the notification.**
+
+- **Separate file, on purpose.** If `main.yml` is disabled, broken, or deleted, the canary keeps watching. A monitor that shares a failure mode with the thing it monitors is not a monitor.
+- **It checks the PUBLISHED feed**, `https://shows.nickpeets.com/shows.json`, not the repo — so it also catches a Pages deploy that silently stopped updating even while commits keep landing on main.
+- **Fails when:** the fetch fails, `generated` is more than `MAX_AGE_HOURS = 48` old (two missed daily runs), or the feed carries fewer than `MIN_SHOWS = 600` (the same floor as Layer 1). A missing or unparseable `generated` is also a failure — silence is not health.
+- **Schedule: `0 20 * * *`**, 20:00 UTC daily, ~6 hours after the 14:00 UTC refresh — late enough that a slow or retried run is not mistaken for a dead one.
+- **Python standard library only.** No `pip install`, so the alarm cannot go dark because a dependency moved.
+- **`workflow_dispatch` input `simulate` (`stale` | `low` | `fetchfail`)** forces each failure condition on demand, so the alarm can be proven to ring without waiting for a real outage.
+
+**Gap closed: proven against the live feed, not fixtures.** The canary had previously only been exercised against `file://` fixtures. All four modes were dispatched against `main` at 64c14b9 and behaved exactly as specified:
+
+| Run | Mode | Result | Log evidence |
+|---|---|---|---|
+| #1 | `stale` | **RED** (7s) | `PROBLEM: live feed is 9.0 days old ...; the daily refresh has not published in over 48h` |
+| #2 | `low` | **RED** (10s) | `PROBLEM: live feed has 0 shows, below the floor of 600` |
+| #3 | `fetchfail` | **RED** (7s) | `PROBLEM: SIMULATED: feed could not be fetched` |
+| #4 | *(none — live)* | **GREEN** (10s) | `live feed: 1239 shows, generated '2026-08-19T19:38:19+00:00'` / `feed age: 2.7 hours (limit 48)` / `CANARY OK` |
+
+Every red run emitted the `::error::FEED CANARY FAILED - the live listings feed is unhealthy` annotation and exited 1; each failed for its own intended reason rather than a shared YAML or runtime fault, which is the point of testing the three modes separately.
+
+**Incidental confirmation.** Run #4 read 1239 shows and a 2.7-hour-old timestamp off the published feed — byte-matching the repo's `shows.json` (`generated 2026-08-19T19:38:19+00:00`, 1239 shows across 46 venues). The Pages deploy and main are in sync, and the calibration these five layers were tuned against is the calibration actually being served.
+
+**Alert channel is live.** Actions email notifications are enabled for the owner (Email, failed-workflows-only), so a red canary sends GitHub's standard run-failure mail — subject `[nickpeets/portlandlive] Run failed: Feed canary - main (<sha>)` — carrying the annotation text above. Nothing else in this repo needs to be watched by hand for the feed to stay honest.
+
 ### 9e30a23 — Layer 4: staleness banner on the live site
 
 For 32 days the site presented month-old listings as current, because nothing in the page had any opinion about the age of the data it was rendering. `index.html` now tells on itself.
