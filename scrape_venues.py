@@ -26,6 +26,18 @@ MONTHS = {m: i for i, m in enumerate(
     ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"], 1)}
 HORIZON_DAYS = 90
 
+# Shared Pacific tzinfo for the Squarespace-derived parsers (Alberta
+# Street Pub, Havalina, etc.) -- these all call .astimezone(_ASP_PDT) on
+# a UTC epoch-ms startDate. This constant was referenced in 8 places but
+# never actually assigned anywhere in the file, so every one of those
+# parsers raised NameError on every real run (caught -- and hidden -- by
+# scrape()'s per-source try/except, silently zeroing their output).
+try:
+    from zoneinfo import ZoneInfo
+    _ASP_PDT = ZoneInfo("America/Los_Angeles")
+except Exception:
+    _ASP_PDT = datetime.timezone(datetime.timedelta(hours=-7))
+
 MONTHS_FULL = {m: i for i, m in enumerate(
     ["January","February","March","April","May","June","July",
      "August","September","October","November","December"], 1)}
@@ -2010,41 +2022,72 @@ def _mcmenamins_filter_html(session, token_html, vid):
 
 def parse_havalina(html, today):
     # Havalina (havalinapdx.com), St. Johns - Squarespace events collection.
-    # /events?format=json gives an upcoming list with epoch-ms startDate (UTC).
+    # /events?format=json gives an "upcoming" list with epoch-ms startDate
+    # (UTC), paginated ~30 items per page via pagination.nextPageUrl. The
+    # previous version only ever read page 1, which is why the calendar
+    # topped out around 25 days out. This follows nextPageUrl until either
+    # the feed says there's no more, or a page's first item (items are
+    # date-ordered) is already past our horizon, so a normal run costs only
+    # as many requests as the horizon actually needs.
     out, seen = [], {}
     horizon = today + datetime.timedelta(days=120)
     lower = today
+    nb, addr = VENUE_INFO.get("Havalina", ("St. Johns", ""))
+    MAX_PAGES = 12   # backstop; a normal 120-day horizon needs far fewer
+
+    def _consume(data):
+        for e in data.get("upcoming", []):
+            sd = e.get("startDate")
+            if not sd:
+                continue
+            dt = datetime.datetime.fromtimestamp(sd / 1000, tz=datetime.timezone.utc).astimezone(_ASP_PDT)
+            d = dt.date()
+            if not (lower <= d <= horizon):
+                continue
+            date = d.isoformat()
+            tm = "%d:%02d %s" % (dt.hour % 12 or 12, dt.minute, "AM" if dt.hour < 12 else "PM")
+            title = clean(e.get("title") or "").replace("&amp;", "&")
+            title = re.sub(r"\s+", " ", title).strip()
+            if not title:
+                continue
+            fu = e.get("fullUrl") or ""
+            url = ("https://havalinapdx.com" + fu) if fu.startswith("/") else (fu or "https://havalinapdx.com/events")
+            key = (date, title.lower())
+            if key in seen:
+                continue
+            seen[key] = 1
+            out.append({"title": title, "venue": "Havalina",
+                        "neighborhood": nb, "address": addr,
+                        "date": date, "time": tm, "venueUrl": url, "imageUrl": (e.get("assetUrl") or "")})
+
     try:
         data = json.loads(html)
-    except Exception:
-        return out
-    nb, addr = VENUE_INFO.get("Havalina", ("St. Johns", ""))
-    for e in data.get("upcoming", []):
-        sd = e.get("startDate")
-        if not sd:
-            continue
-        dt = datetime.datetime.fromtimestamp(sd / 1000, tz=datetime.timezone.utc).astimezone(_ASP_PDT)
-        d = dt.date()
-        if not (lower <= d <= horizon):
-            continue
-        date = d.isoformat()
-        tm = "%d:%02d %s" % (dt.hour % 12 or 12, dt.minute, "AM" if dt.hour < 12 else "PM")
-        title = clean((e.get("title") or "").replace("&amp;", "&"))
-        title = re.sub(r"\s+", " ", title).strip()
-        if not title:
-            continue
-        fu = e.get("fullUrl") or ""
-        url = ("https://havalinapdx.com" + fu) if fu.startswith("/") else (fu or "https://havalinapdx.com/events")
-        key = (date, title.lower())
-        if key in seen:
-            continue
-        seen[key] = 1
-        out.append({"title": title, "venue": "Havalina",
-                    "neighborhood": nb, "address": addr,
-                    "date": date, "time": tm, "venueUrl": url, "imageUrl": (e.get("assetUrl") or "")})
+        _consume(data)
+        pag = data.get("pagination") or {}
+        page_url = pag.get("nextPageUrl") if pag.get("nextPage") else None
+        pages = 1
+        while page_url and pages < MAX_PAGES:
+            full_url = ("https://havalinapdx.com" + page_url) if page_url.startswith("/") else page_url
+            if "format=json" not in full_url:
+                full_url += ("&" if "?" in full_url else "?") + "format=json"
+            page_data = json.loads(fetch(full_url))
+            pages += 1
+            up = page_data.get("upcoming", [])
+            if not up:
+                break
+            first_sd = up[0].get("startDate")
+            if first_sd:
+                first_d = datetime.datetime.fromtimestamp(first_sd / 1000, tz=datetime.timezone.utc).astimezone(_ASP_PDT).date()
+                if first_d > horizon:
+                    break
+            _consume(page_data)
+            pag = page_data.get("pagination") or {}
+            page_url = pag.get("nextPageUrl") if pag.get("nextPage") else None
+    except Exception as e:
+        print(f"  WARN: havalina parser aborted: {type(e).__name__}: {e}")
+
+    out.sort(key=lambda s: (s["date"], s["time"], s["title"]))
     return out
-
-
 def parse_starday(ics, today):
     # Starday Tavern (stardaytavern.com), Brentwood-Darlington / aka Genghis
     # Records. The WordPress homepage embeds a public Google Calendar iframe;
