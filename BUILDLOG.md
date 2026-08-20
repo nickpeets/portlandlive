@@ -3,6 +3,35 @@
 Project history for **portlandlive**, newest first. Append a new entry at the top of the Changelog for each change.
 
 ## Changelog
+
+### 2c2058a -- fix: Havalina scraper was silently dead (undefined _ASP_PDT), plus pagination follow
+
+Havalina (havalinapdx.com), and 7 other Squarespace-derived parsers
+including Alberta Street Pub, called .astimezone(_ASP_PDT) -- a name
+that was never assigned anywhere in scrape_venues.py. Every real run
+raised NameError, caught silently by scrape()'s per-source
+try/except, so Havalina contributed zero scraped rows every day.
+shows.json kept showing a plausible-looking Havalina calendar only
+because manual_shows.json still held old data from before this broke.
+
+Fix: define _ASP_PDT (America/Los_Angeles via zoneinfo, crude -7:00
+fallback if tzdata is missing -- same pattern as _laurel_pacific()).
+Also rewrote parse_havalina to follow Squarespace's
+pagination.nextPageUrl (re-appending format=json, which Squarespace
+omits on page 2+) instead of reading only page 1, so a fuller
+calendar isn't silently capped -- verified live this does not change
+today's count: Havalina's real upcoming calendar is exactly 36 shows
+(2026-08-19 - 2026-09-13); page 2 correctly returns nothing further.
+
+Verified live against havalinapdx.com/events?format=json, then via
+python3 scrape_venues.py && python3 build_shows.py: 1286 shows across
+46 venues (was 1288). BASELINE ALERT fired for Havalina (spike vs a
+near-zero trailing average) and for Laurelthirst (same) -- expected,
+both venues' history was depressed by the same class of bug; not
+suppressed. Unrelated pre-existing alerts this run (Barrel Room and
+Hawthorne Theatre at 0, Main Street at 0, Pioneer Courthouse Square
+spike, Kelly's Olympian / McMenamins Edgefield sustained decline) are
+out of scope and untouched.
 ### 8190e39 — Permanent per-show pages (`#/show/<slug>`)
 
 Every show — upcoming or past — now gets a permanent page at `#/show/<slug>`, hash-routed inside `index.html`. No new files, no build-step change.
