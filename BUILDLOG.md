@@ -3,6 +3,20 @@
 Project history for **portlandlive**, newest first. Append a new entry at the top of the Changelog for each change.
 
 ## Changelog
+### 8190e39 — Permanent per-show pages (`#/show/<slug>`)
+
+Every show — upcoming or past — now gets a permanent page at `#/show/<slug>`, hash-routed inside `index.html`. No new files, no build-step change.
+
+- **Slug is a JS port of `make_slug()`/`_norm_key()`/`clean_title()`** from `build_shows.py`, verified 0 mismatches against every entry in `archive.json` (75) and every entry in `shows.json` (1288) before it was wired into routing.
+- **Resolution order:** `shows.json` (upcoming) first, then `archive.json` (past) — lazy-loaded only when a show isn't in the live feed, never on initial page load.
+- **Upcoming state:** Tickets, Save (♥), and Share ("Who's in?") — the existing components, unchanged. Share links now point at the permanent slug URL instead of the old ephemeral `#show-{id}` anchor; old shared links keep working via the untouched `wiDeepLink` handler.
+- **Past state:** no ticket link. An "I was there" button mints a stub into the existing stub shelf (dedupe by title|venue|date), flipping to a disabled "On your shelf" state once claimed — closes the whim-show gap, where a show nobody pre-saved had no path to becoming a stub.
+- Every card in the feed now links to its page; the old `#show-{id}` in-page scroll-highlight is preserved untouched for anyone holding an old link.
+- Unknown slugs render a friendly not-found state — never a blank page or console error. Cold load, back/forward, and fast re-entrant hash changes (navigating away while `archive.json` is still in flight) are all handled.
+- A clearly labeled placeholder for future social features (comments, who's going, ticket exchange) is in place — not built.
+
+**Verified against the live site, not just fixtures.** Built and run through a 24-check Playwright suite locally first (cold-load upcoming/past/not-found, stub minting + persistence, card-click navigation, browser back/forward, old-anchor backward compat, share-link generation) before ever touching the real repo. Merged to `main` via #2, then confirmed against `https://shows.nickpeets.com/` fetched fresh and cache-busted: byte-for-byte SHA-256 match with the locally-tested file, and both an upcoming and a past show page render correctly in production with zero console errors.
+
 ### f98fe2b — Layer 5: an independent feed canary that fails on purpose
 
 The 32-day outage was not a monitoring gap so much as a *notification* gap: the pipeline did raise signals, into an Actions log nobody reads. `.github/workflows/canary.yml` closes that by turning a health check into a workflow failure — because GitHub emails the repository owner when a scheduled workflow fails. **The failure is the notification.**
