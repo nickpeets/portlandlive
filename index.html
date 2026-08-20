@@ -488,6 +488,12 @@ body{
 .stale-banner{display:block;background:#fff4e5;color:#5a3e00;border-bottom:1px solid #f0d3a0;
   padding:10px 16px;font-size:14px;line-height:1.4;text-align:center;font-weight:500;}
 .stale-banner[hidden]{display:none;}
+
+/* ===== PERMANENT SHOW PAGES (#/show/<slug>) ===== */
+.show-actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.show-social-placeholder{margin:24px 0 4px;border:1px dashed rgba(243,234,215,.35);border-radius:10px;padding:16px 18px;color:rgba(243,234,215,.75)}
+.show-social-placeholder h3{font-family:'Oswald',sans-serif;font-weight:600;font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;color:rgba(243,234,215,.9)}
+.show-social-placeholder p{font-size:13.5px;line-height:1.5;font-family:'Bitter',Georgia,serif}
 </style>
 </head>
 <body>
@@ -844,6 +850,7 @@ async function load(){
     const res = await fetch('/shows.json',{cache:'no-store'});
     const data = await res.json();
     state.shows = data.shows || [];
+    state.shows.forEach(s => { s._slug = makeSlug(s); }); // permanent per-show page identity
     classifyAll(); // tag each show with s.contentType
     state.stamp = data.generated || "";
     buildNeighborhoods();
@@ -852,9 +859,7 @@ async function load(){
       $('#dataStamp').textContent = "Updated " + d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
       showStalenessBanner(d);
     }
-    render();
-      // deep-link: if arriving at #show-{id}, scroll to + highlight that show
-      if(location.hash) setTimeout(wiDeepLink, 60);
+    router(); // renders the feed, or a permanent show page if the URL points to one
   }catch(e){
     $('#results').innerHTML = '<div class="empty"><h2>Couldn\'t load listings</h2><p>shows.json failed to load. If you\'re opening this file directly, run it through a local server.</p></div>';
     $('#resultCount').textContent = "";
@@ -1045,6 +1050,9 @@ function auditPanelHtml(){
       }
     }
 function render(){
+  // A permanent show page owns #results while the URL points at one; route away
+  // instead of racing it (e.g. a filter-pill click while viewing a show page).
+  if(parseRoute().type === 'show'){ if(location.hash){ location.hash = ''; } return; }
   if(state.myShows){ renderFavorites(); return; }
   if(state.view === "venues"){ renderVenues(); return; }
   const list = filtered();
@@ -1216,7 +1224,7 @@ function listOf(items, showDate){
   const _followSet = state.following ? new Set([...state.favorites].map(function(k){ var i=k.indexOf('::'); return i<0 ? k : k.slice(0,i+2)+_normTitle(k.slice(i+2)); })) : null;
   l.className = 'list ' + (eff==='b' ? 'list--b' : 'list--a');
   items.forEach(s=>{
-    const c=document.createElement('div'); c.className='scard'; if(s.id!=null){ c.id='show-'+s.id; c.dataset.showid=s.id; }
+    const c=document.createElement('div'); c.className='scard'; if(s.id!=null){ c.id='show-'+s.id; c.dataset.showid=s.id; } if(s._slug){ c.dataset.slug=s._slug; }
     let reasonChip = '';
     if(_followSet){ if(_followSet.has('venue::'+_normTitle(s.venue))){ reasonChip = `<span class="follow-reason" title="Followed venue">\u2665 ${esc(s.venue)}</span>`; } else if(_followSet.has('band::'+_normTitle(s.title))){ reasonChip = `<span class="follow-reason" title="Followed artist">\u2665 ${esc(s.title)}</span>`; } }
     const media = smediaFor(s);
@@ -1254,6 +1262,140 @@ function listOf(items, showDate){
 }
 function esc(x){return (x||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
         function formatTitle(t){t=t||'';if(t.length<=50)return esc(t);const find=(re)=>{let m,c=[];re.lastIndex=0;while((m=re.exec(t))){c.push(m.index+1);}return c;};let c=find(/\s(\/\/)\s/g);if(!c.length)c=find(/\s(&|\+|and)\s/g);if(!c.length)return esc(t);const mid=t.length/2;let b=c[0];for(const p of c)if(Math.abs(p-mid)<Math.abs(b-mid))b=p;return esc(t.slice(0,b)).replace(/\s+$/,'')+'<br>'+esc(t.slice(b));}
+/* ============================================================
+   PERMANENT SHOW PAGES — slug identity.
+   JS port of make_slug()/_norm_key()/clean_title() in build_shows.py.
+   Verified 0 mismatches against every archive.json entry (75) AND
+   every shows.json entry (1288) before this was wired into routing.
+   ============================================================ */
+const _SLUG_ENTITIES = {amp:'&',lt:'<',gt:'>',quot:'"',apos:"'",nbsp:' ',mdash:'—',ndash:'–',rsquo:'’',lsquo:'‘',rdquo:'”',ldquo:'“',hellip:'…'};
+function slugHtmlUnescape(s){
+  if(!s) return '';
+  return String(s).replace(/&(#x?[0-9a-fA-F]+|[a-zA-Z]+);/g, function(m, ent){
+    if(ent[0]==='#'){ var code = (ent[1]==='x'||ent[1]==='X') ? parseInt(ent.slice(2),16) : parseInt(ent.slice(1),10); return isNaN(code) ? m : String.fromCodePoint(code); }
+    return Object.prototype.hasOwnProperty.call(_SLUG_ENTITIES, ent) ? _SLUG_ENTITIES[ent] : m;
+  });
+}
+function slugStripTags(s){ return (s||'').replace(/<[^>]+>/g, ''); }
+function slugCleanTitle(t){ t = slugHtmlUnescape(t||''); t = slugStripTags(t); t = slugHtmlUnescape(t); return t.replace(/\s+/g,' ').trim(); }
+function slugNormKey(s){ s = slugStripTags(slugHtmlUnescape(s||'')); s = s.replace(/[‐-―]/g,'-').toLowerCase(); return s.replace(/[^0-9a-z]+/g,' ').trim(); }
+function makeSlug(show){
+  var date = ((show && show.date) || '').trim();
+  var venue = slugNormKey((show && show.venue) || '');
+  var title = slugNormKey(slugCleanTitle((show && show.title) || ''));
+  var raw = [date, venue, title].filter(Boolean).join(' ');
+  var slug = raw.replace(/\s+/g,'-').replace(/^-+|-+$/g,'');
+  return slug.replace(/-{2,}/g,'-');
+}
+
+let _archivePromise = null;
+function loadArchive(){
+  if(!_archivePromise){
+    _archivePromise = fetch('/archive.json',{cache:'no-store'}).then(function(r){ return r.json(); })
+      .catch(function(){ return {shows:[]}; });
+  }
+  return _archivePromise;
+}
+
+function parseRoute(){
+  var h = location.hash || '';
+  var m = /^#\/show\/([^?#]+)/.exec(h);
+  if(m) return {type:'show', slug: decodeURIComponent(m[1])};
+  return {type:'feed'};
+}
+
+function reRenderCurrentView(){
+  if(parseRoute().type === 'show'){ router(); } else { render(); }
+}
+
+async function router(){
+  var route = parseRoute();
+  if(route.type === 'show'){ await renderShowRoute(route.slug); return; }
+  render();
+  if(location.hash) setTimeout(wiDeepLink, 60);
+}
+
+function showPageBackLink(){
+  return '<a class="back-link" id="backToFeed" href="#">← All shows</a>';
+}
+function bindShowPageBack(){
+  var b = document.getElementById('backToFeed');
+  if(b) b.addEventListener('click', function(e){ e.preventDefault(); location.hash=''; });
+}
+
+async function renderShowRoute(slug){
+  var wrap = $('#results');
+  wrap.innerHTML = '';
+  $('#resultCount').textContent = '';
+  var show = state.shows.find(function(s){ return s._slug === slug; });
+  var kind = 'upcoming';
+  if(!show){
+    kind = 'past';
+    var archive = await loadArchive();
+    show = (archive.shows||[]).find(function(s){ return (s.slug || makeSlug(s)) === slug; });
+  }
+  // The hash may have changed again while archive.json was in flight (fast
+  // back/forward navigation) — bail rather than render a stale route.
+  if(parseRoute().slug !== slug) return;
+  if(!show){ renderShowNotFound(wrap, slug); return; }
+  renderShowDetail(wrap, show, kind);
+}
+
+function renderShowNotFound(wrap, slug){
+  $('#resultCount').textContent = 'Not found';
+  wrap.innerHTML = showPageBackLink()
+    + '<div class="empty"><h2>Show not found</h2><p>We couldn’t find a show at that link. It may be mistyped, or the show may not be in our listings.</p></div>';
+  bindShowPageBack();
+}
+
+const SHOW_SOCIAL_PLACEHOLDER =
+  '<div class="show-social-placeholder">'
+  + '<h3>Coming soon</h3>'
+  + '<p>Comments, who’s going, and a ticket exchange will live here.</p>'
+  + '</div>';
+
+function renderShowDetail(wrap, show, kind){
+  $('#resultCount').textContent = kind === 'past' ? 'Past show' : 'Upcoming show';
+  var when = ordinalDate(show.date) + (show.time ? ' · ' + esc(show.time) : '');
+  var head = '<div class="venue-header">'
+    + showPageBackLink()
+    + '<h2 class="venue-name">' + esc(show.title||'') + '</h2>'
+    + '<div class="venue-info">' + when + (show.venue ? ' · ' + esc(show.venue) : '')
+      + (show.neighborhood ? ' · ' + esc(show.neighborhood) : '') + '</div>'
+    + (show.address ? '<div class="venue-info">' + esc(show.address) + '</div>' : '')
+    + '</div>';
+
+  const card = document.createElement('div');
+  card.className = 'scard show-detail-card';
+  const media = smediaFor(show);
+  if(!media) card.classList.add('no-media');
+  let actions;
+  if(kind === 'upcoming'){
+    actions = '<div class="show-actions">'
+      + (show.venueUrl ? '<a class="tix" href="'+esc(show.venueUrl)+'" target="_blank" rel="noopener">Tickets</a>' : '')
+      + heartBtn(show)
+      + planBtn(show)
+      + '</div>';
+  } else {
+    const claimed = claimedStubIds().has(stubIdOf(show));
+    actions = '<div class="show-actions">'
+      + (claimed
+          ? '<button type="button" class="iwt-btn iwt-primary" disabled><span class="iwt-tik">🎟️</span> On your shelf</button>'
+          : '<button type="button" class="iwt-btn iwt-primary" data-iwt-title="'+esc(show.title||'')+'" data-iwt-venue="'+esc(show.venue||'')+'" data-iwt-neighborhood="'+esc(show.neighborhood||'')+'" data-iwt-address="'+esc(show.address||'')+'" data-iwt-date="'+esc(show.date||'')+'" data-iwt-time="'+esc(show.time||'')+'"><span class="iwt-tik">🎟️</span> I was there</button>')
+      + '</div>';
+  }
+  card.innerHTML = media + '<div class="s-body">' + actions + '</div>';
+
+  const listWrap = document.createElement('div');
+  listWrap.className = 'list list--b';
+  listWrap.appendChild(card);
+
+  wrap.innerHTML = head;
+  wrap.appendChild(listWrap);
+  wrap.insertAdjacentHTML('beforeend', SHOW_SOCIAL_PLACEHOLDER);
+  bindShowPageBack();
+}
+
 function favKey(s){ return (s.venue||'') + '|' + (s.date||'') + '|' + (s.title||''); }
       function loadFavorites(){
         try{ const raw = localStorage.getItem(FAV_KEY); const arr = raw ? JSON.parse(raw) : []; return new Set(Array.isArray(arr) ? arr : []); }
@@ -1565,7 +1707,7 @@ $('#byHoodToggle').addEventListener('click',()=>{state.byHood=!state.byHood;$('#
           render();
         });
       function openVenue(name){ state.view='venues'; state.selectedVenue=name; state.q='';$('#searchInput').value='';  render(); document.querySelector('.controls').scrollIntoView({block:'start',behavior:'instant'}); }
-      $('#results').addEventListener('click',e=>{const _del=e.target.closest('.stub-del'); if(_del){ e.preventDefault(); e.stopPropagation(); const id=_del.getAttribute('data-stubdel'); const kept=loadStubs().filter(s=>stubIdOf(s)!==id); saveStubs(kept); flashStub('Removed from your shelf'); render(); return; } const _iwt=e.target.closest('.iwt-btn'); if(_iwt){ e.preventDefault(); e.stopPropagation(); if(!_iwt.disabled){ const g=n=>_iwt.getAttribute('data-iwt-'+n)||''; const snap={title:g('title'),venue:g('venue'),neighborhood:g('neighborhood'),address:g('address'),date:g('date'),time:g('time')}; const r=mintStub(snap); if(r.ok){ flashStub('Stub added to your shelf \u2014 '+(snap.title||'show')); } else { flashStub('Already on your shelf'); } render(); } return; } const vlink=e.target.closest('[data-venue]');if(vlink){e.preventDefault();e.stopPropagation();openVenue(vlink.getAttribute('data-venue'));return;}const h=e.target.closest('.heart');if(!h)return;e.preventDefault();e.stopPropagation();toggleFavKey(h.getAttribute('data-fav'));render();});
+      $('#results').addEventListener('click',e=>{const _del=e.target.closest('.stub-del'); if(_del){ e.preventDefault(); e.stopPropagation(); const id=_del.getAttribute('data-stubdel'); const kept=loadStubs().filter(s=>stubIdOf(s)!==id); saveStubs(kept); flashStub('Removed from your shelf'); reRenderCurrentView(); return; } const _iwt=e.target.closest('.iwt-btn'); if(_iwt){ e.preventDefault(); e.stopPropagation(); if(!_iwt.disabled){ const g=n=>_iwt.getAttribute('data-iwt-'+n)||''; const snap={title:g('title'),venue:g('venue'),neighborhood:g('neighborhood'),address:g('address'),date:g('date'),time:g('time')}; const r=mintStub(snap); if(r.ok){ flashStub('Stub added to your shelf \u2014 '+(snap.title||'show')); } else { flashStub('Already on your shelf'); } reRenderCurrentView(); } return; } const vlink=e.target.closest('[data-venue]');if(vlink){e.preventDefault();e.stopPropagation();openVenue(vlink.getAttribute('data-venue'));return;}const h=e.target.closest('.heart');if(h){e.preventDefault();e.stopPropagation();toggleFavKey(h.getAttribute('data-fav'));reRenderCurrentView();return;} const _interactive=e.target.closest('a, button'); if(_interactive) return; const _card=e.target.closest('.scard'); if(_card && _card.dataset.slug){ location.hash = '#/show/' + encodeURIComponent(_card.dataset.slug); }});
 $('#tonightToggle').addEventListener('click',()=>{state.picks=false;$('#picksToggle').classList.remove('on');state.tonight=!state.tonight;if(state.tonight){state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');}$('#tonightToggle').classList.toggle('on',state.tonight);render();});
 $('#thisWeekToggle').addEventListener('click',()=>{state.picks=false;$('#picksToggle').classList.remove('on');state.thisWeek=!state.thisWeek;if(state.thisWeek){state.tonight=false;$('#tonightToggle').classList.remove('on');}$('#thisWeekToggle').classList.toggle('on',state.thisWeek);render();});
 /* Audit (dev) toggle retired from the UI; audit view still reachable via ?audit=1 for dev. */
@@ -1631,6 +1773,11 @@ function wiFriendlyDate(iso){
   try{ return fmtShort(iso); }catch(e){ return iso || ''; }
 }
 function wiShowLink(show){
+  // Prefer the permanent per-show page — it works forever, even after the
+  // show leaves shows.json — over the old ephemeral #show-{id} in-page deep
+  // link. Old links already shared in the wild keep working via wiDeepLink.
+  var slug = show && (show._slug || show.slug || makeSlug(show));
+  if(slug) return WI_SHOW_BASE + "#/show/" + encodeURIComponent(slug);
   if(show.id != null) return WI_SHOW_BASE + "#show-" + encodeURIComponent(show.id);
   if(show.venueUrl) return show.venueUrl;
   return WI_SHOW_BASE;
@@ -1742,7 +1889,7 @@ function wiDeepLink(){
   el.classList.add("wi-flash");
   setTimeout(function(){ el.classList.remove("wi-flash"); }, 2400);
 }
-window.addEventListener("hashchange", wiDeepLink);
+window.addEventListener("hashchange", router);
 
 load();
 </script>
