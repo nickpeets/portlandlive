@@ -1183,102 +1183,222 @@ def parse_showdown(html, today):
 
 
 
-# ---- Laurelthirst Public House (laurelthirst.com) ----------------------------
-# WordPress + EventON plugin. No single feed lists upcoming events with dates,
-# but the WP REST CPT route /wp-json/wp/v2/ajde_events lists event posts
-# (newest-published first), and each event PAGE carries clean schema.org
-# JSON-LD with itemprop="startDate" (e.g. 2026-6-20T18:00-7:00). We page the
-# CPT list and read each event page's startDate concurrently.
-LAUREL_BASE = "https://www.laurelthirst.com"
-LAUREL_CPT = LAUREL_BASE + "/wp-json/wp/v2/ajde_events"
-_LAUREL_SD = re.compile(r"itemprop=['\"]startDate['\"]\s+content=['\"]([^'\"]+)['\"]")
-_LAUREL_LD = re.compile(r"application/ld\+json[^>]*>(.*?)</script>", re.S)
+# =============================================================================
+# DROP-IN REPLACEMENT for parse_laurelthirst in scrape_venues.py
+#
+# STATUS: NOT RUN LIVE. Authored against ground truth pulled from the live site
+# through a browser session; the Python itself has never executed against
+# laurelthirst.com. See HANDOFF-laurelthirst.md for the verified/unverified
+# split before you trust any of this.
+#
+# WHAT CHANGED AND WHY
+# --------------------
+# The old parser read the WordPress CPT route /wp-json/wp/v2/ajde_events, which
+# lists event POSTS. Laurelthirst runs residencies, and EventON stores every
+# occurrence of a residency inside ONE post. A post-shaped reader therefore
+# cannot see repeats, no matter how many pages it walks:
+#
+#   1. RECURRENCE COLLAPSE - itemprop="startDate" on an event page exposes only
+#      the FIRST occurrence. 34 of 98 upcoming occurrences are repeat instances.
+#   2. WHOLE-SERIES DISCARD - the range filter tested that single first date, so
+#      a series whose instance 0 is past was dropped entirely, taking its live
+#      future instances with it (Freak Mountain Ramblers instance 0 = 2026-08-02,
+#      which threw away real 8/23 and 8/30 shows).
+#   3. WASTED BUDGET - orderby=date is PUBLISH date, so most of the 200-post cap
+#      was spent on already-happened events.
+#
+# This version reads OCCURRENCES from EventON's own calendar endpoint. One
+# request per month instead of one request per event post: ~6 requests replacing
+# ~200, and every recurrence instance arrives as its own row.
+# =============================================================================
 
-def _laurel_event(link):
+# ---- Laurelthirst Public House (laurelthirst.com) ----------------------------
+# WordPress + EventON 5.0.13. The calendar is driven by a POST endpoint,
+# ?evo-ajax=eventon_get_events, which returns {"status","json","html",...}.
+# We read the "html" payload: it contains one .eventon_list_event block per
+# OCCURRENCE, each carrying data-time="<start_epoch>-<end_epoch>".
+#
+# Two field traps, both confirmed against the live site:
+#
+#   * Use data-time, NOT the "json" array's event_start_unix. event_start_unix
+#     is correct only for non-repeating events; for recurrence instances it is
+#     wrong (Lewi Longmire instance 2 reports 2026-08-21T01:00 where the real
+#     show is 2026-08-20 18:00 - off by 7h and a calendar day). data-time is a
+#     true epoch and matches the per-occurrence schema.org startDate every time,
+#     including across the 2026-11-01 DST boundary.
+#
+#   * shortcode[fixed_month] is 1-BASED-PLUS-ONE: fixed_month=9 renders August,
+#     13 renders December, 14 rolls over to January of the next year. So
+#     fixed_month = calendar_month + 1 + 12*(year - fixed_year).
+#     We do not rely on this for correctness - every occurrence is filtered by
+#     its own epoch, so a month-index drift can only cost coverage, never
+#     produce a wrong date. We also fetch one month past the horizon as margin.
+LAUREL_BASE = "https://laurelthirst.com"
+LAUREL_CAL = LAUREL_BASE + "/music-calendar/"
+LAUREL_AJAX = LAUREL_BASE + "/?evo-ajax=eventon_get_events"
+LAUREL_HORIZON_DAYS = 120      # matches the other parsers; scrape() then clips
+                               # everything to the global HORIZON_DAYS (90)
+LAUREL_PAUSE = 0.6             # seconds between month requests - be a good guest
+
+# The calendar page ships both nonces inline in the evo_general_params object.
+# They map to the POST fields CROSSED OVER: params "n" -> field "nonce", and
+# params "nonce" -> field "nonceX". Sending them straight through fails with
+# {"status":"bad","msg":"Nonce validation failed"}.
+_LAUREL_N = re.compile(r'"n"\s*:\s*"([0-9a-zA-Z]+)"')
+_LAUREL_NONCE = re.compile(r'"nonce"\s*:\s*"([0-9a-zA-Z]+)"')
+
+
+def _laurel_pacific():
+    """America/Los_Angeles, or a fixed -08:00 if the tz database is missing.
+
+    The fallback is deliberately crude: it can be an hour off during PDT, but a
+    missing tzdata must not take the whole venue to zero."""
     try:
-        h = fetch(link)
+        from zoneinfo import ZoneInfo
+        return ZoneInfo("America/Los_Angeles")
     except Exception:
+        return datetime.timezone(datetime.timedelta(hours=-8))
+
+
+def _laurel_nonces(html):
+    """Pull (nonce, nonceX) out of the calendar page's evo_general_params blob.
+
+    Scoped to the window right after the variable name so a stray "n": elsewhere
+    in 330KB of page source cannot poison it."""
+    i = html.find("evo_general_params")
+    window = html[i:i + 3000] if i >= 0 else html
+    n = _LAUREL_N.search(window)
+    nonce = _LAUREL_NONCE.search(window)
+    if not (n and nonce):
         return None
-    m = _LAUREL_SD.search(h)
-    if not m:
-        return None
-    name = None
-    nm = _LAUREL_LD.search(h)
-    if nm:
-        try:
-            name = json.loads(nm.group(1)).get("name")
-        except Exception:
-            name = None
-    return (link, m.group(1), name)
+    return n.group(1), nonce.group(1)
+
+
+def _laurel_month(fixed_month, fixed_year, nonce, nonce_x):
+    """One month of calendar HTML, or '' on any failure."""
+    body = {
+        "shortcode[calendar_type]": "default",
+        "shortcode[event_count]": "200",
+        "shortcode[number_of_months]": "1",
+        "shortcode[fixed_month]": str(fixed_month),
+        "shortcode[fixed_year]": str(fixed_year),
+        "shortcode[hide_past]": "no",
+        "shortcode[event_past_future]": "all",
+        "shortcode[sort_by]": "sort_date",
+        "shortcode[_cver]": "5.0.13",
+        "ajaxtype": "switchmonth",
+        "nonce": nonce,
+        "nonceX": nonce_x,
+    }
+    try:
+        r = requests.post(LAUREL_AJAX, data=body,
+                          headers={"User-Agent": _BROWSER_UA,
+                                   "X-Requested-With": "XMLHttpRequest",
+                                   "Referer": LAUREL_CAL},
+                          timeout=30)
+        r.raise_for_status()
+        data = r.json()
+    except Exception as e:
+        print(f"  WARN: laurelthirst month {fixed_month}/{fixed_year} failed: "
+              f"{type(e).__name__}: {e}")
+        return ""
+    if str(data.get("status", "")).upper() != "GOOD":
+        print(f"  WARN: laurelthirst month {fixed_month}/{fixed_year} returned "
+              f"status={data.get('status')!r} msg={data.get('msg')!r}")
+        return ""
+    return data.get("html") or ""
+
 
 def parse_laurelthirst(html, today):
-    import concurrent.futures, urllib.request, urllib.parse
-    out, seen = [], {}
-    horizon = today + datetime.timedelta(days=120)
-    lower = today
-    links = []
-    for page in range(1, 5):
-        url = LAUREL_CPT + "?per_page=50&orderby=date&order=desc&page=%d" % page
-        try:
-            data = json.loads(fetch(url))
-        except Exception:
-            break
-        if not data:
-            break
-        for e in data:
-            lk = e.get("link", "")
-            if lk:
-                links.append((lk, e.get("title", {}).get("rendered", "")))
-        if len(data) < 50:
-            break
-    # fetch event pages concurrently for start dates
-    results = {}
-    with concurrent.futures.ThreadPoolExecutor(max_workers=12) as ex:
-        futs = {ex.submit(_laurel_event, lk): lk for lk, _ in links}
-        for f in concurrent.futures.as_completed(futs):
-            r = f.result()
-            if r:
-                results[r[0]] = (r[1], r[2])
-    for lk, rendered in links:
-        if lk not in results:
-            continue
-        sd, name = results[lk]
-        mm = re.match(r"(\d{4})-(\d{1,2})-(\d{1,2})(?:T(\d{1,2}):(\d{2}))?", sd or "")
-        if not mm:
-            continue
-        try:
-            d = datetime.date(int(mm.group(1)), int(mm.group(2)), int(mm.group(3)))
-        except ValueError:
-            continue
-        if not (lower <= d <= horizon):
-            continue
-        date = d.isoformat()
-        tm = ""
-        if mm.group(4) is not None:
-            hh, mn = int(mm.group(4)), int(mm.group(5))
-            tm = "%d:%02d %s" % (hh % 12 or 12, mn, "AM" if hh < 12 else "PM")
-        raw = name or rendered or ""
-        title = clean(raw.replace("&amp;", "&"))
-        title = re.sub(r"\s+", " ", re.sub(r"[\u2010-\u2015]", "-", title)).strip()
-        if not title:
-            continue
-        key = (date, lk or title.lower())
-        if key in seen:
-            continue
-        seen[key] = 1
-        nb, addr = VENUE_INFO.get("Laurelthirst Public House", ("Kerns", "2958 NE Glisan St"))
-        out.append({"title": title, "venue": "Laurelthirst Public House",
-                    "neighborhood": nb, "address": addr,
-                    "date": date, "time": tm, "venueUrl": lk, "imageUrl": ""})
+    """Return one row per OCCURRENCE across the horizon.
+
+    `html` is the fetched LAUREL_CAL page - we need it only for the nonces.
+    Fails soft: any breakage returns whatever was gathered so far (possibly
+    empty) rather than raising, so a dead source cannot abort the run."""
+    out = []
+    try:
+        tz = _laurel_pacific()
+        horizon = today + datetime.timedelta(days=LAUREL_HORIZON_DAYS)
+
+        pair = _laurel_nonces(html or "")
+        if not pair:
+            # Retry once with our own fetch, in case the caller handed us a
+            # page without the calendar shortcode on it.
+            try:
+                pair = _laurel_nonces(fetch(LAUREL_CAL))
+            except Exception:
+                pair = None
+        if not pair:
+            print("  WARN: laurelthirst nonces not found on calendar page")
+            return out
+        nonce, nonce_x = pair
+
+        # Months to walk: current month through one past the horizon.
+        base_year = today.year
+        months = []
+        y, m = today.year, today.month
+        while (y, m) <= (horizon.year, horizon.month):
+            months.append((m + 1 + 12 * (y - base_year), base_year))
+            m += 1
+            if m > 12:
+                m, y = 1, y + 1
+        months.append((m + 1 + 12 * (y - base_year), base_year))   # margin month
+
+        seen = set()
+        for idx, (fixed_month, fixed_year) in enumerate(months):
+            if idx:
+                time.sleep(LAUREL_PAUSE)
+            frag = _laurel_month(fixed_month, fixed_year, nonce, nonce_x)
+            if not frag:
+                continue
+            soup = BeautifulSoup(frag, "html.parser")
+            for el in soup.select(".eventon_list_event"):
+                dt = (el.get("data-time") or "").split("-")
+                if not dt or not dt[0].isdigit():
+                    continue
+                start = int(dt[0])
+                ev_id = el.get("data-event_id") or ""
+                ri = str(el.get("data-ri") or "").replace("r", "")
+                key = (ev_id, ri, start)
+                if key in seen:
+                    continue
+                seen.add(key)
+
+                local = datetime.datetime.fromtimestamp(start, tz)
+                d = local.date()
+                if not (today <= d <= horizon):
+                    continue
+
+                node = el.select_one('[itemprop="name"]')
+                raw = ""
+                if node is not None:
+                    raw = node.get("content") or node.get_text(" ", strip=True) or ""
+                title = clean(raw.replace("&amp;", "&"))
+                title = re.sub(r"\s+", " ", re.sub(r"[‐-―]", "-", title)).strip()
+                if not title:
+                    continue
+
+                link = el.select_one('[itemprop="url"]')
+                url = (link.get("href") or "").strip() if link is not None else ""
+                img_el = el.select_one('[itemprop="image"]')
+                img = ""
+                if img_el is not None:
+                    img = (img_el.get("content") or img_el.get("src") or "").strip()
+
+                hh, mn = local.hour, local.minute
+                tm = "%d:%02d %s" % (hh % 12 or 12, mn, "AM" if hh < 12 else "PM")
+
+                nb, addr = VENUE_INFO.get("Laurelthirst Public House",
+                                          ("Kerns", "2958 NE Glisan St"))
+                out.append({"title": title, "venue": "Laurelthirst Public House",
+                            "neighborhood": nb, "address": addr,
+                            "date": d.isoformat(), "time": tm,
+                            "venueUrl": url, "imageUrl": img})
+    except Exception as e:
+        print(f"  WARN: laurelthirst parser aborted: {type(e).__name__}: {e}")
+    out.sort(key=lambda s: (s["date"], s["time"], s["title"]))
     return out
 
-
-
-# ---- Alberta Street Pub (albertastreetpub.com) ------------------------------
-# Squarespace site. The /music events page exposes structured JSON via the
-# ?format=json query param: an "upcoming" list of events with title, fullUrl,
-# and startDate (epoch milliseconds, UTC). Convert to Pacific local time.
-_ASP_PDT = datetime.timezone(datetime.timedelta(hours=-7))  # Portland summer (PDT)
 
 def parse_albertastreetpub(html, today):
     out, seen = [], {}
@@ -2428,7 +2548,7 @@ SOURCES = [
     {"name": "Alberta Street Pub (albertastreetpub.com)", "parser": parse_albertastreetpub, "urls": ["https://www.albertastreetpub.com/music?format=json"]},
     {"name": "Tomorrow's Verse (youenjoymybeer.com)", "parser": parse_tomorrowsverse, "urls": ["https://www.youenjoymybeer.com/events"]},
     {"name": "Cascades Amphitheater (livenation.com)", "parser": parse_cascades, "urls": [_CASCADES_URL]},
-    {"name": "Laurelthirst (laurelthirst.com)", "parser": parse_laurelthirst, "urls": ["https://www.laurelthirst.com/"]},
+    {"name": "Laurelthirst (laurelthirst.com)", "parser": parse_laurelthirst, "urls": ["https://laurelthirst.com/music-calendar/"]},
     {"name": "Showdown Saloon", "parser": parse_showdown, "urls": ["https://showdownpdx.com/"]},
     {"name": "The Get Down", "parser": parse_getdown, "urls": ["https://thegetdownpdx.com/"]},
     {"name": "Jack London Revue", "parser": parse_jacklondonrevue, "urls": ["https://jacklondonrevue.com/calendar/"]},
