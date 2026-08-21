@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-20T14:39:02+00:00",
+  "generated": "2026-08-21T14:38:10+00:00",
   "source": "Append-only archive of past shows (accumulated across builds)",
   "shows": [
     {
@@ -826,6 +826,17 @@
       "venueUrl": "https://www.barrelroompdx.com/shows/375603",
       "imageUrl": "https://files.seatengine.com/talent/headshots/photos/70042/full/data",
       "slug": "2026-08-18-barrel-room-open-jam-games"
+    },
+    {
+      "title": "Vince Staples",
+      "venue": "Pioneer Courthouse Square",
+      "neighborhood": "Downtown",
+      "address": "701 SW 6th Ave",
+      "date": "2026-08-20",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.etix.com/ticket/p/63544389/vince-staples-portland-pioneer-courthouse-square",
+      "imageUrl": "https://cdn.etix.com/etix/performance-image/performance_image_1200w/8f8708670be40d90f09d07ac2cde7769.jpg",
+      "slug": "2026-08-20-pioneer-courthouse-square-vince-staples"
     }
   ]
 }
