@@ -503,6 +503,16 @@ body{
 <div id="staleBanner" class="stale-banner" hidden role="status" aria-live="polite"></div>
 
 <header class="hero">
+      <div class="auth-corner" id="authCorner">
+        <button class="auth-pill" id="authSignInBtn" type="button">Sign In</button>
+        <div class="auth-pill auth-pill-user" id="authUserPill" hidden>
+          <span id="authDisplayName"></span>
+          <button class="auth-caret" id="authMenuBtn" type="button" aria-label="Account menu">&#9662;</button>
+          <div class="auth-menu" id="authMenu" hidden>
+            <button type="button" id="authLogoutBtn">Log out</button>
+          </div>
+        </div>
+      </div>
   <!-- Illustrated scene -->
   <svg class="scene" viewBox="0 150 1440 300" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
     <defs>
@@ -651,6 +661,33 @@ body{
   <div>A revived guide to live music in Portland, OR · Listings aggregated from public venue calendars</div>
   <div style="margin-top:8px;opacity:.7">Always confirm dates &amp; times with the venue before heading out.</div>
 </footer>
+
+    <div class="auth-overlay" id="authOverlay" aria-hidden="true">
+      <div class="auth-sheet" id="authSheet" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+        <button class="auth-close" id="authClose" type="button" aria-label="Close">&times;</button>
+        <div class="auth-tabs">
+          <button type="button" class="auth-tab active" id="authTabSignIn">Sign In</button>
+          <button type="button" class="auth-tab" id="authTabSignUp">Sign Up</button>
+        </div>
+        <h3 class="auth-title" id="authTitle">Sign In</h3>
+        <form id="authForm">
+          <div class="auth-field" id="authDisplayNameField" hidden>
+            <label class="auth-label" for="authDisplayNameInput">Display name</label>
+            <input type="text" id="authDisplayNameInput" maxlength="60" autocomplete="nickname" placeholder="What should we call you?">
+          </div>
+          <div class="auth-field">
+            <label class="auth-label" for="authEmailInput">Email</label>
+            <input type="email" id="authEmailInput" required autocomplete="email" placeholder="you@example.com">
+          </div>
+          <div class="auth-field">
+            <label class="auth-label" for="authPasswordInput">Password</label>
+            <input type="password" id="authPasswordInput" required autocomplete="current-password" minlength="6" placeholder="At least 6 characters">
+          </div>
+          <button type="submit" class="auth-submit" id="authSubmitBtn">Sign In</button>
+          <div class="auth-msg" id="authMsg"></div>
+        </form>
+      </div>
+    </div>
 
 <script src="/sampler/artist-resolver.js"></script>
 <script>
@@ -1911,6 +1948,38 @@ load();
     .stub-tool-btn.ghost{background:transparent;border-color:#8a8a8a;color:#bbb;font-size:11px;padding:5px 10px}
     .stub-tool-btn.ghost:hover{background:rgba(255,255,255,.06)}
     .stub-import-input{display:none}
+
+/* ============ ACCOUNT / AUTH (Fork Stage 1) ============ */
+.auth-corner{position:absolute;top:16px;right:16px;z-index:20;display:flex;align-items:center;gap:8px}
+.auth-pill{display:inline-flex;align-items:center;gap:8px;min-height:36px;padding:0 16px;border-radius:999px;border:1px solid rgba(255,255,255,.5);background:rgba(255,255,255,.16);color:var(--cream);font-family:'Oswald',sans-serif;font-weight:600;font-size:13px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:background .15s}
+.auth-pill:hover{background:rgba(255,255,255,.28)}
+.auth-pill-user{position:relative;background:rgba(255,255,255,.22)}
+.auth-pill[hidden]{display:none}
+#authDisplayName{max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.auth-caret{background:none;border:0;color:inherit;font-size:11px;cursor:pointer;padding:0 0 0 2px}
+.auth-menu{position:absolute;top:calc(100% + 8px);right:0;background:var(--cream);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.25);overflow:hidden;min-width:120px}
+.auth-menu button{display:block;width:100%;padding:10px 14px;background:none;border:0;text-align:left;font-family:'Oswald',sans-serif;font-weight:600;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink);cursor:pointer}
+.auth-menu button:hover{background:rgba(74,53,38,.08)}
+
+.auth-overlay{position:fixed;inset:0;background:rgba(36,26,18,.55);display:none;align-items:flex-end;justify-content:center;z-index:80}
+.auth-overlay.open{display:flex}
+.auth-sheet{position:relative;background:var(--cream);width:100%;max-width:420px;border-radius:18px 18px 0 0;padding:28px 22px calc(env(safe-area-inset-bottom) + 22px);max-height:92vh;overflow-y:auto;box-shadow:0 -8px 38px rgba(0,0,0,.25)}
+@media(min-width:680px){.auth-overlay{align-items:center}.auth-sheet{border-radius:16px;max-height:88vh}}
+.auth-close{position:absolute;top:14px;right:14px;width:32px;height:32px;border-radius:50%;border:0;background:rgba(74,53,38,.08);color:var(--ink);font-size:20px;line-height:1;cursor:pointer}
+.auth-close:hover{background:rgba(74,53,38,.16)}
+.auth-tabs{display:flex;gap:8px;margin:4px 34px 18px 0}
+.auth-tab{flex:1;padding:10px;border-radius:10px;border:1px solid rgba(74,53,38,.16);background:#fff;font-family:'Oswald',sans-serif;font-weight:600;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);cursor:pointer;opacity:.55}
+.auth-tab.active{background:var(--forest);border-color:var(--forest);color:#fff;opacity:1}
+.auth-title{font-family:'Alfa Slab One',serif;color:var(--ink);font-size:22px;margin:0 0 14px}
+.auth-field{margin-bottom:14px}
+.auth-label{display:block;font-family:'Oswald',sans-serif;font-weight:600;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(74,53,38,.62);margin:0 0 6px}
+.auth-field input{width:100%;box-sizing:border-box;font-family:'Bitter',Georgia,serif;font-size:15px;color:var(--ink);background:#fff;border:1px solid rgba(74,53,38,.16);border-radius:10px;padding:12px}
+.auth-field input:focus{outline:2px solid var(--water-d);outline-offset:1px}
+.auth-submit{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;font-family:'Oswald',sans-serif;font-weight:600;border:0;border-radius:11px;cursor:pointer;font-size:15px;letter-spacing:.02em;padding:14px;background:var(--rust);color:#fff;margin-top:4px}
+.auth-submit:hover{background:var(--rust-deep)}
+.auth-submit:disabled{opacity:.6;cursor:default}
+.auth-msg{margin-top:12px;text-align:center;font-size:13.5px;color:var(--forest);min-height:1.1em;font-weight:600}
+.auth-msg.auth-msg-error{color:var(--rust-deep)}
 </style>
 <!-- WHO'S IN? share sheet (ported from /plan/) -->
 <div class="wi-overlay" id="wiOverlay">
@@ -1968,5 +2037,7 @@ load();
   lbInit();
 })();
 </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+    <script src="auth.js" defer></script>
 </body>
 </html>
