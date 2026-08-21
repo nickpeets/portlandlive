@@ -56,6 +56,12 @@ create policy profiles_update_own
 -- No delete policy: a profile row is removed only via the auth.users
 -- cascade (i.e. full account deletion), never a standalone row delete.
 
+-- RLS policies alone do not grant table-level access -- Postgres still
+-- requires the role to have base privileges on the table. Anon has no
+-- legitimate reason to touch profiles in Stage 1 (no public reads), so only
+-- authenticated gets them; delete is intentionally omitted (see above).
+grant select, insert, update on public.profiles to authenticated;
+
 -- Auto-create the profile row the moment an auth.users row is created, so
 -- signup works correctly even when email confirmation is enabled (the
 -- client has no session -- and thus no auth.uid() -- until the user
