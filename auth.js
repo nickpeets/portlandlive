@@ -11,14 +11,14 @@
 (function () {
   "use strict";
 
-  const SUPABASE_URL = "__SUPABASE_URL__";
-  const SUPABASE_ANON_KEY = "__SUPABASE_ANON_KEY__";
+  const SUPABASE_URL = "https://mhdysfdqoqrohlltgsig.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1oZHlzZmRxb3Fyb2hsbHRnc2lnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczMjg4OTgsImV4cCI6MjEwMjkwNDg5OH0.8-U0mRC32n1oGL0JaK3iK54L3pJDoDhuXRmOXQih-h0";
 
   if (!window.supabase || typeof window.supabase.createClient !== "function") {
     console.error("[auth] supabase-js failed to load; auth is disabled.");
     return;
   }
-  if (SUPABASE_URL.indexOf("__SUPABASE_URL__") === 0 || SUPABASE_ANON_KEY.indexOf("__SUPABASE_ANON_KEY__") === 0) {
+  if (SUPABASE_URL.indexOf("https://mhdysfdqoqrohlltgsig.supabase.co") === 0 || SUPABASE_ANON_KEY.indexOf("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1oZHlzZmRxb3Fyb2hsbHRnc2lnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczMjg4OTgsImV4cCI6MjEwMjkwNDg5OH0.8-U0mRC32n1oGL0JaK3iK54L3pJDoDhuXRmOXQih-h0") === 0) {
     console.warn("[auth] Supabase credentials not configured yet; auth is disabled.");
     return;
   }
