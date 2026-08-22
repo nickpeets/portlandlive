@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-21T14:38:10+00:00",
+  "generated": "2026-08-22T14:24:21+00:00",
   "source": "Append-only archive of past shows (accumulated across builds)",
   "shows": [
     {
@@ -837,6 +837,17 @@
       "venueUrl": "https://www.etix.com/ticket/p/63544389/vince-staples-portland-pioneer-courthouse-square",
       "imageUrl": "https://cdn.etix.com/etix/performance-image/performance_image_1200w/8f8708670be40d90f09d07ac2cde7769.jpg",
       "slug": "2026-08-20-pioneer-courthouse-square-vince-staples"
+    },
+    {
+      "title": "ZooNights: Jujuba Entertainment",
+      "venue": "Oregon Zoo",
+      "neighborhood": "Washington Park",
+      "address": "4001 SW Canyon Rd, Portland, OR 97221",
+      "date": "2026-08-21",
+      "time": "6:30 PM",
+      "venueUrl": "https://www.oregonzoo.org/zoonights",
+      "imageUrl": "",
+      "slug": "2026-08-21-oregon-zoo-zoonights-jujuba-entertainment"
     }
   ]
 }
