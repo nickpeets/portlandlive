@@ -85,6 +85,11 @@ body{
 .controls-inner{max-width:920px;margin:0 auto;padding:0 28px}
 .ctl-row{display:flex;align-items:center;gap:14px 20px;flex-wrap:wrap}
 .ctl-row + .ctl-row{margin-top:16px}
+/* "what" group (divider + Venues/Festivals/Comedy): kept as one atomic flex
+   item so flex-wrap on .ctl-row moves it to its own line as a unit instead of
+   splitting mid-group. The divider travels with it so a line break never
+   leaves a dangling divider with nothing after it. */
+.ctl-group{display:flex;align-items:center;gap:14px 20px;flex-wrap:nowrap;flex:0 0 auto}
 
 
 .pill{
@@ -105,6 +110,17 @@ body{
 }
 .pill input{cursor:text;min-width:90px}
 .pill input::placeholder{color:rgba(243,234,215,.6)}
+
+/* Sort dropdown (row 1) — added for the nav restructure; reuses .pill visuals */
+.sort-pill{flex:0 0 auto;gap:6px}
+.sort-pill svg{width:16px;height:16px;flex:0 0 auto;opacity:.92}
+.sort-pill select{background:transparent;border:0;color:var(--cream);font-family:'Oswald',sans-serif;font-weight:500;font-size:15px;outline:none;cursor:pointer}
+.sort-pill select option{color:var(--ink);background:var(--cream)}
+
+/* Row 2 divider + disabled placeholder tab (Festivals) — nav restructure */
+.ctl-divider{width:1px;align-self:stretch;min-height:20px;background:rgba(255,255,255,.28);flex:0 0 auto;margin:0 2px}
+.pill-disabled{opacity:.5;cursor:not-allowed}
+.soon-tag{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;background:rgba(0,0,0,.22);border-radius:999px;padding:2px 8px;white-space:nowrap}
 
 .search-pill{flex:0 1 764px;min-width:220px;background:rgba(255,255,255,.14)}
 .search-pill input{flex:1;width:100%}
@@ -324,6 +340,12 @@ body{
     .reset-btn{flex:0 0 44px;width:44px;height:44px}
     .controls-inner .ctl-row + .ctl-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:stretch}
     .controls-inner .ctl-row + .ctl-row .pill{min-height:44px;box-sizing:border-box}
+    .controls-inner .ctl-row + .ctl-row .ctl-divider{display:none}
+    /* Undo the desktop-only nowrap grouping: on mobile the row is already a
+       2-col grid (rule above), and .ctl-group's children must be direct grid
+       items again — display:contents removes the wrapper's own box without
+       moving its children in the DOM, so the grid stays exactly as before. */
+    .controls-inner .ctl-row + .ctl-row .ctl-group{display:contents}
   .results{overflow-x:hidden}
   .results-inner{padding:0 16px}
   .row{gap:11px;padding:9px 10px}
@@ -503,13 +525,35 @@ body{
 <div id="staleBanner" class="stale-banner" hidden role="status" aria-live="polite"></div>
 
 <header class="hero">
-      <div class="auth-corner" id="authCorner">
-        <button class="auth-pill" id="authSignInBtn" type="button">Sign In</button>
-        <div class="auth-pill auth-pill-user" id="authUserPill" hidden>
-          <span id="authDisplayName"></span>
-          <button class="auth-caret" id="authMenuBtn" type="button" aria-label="Account menu">&#9662;</button>
-          <div class="auth-menu" id="authMenu" hidden>
-            <button type="button" id="authLogoutBtn">Log out</button>
+      <div class="header-utility" id="headerUtility">
+        <!-- Quick menu: Saved + Following, relocated out of the control bar. Works
+             regardless of sign-in state (both are localStorage-backed), so this is a
+             new always-visible dropdown rather than the sign-in-gated auth menu below.
+             The toggle spans keep their original ids; only their markup moved. -->
+        <div class="quick-menu" id="quickMenu">
+          <button class="auth-pill quick-menu-btn" id="quickMenuBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Saved and Following">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+            <span class="quick-menu-caret">&#9662;</span>
+          </button>
+          <div class="quick-menu-list" id="quickMenuList" hidden>
+            <label class="pill quick-menu-pill my-shows" title="Show everything you have favorited — shows, bands, and venues">
+              <span class="toggle" id="myShowsToggle"></span>
+              <span>Saved</span>
+            </label>
+            <label class="pill quick-menu-pill following-pill" title="Filter the feed to shows by the bands & venues you've hearted">
+              <span class="toggle" id="followingToggle"></span>
+              <span>&#9733; Following</span>
+            </label>
+          </div>
+        </div>
+        <div class="auth-corner" id="authCorner">
+          <button class="auth-pill" id="authSignInBtn" type="button">Sign In</button>
+          <div class="auth-pill auth-pill-user" id="authUserPill" hidden>
+            <span id="authDisplayName"></span>
+            <button class="auth-caret" id="authMenuBtn" type="button" aria-label="Account menu">&#9662;</button>
+            <div class="auth-menu" id="authMenu" hidden>
+              <button type="button" id="authLogoutBtn">Log out</button>
+            </div>
           </div>
         </div>
       </div>
@@ -604,6 +648,16 @@ body{
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
         <input id="searchInput" type="text" placeholder="search bands, venues…">
       </div>
+      <div class="pill sort-pill" title="Sort results">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h11M3 12h7M3 17h4M17 4v16M17 4l-4 4M17 4l4 4"/></svg>
+        <select id="sortSelect" aria-label="Sort by">
+          <option value="date" selected>Date</option>
+          <option value="neighborhood">Neighborhood</option>
+        </select>
+      </div>
+      <!-- byHoodToggle: kept in the DOM (hidden) so the existing grouping logic below
+           is re-triggered via .click(), not rewritten. See #sortSelect listener. -->
+      <span class="toggle" id="byHoodToggle" hidden aria-hidden="true"></span>
       <button class="icon-btn reset-btn" id="resetBtn" title="Reset filters" aria-label="Reset">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
       </button>
@@ -622,27 +676,23 @@ body{
         <span class="toggle" id="picksToggle"></span>
         <span>Picks</span>
       </label>
-      <label class="pill" title="Group shows by neighborhood">
-        <span class="toggle" id="byHoodToggle"></span>
-        <span>By Neighborhood</span>
-      </label>
+      <div class="ctl-group">
+      <span class="ctl-divider" aria-hidden="true"></span>
             <label class="pill" title="Browse all venues we cover (coverage directory)">
             <span class="toggle" id="venuesToggle"></span>
             <span>Venues</span>
             </label>
-      <label class="pill my-shows" title="Show everything you have favorited — shows, bands, and venues">
-        <span class="toggle" id="myShowsToggle"></span>
-        <span>Saved</span>
-      </label>
+      <!-- Festivals: placeholder tab only. No festival object exists in the data yet
+           (multi-day shows are individually-titled entries, e.g. "... Festival — Day 1"),
+           so this is deliberately not wired to any click handler or state variable. -->
+      <span class="pill pill-disabled" title="Festival coverage is coming soon" aria-disabled="true">
+        <span>Festivals</span><span class="soon-tag">Coming soon</span>
+      </span>
       <label class="pill" title="Show comedy / stand-up shows instead of music">
         <span class="toggle" id="comedyToggle"></span>
         <span>Comedy</span>
       </label>
-      <!-- FOLLOWING FILTER pill: collapses the show feed to bands/venues you've hearted. Distinct from the "My Favorites" view, which DISPLAYS hearted items. Self-contained; removable. -->
-      <label class="pill following-pill" title="Filter the feed to shows by the bands & venues you've hearted">
-        <span class="toggle" id="followingToggle"></span>
-        <span>&#9733; Following</span>
-      </label>
+      </div>
     </div>
   </div>
 </section>
@@ -1087,6 +1137,11 @@ function auditPanelHtml(){
       }
     }
 function render(){
+  // Keep the Sort dropdown's displayed value in sync with state.byHood: Reset,
+  // Venues, and Saved can all flip byHood without going through #sortSelect.
+  // Presentational only — does not touch byHood's meaning or the grouping logic.
+  const _sortSel = document.getElementById('sortSelect');
+  if(_sortSel) _sortSel.value = state.byHood ? 'neighborhood' : 'date';
   // A permanent show page owns #results while the URL points at one; route away
   // instead of racing it (e.g. a filter-pill click while viewing a show page).
   if(parseRoute().type === 'show'){ if(location.hash){ location.hash = ''; } return; }
@@ -1771,6 +1826,31 @@ $('#followingToggle').addEventListener('click',()=>{
   render();
 });
 
+// Sort dropdown (row 1): re-triggers the existing #byHoodToggle click handler
+// rather than reimplementing its logic, per the nav-restructure scope.
+$('#sortSelect').addEventListener('change', e => {
+  const wantHood = e.target.value === 'neighborhood';
+  if(wantHood !== state.byHood){ $('#byHoodToggle').click(); }
+});
+
+// Quick menu (Saved / Following): dropdown relocated out of the control bar.
+// The toggle elements/listeners above are untouched — only their markup moved.
+(function(){
+  const qbtn = document.getElementById('quickMenuBtn');
+  const qlist = document.getElementById('quickMenuList');
+  const qmenu = document.getElementById('quickMenu');
+  if(!qbtn || !qlist || !qmenu) return;
+  qbtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const opening = qlist.hidden;
+    qlist.hidden = !opening;
+    qbtn.setAttribute('aria-expanded', String(opening));
+  });
+  document.addEventListener('click', (e) => {
+    if(!qmenu.contains(e.target)){ qlist.hidden = true; qbtn.setAttribute('aria-expanded','false'); }
+  });
+})();
+
     // Compute the Pacific dates the Tonight / This Week filters resolve to,
     // using the SAME Intl.DateTimeFormat('en-CA', America/Los_Angeles) method
     // as the filters, so the pill labels match the filter logic exactly.
@@ -1949,8 +2029,35 @@ load();
     .stub-tool-btn.ghost:hover{background:rgba(255,255,255,.06)}
     .stub-import-input{display:none}
 
+/* ============ HEADER UTILITY (quick menu + account) ============ */
+.header-utility{position:absolute;top:16px;right:16px;z-index:20;display:flex;align-items:center;gap:10px}
+.quick-menu{position:relative}
+.quick-menu-btn svg{width:15px;height:15px}
+.quick-menu-caret{font-size:11px}
+.quick-menu-list{position:absolute;top:calc(100% + 8px);right:0;background:var(--cream);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.25);overflow:hidden;min-width:170px;padding:6px;display:flex;flex-direction:column;gap:2px}
+.quick-menu-list[hidden]{display:none}
+.quick-menu-pill{background:transparent;border:0;color:var(--ink);padding:9px 10px;border-radius:7px;width:100%;box-sizing:border-box}
+.quick-menu-pill:hover{background:rgba(74,53,38,.08)}
+.quick-menu-pill .toggle{background:rgba(74,53,38,.18);border-color:rgba(74,53,38,.3)}
+.quick-menu-pill .toggle.on{background:var(--rust)}
+.quick-menu-pill .toggle::after{background:var(--cream)}
+
 /* ============ ACCOUNT / AUTH (Fork Stage 1) ============ */
-.auth-corner{position:absolute;top:16px;right:16px;z-index:20;display:flex;align-items:center;gap:8px}
+.auth-corner{position:relative;display:flex;align-items:center;gap:8px}
+/* Below 640px the hero headline wraps to fill nearly the full width (existing,
+   unrelated to this change), leaving no room beside Sign In for a second pill —
+   even stacked, a second row collides with the headline's second line. Move the
+   quick menu to the opposite (top-left) corner instead, where the eyebrow/headline
+   text leaves a clear ~80px margin; Sign In stays exactly where it always was.
+   This block must stay AFTER the .auth-corner base rule above to win the cascade. */
+@media(max-width:640px){
+  .header-utility{position:static;display:block}
+  .auth-corner{position:absolute;top:16px;right:16px;z-index:20}
+  .quick-menu{position:absolute;top:16px;left:16px;z-index:20}
+  .quick-menu-list{left:0;right:auto}
+  .quick-menu-btn .quick-menu-caret{display:none}
+  .quick-menu-btn{padding:0 10px}
+}
 .auth-pill{display:inline-flex;align-items:center;gap:8px;min-height:36px;padding:0 16px;border-radius:999px;border:1px solid rgba(255,255,255,.5);background:rgba(255,255,255,.16);color:var(--cream);font-family:'Oswald',sans-serif;font-weight:600;font-size:13px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:background .15s}
 .auth-pill:hover{background:rgba(255,255,255,.28)}
 .auth-pill-user{position:relative;background:rgba(255,255,255,.22)}
