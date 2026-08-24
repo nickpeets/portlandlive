@@ -4,6 +4,112 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### e337a90 — Nav reconciled with the Aug 23 design refresh: divider dropped, mobile Browse dropdown, unified header menu
+
+Second presentation-layer pass over the nav, reconciling what shipped in
+`fe736a7` with the Aug 23, 2026 refresh of the design doc. The doc's
+product-logic text was unchanged in that refresh; only the screens moved.
+`index.html` only — no pipeline, data, or filter-logic changes.
+
+- **Divider removed in favour of pill weight.** `.ctl-divider` is gone. The
+  two kinds of row-2 control are now distinguished the way the new doc
+  distinguishes them: "when" pills (Tonight / This Week / Picks) fill solid
+  when active, "narrow by" pills (Venues / Festivals / Comedy) stay outlined
+  with a lighter highlight. No physical rule between the groups.
+- **Toggle switches restyled, not removed.** Neither pill kind shows a switch
+  in the new doc. The `.toggle` span is restyled to cover the whole pill
+  (`position:absolute;inset:0`, transparent) instead of being deleted — same
+  element, same id, same listener. Checked first that clicking pill *text*
+  never worked (only the 34×18 switch was ever the hit target), so removing
+  the switch outright would have made every row-2 pill unclickable.
+- **Wrap math re-checked rather than assumed.** With the switch out of layout
+  flow every pill is narrower, and 980–1280px no longer wraps at all — so the
+  original wrap bug is moot in that range. `.ctl-group` is still required
+  though: the same split (Venues stranded with the time pills while
+  Festivals/Comedy orphan onto their own line) returns at ~780–850px without
+  it, confirmed by A/B test against a `display:contents` variant. The rule
+  stays; its comment now records the new danger zone.
+- **Mobile Browse dropdown.** Venues / Festivals / Comedy collapse into a
+  single "Browse" select on narrow screens, replacing the 2-column pill pair.
+  It re-triggers the existing `#venuesToggle` / `#comedyToggle` click handlers
+  rather than reimplementing view/filter logic, and a sync block at the top of
+  `render()` keeps the select's displayed value matched to actual state however
+  that state changed (pill click, Reset, Venues auto-clear, etc).
+- **Festivals stays disabled — deliberate deviation.** The Aug 23 mockup shows
+  Festivals as an active tab. It remains a dimmed "Coming soon" placeholder
+  here, on both desktop and inside the Browse dropdown, with no click handler
+  and no state variable, because there is still no festival object in the data
+  (multi-day events are individually-titled rows like "… Festival — Day 1").
+  Recorded as an intentional divergence from the visual reference, not an
+  oversight.
+- **Header menus merged.** The quick-menu and the sign-in-gated account menu
+  are now one dropdown behind a single trigger. Saved and Following remain
+  available while signed out — they are `localStorage`-backed
+  (`portlandlive:favorites`), not account-gated — and only the "Signed in as
+  &lt;name&gt;" line and Log out are gated to a signed-in session.
+  `#authSignInBtn` and `#authLogoutBtn` are the exact elements `auth.js`
+  manages, relocated into the merged menu rather than rebuilt. The retired
+  `#authCorner` / `#authUserPill` / `#authMenuBtn` / `#authMenu` shells stay in
+  the DOM (empty, hidden) because `auth.js` resolves all six ids once at load
+  and calls `.hidden` on them directly — deleting any would throw. A
+  `MutationObserver` mirrors `#authSignInBtn`'s hidden flag onto
+  `#authLogoutBtn`, which never needed a gate of its own before (it used to
+  live inside the always-signed-in-only `#authUserPill`). `auth.js` itself is
+  untouched.
+  - *Not added:* "Your stubs" and "Account settings" menu items. The design
+    doc shows them; neither is a built feature, and the stub shelf already
+    renders inside the Saved view, so adding them would mean menu entries
+    pointing at nothing. Same call as Festivals above. Revisit when there is
+    a real destination for each.
+- **Fixed a CSS specificity bug found while reviewing this pass's own
+  screenshots.** The pre-existing `.toggle.on{background:var(--rust)}` rule
+  (used by the quick-menu's real switches) ties on specificity with the new
+  transparent-toggle rule and sits later in source, so it won — painting a
+  solid rust block across the entire pill whenever a row-2 pill went active
+  and hiding the label text completely. Overridden with
+  `.pill-when`/`.pill-narrow`-scoped `.toggle.on` selectors rather than by
+  reordering the stylesheet, so the fix does not depend on source position.
+
+Verified at 980 / 1000 / 1100 / 1280px and mobile: active-state rendering for
+all three "when" pills and both live "narrow by" pills, Browse dropdown wiring
+including the disabled Festivals option and the blank-option reset,
+neighborhood grouping output unchanged, Saved/Following working signed-out, and
+Log out correctly hidden signed-out and shown in a simulated signed-in DOM. The
+mobile header trigger was re-checked for the pass-1 hero-headline collision: its
+box overlaps `.eyebrow`'s wide centred text box, but a real click lands on the
+button and opens the menu, so the pass-1 top-left relocation hack was dropped.
+Sign In itself was not exercisable in the sandbox — supabase-js cannot load
+without network — and was checked against the live site after deploy instead.
+
+### fe736a7 — Nav bar restructure: two-row split, Sort dropdown, Festivals placeholder, Saved/Following to quick-menu
+
+First pass bootstrapping the Aug 2026 design doc into the existing control bar.
+`index.html` only.
+
+- Row 1: search + a new Sort dropdown (Date default, Neighborhood option),
+  replacing the standalone By Neighborhood toggle. Selecting Neighborhood
+  re-triggers the existing `#byHoodToggle` click handler (kept in the DOM,
+  hidden) rather than reimplementing it, so the day/neighborhood grouping logic
+  is untouched.
+- Row 2: Tonight | This Week | Picks, a divider, then Venues | Festivals |
+  Comedy. Festivals shipped as a disabled "Coming soon" placeholder with no
+  handler and no state, since no festival object exists in the data.
+- Fixed a row-2 wrap bug found mid-pass: at the 920px control-bar cap,
+  Venues/Festivals/Comedy could split across lines. Grouped them plus the
+  divider into a `nowrap` inner flex container (`.ctl-group`) that wraps as one
+  atomic unit, neutralised via `display:contents` in the 600px mobile query so
+  the mobile 2-column grid is unaffected.
+- Saved and Following moved out of the control bar into a new always-visible
+  quick-menu, built fresh rather than folded into the sign-in-gated account
+  menu, since both are `localStorage`-backed and work without an account.
+
+*Log hygiene note:* this entry was written after the fact. The commit was
+authored locally as `e7bbab6` but reached `main` through a different path and
+landed as **`fe736a7`** — the two are byte-identical for `index.html` (verified
+by `git diff e7bbab6:index.html origin/main:index.html`, empty). The local
+BUILDLOG commit referencing `e7bbab6` never reached `main`, so no stale hash was
+ever published; `fe736a7` above is the only correct reference for this change.
+
 ### 2c2058a -- fix: Havalina scraper was silently dead (undefined _ASP_PDT), plus pagination follow
 
 Havalina (havalinapdx.com), and 7 other Squarespace-derived parsers
