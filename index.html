@@ -85,10 +85,15 @@ body{
 .controls-inner{max-width:920px;margin:0 auto;padding:0 28px}
 .ctl-row{display:flex;align-items:center;gap:14px 20px;flex-wrap:wrap}
 .ctl-row + .ctl-row{margin-top:16px}
-/* "what" group (divider + Venues/Festivals/Comedy): kept as one atomic flex
-   item so flex-wrap on .ctl-row moves it to its own line as a unit instead of
-   splitting mid-group. The divider travels with it so a line break never
-   leaves a dangling divider with nothing after it. */
+/* "narrow by" group (Venues/Festivals/Comedy): kept as one atomic flex item so
+   flex-wrap on .ctl-row moves it to its own line as a unit instead of
+   splitting mid-group. Checked, not assumed, after removing the divider:
+   dropping the visible toggle switch (now an invisible full-pill click
+   target, see .pill-when/.pill-narrow below) narrows every pill enough that
+   980-1280px no longer wraps at all — but the same class of split bug
+   reappears at ~780-850px without this rule (confirmed by temporarily
+   setting this to display:contents: Venues stayed with the time pills while
+   Festivals/Comedy dropped alone). Still needed; the safe width just moved. */
 .ctl-group{display:flex;align-items:center;gap:14px 20px;flex-wrap:nowrap;flex:0 0 auto}
 
 
@@ -117,10 +122,38 @@ body{
 .sort-pill select{background:transparent;border:0;color:var(--cream);font-family:'Oswald',sans-serif;font-weight:500;font-size:15px;outline:none;cursor:pointer}
 .sort-pill select option{color:var(--ink);background:var(--cream)}
 
-/* Row 2 divider + disabled placeholder tab (Festivals) — nav restructure */
-.ctl-divider{width:1px;align-self:stretch;min-height:20px;background:rgba(255,255,255,.28);flex:0 0 auto;margin:0 2px}
+/* Row 2 disabled placeholder tab (Festivals) — nav restructure */
 .pill-disabled{opacity:.5;cursor:not-allowed}
 .soon-tag{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;background:rgba(0,0,0,.22);border-radius:999px;padding:2px 8px;white-space:nowrap}
+
+/* Aug 23 doc: "when" pills (Tonight/This Week/Picks) go solid when active;
+   "narrow by" pills (Venues/Festivals/Comedy) stay outlined — no divider,
+   the fill/outline distinction alone marks them as a different kind of
+   control. Neither kind has a visible switch in the new doc, so the toggle
+   span is resized to cover the whole pill instead of being removed: it's
+   still the exact same element/listener from before (untouched), just the
+   click target now matches the whole visible pill instead of a small
+   slider inside it — same behavior, bigger hit area, matches the mockup. */
+.pill-when,
+.pill-narrow{position:relative}
+.pill-when .toggle,
+.pill-narrow .toggle{position:absolute;inset:0;width:auto;height:auto;margin:0;background:transparent;border:0;border-radius:inherit}
+/* Caught by screenshot review, not assumed fine: the base .toggle.on{background:
+   var(--rust)} rule below (pre-existing, unrelated to this pass) has the same
+   specificity as the transparent override above and sits later in source, so
+   it was winning and painting a solid rust block over the whole pill (the
+   toggle span now covers the full pill area) whenever Venues/Comedy/Tonight
+   etc. were active — hiding the label text entirely. This selector adds a
+   class to both sides so it out-specifies .toggle.on regardless of source
+   order, restoring the intended transparent toggle + pill-level fill/outline
+   from the :has() rules below. */
+.pill-when .toggle.on,
+.pill-narrow .toggle.on{background:transparent}
+.pill-when .toggle::after,
+.pill-narrow .toggle::after{content:none}
+.pill-when:has(.toggle.on){background:var(--cream);border-color:var(--cream);color:var(--ink)}
+.pill-narrow:has(.toggle.on){background:rgba(255,255,255,.24);border-color:var(--cream)}
+.browse-pill{display:none}
 
 .search-pill{flex:0 1 764px;min-width:220px;background:rgba(255,255,255,.14)}
 .search-pill input{flex:1;width:100%}
@@ -340,12 +373,15 @@ body{
     .reset-btn{flex:0 0 44px;width:44px;height:44px}
     .controls-inner .ctl-row + .ctl-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:stretch}
     .controls-inner .ctl-row + .ctl-row .pill{min-height:44px;box-sizing:border-box}
-    .controls-inner .ctl-row + .ctl-row .ctl-divider{display:none}
     /* Undo the desktop-only nowrap grouping: on mobile the row is already a
        2-col grid (rule above), and .ctl-group's children must be direct grid
        items again — display:contents removes the wrapper's own box without
        moving its children in the DOM, so the grid stays exactly as before. */
     .controls-inner .ctl-row + .ctl-row .ctl-group{display:contents}
+    /* Aug 23 doc, mobile only: Venues/Festivals/Comedy collapse into one
+       "Browse" dropdown instead of 3 separate grid cells. */
+    .controls-inner .ctl-row + .ctl-row .pill-narrow{display:none}
+    .controls-inner .ctl-row + .ctl-row .browse-pill{display:inline-flex}
   .results{overflow-x:hidden}
   .results-inner{padding:0 16px}
   .row{gap:11px;padding:9px 10px}
@@ -526,16 +562,27 @@ body{
 
 <header class="hero">
       <div class="header-utility" id="headerUtility">
-        <!-- Quick menu: Saved + Following, relocated out of the control bar. Works
-             regardless of sign-in state (both are localStorage-backed), so this is a
-             new always-visible dropdown rather than the sign-in-gated auth menu below.
-             The toggle spans keep their original ids; only their markup moved. -->
+        <!-- Unified menu (Aug 23 doc): one trigger, one dropdown, replacing the
+             separate quick-menu + sign-in-gated account menu from the previous
+             pass. Saved + Following always work (localStorage-backed, no
+             account needed) regardless of sign-in state. Sign In / Log out
+             below are the EXACT #authSignInBtn / #authLogoutBtn elements
+             auth.js already manages — relocated in here, not rebuilt, so its
+             show/hide + click logic is fully untouched; a small observer just
+             mirrors authSignInBtn's hidden state onto authLogoutBtn (auth.js
+             never had to gate logout itself before, since it used to live
+             inside the always-signed-in-only #authUserPill).
+             "Your stubs" / "Account settings" are deliberately NOT added:
+             neither is a built feature (the stub shelf already renders inside
+             Saved), so this doesn't add menu items pointing at nothing — same
+             call already made for Festivals. -->
         <div class="quick-menu" id="quickMenu">
-          <button class="auth-pill quick-menu-btn" id="quickMenuBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Saved and Following">
+          <button class="auth-pill quick-menu-btn" id="quickMenuBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Menu">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
             <span class="quick-menu-caret">&#9662;</span>
           </button>
           <div class="quick-menu-list" id="quickMenuList" hidden>
+            <div class="quick-menu-account" id="quickMenuAccount">Signed in as <span id="authDisplayName"></span></div>
             <label class="pill quick-menu-pill my-shows" title="Show everything you have favorited — shows, bands, and venues">
               <span class="toggle" id="myShowsToggle"></span>
               <span>Saved</span>
@@ -544,16 +591,18 @@ body{
               <span class="toggle" id="followingToggle"></span>
               <span>&#9733; Following</span>
             </label>
+            <div class="quick-menu-divider" aria-hidden="true"></div>
+            <button class="quick-menu-pill quick-menu-authitem" id="authSignInBtn" type="button">Sign In</button>
+            <button class="quick-menu-pill quick-menu-authitem" id="authLogoutBtn" type="button" hidden>Log out</button>
           </div>
         </div>
-        <div class="auth-corner" id="authCorner">
-          <button class="auth-pill" id="authSignInBtn" type="button">Sign In</button>
+        <!-- Retired, not removed: auth.js looks these up by id at load and calls
+             .hidden on them directly, so they must still exist. Their one real
+             function (Log out) was relocated above; these stay empty and hidden. -->
+        <div class="auth-corner" id="authCorner" hidden aria-hidden="true">
           <div class="auth-pill auth-pill-user" id="authUserPill" hidden>
-            <span id="authDisplayName"></span>
-            <button class="auth-caret" id="authMenuBtn" type="button" aria-label="Account menu">&#9662;</button>
-            <div class="auth-menu" id="authMenu" hidden>
-              <button type="button" id="authLogoutBtn">Log out</button>
-            </div>
+            <button class="auth-caret" id="authMenuBtn" type="button" hidden></button>
+            <div class="auth-menu" id="authMenu" hidden></div>
           </div>
         </div>
       </div>
@@ -664,34 +713,50 @@ body{
     </div>
 
     <div class="ctl-row">
-      <label class="pill" title="Only shows happening tonight">
+      <label class="pill pill-when" title="Only shows happening tonight">
         <span class="toggle" id="tonightToggle"></span>
         <span>Tonight</span><span class="pill-date" id="tonightDate"></span>
       </label>
-      <label class="pill" title="Shows happening in the next 7 days">
+      <label class="pill pill-when" title="Shows happening in the next 7 days">
         <span class="toggle" id="thisWeekToggle"></span>
         <span>This Week</span><span class="pill-date" id="thisWeekDate"></span>
       </label>
-      <label class="pill" title="Picks of the Week - curated, vertical showcase">
+      <label class="pill pill-when" title="Picks of the Week - curated, vertical showcase">
         <span class="toggle" id="picksToggle"></span>
         <span>Picks</span>
       </label>
       <div class="ctl-group">
-      <span class="ctl-divider" aria-hidden="true"></span>
-            <label class="pill" title="Browse all venues we cover (coverage directory)">
+            <label class="pill pill-narrow" title="Browse all venues we cover (coverage directory)">
             <span class="toggle" id="venuesToggle"></span>
             <span>Venues</span>
             </label>
       <!-- Festivals: placeholder tab only. No festival object exists in the data yet
            (multi-day shows are individually-titled entries, e.g. "... Festival — Day 1"),
-           so this is deliberately not wired to any click handler or state variable. -->
-      <span class="pill pill-disabled" title="Festival coverage is coming soon" aria-disabled="true">
+           so this is deliberately not wired to any click handler or state variable.
+           Deliberately kept disabled even though the Aug 23 mockup shows it active —
+           there's still no festival data object backing it. -->
+      <span class="pill pill-narrow pill-disabled" title="Festival coverage is coming soon" aria-disabled="true">
         <span>Festivals</span><span class="soon-tag">Coming soon</span>
       </span>
-      <label class="pill" title="Show comedy / stand-up shows instead of music">
+      <label class="pill pill-narrow" title="Show comedy / stand-up shows instead of music">
         <span class="toggle" id="comedyToggle"></span>
         <span>Comedy</span>
       </label>
+      <!-- Mobile-only (Aug 23 doc): collapses Venues/Festivals/Comedy into one
+           "Browse" dropdown. Re-triggers the existing venuesToggle/comedyToggle
+           clicks below — their view/filter logic is untouched, only reached via
+           a different control on narrow screens. Festivals stays disabled here
+           too (no handler, no state, matches the desktop placeholder). Hidden on
+           desktop; the three pills above are hidden on mobile instead (CSS). -->
+      <div class="pill sort-pill browse-pill" title="Narrow by venue directory or comedy">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+        <select id="browseSelect" aria-label="Browse">
+          <option value="" selected>Browse</option>
+          <option value="venues">Venues</option>
+          <option value="festivals" disabled>Festivals — Coming soon</option>
+          <option value="comedy">Comedy</option>
+        </select>
+      </div>
       </div>
     </div>
   </div>
@@ -1142,6 +1207,14 @@ function render(){
   // Presentational only — does not touch byHood's meaning or the grouping logic.
   const _sortSel = document.getElementById('sortSelect');
   if(_sortSel) _sortSel.value = state.byHood ? 'neighborhood' : 'date';
+  // Same idea for the mobile Browse dropdown: keep it matched to whichever of
+  // Venues/Comedy is actually on, however it got there (pill click, Reset, etc).
+  const _browseSel = document.getElementById('browseSelect');
+  if(_browseSel){
+    const _venuesOn = document.getElementById('venuesToggle').classList.contains('on');
+    const _comedyOn = document.getElementById('comedyToggle').classList.contains('on');
+    _browseSel.value = _venuesOn ? 'venues' : _comedyOn ? 'comedy' : '';
+  }
   // A permanent show page owns #results while the URL points at one; route away
   // instead of racing it (e.g. a filter-pill click while viewing a show page).
   if(parseRoute().type === 'show'){ if(location.hash){ location.hash = ''; } return; }
@@ -1833,6 +1906,18 @@ $('#sortSelect').addEventListener('change', e => {
   if(wantHood !== state.byHood){ $('#byHoodToggle').click(); }
 });
 
+// Browse dropdown (mobile row 2): re-triggers the existing #venuesToggle /
+// #comedyToggle click handlers rather than reimplementing view/filter logic.
+// "" (the default "Browse" option) turns off whichever of the two is on.
+$('#browseSelect').addEventListener('change', e => {
+  const v = e.target.value;
+  const venuesOn = $('#venuesToggle').classList.contains('on');
+  const comedyOn = $('#comedyToggle').classList.contains('on');
+  if(v === 'venues'){ if(!venuesOn) $('#venuesToggle').click(); }
+  else if(v === 'comedy'){ if(!comedyOn) $('#comedyToggle').click(); }
+  else { if(venuesOn) $('#venuesToggle').click(); if(comedyOn) $('#comedyToggle').click(); }
+});
+
 // Quick menu (Saved / Following): dropdown relocated out of the control bar.
 // The toggle elements/listeners above are untouched — only their markup moved.
 (function(){
@@ -1849,6 +1934,22 @@ $('#sortSelect').addEventListener('change', e => {
   document.addEventListener('click', (e) => {
     if(!qmenu.contains(e.target)){ qlist.hidden = true; qbtn.setAttribute('aria-expanded','false'); }
   });
+})();
+
+// Mirror auth.js's signed-in/out state onto the relocated Log out button.
+// auth.js only ever toggled #authSignInBtn's own hidden flag directly (Log out
+// used to be reachable exclusively through the always-signed-in-only
+// #authUserPill, so it never needed its own gate). Now that both buttons sit
+// side by side in one merged menu, this just observes the one flag auth.js
+// already maintains and mirrors its inverse — it doesn't reimplement or
+// duplicate any auth logic, and never touches auth.js itself.
+(function(){
+  const signInBtn = document.getElementById('authSignInBtn');
+  const logoutBtn = document.getElementById('authLogoutBtn');
+  if(!signInBtn || !logoutBtn) return;
+  const sync = () => { logoutBtn.hidden = !signInBtn.hidden; };
+  sync();
+  new MutationObserver(sync).observe(signInBtn, { attributes: true, attributeFilter: ['hidden'] });
 })();
 
     // Compute the Pacific dates the Tonight / This Week filters resolve to,
@@ -2029,44 +2130,36 @@ load();
     .stub-tool-btn.ghost:hover{background:rgba(255,255,255,.06)}
     .stub-import-input{display:none}
 
-/* ============ HEADER UTILITY (quick menu + account) ============ */
-.header-utility{position:absolute;top:16px;right:16px;z-index:20;display:flex;align-items:center;gap:10px}
+/* ============ HEADER UTILITY: unified menu (Aug 23 doc) ============ */
+/* One trigger now (was quick-menu + a separate sign-in-gated auth menu),
+   so the top-left/top-right mobile split from the previous pass is gone —
+   checked, not assumed: see the mobile screenshots in this pass's report. */
+.header-utility{position:absolute;top:16px;right:16px;z-index:20}
 .quick-menu{position:relative}
 .quick-menu-btn svg{width:15px;height:15px}
 .quick-menu-caret{font-size:11px}
-.quick-menu-list{position:absolute;top:calc(100% + 8px);right:0;background:var(--cream);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.25);overflow:hidden;min-width:170px;padding:6px;display:flex;flex-direction:column;gap:2px}
+.quick-menu-list{position:absolute;top:calc(100% + 8px);right:0;background:var(--cream);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.25);overflow:hidden;min-width:180px;padding:6px;display:flex;flex-direction:column;gap:2px}
 .quick-menu-list[hidden]{display:none}
 .quick-menu-pill{background:transparent;border:0;color:var(--ink);padding:9px 10px;border-radius:7px;width:100%;box-sizing:border-box}
 .quick-menu-pill:hover{background:rgba(74,53,38,.08)}
 .quick-menu-pill .toggle{background:rgba(74,53,38,.18);border-color:rgba(74,53,38,.3)}
 .quick-menu-pill .toggle.on{background:var(--rust)}
 .quick-menu-pill .toggle::after{background:var(--cream)}
+.quick-menu-account{padding:4px 10px 8px;font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:rgba(74,53,38,.6)}
+.quick-menu-account:has(#authDisplayName:empty){display:none}
+#authDisplayName{font-weight:600;color:var(--ink);text-transform:none;letter-spacing:normal}
+.quick-menu-divider{height:1px;background:rgba(74,53,38,.14);margin:4px 6px}
+.quick-menu-authitem{text-align:left;font-family:'Oswald',sans-serif;font-weight:600;font-size:13px;letter-spacing:.04em;text-transform:uppercase;cursor:pointer}
+.quick-menu-authitem[hidden]{display:none}
 
 /* ============ ACCOUNT / AUTH (Fork Stage 1) ============ */
-.auth-corner{position:relative;display:flex;align-items:center;gap:8px}
-/* Below 640px the hero headline wraps to fill nearly the full width (existing,
-   unrelated to this change), leaving no room beside Sign In for a second pill —
-   even stacked, a second row collides with the headline's second line. Move the
-   quick menu to the opposite (top-left) corner instead, where the eyebrow/headline
-   text leaves a clear ~80px margin; Sign In stays exactly where it always was.
-   This block must stay AFTER the .auth-corner base rule above to win the cascade. */
-@media(max-width:640px){
-  .header-utility{position:static;display:block}
-  .auth-corner{position:absolute;top:16px;right:16px;z-index:20}
-  .quick-menu{position:absolute;top:16px;left:16px;z-index:20}
-  .quick-menu-list{left:0;right:auto}
-  .quick-menu-btn .quick-menu-caret{display:none}
-  .quick-menu-btn{padding:0 10px}
-}
+/* #authCorner and its children are retired (hidden in markup) — kept only
+   because auth.js looks them up by id and calls .hidden on them directly.
+   Their one real function (Log out) now lives in the unified menu above. */
 .auth-pill{display:inline-flex;align-items:center;gap:8px;min-height:36px;padding:0 16px;border-radius:999px;border:1px solid rgba(255,255,255,.5);background:rgba(255,255,255,.16);color:var(--cream);font-family:'Oswald',sans-serif;font-weight:600;font-size:13px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:background .15s}
 .auth-pill:hover{background:rgba(255,255,255,.28)}
 .auth-pill-user{position:relative;background:rgba(255,255,255,.22)}
 .auth-pill[hidden]{display:none}
-#authDisplayName{max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.auth-caret{background:none;border:0;color:inherit;font-size:11px;cursor:pointer;padding:0 0 0 2px}
-.auth-menu{position:absolute;top:calc(100% + 8px);right:0;background:var(--cream);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.25);overflow:hidden;min-width:120px}
-.auth-menu button{display:block;width:100%;padding:10px 14px;background:none;border:0;text-align:left;font-family:'Oswald',sans-serif;font-weight:600;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink);cursor:pointer}
-.auth-menu button:hover{background:rgba(74,53,38,.08)}
 
 .auth-overlay{position:fixed;inset:0;background:rgba(36,26,18,.55);display:none;align-items:flex-end;justify-content:center;z-index:80}
 .auth-overlay.open{display:flex}
