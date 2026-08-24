@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-23T14:26:24+00:00",
+  "generated": "2026-08-24T14:45:05+00:00",
   "source": "Append-only archive of past shows (accumulated across builds)",
   "shows": [
     {
@@ -848,6 +848,39 @@
       "venueUrl": "https://www.oregonzoo.org/zoonights",
       "imageUrl": "",
       "slug": "2026-08-21-oregon-zoo-zoonights-jujuba-entertainment"
+    },
+    {
+      "title": "SUNDAY COMEDY OPEN MIC",
+      "venue": "Kelly's Olympian",
+      "neighborhood": "Downtown",
+      "address": "426 SW Washington St, Portland, OR 97204",
+      "date": "2026-08-23",
+      "time": "3:30 PM",
+      "venueUrl": "https://kellysolympian.com/show/sunday-comedy-open-mic-2/",
+      "imageUrl": "https://kellysolympian.com/wp-content/uploads/2025/07/KellysOpenMic_12x8-scaled.jpg",
+      "slug": "2026-08-23-kelly-s-olympian-sunday-comedy-open-mic"
+    },
+    {
+      "title": "Brazilian Choro Music (Brazilian Jazz)",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-08-23",
+      "time": "2:30 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/brazilian-choro-music-brazilian-jazz-2026-08-23-14-30",
+      "imageUrl": "",
+      "slug": "2026-08-23-tomorrow-s-verse-brazilian-choro-music-brazilian-jazz"
+    },
+    {
+      "title": "Shuffle Dating (Men and Women 27-43)",
+      "venue": "Tomorrow's Verse",
+      "neighborhood": "Beaumont-Wilshire",
+      "address": "4605 NE Fremont St, Portland, OR 97213",
+      "date": "2026-08-23",
+      "time": "5:00 PM",
+      "venueUrl": "https://www.youenjoymybeer.com/events/shuffle-dating-men-and-women-27-43",
+      "imageUrl": "",
+      "slug": "2026-08-23-tomorrow-s-verse-shuffle-dating-men-and-women-27-43"
     }
   ]
 }
