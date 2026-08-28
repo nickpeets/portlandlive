@@ -7,7 +7,7 @@
 <meta name="description" content="Your straight-forward guide to live music in Portland, OR.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Oswald:wght@400;500;600;700&family=Bitter:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Oswald:wght@400;500;600;700&family=Bitter:ital,wght@0,400;0,500;0,600;1,400&family=Josefin+Slab:wght@300;400;600;700&family=Yeseva+One&family=Lato:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <style>
 :root{
   --ink:#4a3526;          /* warm brown text */
@@ -18,12 +18,6 @@
   --water-d:#4a7563;
   --water-dd:#3f6555;
   --cream:#f3ead7;
-  --sky-top:#9fd3d8;
-  --sky-mid:#bfe0d4;
-  --sky-warm:#f0e3a8;
-  --hill-far:#8fae6b;
-  --hill-mid:#7ba05a;
-  --hill-near:#6b9b54;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
@@ -34,42 +28,71 @@ body{
   -webkit-font-smoothing:antialiased;
 }
 
-/* ---------- HERO ---------- */
-.hero{
+/* ---------- SITE HEADER ----------
+   Aug 23 doc (Site.dc.html): the old illustrated sky/hills hero + centered
+   eyebrow/headline/starts text is replaced by (1) a persistent masthead —
+   logo mark + PORTLANDLIVE wordmark on the water-texture background, with
+   search + Sort directly beneath it in the untouched .controls section —
+   and (2) a mobile-only collapsible mural hero, closed by default
+   (state.heroOpen === false in the doc), that carries the old headline
+   copy when expanded. The doc has no mural hero on desktop at all, so
+   above 600px the header is just the masthead. */
+.site-header{position:relative}
+
+.mural-hero{display:none}
+.mural-hero-panel{
+  position:relative;height:150px;overflow:hidden;
+  background:#6E9C8A url('/mural.png') center bottom/cover no-repeat;
+}
+.mural-hero-collapse{
+  position:absolute;top:10px;right:10px;width:26px;height:26px;
+  border-radius:999px;background:rgba(251,249,244,.85);border:0;
+  display:grid;place-items:center;font-size:13px;line-height:1;
+  color:#5C4032;cursor:pointer;padding:0;
+}
+.mural-hero-caption{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;padding:0 22px;text-align:center;
+}
+.mural-hero-eyebrow{
+  font-family:'Josefin Slab',Georgia,serif;font-size:10px;font-weight:700;
+  letter-spacing:.2em;text-transform:uppercase;color:#A0563C;
+}
+.mural-hero-eyebrow--sub{margin-top:3px}
+.mural-hero-headline{
+  margin:3px 0 0;font-family:'Yeseva One',Georgia,serif;font-size:21px;
+  font-weight:400;color:#6E4335;line-height:1.1;
+}
+.mural-hero-strip{
+  width:100%;padding:8px 16px;display:flex;align-items:center;gap:8px;
+  background:#DFD8BE;border:0;border-bottom:1px solid #D5D0BB;cursor:pointer;
+  font-family:'Lato',Helvetica,sans-serif;
+}
+.mural-hero-strip-label{margin-left:auto;font-size:11px;color:#8A8272}
+/* heroOpen state: default closed (matches state.heroOpen:false in the doc) */
+.mural-hero[data-open="true"] .mural-hero-strip{display:none}
+.mural-hero[data-open="false"] .mural-hero-panel{display:none}
+@media(max-width:600px){.mural-hero{display:block}}
+
+.masthead{
   position:relative;
-  width:100%;
-  min-height:260px;
-  overflow:hidden;
-  background:linear-gradient(180deg,var(--sky-top) 0%,var(--sky-mid) 38%,var(--sky-warm) 72%,#e9dd9a 100%);
+  background:var(--water) url('/water_bg.png') center/auto repeat;
+  padding:14px 60px 10px 20px;
 }
-.scene{position:absolute;inset:0;width:100%;height:100%;display:block}
-.hero-inner{
-  position:relative;z-index:5;
-  max-width:1180px;margin:0 auto;
-  padding:54px 28px 0;
-  text-align:center;
+.masthead-brand{display:flex;align-items:center;gap:10px}
+.masthead-logo{
+  display:grid;place-items:center;width:32px;height:32px;border-radius:999px;
+  background:var(--cream);flex:0 0 auto;
 }
-.eyebrow{
-  font-family:'Oswald',sans-serif;font-weight:600;
-  letter-spacing:.32em;text-transform:uppercase;
-  color:var(--rust);font-size:clamp(13px,1.6vw,18px);
-  margin-bottom:2px;
+.masthead-logo img{width:22px;height:22px;object-fit:contain}
+.masthead-word{
+  font-family:'Josefin Slab',Georgia,serif;font-size:18px;font-weight:700;
+  letter-spacing:.05em;text-transform:uppercase;color:var(--cream);white-space:nowrap;
 }
-.headline{
-  font-family:'Alfa Slab One',serif;
-  color:var(--forest);
-  font-size:clamp(30px,5.4vw,62px);
-  line-height:.98;letter-spacing:.01em;
-  text-shadow:0 2px 0 rgba(255,255,255,.35);
+@media(max-width:600px){
+  .masthead{padding:12px 52px 10px 16px}
+  .masthead-word{font-size:17px}
 }
-.starts{
-  display:inline-block;margin-top:10px;
-  font-family:'Oswald',sans-serif;font-weight:600;
-  letter-spacing:.34em;text-transform:uppercase;
-  color:var(--rust);font-size:clamp(13px,1.8vw,20px);
-  transform:translateX(28%);
-}
-@media(max-width:640px){.starts{transform:none}}
 
 
 /* ---------- CONTROL BAR (the "water") ---------- */
@@ -108,18 +131,21 @@ body{
 }
 .pill:hover{background:rgba(255,255,255,.2)}
 .pill svg{width:16px;height:16px;flex:0 0 auto;opacity:.92}
-.pill-date{opacity:.6;font-size:13px;font-weight:400;margin-left:-2px;white-space:nowrap}
 .pill input{
   background:transparent;border:0;color:var(--cream);
   font-family:'Oswald',sans-serif;font-size:15px;outline:none;
 }
 .pill input{cursor:text;min-width:90px}
 .pill input::placeholder{color:rgba(243,234,215,.6)}
+/* Search field: Lato per Site.dc.html's masthead input (data-pl-search) */
+.search-pill input{font-family:'Lato',Helvetica,sans-serif}
 
-/* Sort dropdown (row 1) — added for the nav restructure; reuses .pill visuals */
+/* Sort dropdown (row 1) — added for the nav restructure; reuses .pill visuals.
+   Font moved to Josefin Slab to match the doc's "Sort: {{label}}" trigger,
+   which is explicitly in-scope as part of the persistent header (item 1). */
 .sort-pill{flex:0 0 auto;gap:6px}
 .sort-pill svg{width:16px;height:16px;flex:0 0 auto;opacity:.92}
-.sort-pill select{background:transparent;border:0;color:var(--cream);font-family:'Oswald',sans-serif;font-weight:500;font-size:15px;outline:none;cursor:pointer}
+.sort-pill select{background:transparent;border:0;color:var(--cream);font-family:'Josefin Slab',Georgia,serif;font-weight:600;font-size:15px;outline:none;cursor:pointer}
 .sort-pill select option{color:var(--ink);background:var(--cream)}
 
 /* Row 2 disabled placeholder tab (Festivals) — nav restructure */
@@ -158,16 +184,6 @@ body{
 .search-pill{flex:0 1 764px;min-width:220px;background:rgba(255,255,255,.14)}
 .search-pill input{flex:1;width:100%}
 
-.icon-btn{
-  width:42px;height:38px;display:inline-flex;align-items:center;justify-content:center;
-  background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);
-  border-radius:7px;cursor:pointer;color:var(--cream);transition:background .15s;
-}
-.icon-btn:hover{background:rgba(255,255,255,.26)}
-.icon-btn svg{width:18px;height:18px}
-.icon-btn.active{background:var(--cream);color:var(--water-dd);border-color:var(--cream)}
-.reset-btn{flex:0 0 auto}
-
 
 .toggle{
   position:relative;width:34px;height:18px;border-radius:10px;
@@ -190,7 +206,7 @@ body{
   background-size:auto 46px;background-repeat:repeat;
   padding:8px 0 70px;min-height:340px;
 }
-.results-inner{max-width:820px;margin:0 auto;padding:0 28px}
+.results-inner{max-width:920px;margin:0 auto;padding:0 28px}
 
 .daygroup{margin-top:30px}
 .dayhead{
@@ -359,8 +375,6 @@ body{
 .foot-bar .brand span{font-family:'Alfa Slab One';font-size:17px;color:var(--cream)}
 
 @media(max-width:640px){
-  .hero{min-height:200px}
-  .hero-inner{padding-top:34px}
   .statusbar{font-size:11px}
 }
 
@@ -370,7 +384,6 @@ body{
     .controls-inner{padding:0 16px}
     .ctl-row{gap:10px}
     .search-pill{flex:1 1 auto;min-width:0}
-    .reset-btn{flex:0 0 44px;width:44px;height:44px}
     .controls-inner .ctl-row + .ctl-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:stretch}
     .controls-inner .ctl-row + .ctl-row .pill{min-height:44px;box-sizing:border-box}
     /* Undo the desktop-only nowrap grouping: on mobile the row is already a
@@ -560,7 +573,26 @@ body{
      The site must tell on itself rather than present a frozen feed as current. -->
 <div id="staleBanner" class="stale-banner" hidden role="status" aria-live="polite"></div>
 
-<header class="hero">
+<header class="site-header" id="siteHeader">
+  <!-- Collapsible mural hero (mobile only, per Site.dc.html's feed screen).
+       Closed by default (state.heroOpen:false in the doc). The "Ad space"
+       strip copy shown in the doc's collapsed state is deliberately NOT
+       reproduced here — see report: first ad inventory, needs a decision. -->
+  <div class="mural-hero" id="muralHero" data-open="false">
+    <div class="mural-hero-panel" id="muralHeroPanel">
+      <button class="mural-hero-collapse" id="muralCollapseBtn" type="button" aria-expanded="true" aria-controls="muralHero" aria-label="Collapse header art">&#9652;</button>
+      <div class="mural-hero-caption">
+        <div class="mural-hero-eyebrow">Your search for</div>
+        <h1 class="mural-hero-headline">Portland's Best Live Music</h1>
+        <div class="mural-hero-eyebrow mural-hero-eyebrow--sub">Starts here</div>
+      </div>
+    </div>
+    <button class="mural-hero-strip" id="muralExpandBtn" type="button" aria-expanded="false" aria-controls="muralHero" aria-label="Show header art">
+      <span class="mural-hero-strip-label">Show art <span aria-hidden="true">&#9662;</span></span>
+    </button>
+  </div>
+
+  <div class="masthead" id="masthead">
       <div class="header-utility" id="headerUtility">
         <!-- Unified menu (Aug 23 doc): one trigger, one dropdown, replacing the
              separate quick-menu + sign-in-gated account menu from the previous
@@ -606,86 +638,10 @@ body{
           </div>
         </div>
       </div>
-  <!-- Illustrated scene -->
-  <svg class="scene" viewBox="0 150 1440 300" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-    <defs>
-      <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="#9fd3d8"/>
-        <stop offset="0.42" stop-color="#c2e1d2"/>
-        <stop offset="0.72" stop-color="#f0e3a8"/>
-        <stop offset="1" stop-color="#ecdf95"/>
-      </linearGradient>
-      <radialGradient id="sun" cx="50%" cy="58%" r="55%">
-        <stop offset="0" stop-color="#fff7d6" stop-opacity="0.95"/>
-        <stop offset="0.5" stop-color="#fbeeb0" stop-opacity="0.55"/>
-        <stop offset="1" stop-color="#f0e3a8" stop-opacity="0"/>
-      </radialGradient>
-    </defs>
-    <rect width="1440" height="520" fill="url(#sky)"/>
-    <!-- sun glow -->
-    <circle cx="720" cy="300" r="230" fill="url(#sun)"/>
-
-    <!-- clouds -->
-    <g fill="#ffffff" opacity="0.85" transform="translate(0,180)">
-      <g class="cloud" style="--cd:0s">
-        <ellipse cx="250" cy="70" rx="58" ry="22"/><ellipse cx="300" cy="60" rx="44" ry="26"/><ellipse cx="200" cy="78" rx="40" ry="18"/>
-      </g>
-      <g class="cloud" style="--cd:-6s" opacity="0.7">
-        <ellipse cx="1080" cy="55" rx="50" ry="20"/><ellipse cx="1125" cy="48" rx="38" ry="22"/>
-      </g>
-      <g class="cloud" style="--cd:-11s" opacity="0.78">
-        <ellipse cx="1320" cy="100" rx="60" ry="22"/><ellipse cx="1370" cy="92" rx="42" ry="24"/>
-      </g>
-      <g class="cloud" style="--cd:-3s" opacity="0.6">
-        <ellipse cx="620" cy="48" rx="46" ry="16"/><ellipse cx="660" cy="42" rx="34" ry="19"/>
-      </g>
-    </g>
-
-    <!-- distant mountains -->
-    <path d="M0,330 L150,250 L260,300 L380,235 L470,295 L470,520 L0,520 Z" fill="#9bb3a0" opacity="0.55"/>
-    <path d="M1000,300 L1110,235 L1210,295 L1320,240 L1440,300 L1440,520 L1000,520 Z" fill="#9bb3a0" opacity="0.5"/>
-
-    <!-- rolling hills -->
-    <path d="M0,360 C260,300 520,420 760,372 C1000,326 1240,420 1440,360 L1440,520 L0,520 Z" fill="#8fae6b"/>
-    <path d="M0,408 C300,360 560,452 820,412 C1080,372 1280,452 1440,410 L1440,520 L0,520 Z" fill="#7ba05a"/>
-    <path d="M0,452 C320,420 600,488 900,456 C1140,430 1320,486 1440,460 L1440,520 L0,520 Z" fill="#6b9b54"/>
-
-    <!-- pine tree group: drawn via <use> -->
-    <g id="pine">
-      <rect x="-5" y="40" width="10" height="26" rx="2" fill="#7c5a3a"/>
-      <path d="M0,-44 L26,4 L13,4 L34,40 L-34,40 L-13,4 L-26,4 Z" fill="#4f7a3e"/>
-      <path d="M0,-44 L26,4 L8,4 Z" fill="#5d8a48" opacity="0.7"/>
-    </g>
-    <use href="#pine" transform="translate(210,380) scale(1.15)"/>
-    <use href="#pine" transform="translate(150,400) scale(0.85)"/>
-    <use href="#pine" transform="translate(520,372) scale(1.25)"/>
-    <use href="#pine" transform="translate(470,392) scale(0.95)"/>
-    <use href="#pine" transform="translate(1140,372) scale(1.2)"/>
-    <use href="#pine" transform="translate(1250,388) scale(0.9)"/>
-    <use href="#pine" transform="translate(1330,360) scale(1.1)"/>
-
-    <!-- bluebird singing, center-ish -->
-    <g transform="translate(795,372)" class="bird">
-      <!-- music notes -->
-      <g class="note" fill="#b5562b">
-        <path d="M22,-30 q6,-3 6,4 a4,4 0 1 1 -4,-4 Z"/>
-        <path d="M40,-44 q5,-2 5,4 a3.4,3.4 0 1 1 -3.4,-3.4 Z"/>
-      </g>
-      <!-- body -->
-      <ellipse cx="0" cy="0" rx="16" ry="12" fill="#4a90c4"/>
-      <circle cx="13" cy="-7" r="8" fill="#4a90c4"/>
-      <path d="M-16,-2 q-14,-4 -20,6 q12,2 20,0 Z" fill="#3d77a6"/>
-      <path d="M18,-9 l9,1 l-8,4 Z" fill="#e3923b"/>
-      <circle cx="15" cy="-9" r="1.6" fill="#23303a"/>
-      <ellipse cx="2" cy="2" rx="9" ry="6" fill="#bfe0ef"/>
-    </g>
-  </svg>
-
-
-  <div class="hero-inner">
-    <div class="eyebrow">Your search for</div>
-    <h1 class="headline">Portland's Best Live Music</h1>
-    <div class="starts">Starts Here</div>
+      <div class="masthead-brand">
+        <span class="masthead-logo"><img src="/logo_trans.png" alt=""></span>
+        <span class="masthead-word">PortlandLive</span>
+      </div>
   </div>
 </header>
 
@@ -697,29 +653,24 @@ body{
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
         <input id="searchInput" type="text" placeholder="search bands, venues…">
       </div>
-      <div class="pill sort-pill" title="Sort results">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h11M3 12h7M3 17h4M17 4v16M17 4l-4 4M17 4l4 4"/></svg>
-        <select id="sortSelect" aria-label="Sort by">
-          <option value="date" selected>Date</option>
-          <option value="neighborhood">Neighborhood</option>
-        </select>
-      </div>
-      <!-- byHoodToggle: kept in the DOM (hidden) so the existing grouping logic below
-           is re-triggered via .click(), not rewritten. See #sortSelect listener. -->
+      <!-- Sort dropdown + Reset button removed (search already matches
+           title+venue+neighborhood, so a separate neighborhood control was
+           redundant; nothing else called #resetBtn's handler). byHoodToggle
+           stays in the DOM, hidden and now unreachable on purpose: the
+           day→neighborhood grouped-rendering logic it drove is left in
+           place, dormant, rather than deleted — see the render() branch
+           gated on state.byHood. Nothing re-wires it. -->
       <span class="toggle" id="byHoodToggle" hidden aria-hidden="true"></span>
-      <button class="icon-btn reset-btn" id="resetBtn" title="Reset filters" aria-label="Reset">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
-      </button>
     </div>
 
     <div class="ctl-row">
       <label class="pill pill-when" title="Only shows happening tonight">
         <span class="toggle" id="tonightToggle"></span>
-        <span>Tonight</span><span class="pill-date" id="tonightDate"></span>
+        <span>Tonight</span>
       </label>
       <label class="pill pill-when" title="Shows happening in the next 7 days">
         <span class="toggle" id="thisWeekToggle"></span>
-        <span>This Week</span><span class="pill-date" id="thisWeekDate"></span>
+        <span>This Week</span>
       </label>
       <label class="pill pill-when" title="Picks of the Week - curated, vertical showcase">
         <span class="toggle" id="picksToggle"></span>
@@ -1202,12 +1153,7 @@ function auditPanelHtml(){
       }
     }
 function render(){
-  // Keep the Sort dropdown's displayed value in sync with state.byHood: Reset,
-  // Venues, and Saved can all flip byHood without going through #sortSelect.
-  // Presentational only — does not touch byHood's meaning or the grouping logic.
-  const _sortSel = document.getElementById('sortSelect');
-  if(_sortSel) _sortSel.value = state.byHood ? 'neighborhood' : 'date';
-  // Same idea for the mobile Browse dropdown: keep it matched to whichever of
+  // Keep the mobile Browse dropdown matched to whichever of
   // Venues/Comedy is actually on, however it got there (pill click, Reset, etc).
   const _browseSel = document.getElementById('browseSelect');
   if(_browseSel){
@@ -1877,12 +1823,6 @@ $('#tonightToggle').addEventListener('click',()=>{state.picks=false;$('#picksTog
 $('#thisWeekToggle').addEventListener('click',()=>{state.picks=false;$('#picksToggle').classList.remove('on');state.thisWeek=!state.thisWeek;if(state.thisWeek){state.tonight=false;$('#tonightToggle').classList.remove('on');}$('#thisWeekToggle').classList.toggle('on',state.thisWeek);render();});
 /* Audit (dev) toggle retired from the UI; audit view still reachable via ?audit=1 for dev. */
 $('#comedyToggle').addEventListener('click',()=>{state.comedy=!state.comedy;if(state.comedy){state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');state.myShows=false;$('#myShowsToggle').classList.remove('on');state.following=false;$('#followingToggle').classList.remove('on');}$('#comedyToggle').classList.toggle('on',state.comedy);render();});
-$('#resetBtn').addEventListener('click',()=>{
-  state.q="";state.tonight=false;state.byHood=false;state.view="shows";state.selectedVenue=null;
-  $('#searchInput').value="";
-  $('#byHoodToggle').classList.remove('on');$('#tonightToggle').classList.remove('on');state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');state.myShows=false;$('#myShowsToggle').classList.remove('on');state.picks=false;$('#picksToggle').classList.remove('on');$('#venuesToggle').classList.remove('on');state.comedy=false;$('#comedyToggle').classList.remove('on');state.following=false;$('#followingToggle').classList.remove('on');render();
-});
-
 // FOLLOWING FILTER toggle: hide-style filter that collapses the feed to hearted
 // bands/venues. Turning it on clears the alternate views/modes; the other view
 // toggles + reset clear it back (see Edit 5 / reset). Self-contained; removable.
@@ -1899,13 +1839,6 @@ $('#followingToggle').addEventListener('click',()=>{
   render();
 });
 
-// Sort dropdown (row 1): re-triggers the existing #byHoodToggle click handler
-// rather than reimplementing its logic, per the nav-restructure scope.
-$('#sortSelect').addEventListener('change', e => {
-  const wantHood = e.target.value === 'neighborhood';
-  if(wantHood !== state.byHood){ $('#byHoodToggle').click(); }
-});
-
 // Browse dropdown (mobile row 2): re-triggers the existing #venuesToggle /
 // #comedyToggle click handlers rather than reimplementing view/filter logic.
 // "" (the default "Browse" option) turns off whichever of the two is on.
@@ -1917,6 +1850,23 @@ $('#browseSelect').addEventListener('change', e => {
   else if(v === 'comedy'){ if(!comedyOn) $('#comedyToggle').click(); }
   else { if(venuesOn) $('#venuesToggle').click(); if(comedyOn) $('#comedyToggle').click(); }
 });
+
+// Collapsible mural hero (mobile only, Aug 23 doc): closed by default,
+// toggled by tapping either the collapsed strip or the ▴ collapse control.
+// Purely presentational — no interaction with filter/view state.
+(function(){
+  const hero = document.getElementById('muralHero');
+  const expandBtn = document.getElementById('muralExpandBtn');
+  const collapseBtn = document.getElementById('muralCollapseBtn');
+  if(!hero || !expandBtn || !collapseBtn) return;
+  const setOpen = (open) => {
+    hero.setAttribute('data-open', String(open));
+    expandBtn.setAttribute('aria-expanded', String(open));
+    collapseBtn.setAttribute('aria-expanded', String(open));
+  };
+  expandBtn.addEventListener('click', () => setOpen(true));
+  collapseBtn.addEventListener('click', () => setOpen(false));
+})();
 
 // Quick menu (Saved / Following): dropdown relocated out of the control bar.
 // The toggle elements/listeners above are untouched — only their markup moved.
@@ -1952,22 +1902,10 @@ $('#browseSelect').addEventListener('change', e => {
   new MutationObserver(sync).observe(signInBtn, { attributes: true, attributeFilter: ['hidden'] });
 })();
 
-    // Compute the Pacific dates the Tonight / This Week filters resolve to,
-    // using the SAME Intl.DateTimeFormat('en-CA', America/Los_Angeles) method
-    // as the filters, so the pill labels match the filter logic exactly.
-    function setToggleDates(){
-      const todayISO = new Intl.DateTimeFormat('en-CA',{timeZone:'America/Los_Angeles',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
-      const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-      const fmt = iso => { const [y,m,d] = iso.split('-').map(Number); return MON[m-1] + ' ' + d; };
-      const start = new Date(todayISO + 'T00:00:00');
-      const upper = new Date(todayISO + 'T00:00:00'); upper.setDate(upper.getDate() + 6);
-      const endISO = upper.getFullYear() + '-' + String(upper.getMonth()+1).padStart(2,'0') + '-' + String(upper.getDate()).padStart(2,'0');
-      const tn = $('#tonightDate'); if(tn) tn.textContent = '\u00b7 ' + fmt(todayISO);
-      const sameMonth = todayISO.slice(0,7) === endISO.slice(0,7);
-      const endLabel = sameMonth ? String(Number(endISO.split('-')[2])) : fmt(endISO);
-      const tw = $('#thisWeekDate'); if(tw) tw.textContent = '\u00b7 ' + fmt(todayISO) + '\u2013' + endLabel;
-    }
-    setToggleDates();
+    // setToggleDates() (computed the "\u00b7 Aug 24" / "\u00b7 Aug 24\u201330" pill-date
+    // labels) removed along with the .pill-date spans it populated. Purely
+    // presentational \u2014 the actual Tonight/This Week date-range filter logic
+    // (elsewhere, gated on state.tonight/state.thisWeek) is untouched.
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('.listen');if(b){e.preventDefault();openSample(b.getAttribute('data-title'));return;}var o=document.getElementById('smov');if(o&&e.target===o)closeSample();});
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeSample();});
 /* ============================================================
@@ -2112,14 +2050,6 @@ window.addEventListener("hashchange", router);
 load();
 </script>
 <style>
-/* cloud + bird motion appended so it doesn't clutter main sheet */
-.cloud{animation:drift 60s linear infinite;animation-delay:var(--cd,0s)}
-@keyframes drift{from{transform:translateX(-30px)}50%{transform:translateX(40px)}to{transform:translateX(-30px)}}
-.bird{transform-box:fill-box;transform-origin:center;animation:bob 3.4s ease-in-out infinite}
-@keyframes bob{0%,100%{transform:translate(795px,372px) rotate(0deg)}50%{transform:translate(795px,369px) rotate(-2deg)}}
-.note{animation:notefloat 2.6s ease-in-out infinite}
-@keyframes notefloat{0%{opacity:0;transform:translate(0,4px)}30%{opacity:1}100%{opacity:0;transform:translate(8px,-14px)}}
-@media(prefers-reduced-motion:reduce){.cloud,.bird,.note{animation:none}}
     /* Stub Wall + backup controls */
     .stub-tools{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 4px;align-items:center}
     .stub-tool-btn{font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.04em;font-size:12px;padding:6px 12px;border:1px solid #c7bfa8;background:#efe9da;color:#2b2b2b;border-radius:4px;cursor:pointer;transition:background .15s}
