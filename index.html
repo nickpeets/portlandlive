@@ -568,6 +568,61 @@ body{
 .show-social-placeholder p{font-size:13.5px;line-height:1.5;font-family:'Bitter',Georgia,serif}
 
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+/* ===== TICKET EXCHANGE (Stage 3) =====
+   Face value or free is guaranteed by form shape: the poster chooses one of
+   two options and there is no amount field anywhere, so there is no price to
+   police. Reuses the comments section's visual language (cream cards on the
+   water background, Alfa Slab One heading, Oswald labels, Bitter body). */
+.tx{margin:26px 0 4px}
+.tx-head{display:flex;align-items:baseline;gap:10px;margin-bottom:6px}
+.tx-head h3{font-family:'Alfa Slab One',serif;font-size:19px;color:var(--cream);margin:0}
+.tx-count{font-family:'Oswald',sans-serif;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(243,234,215,.7)}
+.tx-note{font-family:'Bitter',Georgia,serif;font-size:12.5px;line-height:1.5;color:rgba(243,234,215,.7);margin:0 0 12px}
+.tx-state{font-family:'Bitter',Georgia,serif;font-size:13.5px;line-height:1.5;color:rgba(243,234,215,.75);padding:2px 0 6px}
+.tx-state.tx-error{color:#ffd9c9}
+.tx-list{list-style:none;margin:0 0 14px;padding:0;display:flex;flex-direction:column;gap:10px}
+.tx-post{background:var(--cream);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;box-shadow:0 6px 14px rgba(20,40,30,.14)}
+.tx-qty{font-family:'Alfa Slab One',serif;font-size:20px;line-height:1;color:var(--forest);min-width:22px}
+.tx-post-main{display:flex;flex-direction:column;gap:2px;min-width:0}
+.tx-post-line{font-family:'Bitter',Georgia,serif;font-size:14px;color:var(--ink);overflow-wrap:anywhere}
+.tx-who{font-family:'Oswald',sans-serif;font-weight:600;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--forest)}
+.tx-when{font-size:11.5px;color:#7c6a55}
+.tx-tag{font-family:'Oswald',sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:4px 9px;border-radius:20px;white-space:nowrap}
+.tx-tag-face{background:rgba(61,87,74,.12);color:var(--forest)}
+.tx-tag-free{background:rgba(181,86,43,.13);color:var(--rust-deep)}
+.tx-cancel{margin-left:auto;border:0;background:none;cursor:pointer;font-family:'Oswald',sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#7c6a55;padding:2px 4px;border-radius:6px}
+.tx-cancel:hover{color:var(--rust-deep);background:rgba(181,86,43,.1)}
+.tx-cancel:disabled{opacity:.5;cursor:default}
+.tx-form{background:var(--cream);border-radius:12px;padding:14px;box-shadow:0 6px 14px rgba(20,40,30,.14);display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap}
+.tx-field{display:flex;flex-direction:column;gap:6px}
+.tx-label{font-family:'Oswald',sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#7c6a55}
+.tx-select{font-family:'Bitter',Georgia,serif;font-size:14px;color:var(--ink);background:#fff;border:1px solid rgba(74,53,38,.25);border-radius:9px;padding:9px 12px;min-width:66px}
+.tx-select:focus{outline:2px solid rgba(181,86,43,.45);outline-offset:1px}
+.tx-seg{display:flex;gap:0;border:1px solid rgba(74,53,38,.25);border-radius:9px;overflow:hidden;background:#fff}
+.tx-seg label{font-family:'Oswald',sans-serif;font-size:11.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#7c6a55;padding:10px 14px;cursor:pointer;user-select:none}
+.tx-seg label + label{border-left:1px solid rgba(74,53,38,.2)}
+.tx-seg input{position:absolute;opacity:0;pointer-events:none}
+.tx-seg input:checked + span{color:#fff}
+.tx-seg label span{display:block;margin:-10px -14px;padding:10px 14px}
+.tx-seg input:checked + span{background:var(--forest)}
+.tx-seg input:focus-visible + span{outline:2px solid rgba(181,86,43,.55);outline-offset:-2px}
+.tx-submit{margin-left:auto;border:0;cursor:pointer;font-family:'Oswald',sans-serif;font-weight:600;text-transform:uppercase;letter-spacing:.05em;font-size:11.5px;color:#fff;background:var(--rust);border-radius:999px;padding:10px 20px}
+.tx-submit:hover:not(:disabled){background:var(--rust-deep)}
+.tx-submit:disabled{opacity:.55;cursor:default}
+.tx-msg{font-family:'Bitter',Georgia,serif;font-size:12.5px;color:var(--rust-deep);width:100%;margin:0}
+.tx-signin{background:rgba(243,234,215,.12);border:1px dashed rgba(243,234,215,.4);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.tx-signin p{margin:0;font-family:'Bitter',Georgia,serif;font-size:13.5px;color:rgba(243,234,215,.85)}
+.tx-signin-btn{margin-left:auto;border:0;cursor:pointer;font-family:'Oswald',sans-serif;font-weight:600;text-transform:uppercase;letter-spacing:.05em;font-size:11.5px;color:#fff;background:var(--rust);border-radius:999px;padding:8px 18px}
+.tx-signin-btn:hover{background:var(--rust-deep)}
+@media (max-width:600px){
+  .tx-head h3{font-size:17px}
+  .tx-form{align-items:stretch}
+  .tx-submit{margin-left:0;width:100%}
+  .tx-signin{flex-direction:column;align-items:flex-start}
+  .tx-signin-btn{margin-left:0}
+  .tx-cancel{margin-left:0}
+}
 .cmts{margin:26px 0 4px}
 .cmts-head{display:flex;align-items:baseline;gap:10px;margin-bottom:12px}
 .cmts-head h3{font-family:'Alfa Slab One',serif;font-size:19px;color:var(--cream);margin:0}
@@ -1499,7 +1554,7 @@ function renderShowNotFound(wrap, slug){
 const SHOW_SOCIAL_PLACEHOLDER =
   '<div class="show-social-placeholder">'
   + '<h3>Coming soon</h3>'
-  + '<p>Who’s going and a ticket exchange will live here.</p>'
+  + '<p>Who’s going will live here.</p>'
   + '</div>';
 
 function renderShowDetail(wrap, show, kind){
@@ -1542,9 +1597,193 @@ function renderShowDetail(wrap, show, kind){
   wrap.appendChild(listWrap);
   wrap.insertAdjacentHTML('beforeend', SHOW_SOCIAL_PLACEHOLDER);
   bindShowPageBack();
-  mountComments(wrap, show._slug || show.slug || makeSlug(show));
+  const _slug = show._slug || show.slug || makeSlug(show);
+  // Spares are only meaningful before the show happens; a past show gets
+  // comments (recaps) but no exchange.
+  if(kind === 'upcoming') mountExchange(wrap, _slug);
+  mountComments(wrap, _slug);
 }
 
+
+// ===== TICKET EXCHANGE (Fork Stage 3) =====
+// Spare tickets for ONE show, shown only on that show's page. There is no
+// cross-show marketplace and no way to reach these posts except through the
+// show they belong to.
+//
+// Face value or free is enforced by the SHAPE OF THE FORM: the poster picks
+// one of two options and there is no amount field anywhere in this UI or in
+// the ticket_posts table, so there is no price for anyone to police.
+//
+// Out of scope here, on purpose: reputation counts, "handoff complete" state
+// (that belongs in a trade thread, and messaging is Stage 4), resale/affiliate
+// links, and any free-text note on a post.
+//
+// Identity works exactly as in comments: display_name is denormalized and set
+// server-side by the ticket_posts_set_display_name trigger, never sent by the
+// client. See supabase/schema-ticket-posts.sql.
+const TX_MAX_QTY = 8;
+
+function txClient(){ return window.__plAuth || null; }
+
+function txPriceLabel(t){ return t === 'free' ? 'Free' : 'At face value'; }
+
+function txRow(p, myUserId){
+  const mine = myUserId && p.user_id === myUserId;
+  const qty = Math.max(1, Math.min(TX_MAX_QTY, parseInt(p.quantity,10) || 1));
+  const free = p.price_type === 'free';
+  return '<li class="tx-post" data-tx-id="'+esc(p.id)+'">'
+    + '<span class="tx-qty" aria-hidden="true">' + qty + '</span>'
+    + '<span class="tx-post-main">'
+      + '<span class="tx-post-line">'
+        + '<span class="tx-who">' + esc(p.display_name || 'Someone') + '</span>'
+        + ' has ' + qty + (qty === 1 ? ' spare' : ' spares')
+      + '</span>'
+      + '<span class="tx-when">' + esc(cmtRelTime(p.created_at)) + '</span>'
+    + '</span>'
+    + '<span class="tx-tag ' + (free ? 'tx-tag-free' : 'tx-tag-face') + '">'
+      + (free ? 'Free' : 'Face value') + '</span>'
+    + (mine ? '<button type="button" class="tx-cancel" data-tx-cancel="'+esc(p.id)+'">Cancel</button>' : '')
+    + '</li>';
+}
+
+async function mountExchange(wrap, slug){
+  if(!slug) return;
+  const host = document.createElement('section');
+  host.className = 'tx';
+  host.setAttribute('aria-label','Ticket exchange');
+  host.innerHTML = '<div class="tx-head"><h3>Spare tickets</h3></div>'
+    + '<div class="tx-state">Loading…</div>';
+  wrap.appendChild(host);
+
+  const sb = txClient();
+  if(!sb){
+    host.querySelector('.tx-state').textContent = 'The ticket exchange is unavailable right now.';
+    return;
+  }
+  if(!host._txAuthSub){
+    host._txAuthSub = sb.auth.onAuthStateChange(function(){
+      if(document.body.contains(host)) renderExchange(host, slug);
+    });
+  }
+  await renderExchange(host, slug);
+}
+
+async function renderExchange(host, slug){
+  const sb = txClient();
+  if(!sb) return;
+
+  let session = null;
+  try{ session = (await sb.auth.getSession()).data.session; }catch(e){ session = null; }
+  const myUserId = session && session.user ? session.user.id : null;
+
+  const { data, error } = await sb
+    .from('ticket_posts')
+    .select('id,user_id,display_name,price_type,quantity,created_at')
+    .eq('show_slug', slug)
+    .order('created_at', { ascending: false });
+
+  if(error){
+    host.innerHTML = '<div class="tx-head"><h3>Spare tickets</h3></div>'
+      + '<div class="tx-state tx-error">Couldn’t load spare tickets. Reload to try again.</div>';
+    console.warn('[exchange] load failed:', error.message);
+    return;
+  }
+
+  const rows = data || [];
+  const total = rows.reduce(function(n,p){ return n + (parseInt(p.quantity,10)||0); }, 0);
+
+  let html = '<div class="tx-head"><h3>Spare tickets</h3>'
+    + (rows.length ? '<span class="tx-count">' + total + (total===1?' spare':' spares') + '</span>' : '')
+    + '</div>'
+    + '<p class="tx-note">Passed on at face value or free — never above. Arrange the handoff between yourselves.</p>';
+
+  html += rows.length
+    ? '<ul class="tx-list">' + rows.map(function(p){ return txRow(p, myUserId); }).join('') + '</ul>'
+    : '<div class="tx-state">No spare tickets posted for this show yet.</div>';
+
+  if(myUserId){
+    let opts = '';
+    for(var i=1;i<=TX_MAX_QTY;i++) opts += '<option value="'+i+'">'+i+'</option>';
+    html += '<form class="tx-form" data-tx-form>'
+      + '<span class="tx-field">'
+        + '<label class="tx-label" for="txQty">How many</label>'
+        + '<select class="tx-select" id="txQty" name="qty">' + opts + '</select>'
+      + '</span>'
+      + '<span class="tx-field">'
+        + '<span class="tx-label" id="txPriceLabel">Price</span>'
+        + '<span class="tx-seg" role="radiogroup" aria-labelledby="txPriceLabel">'
+          + '<label><input type="radio" name="txprice" value="face_value" checked><span>At face value</span></label>'
+          + '<label><input type="radio" name="txprice" value="free"><span>Free</span></label>'
+        + '</span>'
+      + '</span>'
+      + '<button type="submit" class="tx-submit">Post spare</button>'
+      + '<p class="tx-msg" data-tx-msg hidden></p>'
+      + '</form>';
+  } else {
+    html += '<div class="tx-signin">'
+      + '<p>Sign in to post a spare ticket.</p>'
+      + '<button type="button" class="tx-signin-btn" data-tx-signin>Sign In</button>'
+      + '</div>';
+  }
+
+  host.innerHTML = html;
+  bindExchange(host, slug);
+}
+
+function bindExchange(host, slug){
+  const sb = txClient();
+
+  const signin = host.querySelector('[data-tx-signin]');
+  if(signin){
+    // Reuse the Stage 1 auth sheet -- there is only one auth flow on the site.
+    signin.addEventListener('click', function(){
+      const b = document.getElementById('authSignInBtn');
+      if(b) b.click();
+    });
+  }
+
+  const form = host.querySelector('[data-tx-form]');
+  if(form){
+    const submit = form.querySelector('.tx-submit');
+    const msg = form.querySelector('[data-tx-msg]');
+    form.addEventListener('submit', async function(e){
+      e.preventDefault();
+      const qty = parseInt(form.querySelector('#txQty').value, 10);
+      const checked = form.querySelector('input[name="txprice"]:checked');
+      const priceType = checked ? checked.value : 'face_value';
+      // Both values come from a fixed-option control, so this only catches a
+      // tampered DOM; the CHECK constraints are the real guarantee.
+      if(!(qty >= 1 && qty <= TX_MAX_QTY) || (priceType !== 'face_value' && priceType !== 'free')) return;
+      submit.disabled = true;
+      msg.hidden = true;
+      // user_id and display_name are set by the insert trigger.
+      const { error } = await sb.from('ticket_posts')
+        .insert({ show_slug: slug, price_type: priceType, quantity: qty });
+      if(error){
+        msg.textContent = 'Couldn’t post that. Try again.';
+        msg.hidden = false;
+        submit.disabled = false;
+        console.warn('[exchange] insert failed:', error.message);
+        return;
+      }
+      await renderExchange(host, slug);
+    });
+  }
+
+  host.addEventListener('click', async function(e){
+    const btn = e.target.closest('[data-tx-cancel]');
+    if(!btn) return;
+    e.preventDefault();
+    btn.disabled = true;
+    const { error } = await sb.from('ticket_posts').delete().eq('id', btn.getAttribute('data-tx-cancel'));
+    if(error){
+      btn.disabled = false;
+      console.warn('[exchange] cancel failed:', error.message);
+      return;
+    }
+    await renderExchange(host, slug);
+  });
+}
 
 // ===== COMMENTS ON SHOW PAGES (Fork Stage 2) =====
 // Public commentary: everyone reads, only signed-in users post, only an
