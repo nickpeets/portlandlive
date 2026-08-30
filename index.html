@@ -35,17 +35,17 @@ body{
    search + Sort directly beneath it in the untouched .controls section —
    and (2) a mobile-only collapsible mural hero, closed by default
    (state.heroOpen === false in the doc), that carries the old headline
-   copy when expanded. The doc has no mural hero on desktop at all, so
-   above 600px the header is just the masthead. */
+   copy when expanded. Available at every viewport width, not just
+   mobile — the collapsed strip toggles it open/closed everywhere. */
 .site-header{position:relative}
 
-.mural-hero{display:none}
+.mural-hero{display:block}
 .mural-hero-panel{
   position:relative;height:150px;overflow:hidden;
-  background:#6E9C8A url('/mural.png') center bottom/cover no-repeat;
+  background:#6E9C8A url('/mural.png') center/cover no-repeat;
 }
 .mural-hero-collapse{
-  position:absolute;top:10px;right:10px;width:26px;height:26px;
+  position:absolute;top:10px;right:10px;width:26px;height:26px;z-index:2;
   border-radius:999px;background:rgba(251,249,244,.85);border:0;
   display:grid;place-items:center;font-size:13px;line-height:1;
   color:#5C4032;cursor:pointer;padding:0;
@@ -72,7 +72,6 @@ body{
 /* heroOpen state: default closed (matches state.heroOpen:false in the doc) */
 .mural-hero[data-open="true"] .mural-hero-strip{display:none}
 .mural-hero[data-open="false"] .mural-hero-panel{display:none}
-@media(max-width:600px){.mural-hero{display:block}}
 
 .masthead{
   position:relative;
