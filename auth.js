@@ -125,6 +125,29 @@
     renderLoggedIn(name);
   }
 
+  // true = definitely taken, false = definitely free, null = could not tell
+  // (RPC missing or errored). Null deliberately does NOT block signup.
+  async function displayNameTaken(name) {
+    try {
+      const { data, error } = await sb.rpc("display_name_available", { candidate: name });
+      if (error || typeof data !== "boolean") {
+        console.warn("[auth] display_name_available unavailable:", error && error.message);
+        return null;
+      }
+      return !data;
+    } catch (err) {
+      console.warn("[auth] display_name_available threw:", err);
+      return null;
+    }
+  }
+
+  function isNameTakenError(error) {
+    const msg = ((error && error.message) || "").toLowerCase();
+    return msg.indexOf("display_name_taken") !== -1
+        || msg.indexOf("profiles_display_name_unique_idx") !== -1
+        || msg.indexOf("database error saving new user") !== -1;
+  }
+
   async function handleSubmit(evt) {
     evt.preventDefault();
     setMsg("");
@@ -136,13 +159,34 @@
           setMsg("Enter a display name.", true);
           return;
         }
+        // Display names are unique, case- and whitespace-insensitively.
+        // This cannot be checked with a plain select: anon has no privileges
+        // on profiles, and profiles_select_own limits an authenticated user to
+        // their own row, so a select would call every name free. The
+        // display_name_available RPC (SECURITY DEFINER) is the only honest
+        // way to ask. If the check itself fails we fall through and let the
+        // database decide rather than blocking a legitimate signup.
+        const taken = await displayNameTaken(displayName);
+        if (taken === true) {
+          setMsg("That name is taken. Try another.", true);
+          el.displayNameInput.focus();
+          el.displayNameInput.select();
+          return;
+        }
         const { data, error } = await sb.auth.signUp({
           email: el.emailInput.value.trim(),
           password: el.passwordInput.value,
           options: { data: { display_name: displayName } }
         });
         if (error) {
-          setMsg(error.message, true);
+          // Backstop for the race between the check above and the insert:
+          // two people can claim the same name in the same instant, and only
+          // the unique index settles it. handle_new_user re-raises that as
+          // 'display_name_taken'; GoTrue may also flatten it into a generic
+          // "Database error saving new user", so treat both as the same thing
+          // rather than showing a raw database error to a person.
+          setMsg(isNameTakenError(error) ? "That name is taken. Try another." : error.message, true);
+          if (isNameTakenError(error)) { el.displayNameInput.focus(); el.displayNameInput.select(); }
           return;
         }
         if (data.session) {
