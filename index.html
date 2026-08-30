@@ -561,9 +561,47 @@ body{
 
 /* ===== PERMANENT SHOW PAGES (#/show/<slug>) ===== */
 .show-actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+/* Comments (Stage 2). The remaining social features -- who's going, ticket
+   exchange -- are still unbuilt and keep the dashed placeholder treatment. */
 .show-social-placeholder{margin:24px 0 4px;border:1px dashed rgba(243,234,215,.35);border-radius:10px;padding:16px 18px;color:rgba(243,234,215,.75)}
 .show-social-placeholder h3{font-family:'Oswald',sans-serif;font-weight:600;font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;color:rgba(243,234,215,.9)}
 .show-social-placeholder p{font-size:13.5px;line-height:1.5;font-family:'Bitter',Georgia,serif}
+
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.cmts{margin:26px 0 4px}
+.cmts-head{display:flex;align-items:baseline;gap:10px;margin-bottom:12px}
+.cmts-head h3{font-family:'Alfa Slab One',serif;font-size:19px;color:var(--cream);margin:0}
+.cmts-count{font-family:'Oswald',sans-serif;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(243,234,215,.7)}
+.cmts-state{font-family:'Bitter',Georgia,serif;font-size:13.5px;line-height:1.5;color:rgba(243,234,215,.75);padding:2px 0 6px}
+.cmts-state.cmts-error{color:#ffd9c9}
+.cmts-list{list-style:none;margin:0 0 14px;padding:0;display:flex;flex-direction:column;gap:10px}
+.cmt{background:var(--cream);border-radius:12px;padding:12px 14px;box-shadow:0 6px 14px rgba(20,40,30,.14)}
+.cmt-top{display:flex;align-items:baseline;gap:8px;margin-bottom:5px}
+.cmt-name{font-family:'Oswald',sans-serif;font-weight:600;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--forest)}
+.cmt-when{font-size:11.5px;color:#7c6a55}
+.cmt-del{margin-left:auto;border:0;background:none;cursor:pointer;font-family:'Oswald',sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#7c6a55;padding:2px 4px;border-radius:6px}
+.cmt-del:hover{color:var(--rust-deep);background:rgba(181,86,43,.1)}
+.cmt-del:disabled{opacity:.5;cursor:default}
+.cmt-body{font-family:'Bitter',Georgia,serif;font-size:14px;line-height:1.5;color:var(--ink);white-space:pre-wrap;overflow-wrap:anywhere;margin:0}
+.cmt-form{background:var(--cream);border-radius:12px;padding:12px 14px;box-shadow:0 6px 14px rgba(20,40,30,.14)}
+.cmt-input{width:100%;box-sizing:border-box;resize:vertical;min-height:74px;font-family:'Bitter',Georgia,serif;font-size:14px;line-height:1.5;color:var(--ink);background:#fff;border:1px solid rgba(74,53,38,.25);border-radius:9px;padding:10px 12px}
+.cmt-input:focus{outline:2px solid rgba(181,86,43,.45);outline-offset:1px;border-color:transparent}
+.cmt-form-foot{display:flex;align-items:center;gap:12px;margin-top:9px}
+.cmt-counter{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:.06em;color:#7c6a55}
+.cmt-counter.over{color:var(--rust-deep);font-weight:600}
+.cmt-post{margin-left:auto;border:0;cursor:pointer;font-family:'Oswald',sans-serif;font-weight:600;text-transform:uppercase;letter-spacing:.05em;font-size:11.5px;color:#fff;background:var(--rust);border-radius:999px;padding:8px 18px}
+.cmt-post:hover:not(:disabled){background:var(--rust-deep)}
+.cmt-post:disabled{opacity:.55;cursor:default}
+.cmt-msg{font-family:'Bitter',Georgia,serif;font-size:12.5px;color:var(--rust-deep);margin-top:8px}
+.cmt-signin{background:rgba(243,234,215,.12);border:1px dashed rgba(243,234,215,.4);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.cmt-signin p{margin:0;font-family:'Bitter',Georgia,serif;font-size:13.5px;color:rgba(243,234,215,.85)}
+.cmt-signin-btn{margin-left:auto;border:0;cursor:pointer;font-family:'Oswald',sans-serif;font-weight:600;text-transform:uppercase;letter-spacing:.05em;font-size:11.5px;color:#fff;background:var(--rust);border-radius:999px;padding:8px 18px}
+.cmt-signin-btn:hover{background:var(--rust-deep)}
+@media (max-width:600px){
+  .cmts-head h3{font-size:17px}
+  .cmt-signin{flex-direction:column;align-items:flex-start}
+  .cmt-signin-btn{margin-left:0}
+}
 </style>
 </head>
 <body>
@@ -1461,7 +1499,7 @@ function renderShowNotFound(wrap, slug){
 const SHOW_SOCIAL_PLACEHOLDER =
   '<div class="show-social-placeholder">'
   + '<h3>Coming soon</h3>'
-  + '<p>Comments, who’s going, and a ticket exchange will live here.</p>'
+  + '<p>Who’s going and a ticket exchange will live here.</p>'
   + '</div>';
 
 function renderShowDetail(wrap, show, kind){
@@ -1504,6 +1542,199 @@ function renderShowDetail(wrap, show, kind){
   wrap.appendChild(listWrap);
   wrap.insertAdjacentHTML('beforeend', SHOW_SOCIAL_PLACEHOLDER);
   bindShowPageBack();
+  mountComments(wrap, show._slug || show.slug || makeSlug(show));
+}
+
+
+// ===== COMMENTS ON SHOW PAGES (Fork Stage 2) =====
+// Public commentary: everyone reads, only signed-in users post, only an
+// author deletes their own. Ordering is OLDEST-FIRST so a thread reads
+// top-to-bottom like a conversation.
+//
+// Auth is NOT re-implemented here. auth.js owns the session and exposes the
+// same supabase client as window.__plAuth; the "Sign in to comment" button
+// just triggers the existing #authSignInBtn, so there is exactly one auth
+// flow on the site.
+//
+// display_name is read from the comment row, not from profiles: Stage 1's
+// RLS lets a user read only their OWN profile, so a join would return null
+// for everyone else. The denormalized copy is written server-side by the
+// comments_set_display_name trigger, which also means a client cannot post
+// under another person's name -- see supabase/schema-comments.sql.
+const CMT_MAX = 500;
+
+function cmtClient(){ return window.__plAuth || null; }
+
+function cmtRelTime(iso){
+  const then = new Date(iso).getTime();
+  if(!isFinite(then)) return '';
+  const secs = Math.floor((Date.now() - then) / 1000);
+  if(secs < 45) return 'just now';
+  const mins = Math.round(secs/60);
+  if(mins < 60) return mins + (mins===1?' minute ago':' minutes ago');
+  const hrs = Math.round(mins/60);
+  if(hrs < 24) return hrs + (hrs===1?' hour ago':' hours ago');
+  const days = Math.round(hrs/24);
+  if(days < 30) return days + (days===1?' day ago':' days ago');
+  const months = Math.round(days/30);
+  if(months < 12) return months + (months===1?' month ago':' months ago');
+  const years = Math.round(months/12);
+  return years + (years===1?' year ago':' years ago');
+}
+
+function cmtRow(c, myUserId){
+  const mine = myUserId && c.user_id === myUserId;
+  return '<li class="cmt" data-cmt-id="'+esc(c.id)+'">'
+    + '<div class="cmt-top">'
+      + '<span class="cmt-name">' + esc(c.display_name || 'Someone') + '</span>'
+      + '<span class="cmt-when">' + esc(cmtRelTime(c.created_at)) + '</span>'
+      + (mine ? '<button type="button" class="cmt-del" data-cmt-del="'+esc(c.id)+'">Delete</button>' : '')
+    + '</div>'
+    + '<p class="cmt-body">' + esc(c.body || '') + '</p>'
+    + '</li>';
+}
+
+async function mountComments(wrap, slug){
+  if(!slug) return;
+  const host = document.createElement('section');
+  host.className = 'cmts';
+  host.setAttribute('aria-label','Comments');
+  host.innerHTML = '<div class="cmts-head"><h3>Comments</h3></div>'
+    + '<div class="cmts-state">Loading comments…</div>';
+  wrap.appendChild(host);
+
+  const sb = cmtClient();
+  if(!sb){
+    host.querySelector('.cmts-state').textContent =
+      'Comments are unavailable right now.';
+    return;
+  }
+
+  // Re-render if the user signs in or out while sitting on the page, so the
+  // composer and the per-comment Delete buttons follow the session.
+  if(!host._cmtAuthSub){
+    host._cmtAuthSub = sb.auth.onAuthStateChange(function(){
+      if(document.body.contains(host)) renderComments(host, slug);
+    });
+  }
+  await renderComments(host, slug);
+}
+
+async function renderComments(host, slug){
+  const sb = cmtClient();
+  if(!sb) return;
+
+  let session = null;
+  try{ session = (await sb.auth.getSession()).data.session; }catch(e){ session = null; }
+  const myUserId = session && session.user ? session.user.id : null;
+
+  const { data, error } = await sb
+    .from('comments')
+    .select('id,user_id,display_name,body,created_at')
+    .eq('show_slug', slug)
+    .order('created_at', { ascending: true });
+
+  if(error){
+    host.innerHTML = '<div class="cmts-head"><h3>Comments</h3></div>'
+      + '<div class="cmts-state cmts-error">Couldn’t load comments. Reload to try again.</div>';
+    console.warn('[comments] load failed:', error.message);
+    return;
+  }
+
+  const rows = data || [];
+  const count = rows.length;
+  let html = '<div class="cmts-head"><h3>Comments</h3>'
+    + (count ? '<span class="cmts-count">' + count + (count===1?' comment':' comments') + '</span>' : '')
+    + '</div>';
+
+  html += count
+    ? '<ul class="cmts-list">' + rows.map(function(c){ return cmtRow(c, myUserId); }).join('') + '</ul>'
+    : '<div class="cmts-state">No comments yet — be the first.</div>';
+
+  if(myUserId){
+    html += '<form class="cmt-form" data-cmt-form>'
+      + '<label class="sr-only" for="cmtInput">Add a comment</label>'
+      + '<textarea class="cmt-input" id="cmtInput" maxlength="'+CMT_MAX+'" placeholder="Add a comment…"></textarea>'
+      + '<div class="cmt-form-foot">'
+        + '<span class="cmt-counter" data-cmt-counter>0 / '+CMT_MAX+'</span>'
+        + '<button type="submit" class="cmt-post" disabled>Post</button>'
+      + '</div>'
+      + '<div class="cmt-msg" data-cmt-msg hidden></div>'
+      + '</form>';
+  } else {
+    html += '<div class="cmt-signin">'
+      + '<p>Sign in to join the conversation.</p>'
+      + '<button type="button" class="cmt-signin-btn" data-cmt-signin>Sign In</button>'
+      + '</div>';
+  }
+
+  host.innerHTML = html;
+  bindComments(host, slug, myUserId);
+}
+
+function bindComments(host, slug, myUserId){
+  const sb = cmtClient();
+
+  const signin = host.querySelector('[data-cmt-signin]');
+  if(signin){
+    // Reuse the Stage 1 auth sheet rather than opening a second flow.
+    signin.addEventListener('click', function(){
+      const b = document.getElementById('authSignInBtn');
+      if(b) b.click();
+    });
+  }
+
+  const form = host.querySelector('[data-cmt-form]');
+  if(form){
+    const input = form.querySelector('.cmt-input');
+    const counter = form.querySelector('[data-cmt-counter]');
+    const postBtn = form.querySelector('.cmt-post');
+    const msg = form.querySelector('[data-cmt-msg]');
+
+    const sync = function(){
+      const len = input.value.length;
+      counter.textContent = len + ' / ' + CMT_MAX;
+      counter.classList.toggle('over', len > CMT_MAX);
+      postBtn.disabled = input.value.trim().length === 0 || len > CMT_MAX;
+    };
+    input.addEventListener('input', sync);
+    sync();
+
+    form.addEventListener('submit', async function(e){
+      e.preventDefault();
+      const body = input.value.trim();
+      if(!body || body.length > CMT_MAX) return;
+      postBtn.disabled = true;
+      msg.hidden = true;
+      // user_id and display_name are set server-side by the insert trigger;
+      // sending them from here would be ignored anyway.
+      const { error } = await sb.from('comments').insert({ show_slug: slug, body: body });
+      if(error){
+        msg.textContent = 'Couldn’t post that comment. Try again.';
+        msg.hidden = false;
+        postBtn.disabled = false;
+        console.warn('[comments] insert failed:', error.message);
+        return;
+      }
+      input.value = '';
+      await renderComments(host, slug);
+    });
+  }
+
+  host.addEventListener('click', async function(e){
+    const del = e.target.closest('[data-cmt-del]');
+    if(!del) return;
+    e.preventDefault();
+    del.disabled = true;
+    const id = del.getAttribute('data-cmt-del');
+    const { error } = await sb.from('comments').delete().eq('id', id);
+    if(error){
+      del.disabled = false;
+      console.warn('[comments] delete failed:', error.message);
+      return;
+    }
+    await renderComments(host, slug);
+  });
 }
 
 function favKey(s){ return (s.venue||'') + '|' + (s.date||'') + '|' + (s.title||''); }
