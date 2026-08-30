@@ -610,12 +610,46 @@ body{
 .tx-submit{margin-left:auto;border:0;cursor:pointer;font-family:'Oswald',sans-serif;font-weight:600;text-transform:uppercase;letter-spacing:.05em;font-size:11.5px;color:#fff;background:var(--rust);border-radius:999px;padding:10px 20px}
 .tx-submit:hover:not(:disabled){background:var(--rust-deep)}
 .tx-submit:disabled{opacity:.55;cursor:default}
-.tx-msg{font-family:'Bitter',Georgia,serif;font-size:12.5px;color:var(--rust-deep);width:100%;margin:0}
+.tx-form-msg{font-family:'Bitter',Georgia,serif;font-size:12.5px;color:var(--rust-deep);width:100%;margin:0}
 .tx-signin{background:rgba(243,234,215,.12);border:1px dashed rgba(243,234,215,.4);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .tx-signin p{margin:0;font-family:'Bitter',Georgia,serif;font-size:13.5px;color:rgba(243,234,215,.85)}
 .tx-signin-btn{margin-left:auto;border:0;cursor:pointer;font-family:'Oswald',sans-serif;font-weight:600;text-transform:uppercase;letter-spacing:.05em;font-size:11.5px;color:#fff;background:var(--rust);border-radius:999px;padding:8px 18px}
 .tx-signin-btn:hover{background:var(--rust-deep)}
+/* Trade-scoped messaging (Stage 4). A thread hangs off one spare post and is
+   private to its two participants -- there is no inbox and no unread badge in
+   this pass (the Aug 23 mockup's header envelope is deliberately deferred). */
+.tx-msgbtn{border:0;cursor:pointer;font-family:'Oswald',sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#fff;background:var(--forest);border-radius:999px;padding:7px 14px}
+.tx-msgbtn:hover{background:#2f463b}
+.tx-msgbtn.tx-msgbtn-quiet{background:rgba(61,87,74,.12);color:var(--forest)}
+.tx-msgbtn.tx-msgbtn-quiet:hover{background:rgba(61,87,74,.2)}
+.tx-actions{margin-left:auto;display:flex;align-items:center;gap:8px}
+.tx-thread{background:rgba(255,255,255,.55);border-radius:10px;margin-top:10px;padding:12px;width:100%}
+.tx-thread-head{display:flex;align-items:baseline;gap:8px;margin-bottom:8px}
+.tx-thread-with{font-family:'Oswald',sans-serif;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--forest)}
+.tx-thread-close{margin-left:auto;border:0;background:none;cursor:pointer;font-family:'Oswald',sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#7c6a55;padding:2px 4px;border-radius:6px}
+.tx-thread-close:hover{color:var(--rust-deep);background:rgba(181,86,43,.1)}
+.tx-picker{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.tx-picker button{width:100%;text-align:left;border:1px solid rgba(74,53,38,.18);background:#fff;border-radius:9px;padding:9px 11px;cursor:pointer;font-family:'Bitter',Georgia,serif;font-size:13.5px;color:var(--ink)}
+.tx-picker button:hover{border-color:var(--forest)}
+.tx-msgs{list-style:none;margin:0 0 10px;padding:0;display:flex;flex-direction:column;gap:8px;max-height:280px;overflow-y:auto}
+.tx-msg{background:#fff;border-radius:9px;padding:9px 11px}
+.tx-msg.tx-msg-mine{background:rgba(61,87,74,.1)}
+.tx-msg-top{display:flex;align-items:baseline;gap:8px;margin-bottom:3px}
+.tx-msg-who{font-family:'Oswald',sans-serif;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--forest)}
+.tx-msg-when{font-size:11px;color:#7c6a55}
+.tx-msg-body{font-family:'Bitter',Georgia,serif;font-size:13.5px;line-height:1.5;color:var(--ink);white-space:pre-wrap;overflow-wrap:anywhere;margin:0}
+.tx-reply{display:flex;flex-direction:column;gap:8px}
+.tx-reply textarea{width:100%;box-sizing:border-box;resize:vertical;min-height:62px;font-family:'Bitter',Georgia,serif;font-size:13.5px;line-height:1.5;color:var(--ink);background:#fff;border:1px solid rgba(74,53,38,.25);border-radius:9px;padding:9px 11px}
+.tx-reply textarea:focus{outline:2px solid rgba(181,86,43,.45);outline-offset:1px;border-color:transparent}
+.tx-reply-foot{display:flex;align-items:center;gap:10px}
+.tx-reply-count{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:.06em;color:#7c6a55}
+.tx-reply-count.over{color:var(--rust-deep);font-weight:600}
+.tx-send{margin-left:auto;border:0;cursor:pointer;font-family:'Oswald',sans-serif;font-weight:600;text-transform:uppercase;letter-spacing:.05em;font-size:11px;color:#fff;background:var(--rust);border-radius:999px;padding:8px 16px}
+.tx-send:hover:not(:disabled){background:var(--rust-deep)}
+.tx-send:disabled{opacity:.55;cursor:default}
+.tx-thread-state{font-family:'Bitter',Georgia,serif;font-size:13px;color:#7c6a55;margin:0 0 8px}
 @media (max-width:600px){
+  .tx-actions{margin-left:0;width:100%}
   .tx-head h3{font-size:17px}
   .tx-form{align-items:stretch}
   .tx-submit{margin-left:0;width:100%}
@@ -1622,10 +1656,35 @@ function renderShowDetail(wrap, show, kind){
 // server-side by the ticket_posts_set_display_name trigger, never sent by the
 // client. See supabase/schema-ticket-posts.sql.
 const TX_MAX_QTY = 8;
+const TX_MSG_MAX = 1000;
+// Threads visible to the current user for the posts on this page, grouped by
+// post. RLS already limits this to threads they participate in, so "every
+// thread I can see for this post" is exactly the right query.
+const TX_THREADS = { byPost: {}, names: {} };
 
 function txClient(){ return window.__plAuth || null; }
 
 function txPriceLabel(t){ return t === 'free' ? 'Free' : 'At face value'; }
+
+// The poster does not get a "Message" button on their own post -- there is
+// nobody to message -- but they still need to see and answer people who
+// reached out. So their own post shows an incoming-thread count instead,
+// which opens the same embedded thread view. Both affordances are the one
+// entry point to messaging: there is no inbox and no header badge.
+function txThreadAffordance(p, mine, myUserId){
+  if(!myUserId){
+    return '<button type="button" class="tx-msgbtn" data-tx-signin-msg>Message</button>';
+  }
+  if(mine){
+    const n = (TX_THREADS.byPost[p.id] || []).length;
+    if(!n) return '';
+    return '<button type="button" class="tx-msgbtn tx-msgbtn-quiet" data-tx-open="'+esc(p.id)+'">'
+      + n + (n === 1 ? ' person messaged you' : ' people messaged you') + '</button>';
+  }
+  const existing = (TX_THREADS.byPost[p.id] || [])[0];
+  return '<button type="button" class="tx-msgbtn" data-tx-open="'+esc(p.id)+'">'
+    + (existing ? 'View messages' : 'Message') + '</button>';
+}
 
 function txRow(p, myUserId){
   const mine = myUserId && p.user_id === myUserId;
@@ -1642,7 +1701,11 @@ function txRow(p, myUserId){
     + '</span>'
     + '<span class="tx-tag ' + (free ? 'tx-tag-free' : 'tx-tag-face') + '">'
       + (free ? 'Free' : 'Face value') + '</span>'
-    + (mine ? '<button type="button" class="tx-cancel" data-tx-cancel="'+esc(p.id)+'">Cancel</button>' : '')
+    + '<span class="tx-actions">'
+      + txThreadAffordance(p, mine, myUserId)
+      + (mine ? '<button type="button" class="tx-cancel" data-tx-cancel="'+esc(p.id)+'">Cancel</button>' : '')
+    + '</span>'
+    + '<div class="tx-thread" data-tx-thread-for="'+esc(p.id)+'" hidden></div>'
     + '</li>';
 }
 
@@ -1692,6 +1755,9 @@ async function renderExchange(host, slug){
   const rows = data || [];
   const total = rows.reduce(function(n,p){ return n + (parseInt(p.quantity,10)||0); }, 0);
 
+  TX_THREADS._posts = rows;
+  await txLoadThreads(sb, rows, myUserId);
+
   let html = '<div class="tx-head"><h3>Spare tickets</h3>'
     + (rows.length ? '<span class="tx-count">' + total + (total===1?' spare':' spares') + '</span>' : '')
     + '</div>'
@@ -1717,7 +1783,7 @@ async function renderExchange(host, slug){
         + '</span>'
       + '</span>'
       + '<button type="submit" class="tx-submit">Post spare</button>'
-      + '<p class="tx-msg" data-tx-msg hidden></p>'
+      + '<p class="tx-form-msg" data-tx-form-msg hidden></p>'
       + '</form>';
   } else {
     html += '<div class="tx-signin">'
@@ -1745,7 +1811,7 @@ function bindExchange(host, slug){
   const form = host.querySelector('[data-tx-form]');
   if(form){
     const submit = form.querySelector('.tx-submit');
-    const msg = form.querySelector('[data-tx-msg]');
+    const msg = form.querySelector('[data-tx-form-msg]');
     form.addEventListener('submit', async function(e){
       e.preventDefault();
       const qty = parseInt(form.querySelector('#txQty').value, 10);
@@ -1771,6 +1837,41 @@ function bindExchange(host, slug){
   }
 
   host.addEventListener('click', async function(e){
+    // Messaging (Stage 4) -------------------------------------------------
+    if(e.target.closest('[data-tx-signin-msg]')){
+      e.preventDefault();
+      const b = document.getElementById('authSignInBtn');
+      if(b) b.click();
+      return;
+    }
+    const open = e.target.closest('[data-tx-open]');
+    if(open){
+      e.preventDefault();
+      let session = null;
+      try{ session = (await sb.auth.getSession()).data.session; }catch(err){ session = null; }
+      const uid = session && session.user ? session.user.id : null;
+      if(!uid) return;
+      await txOpenThread(host, slug, open.getAttribute('data-tx-open'), uid);
+      return;
+    }
+    const pick = e.target.closest('[data-tx-pick]');
+    if(pick){
+      e.preventDefault();
+      let session = null;
+      try{ session = (await sb.auth.getSession()).data.session; }catch(err){ session = null; }
+      const uid = session && session.user ? session.user.id : null;
+      if(!uid) return;
+      await txOpenThread(host, slug, pick.getAttribute('data-tx-post'), uid, pick.getAttribute('data-tx-pick'));
+      return;
+    }
+    const close = e.target.closest('[data-tx-close]');
+    if(close){
+      e.preventDefault();
+      const panel = host.querySelector('[data-tx-thread-for="'+close.getAttribute('data-tx-close')+'"]');
+      if(panel){ panel.hidden = true; panel.innerHTML = ''; }
+      return;
+    }
+    // ---------------------------------------------------------------------
     const btn = e.target.closest('[data-tx-cancel]');
     if(!btn) return;
     e.preventDefault();
@@ -1782,6 +1883,183 @@ function bindExchange(host, slug){
       return;
     }
     await renderExchange(host, slug);
+  });
+}
+
+// ===== TRADE-SCOPED MESSAGING (Fork Stage 4) =====
+// A thread exists because someone reached out about ONE ticket_posts row.
+// There is no DM system, no inbox, no unread badge, no realtime: threads load
+// when opened and refresh after a send. Everything private here is enforced by
+// RLS -- see supabase/schema-ticket-messages.sql -- so the worst a broken UI
+// can do is show a participant their own data.
+//
+// Deferred on purpose (the Aug 23 mockup shows a header envelope + badge):
+// a unified inbox and unread counts. The only way to a thread right now is the
+// specific spare post it belongs to.
+
+// Load the current user's threads for the posts on screen, plus the names of
+// the people on the other end. Names come from profiles via the Stage 4
+// participant-scoped SELECT policy: a poster has no other way to learn who
+// messaged them, since ticket_messages stores only sender_id.
+async function txLoadThreads(sb, posts, myUserId){
+  TX_THREADS.byPost = {};
+  if(!myUserId || !posts.length) return;
+  const ids = posts.map(function(p){ return p.id; });
+  const { data, error } = await sb
+    .from('ticket_threads')
+    .select('id,ticket_post_id,poster_id,requester_id,created_at')
+    .in('ticket_post_id', ids);
+  if(error){ console.warn('[messaging] thread load failed:', error.message); return; }
+  (data || []).forEach(function(t){
+    (TX_THREADS.byPost[t.ticket_post_id] = TX_THREADS.byPost[t.ticket_post_id] || []).push(t);
+  });
+
+  // Resolve the counterpart names in one query.
+  const others = [];
+  (data || []).forEach(function(t){
+    const other = t.poster_id === myUserId ? t.requester_id : t.poster_id;
+    if(other && others.indexOf(other) === -1 && !TX_THREADS.names[other]) others.push(other);
+  });
+  if(!others.length) return;
+  const res = await sb.from('profiles').select('id,display_name').in('id', others);
+  if(res.error){ console.warn('[messaging] name load failed:', res.error.message); return; }
+  (res.data || []).forEach(function(r){ TX_THREADS.names[r.id] = r.display_name; });
+}
+
+function txOtherName(t, myUserId){
+  const other = t.poster_id === myUserId ? t.requester_id : t.poster_id;
+  return TX_THREADS.names[other] || 'Someone';
+}
+
+function txMsgRow(m, myUserId, nameFor){
+  const mine = m.sender_id === myUserId;
+  return '<li class="tx-msg' + (mine ? ' tx-msg-mine' : '') + '">'
+    + '<div class="tx-msg-top">'
+      + '<span class="tx-msg-who">' + esc(mine ? 'You' : nameFor) + '</span>'
+      + '<span class="tx-msg-when">' + esc(cmtRelTime(m.created_at)) + '</span>'
+    + '</div>'
+    + '<p class="tx-msg-body">' + esc(m.body || '') + '</p>'
+    + '</li>';
+}
+
+// Open the thread panel under a post. For a requester there is at most one
+// thread (the unique index guarantees it); for a poster there may be several,
+// so they get a picker first.
+async function txOpenThread(host, slug, postId, myUserId, forceThreadId){
+  const panel = host.querySelector('[data-tx-thread-for="'+postId+'"]');
+  if(!panel) return;
+  const sb = txClient();
+  const post = (TX_THREADS._posts || []).find(function(p){ return p.id === postId; });
+  const isMine = post && post.user_id === myUserId;
+  const threads = TX_THREADS.byPost[postId] || [];
+
+  panel.hidden = false;
+
+  if(isMine && threads.length > 1 && !forceThreadId){
+    panel.innerHTML = '<div class="tx-thread-head">'
+      + '<span class="tx-thread-with">' + threads.length + ' conversations</span>'
+      + '<button type="button" class="tx-thread-close" data-tx-close="'+esc(postId)+'">Close</button>'
+      + '</div>'
+      + '<ul class="tx-picker">' + threads.map(function(t){
+          return '<li><button type="button" data-tx-pick="'+esc(t.id)+'" data-tx-post="'+esc(postId)+'">'
+            + esc(txOtherName(t, myUserId)) + '</button></li>';
+        }).join('') + '</ul>';
+    return;
+  }
+
+  let thread = forceThreadId
+    ? threads.find(function(t){ return t.id === forceThreadId; })
+    : threads[0];
+
+  // A requester with no thread yet: create it. The unique index makes a second
+  // "Message" click reopen the same thread rather than fork one, and if two
+  // clicks race, the duplicate error is handled by re-reading.
+  if(!thread && !isMine){
+    panel.innerHTML = '<p class="tx-thread-state">Starting conversation…</p>';
+    const ins = await sb.from('ticket_threads').insert({ ticket_post_id: postId }).select('id,ticket_post_id,poster_id,requester_id,created_at');
+    if(ins.error){
+      const again = await sb.from('ticket_threads')
+        .select('id,ticket_post_id,poster_id,requester_id,created_at')
+        .eq('ticket_post_id', postId);
+      if(again.error || !(again.data||[]).length){
+        panel.innerHTML = '<p class="tx-thread-state">Couldn’t start that conversation. Try again.</p>';
+        console.warn('[messaging] thread create failed:', ins.error.message);
+        return;
+      }
+      thread = again.data[0];
+    } else {
+      thread = (ins.data || [])[0];
+    }
+    TX_THREADS.byPost[postId] = [thread];
+    if(post && !TX_THREADS.names[post.user_id]) TX_THREADS.names[post.user_id] = post.display_name;
+  }
+  if(!thread){ panel.hidden = true; return; }
+
+  await txRenderThread(panel, thread, postId, myUserId, slug, host);
+}
+
+async function txRenderThread(panel, thread, postId, myUserId, slug, host){
+  const sb = txClient();
+  const { data, error } = await sb
+    .from('ticket_messages')
+    .select('id,sender_id,body,created_at')
+    .eq('thread_id', thread.id)
+    .order('created_at', { ascending: true });
+
+  const nameFor = txOtherName(thread, myUserId);
+  let inner = '<div class="tx-thread-head">'
+    + '<span class="tx-thread-with">With ' + esc(nameFor) + '</span>'
+    + '<button type="button" class="tx-thread-close" data-tx-close="'+esc(postId)+'">Close</button>'
+    + '</div>';
+
+  if(error){
+    inner += '<p class="tx-thread-state">Couldn’t load these messages.</p>';
+    console.warn('[messaging] message load failed:', error.message);
+  } else {
+    const msgs = data || [];
+    inner += msgs.length
+      ? '<ul class="tx-msgs">' + msgs.map(function(m){ return txMsgRow(m, myUserId, nameFor); }).join('') + '</ul>'
+      : '<p class="tx-thread-state">No messages yet. Say hello.</p>';
+  }
+
+  inner += '<form class="tx-reply" data-tx-reply="'+esc(thread.id)+'" data-tx-post="'+esc(postId)+'">'
+    + '<label class="sr-only" for="txReply-'+esc(thread.id)+'">Message</label>'
+    + '<textarea id="txReply-'+esc(thread.id)+'" maxlength="'+TX_MSG_MAX+'" placeholder="Write a message…"></textarea>'
+    + '<div class="tx-reply-foot">'
+      + '<span class="tx-reply-count" data-tx-reply-count>0 / '+TX_MSG_MAX+'</span>'
+      + '<button type="submit" class="tx-send" disabled>Send</button>'
+    + '</div>'
+    + '</form>';
+
+  panel.innerHTML = inner;
+
+  const form = panel.querySelector('[data-tx-reply]');
+  const ta = form.querySelector('textarea');
+  const counter = form.querySelector('[data-tx-reply-count]');
+  const send = form.querySelector('.tx-send');
+  const sync = function(){
+    const len = ta.value.length;
+    counter.textContent = len + ' / ' + TX_MSG_MAX;
+    counter.classList.toggle('over', len > TX_MSG_MAX);
+    send.disabled = ta.value.trim().length === 0 || len > TX_MSG_MAX;
+  };
+  ta.addEventListener('input', sync);
+  sync();
+
+  form.addEventListener('submit', async function(e){
+    e.preventDefault();
+    const body = ta.value.trim();
+    if(!body || body.length > TX_MSG_MAX) return;
+    send.disabled = true;
+    // sender_id is set by the insert trigger; RLS re-checks participation.
+    const { error: err } = await sb.from('ticket_messages').insert({ thread_id: thread.id, body: body });
+    if(err){
+      send.disabled = false;
+      console.warn('[messaging] send failed:', err.message);
+      return;
+    }
+    ta.value = '';
+    await txRenderThread(panel, thread, postId, myUserId, slug, host);
   });
 }
 
