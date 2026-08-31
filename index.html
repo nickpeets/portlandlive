@@ -578,6 +578,29 @@ body{
 .show-actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 /* Comments (Stage 2). The remaining social features -- who's going, ticket
    exchange -- are still unbuilt and keep the dashed placeholder treatment. */
+/* Show-page shape (Site.dc.html "03 show desktop" / "03 show mobile").
+   The DOM order IS the mobile order -- header, card + actions, Miracles,
+   the social placeholder, comments -- so narrow widths need no ordering
+   rules at all and nothing can drift out of sync with the markup. Desktop
+   only lifts .tx out into a fixed 300px second column. */
+.show-grid{display:block}
+@media (min-width:900px){
+  .show-grid{display:grid;grid-template-columns:1fr 300px;gap:28px;align-items:start}
+  .show-grid > .venue-header{grid-column:1;grid-row:1}
+  .show-grid > .list{grid-column:1;grid-row:2}
+  .show-grid > .show-social-placeholder{grid-column:1;grid-row:3}
+  .show-grid > .cmts{grid-column:1;grid-row:4}
+  /* Spanning the whole left stack, not just row 1: otherwise a sidebar
+     taller than the title would stretch row 1 and open a gap between the
+     title and the poster card. min-width:0 keeps long words from forcing
+     the 300px track wider. */
+  .show-grid > .tx{grid-column:2;grid-row:1 / 5;align-self:start;margin-top:0;min-width:0}
+  /* The exchange row is a wide-page layout squeezed into 300px, so the
+     actions wrap under the name instead of being pushed right. */
+  .show-grid > .tx .tx-actions{margin-left:0;width:100%}
+  .show-grid > .tx .tx-submit{margin-left:0;width:100%}
+  .show-grid > .tx .tx-form{align-items:stretch}
+}
 .show-social-placeholder{margin:24px 0 4px;border:1px dashed rgba(243,234,215,.35);border-radius:10px;padding:16px 18px;color:rgba(243,234,215,.75)}
 .show-social-placeholder h3{font-family:'Oswald',sans-serif;font-weight:600;font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;color:rgba(243,234,215,.9)}
 .show-social-placeholder p{font-size:13.5px;line-height:1.5;font-family:'Bitter',Georgia,serif}
@@ -1657,15 +1680,25 @@ function renderShowDetail(wrap, show, kind){
   listWrap.className = 'list list--b';
   listWrap.appendChild(card);
 
-  wrap.innerHTML = head;
-  wrap.appendChild(listWrap);
-  wrap.insertAdjacentHTML('beforeend', SHOW_SOCIAL_PLACEHOLDER);
+  // One flat grid container rather than nested column wrappers: the exchange
+  // has to sit between the actions and the placeholder on mobile but in a
+  // separate column on desktop, which nested columns cannot express.
+  const grid = document.createElement('div');
+  grid.className = 'show-grid';
+  grid.innerHTML = head;
+  grid.appendChild(listWrap);
+  wrap.innerHTML = '';
+  wrap.appendChild(grid);
   bindShowPageBack();
   const _slug = show._slug || show.slug || makeSlug(show);
+  // Appended in mobile reading order. mountExchange/mountComments each attach
+  // their host synchronously before their first await, so the resulting DOM
+  // order is deterministic even though both are async.
   // Spares are only meaningful before the show happens; a past show gets
   // comments (recaps) but no exchange.
-  if(kind === 'upcoming') mountExchange(wrap, _slug);
-  mountComments(wrap, _slug);
+  if(kind === 'upcoming') mountExchange(grid, _slug);
+  grid.insertAdjacentHTML('beforeend', SHOW_SOCIAL_PLACEHOLDER);
+  mountComments(grid, _slug);
 }
 
 
