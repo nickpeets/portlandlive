@@ -1770,7 +1770,7 @@ function txRow(p, myUserId){
       + '<span class="tx-post-line">'
         + txBadge(p.user_id)
         + '<span class="tx-who">' + esc(p.display_name || 'Someone') + '</span>'
-        + ' has ' + qty + (qty === 1 ? ' spare' : ' spares')
+        + ' has ' + qty + (qty === 1 ? ' miracle' : ' miracles')
       + '</span>'
       + '<span class="tx-when">' + esc(cmtRelTime(p.created_at)) + '</span>'
     + '</span>'
@@ -1789,7 +1789,7 @@ async function mountExchange(wrap, slug){
   const host = document.createElement('section');
   host.className = 'tx';
   host.setAttribute('aria-label','Ticket exchange');
-  host.innerHTML = '<div class="tx-head"><h3>Spare tickets</h3></div>'
+  host.innerHTML = '<div class="tx-head"><h3>☝️ Miracles</h3></div>'
     + '<div class="tx-state">Loading…</div>';
   wrap.appendChild(host);
 
@@ -1821,8 +1821,8 @@ async function renderExchange(host, slug){
     .order('created_at', { ascending: false });
 
   if(error){
-    host.innerHTML = '<div class="tx-head"><h3>Spare tickets</h3></div>'
-      + '<div class="tx-state tx-error">Couldn’t load spare tickets. Reload to try again.</div>';
+    host.innerHTML = '<div class="tx-head"><h3>☝️ Miracles</h3></div>'
+      + '<div class="tx-state tx-error">Couldn’t load miracles. Reload to try again.</div>';
     console.warn('[exchange] load failed:', error.message);
     return;
   }
@@ -1837,14 +1837,14 @@ async function renderExchange(host, slug){
     txLoadHandoffCounts(sb, rows)
   ]);
 
-  let html = '<div class="tx-head"><h3>Spare tickets</h3>'
-    + (rows.length ? '<span class="tx-count">' + total + (total===1?' spare':' spares') + '</span>' : '')
+  let html = '<div class="tx-head"><h3>☝️ Miracles</h3>'
+    + (rows.length ? '<span class="tx-count">' + total + ' available' + '</span>' : '')
     + '</div>'
     + '<p class="tx-note">Passed on at face value or free — never above. Arrange the handoff between yourselves.</p>';
 
   html += rows.length
     ? '<ul class="tx-list">' + rows.map(function(p){ return txRow(p, myUserId); }).join('') + '</ul>'
-    : '<div class="tx-state">No spare tickets posted for this show yet.</div>';
+    : '<div class="tx-state">No miracles posted for this show yet.</div>';
 
   if(myUserId){
     let opts = '';
@@ -1861,12 +1861,12 @@ async function renderExchange(host, slug){
           + '<label><input type="radio" name="txprice" value="free"><span>Free</span></label>'
         + '</span>'
       + '</span>'
-      + '<button type="submit" class="tx-submit">Post spare</button>'
+      + '<button type="submit" class="tx-submit">Post a Miracle</button>'
       + '<p class="tx-form-msg" data-tx-form-msg hidden></p>'
       + '</form>';
   } else {
     html += '<div class="tx-signin">'
-      + '<p>Sign in to post a spare ticket.</p>'
+      + '<p>Sign in to post a miracle.</p>'
       + '<button type="button" class="tx-signin-btn" data-tx-signin>Sign In</button>'
       + '</div>';
   }
