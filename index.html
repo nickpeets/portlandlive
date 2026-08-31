@@ -236,7 +236,7 @@ body{
   .hoodhead .count{font-family:'Oswald';font-weight:500;font-size:11px;color:rgba(243,234,215,.6);margin-left:8px;letter-spacing:.08em}
 
 .venue-header{margin-bottom:18px}
-.venue-header .venue-name{font-family:'Alfa Slab One',serif;font-size:26px;color:var(--cream);margin:6px 0 4px}
+.venue-header .venue-name{font-family:'Josefin Slab',Georgia,serif;font-weight:700;font-size:26px;color:var(--cream);margin:6px 0 4px}
 .venue-header .venue-info{color:var(--cream);opacity:.85;font-size:14px}
 .back-link{display:inline-block;color:var(--rust);text-decoration:none;font-weight:600;font-size:14px;cursor:pointer}
 .back-link:hover{text-decoration:underline}
@@ -578,6 +578,29 @@ body{
 .show-actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 /* Comments (Stage 2). The remaining social features -- who's going, ticket
    exchange -- are still unbuilt and keep the dashed placeholder treatment. */
+/* Show-page shape (Site.dc.html "03 show desktop" / "03 show mobile").
+   The DOM order IS the mobile order -- header, card + actions, Miracles,
+   the social placeholder, comments -- so narrow widths need no ordering
+   rules at all and nothing can drift out of sync with the markup. Desktop
+   only lifts .tx out into a fixed 300px second column. */
+.show-grid{display:block}
+@media (min-width:900px){
+  .show-grid{display:grid;grid-template-columns:1fr 300px;gap:28px;align-items:start}
+  .show-grid > .venue-header{grid-column:1;grid-row:1}
+  .show-grid > .list{grid-column:1;grid-row:2}
+  .show-grid > .show-social-placeholder{grid-column:1;grid-row:3}
+  .show-grid > .cmts{grid-column:1;grid-row:4}
+  /* Spanning the whole left stack, not just row 1: otherwise a sidebar
+     taller than the title would stretch row 1 and open a gap between the
+     title and the poster card. min-width:0 keeps long words from forcing
+     the 300px track wider. */
+  .show-grid > .tx{grid-column:2;grid-row:1 / 5;align-self:start;margin-top:0;min-width:0}
+  /* The exchange row is a wide-page layout squeezed into 300px, so the
+     actions wrap under the name instead of being pushed right. */
+  .show-grid > .tx .tx-actions{margin-left:0;width:100%}
+  .show-grid > .tx .tx-submit{margin-left:0;width:100%}
+  .show-grid > .tx .tx-form{align-items:stretch}
+}
 .show-social-placeholder{margin:24px 0 4px;border:1px dashed rgba(243,234,215,.35);border-radius:10px;padding:16px 18px;color:rgba(243,234,215,.75)}
 .show-social-placeholder h3{font-family:'Oswald',sans-serif;font-weight:600;font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;color:rgba(243,234,215,.9)}
 .show-social-placeholder p{font-size:13.5px;line-height:1.5;font-family:'Bitter',Georgia,serif}
@@ -591,7 +614,7 @@ body{
    water background, Alfa Slab One heading, Oswald labels, Bitter body). */
 .tx{margin:26px 0 4px}
 .tx-head{display:flex;align-items:baseline;gap:10px;margin-bottom:6px}
-.tx-head h3{font-family:'Alfa Slab One',serif;font-size:19px;color:var(--cream);margin:0}
+.tx-head h3{font-family:'Josefin Slab',Georgia,serif;font-weight:700;font-size:19px;color:var(--cream);margin:0}
 .tx-count{font-family:'Oswald',sans-serif;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(243,234,215,.7)}
 .tx-note{font-family:'Bitter',Georgia,serif;font-size:12.5px;line-height:1.5;color:rgba(243,234,215,.7);margin:0 0 12px}
 .tx-state{font-family:'Bitter',Georgia,serif;font-size:13.5px;line-height:1.5;color:rgba(243,234,215,.75);padding:2px 0 6px}
@@ -689,7 +712,7 @@ body{
 }
 .cmts{margin:26px 0 4px}
 .cmts-head{display:flex;align-items:baseline;gap:10px;margin-bottom:12px}
-.cmts-head h3{font-family:'Alfa Slab One',serif;font-size:19px;color:var(--cream);margin:0}
+.cmts-head h3{font-family:'Josefin Slab',Georgia,serif;font-weight:700;font-size:19px;color:var(--cream);margin:0}
 .cmts-count{font-family:'Oswald',sans-serif;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(243,234,215,.7)}
 .cmts-state{font-family:'Bitter',Georgia,serif;font-size:13.5px;line-height:1.5;color:rgba(243,234,215,.75);padding:2px 0 6px}
 .cmts-state.cmts-error{color:#ffd9c9}
@@ -1657,15 +1680,25 @@ function renderShowDetail(wrap, show, kind){
   listWrap.className = 'list list--b';
   listWrap.appendChild(card);
 
-  wrap.innerHTML = head;
-  wrap.appendChild(listWrap);
-  wrap.insertAdjacentHTML('beforeend', SHOW_SOCIAL_PLACEHOLDER);
+  // One flat grid container rather than nested column wrappers: the exchange
+  // has to sit between the actions and the placeholder on mobile but in a
+  // separate column on desktop, which nested columns cannot express.
+  const grid = document.createElement('div');
+  grid.className = 'show-grid';
+  grid.innerHTML = head;
+  grid.appendChild(listWrap);
+  wrap.innerHTML = '';
+  wrap.appendChild(grid);
   bindShowPageBack();
   const _slug = show._slug || show.slug || makeSlug(show);
+  // Appended in mobile reading order. mountExchange/mountComments each attach
+  // their host synchronously before their first await, so the resulting DOM
+  // order is deterministic even though both are async.
   // Spares are only meaningful before the show happens; a past show gets
   // comments (recaps) but no exchange.
-  if(kind === 'upcoming') mountExchange(wrap, _slug);
-  mountComments(wrap, _slug);
+  if(kind === 'upcoming') mountExchange(grid, _slug);
+  grid.insertAdjacentHTML('beforeend', SHOW_SOCIAL_PLACEHOLDER);
+  mountComments(grid, _slug);
 }
 
 
@@ -1804,7 +1837,7 @@ async function mountExchange(wrap, slug){
   const host = document.createElement('section');
   host.className = 'tx';
   host.setAttribute('aria-label','Ticket exchange');
-  host.innerHTML = '<div class="tx-head"><h3>☝️ Miracles</h3></div>'
+  host.innerHTML = '<div class="tx-head"><h3>Miracles ☝️</h3></div>'
     + '<div class="tx-state">Loading…</div>';
   wrap.appendChild(host);
 
@@ -1836,7 +1869,7 @@ async function renderExchange(host, slug){
     .order('created_at', { ascending: false });
 
   if(error){
-    host.innerHTML = '<div class="tx-head"><h3>☝️ Miracles</h3></div>'
+    host.innerHTML = '<div class="tx-head"><h3>Miracles ☝️</h3></div>'
       + '<div class="tx-state tx-error">Couldn’t load miracles. Reload to try again.</div>';
     console.warn('[exchange] load failed:', error.message);
     return;
@@ -1852,7 +1885,7 @@ async function renderExchange(host, slug){
     txLoadHandoffCounts(sb, rows)
   ]);
 
-  let html = '<div class="tx-head"><h3>☝️ Miracles</h3>'
+  let html = '<div class="tx-head"><h3>Miracles ☝️</h3>'
     + (rows.length ? '<span class="tx-count">' + total + ' available' + '</span>' : '')
     + '</div>'
     + '<p class="tx-note">Passed on at face value or free — never above. Arrange the handoff between yourselves.</p>';
