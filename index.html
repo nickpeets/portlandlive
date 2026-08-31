@@ -41,8 +41,23 @@ body{
 
 .mural-hero{display:block}
 .mural-hero-panel{
-  position:relative;height:150px;overflow:hidden;
+  /* aspect-ratio matches mural.png's real 1963x486 proportions, so the
+     panel is always exactly tall enough for the full image at any width --
+     no vertical crop, ever, instead of a fixed height that only worked by
+     coincidence at one width. Confirmed: 96.55px at 390px, 316.90px at
+     1280px, crossover at 605.86px (150 * 1963/486). */
+  position:relative;aspect-ratio:1963/486;overflow:hidden;
   background:#6E9C8A url('/mural.png') center/cover no-repeat;
+}
+@media(max-width:605px){
+  /* Below the exact crossover, the ratio would make the panel shorter than
+     150px, which changes mobile's proportions even though mobile wasn't
+     the original complaint -- at 390px it goes from a 150px-tall crop
+     (losing left/right edges) to a 96.5px letterbox (losing nothing, but
+     shrinking the art and crowding "STARTS HERE" against the treeline).
+     Revert to the original fixed height below the crossover; above it the
+     aspect-ratio already yields >=150px on its own, so this is inert. */
+  .mural-hero-panel{aspect-ratio:auto;height:150px}
 }
 .mural-hero-collapse{
   position:absolute;top:10px;right:10px;width:26px;height:26px;z-index:2;
