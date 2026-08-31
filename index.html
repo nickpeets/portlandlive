@@ -648,6 +648,20 @@ body{
 .tx-send:hover:not(:disabled){background:var(--rust-deep)}
 .tx-send:disabled{opacity:.55;cursor:default}
 .tx-thread-state{font-family:'Bitter',Georgia,serif;font-size:13px;color:#7c6a55;margin:0 0 8px}
+/* Handoff + reputation (Stage 5). The badge is a COUNT, never a rating: one
+   integer, no stars-out-of-five, no review text, nothing to dispute. The star
+   glyph is decoration on a number, not a score. */
+.tx-badge{display:inline-flex;align-items:center;gap:3px;margin-right:6px;font-family:'Oswald',sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.05em;color:var(--forest);background:rgba(61,87,74,.13);border-radius:999px;padding:2px 7px}
+.tx-badge-star{font-size:9.5px;line-height:1}
+/* An explicit display on the class beats the UA's [hidden]{display:none},
+   so a zero-count badge would otherwise render as a literal "0". */
+.tx-badge[hidden]{display:none}
+.tx-handoff{display:inline-block;border:0;cursor:pointer;font-family:'Oswald',sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#fff;background:var(--rust);border-radius:999px;padding:7px 14px;margin:0 0 8px}
+.tx-handoff:hover:not(:disabled){background:var(--rust-deep)}
+.tx-handoff:disabled{opacity:.55;cursor:default}
+.tx-handoff-state{display:flex;align-items:center;gap:5px;font-family:'Oswald',sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--forest);margin:0 0 8px}
+.tx-handoff-err{font-family:'Bitter',Georgia,serif;font-size:12.5px;color:var(--rust-deep);margin:0 0 8px}
+.tx-pick-done{margin-left:6px;font-family:'Oswald',sans-serif;font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--forest)}
 @media (max-width:600px){
   .tx-actions{margin-left:0;width:100%}
   .tx-head h3{font-size:17px}
@@ -656,6 +670,7 @@ body{
   .tx-signin{flex-direction:column;align-items:flex-start}
   .tx-signin-btn{margin-left:0}
   .tx-cancel{margin-left:0}
+  .tx-handoff{width:100%}
 }
 .cmts{margin:26px 0 4px}
 .cmts-head{display:flex;align-items:baseline;gap:10px;margin-bottom:12px}
@@ -1661,10 +1676,69 @@ const TX_MSG_MAX = 1000;
 // post. RLS already limits this to threads they participate in, so "every
 // thread I can see for this post" is exactly the right query.
 const TX_THREADS = { byPost: {}, names: {} };
+// Handoff counts for the posters visible on this page, keyed by user id.
+// Filled by one RPC per render -- see txLoadHandoffCounts.
+const TX_HANDOFF = { counts: {} };
 
 function txClient(){ return window.__plAuth || null; }
 
 function txPriceLabel(t){ return t === 'free' ? 'Free' : 'At face value'; }
+
+// ===== HANDOFF COUNTS / REPUTATION BADGE (Fork Stage 5) =====
+// The whole reputation surface is one integer per poster: how many trade
+// threads they have marked handed off. Not a rating -- there is no score to
+// argue with, no text to moderate, and nothing a bad actor can write about
+// someone else. It is a self-report, which is what makes it cheap; the design
+// treats it as a plain count, exactly like the comment and spare counts.
+//
+// ticket_threads is unreadable to anyone outside a thread, so this number
+// cannot be computed client-side. public.handoff_count(uuid) is a SECURITY
+// DEFINER function returning a bare integer -- same shape and reasoning as
+// Stage 1's display_name_available -- and handoff_counts(uuid[]) is its
+// batched form, so a show page listing ten posters costs one request rather
+// than ten. See supabase/schema-handoff.sql.
+async function txLoadHandoffCounts(sb, posts){
+  // Same generation guard as txLoadThreads: two renderExchange runs overlap
+  // routinely (mountExchange starts one, onAuthStateChange's INITIAL_SESSION
+  // starts another), so a stale run must not publish over a newer one.
+  const gen = (TX_HANDOFF._gen = (TX_HANDOFF._gen || 0) + 1);
+  const ids = [];
+  posts.forEach(function(p){ if(p.user_id && ids.indexOf(p.user_id) === -1) ids.push(p.user_id); });
+  if(!ids.length){
+    if(gen === TX_HANDOFF._gen) TX_HANDOFF.counts = {};
+    return;
+  }
+  const { data, error } = await sb.rpc('handoff_counts', { target_user_ids: ids });
+  if(gen !== TX_HANDOFF._gen) return;
+  if(error){ console.warn('[handoff] count load failed:', error.message); return; }
+  const counts = {};
+  (data || []).forEach(function(r){ counts[r.user_id] = r.handoff_count; });
+  TX_HANDOFF.counts = counts;
+}
+
+// Rendered even at zero (hidden), so a later handoff can reveal it in place
+// without re-rendering the whole list. Zero is shown as no badge rather than
+// as "0": a new poster should read as unproven, not as badly rated.
+function txBadge(userId){
+  if(!userId) return '';
+  const n = TX_HANDOFF.counts[userId] || 0;
+  return '<span class="tx-badge" data-tx-badge-for="' + esc(userId) + '"'
+    + (n ? ' title="' + n + (n === 1 ? ' ticket handed off' : ' tickets handed off') + '"' : ' hidden')
+    + '><span class="tx-badge-star" aria-hidden="true">\u2605</span>'
+    + '<span class="sr-only">Handed off </span>'
+    + '<span data-tx-badge-n>' + n + '</span></span>';
+}
+
+function txSyncBadges(host, userId){
+  const n = TX_HANDOFF.counts[userId] || 0;
+  const nodes = host.querySelectorAll('[data-tx-badge-for="' + userId + '"]');
+  for(let i = 0; i < nodes.length; i++){
+    const num = nodes[i].querySelector('[data-tx-badge-n]');
+    if(num) num.textContent = n;
+    nodes[i].hidden = !n;
+    if(n) nodes[i].setAttribute('title', n + (n === 1 ? ' ticket handed off' : ' tickets handed off'));
+  }
+}
 
 // The poster does not get a "Message" button on their own post -- there is
 // nobody to message -- but they still need to see and answer people who
@@ -1694,6 +1768,7 @@ function txRow(p, myUserId){
     + '<span class="tx-qty" aria-hidden="true">' + qty + '</span>'
     + '<span class="tx-post-main">'
       + '<span class="tx-post-line">'
+        + txBadge(p.user_id)
         + '<span class="tx-who">' + esc(p.display_name || 'Someone') + '</span>'
         + ' has ' + qty + (qty === 1 ? ' spare' : ' spares')
       + '</span>'
@@ -1756,7 +1831,11 @@ async function renderExchange(host, slug){
   const total = rows.reduce(function(n,p){ return n + (parseInt(p.quantity,10)||0); }, 0);
 
   TX_THREADS._posts = rows;
-  await txLoadThreads(sb, rows, myUserId);
+  // Independent of each other, so one round trip's latency, not two.
+  await Promise.all([
+    txLoadThreads(sb, rows, myUserId),
+    txLoadHandoffCounts(sb, rows)
+  ]);
 
   let html = '<div class="tx-head"><h3>Spare tickets</h3>'
     + (rows.length ? '<span class="tx-count">' + total + (total===1?' spare':' spares') + '</span>' : '')
@@ -1864,6 +1943,44 @@ function bindExchange(host, slug){
       await txOpenThread(host, slug, pick.getAttribute('data-tx-post'), uid, pick.getAttribute('data-tx-pick'));
       return;
     }
+    const hand = e.target.closest('[data-tx-handoff]');
+    if(hand){
+      e.preventDefault();
+      hand.disabled = true;
+      const threadId = hand.getAttribute('data-tx-handoff');
+      const postId = hand.getAttribute('data-tx-post');
+      const panel = host.querySelector('[data-tx-thread-for="'+postId+'"]');
+      // The timestamp sent here is ignored: the BEFORE UPDATE trigger assigns
+      // handed_off_at := now() server-side without inspecting what arrived. It
+      // is sent only because an update needs a payload to build a SET clause.
+      const { data, error } = await sb.from('ticket_threads')
+        .update({ handed_off_at: new Date().toISOString() })
+        .eq('id', threadId)
+        .select('id,ticket_post_id,poster_id,requester_id,created_at,handed_off_at');
+      // A row the RLS policy refuses is not an error -- Postgres reports it as
+      // zero rows updated, which supabase-js surfaces as success with an empty
+      // array. Treat "no row came back" as failure, or the UI would claim a
+      // handoff that never happened.
+      const row = (data || [])[0];
+      if(error || !row){
+        hand.disabled = false;
+        if(panel && !panel.querySelector('.tx-handoff-err')){
+          hand.insertAdjacentHTML('beforebegin',
+            '<p class="tx-handoff-err">Couldn\u2019t mark that handed off. Try again.</p>');
+        }
+        console.warn('[handoff] mark failed:', error ? error.message : 'no row updated');
+        return;
+      }
+      // Only the poster can reach a successful update, so row.poster_id is the
+      // current user by construction.
+      const list = TX_THREADS.byPost[postId] || [];
+      const t = list.find(function(x){ return x.id === threadId; }) || row;
+      t.handed_off_at = row.handed_off_at;
+      TX_HANDOFF.counts[row.poster_id] = (TX_HANDOFF.counts[row.poster_id] || 0) + 1;
+      txSyncBadges(host, row.poster_id);
+      if(panel) await txRenderThread(panel, t, postId, row.poster_id, slug, host);
+      return;
+    }
     const close = e.target.closest('[data-tx-close]');
     if(close){
       e.preventDefault();
@@ -1923,7 +2040,7 @@ async function txLoadThreads(sb, posts, myUserId){
   const ids = posts.map(function(p){ return p.id; });
   const { data, error } = await sb
     .from('ticket_threads')
-    .select('id,ticket_post_id,poster_id,requester_id,created_at')
+    .select('id,ticket_post_id,poster_id,requester_id,created_at,handed_off_at')
     .in('ticket_post_id', ids);
   if(gen !== TX_THREADS._gen) return;            // a newer load already owns this
   if(error){ console.warn('[messaging] thread load failed:', error.message); return; }
@@ -1987,8 +2104,12 @@ async function txOpenThread(host, slug, postId, myUserId, forceThreadId){
       + '<button type="button" class="tx-thread-close" data-tx-close="'+esc(postId)+'">Close</button>'
       + '</div>'
       + '<ul class="tx-picker">' + threads.map(function(t){
+          // Marking is per thread, so a quantity-3 post can be partly done.
+          // The picker says which, rather than making the poster open each one.
           return '<li><button type="button" data-tx-pick="'+esc(t.id)+'" data-tx-post="'+esc(postId)+'">'
-            + esc(txOtherName(t, myUserId)) + '</button></li>';
+            + esc(txOtherName(t, myUserId))
+            + (t.handed_off_at ? '<span class="tx-pick-done">\u2713 Handed off</span>' : '')
+            + '</button></li>';
         }).join('') + '</ul>';
     return;
   }
@@ -2002,10 +2123,10 @@ async function txOpenThread(host, slug, postId, myUserId, forceThreadId){
   // clicks race, the duplicate error is handled by re-reading.
   if(!thread && !isMine){
     panel.innerHTML = '<p class="tx-thread-state">Starting conversation…</p>';
-    const ins = await sb.from('ticket_threads').insert({ ticket_post_id: postId }).select('id,ticket_post_id,poster_id,requester_id,created_at');
+    const ins = await sb.from('ticket_threads').insert({ ticket_post_id: postId }).select('id,ticket_post_id,poster_id,requester_id,created_at,handed_off_at');
     if(ins.error){
       const again = await sb.from('ticket_threads')
-        .select('id,ticket_post_id,poster_id,requester_id,created_at')
+        .select('id,ticket_post_id,poster_id,requester_id,created_at,handed_off_at')
         .eq('ticket_post_id', postId);
       if(again.error || !(again.data||[]).length){
         panel.innerHTML = '<p class="tx-thread-state">Couldn’t start that conversation. Try again.</p>';
@@ -2046,6 +2167,22 @@ async function txRenderThread(panel, thread, postId, myUserId, slug, host){
     inner += msgs.length
       ? '<ul class="tx-msgs">' + msgs.map(function(m){ return txMsgRow(m, myUserId, nameFor); }).join('') + '</ul>'
       : '<p class="tx-thread-state">No messages yet. Say hello.</p>';
+  }
+
+  // Handoff (Stage 5). Only the poster can mark, and only once. The requester
+  // sees the outcome but has no control over it and no confirmation step --
+  // this is a self-report, not a two-party handshake. There is deliberately no
+  // undo affordance, because the database has no way back either: the BEFORE
+  // UPDATE trigger refuses any second write to handed_off_at.
+  const isPoster = thread.poster_id === myUserId;
+  if(thread.handed_off_at){
+    inner += '<p class="tx-handoff-state">'
+      + '<span aria-hidden="true">\u2713</span>'
+      + (isPoster ? 'Handed off' : 'Marked handed off')
+      + '</p>';
+  } else if(isPoster){
+    inner += '<button type="button" class="tx-handoff" data-tx-handoff="'+esc(thread.id)+'" '
+      + 'data-tx-post="'+esc(postId)+'">Mark as handed off</button>';
   }
 
   inner += '<form class="tx-reply" data-tx-reply="'+esc(thread.id)+'" data-tx-post="'+esc(postId)+'">'
