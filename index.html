@@ -1902,17 +1902,42 @@ function bindExchange(host, slug){
 // participant-scoped SELECT policy: a poster has no other way to learn who
 // messaged them, since ticket_messages stores only sender_id.
 async function txLoadThreads(sb, posts, myUserId){
-  TX_THREADS.byPost = {};
-  if(!myUserId || !posts.length) return;
+  // Build into a LOCAL map and publish it in one assignment at the end.
+  //
+  // This used to clear TX_THREADS.byPost, await the query, then push into it.
+  // Two renderExchange runs overlap routinely -- mountExchange kicks off the
+  // first, and supabase-js fires onAuthStateChange with INITIAL_SESSION right
+  // after subscribe, which starts a second while the first is still awaiting.
+  // Both cleared, both awaited, then both pushed into the same shared object,
+  // so a single real thread was appended twice. That is one bug with two
+  // faces: the picker listed the same person twice AND "N people messaged
+  // you" counted 2, because the count is just this array's length.
+  //
+  // Nothing here mutates shared state across an await any more, and a stale
+  // run cannot publish over a newer one's result.
+  const gen = (TX_THREADS._gen = (TX_THREADS._gen || 0) + 1);
+  if(!myUserId || !posts.length){
+    if(gen === TX_THREADS._gen) TX_THREADS.byPost = {};
+    return;
+  }
   const ids = posts.map(function(p){ return p.id; });
   const { data, error } = await sb
     .from('ticket_threads')
     .select('id,ticket_post_id,poster_id,requester_id,created_at')
     .in('ticket_post_id', ids);
+  if(gen !== TX_THREADS._gen) return;            // a newer load already owns this
   if(error){ console.warn('[messaging] thread load failed:', error.message); return; }
+
+  const byPost = {};
+  const seen = {};
   (data || []).forEach(function(t){
-    (TX_THREADS.byPost[t.ticket_post_id] = TX_THREADS.byPost[t.ticket_post_id] || []).push(t);
+    // Keyed by thread id, so two genuinely different threads both survive and
+    // only a repeat of the same row is dropped.
+    if(seen[t.id]) return;
+    seen[t.id] = true;
+    (byPost[t.ticket_post_id] = byPost[t.ticket_post_id] || []).push(t);
   });
+  TX_THREADS.byPost = byPost;
 
   // Resolve the counterpart names in one query.
   const others = [];
@@ -1922,6 +1947,7 @@ async function txLoadThreads(sb, posts, myUserId){
   });
   if(!others.length) return;
   const res = await sb.from('profiles').select('id,display_name').in('id', others);
+  if(gen !== TX_THREADS._gen) return;
   if(res.error){ console.warn('[messaging] name load failed:', res.error.message); return; }
   (res.data || []).forEach(function(r){ TX_THREADS.names[r.id] = r.display_name; });
 }
