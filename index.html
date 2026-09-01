@@ -389,6 +389,10 @@ body{
   font-family:'Oswald';font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;
   color:rgba(243,234,215,.72);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;
 }
+/* The statusbar text ("N shows found" / "Upcoming show" / "Past show") is
+   hidden on every view. #resultCount is still written to from ~9 code paths,
+   so the element and that JS stay put; only the container is hidden. */
+.statusbar{display:none}
 
 /* footer */
 .foot-bar{
@@ -599,6 +603,9 @@ body{
 @media (min-width:900px){
   .show-grid{display:grid;grid-template-columns:1fr 300px;gap:28px;align-items:start}
   .show-grid > .venue-header{grid-column:1;grid-row:1}
+  /* With the back-link gone the title is the first element in column 1;
+     drop its 6px top margin so its top edge matches .tx-head h3 in column 2. */
+  .show-grid > .venue-header .venue-name{margin-top:0}
   .show-grid > .list{grid-column:1;grid-row:2}
   .show-grid > .show-social-placeholder{grid-column:1;grid-row:3}
   .show-grid > .cmts{grid-column:1;grid-row:4}
@@ -1620,14 +1627,6 @@ async function router(){
   if(location.hash) setTimeout(wiDeepLink, 60);
 }
 
-function showPageBackLink(){
-  return '<a class="back-link" id="backToFeed" href="#">← All shows</a>';
-}
-function bindShowPageBack(){
-  var b = document.getElementById('backToFeed');
-  if(b) b.addEventListener('click', function(e){ e.preventDefault(); location.hash=''; });
-}
-
 async function renderShowRoute(slug){
   var wrap = $('#results');
   wrap.innerHTML = '';
@@ -1648,9 +1647,7 @@ async function renderShowRoute(slug){
 
 function renderShowNotFound(wrap, slug){
   $('#resultCount').textContent = 'Not found';
-  wrap.innerHTML = showPageBackLink()
-    + '<div class="empty"><h2>Show not found</h2><p>We couldn’t find a show at that link. It may be mistyped, or the show may not be in our listings.</p></div>';
-  bindShowPageBack();
+  wrap.innerHTML = '<div class="empty"><h2>Show not found</h2><p>We couldn’t find a show at that link. It may be mistyped, or the show may not be in our listings.</p></div>';
 }
 
 const SHOW_SOCIAL_PLACEHOLDER =
@@ -1663,7 +1660,6 @@ function renderShowDetail(wrap, show, kind){
   $('#resultCount').textContent = kind === 'past' ? 'Past show' : 'Upcoming show';
   var when = ordinalDate(show.date) + (show.time ? ' · ' + esc(show.time) : '');
   var head = '<div class="venue-header">'
-    + showPageBackLink()
     + '<h2 class="venue-name">' + esc(show.title||'') + '</h2>'
     + '<div class="venue-info">' + when + (show.venue ? ' · ' + esc(show.venue) : '')
       + (show.neighborhood ? ' · ' + esc(show.neighborhood) : '') + '</div>'
@@ -1704,7 +1700,6 @@ function renderShowDetail(wrap, show, kind){
   grid.appendChild(listWrap);
   wrap.innerHTML = '';
   wrap.appendChild(grid);
-  bindShowPageBack();
   const _slug = show._slug || show.slug || makeSlug(show);
   // Appended in mobile reading order. mountExchange/mountComments each attach
   // their host synchronously before their first await, so the resulting DOM
