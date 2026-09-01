@@ -101,7 +101,8 @@ body{
   max-width:920px;margin:0 auto;padding:0 28px;
   display:flex;align-items:center;justify-content:space-between;gap:14px;
 }
-.masthead-brand{display:flex;align-items:center;gap:10px}
+.masthead-brand{display:flex;align-items:center;gap:10px;cursor:pointer}
+.masthead-brand:hover{opacity:.85}
 .masthead-logo{
   display:grid;place-items:center;width:32px;height:32px;border-radius:999px;
   background:var(--cream);flex:0 0 auto;
@@ -3098,6 +3099,31 @@ function wiDeepLink(){
   setTimeout(function(){ el.classList.remove("wi-flash"); }, 2400);
 }
 window.addEventListener("hashchange", router);
+
+/* Brand click = "reset to default". Single reusable primitive: clears the
+   route, every view/filter flag, the search box and the toggle pills, then
+   re-renders the default feed at the top. The individual toggle handlers
+   still do their own partial resets inline; they are deliberately not
+   rewired to call this yet. */
+function goHome(){
+  location.hash = '';
+  state.view='shows'; state.selectedVenue=null;
+  state.tonight=false; state.thisWeek=false; state.picks=false; state.byHood=false;
+  state.myShows=false; state.comedy=false; state.following=false; state.q='';
+  $('#searchInput').value='';
+  ['tonightToggle','thisWeekToggle','picksToggle','venuesToggle',
+   'myShowsToggle','comedyToggle','followingToggle',
+   'byHoodToggle'].forEach(function(id){
+    document.getElementById(id).classList.remove('on');
+  });
+  // #browseSelect needs no explicit reset: render() re-derives it from the
+  // venuesToggle/comedyToggle classes we just cleared (see top of render()).
+  render();
+  // html{scroll-behavior:smooth} makes a plain scrollTo(0,0) a no-op here,
+  // so the jump to top is forced instant.
+  window.scrollTo({top:0,behavior:'instant'});
+}
+$('.masthead-brand').addEventListener('click', goHome);
 
 load();
 </script>
