@@ -91,7 +91,15 @@ body{
 .masthead{
   position:relative;
   background:var(--water) url('/water_bg.png') center/auto repeat;
-  padding:14px 60px 10px 20px;
+  /* Horizontal insets now live on .masthead-inner, so the brand and the
+     utility land on the same box as .controls-inner / .results-inner. */
+  padding:14px 0 10px;
+}
+/* Same box model as .controls-inner and .results-inner, so the logo's left
+   edge and the menu pill's right edge sit exactly on the search bar's edges. */
+.masthead-inner{
+  max-width:920px;margin:0 auto;padding:0 28px;
+  display:flex;align-items:center;justify-content:space-between;gap:14px;
 }
 .masthead-brand{display:flex;align-items:center;gap:10px}
 .masthead-logo{
@@ -104,7 +112,10 @@ body{
   letter-spacing:.05em;text-transform:uppercase;color:var(--cream);white-space:nowrap;
 }
 @media(max-width:600px){
-  .masthead{padding:12px 52px 10px 16px}
+  /* The 16px inset the old .masthead padding carried, moved onto the inner
+     box so it still matches .controls-inner's mobile padding. */
+  .masthead{padding:12px 0 10px}
+  .masthead-inner{padding:0 16px}
   .masthead-word{font-size:17px}
 }
 
@@ -195,7 +206,7 @@ body{
 .pill-narrow:has(.toggle.on){background:rgba(255,255,255,.24);border-color:var(--cream)}
 .browse-pill{display:none}
 
-.search-pill{flex:0 1 764px;min-width:220px;background:rgba(255,255,255,.14)}
+.search-pill{flex:1 1 auto;min-width:220px;background:rgba(255,255,255,.14)}
 .search-pill input{flex:1;width:100%}
 
 
@@ -773,6 +784,11 @@ body{
   </div>
 
   <div class="masthead" id="masthead">
+    <div class="masthead-inner">
+      <div class="masthead-brand">
+        <span class="masthead-logo"><img src="/logo_trans.png" alt=""></span>
+        <span class="masthead-word">PortlandLive</span>
+      </div>
       <div class="header-utility" id="headerUtility">
         <!-- Unified menu (Aug 23 doc): one trigger, one dropdown, replacing the
              separate quick-menu + sign-in-gated account menu from the previous
@@ -818,10 +834,7 @@ body{
           </div>
         </div>
       </div>
-      <div class="masthead-brand">
-        <span class="masthead-logo"><img src="/logo_trans.png" alt=""></span>
-        <span class="masthead-word">PortlandLive</span>
-      </div>
+    </div>
   </div>
 </header>
 
@@ -3103,7 +3116,13 @@ load();
 /* One trigger now (was quick-menu + a separate sign-in-gated auth menu),
    so the top-left/top-right mobile split from the previous pass is gone —
    checked, not assumed: see the mobile screenshots in this pass's report. */
-.header-utility{position:absolute;top:50%;transform:translateY(-50%);right:16px;z-index:20}
+/* Was position:absolute;top:50%;translateY(-50%);right:16px -- a manual
+   vertical centring against .masthead, needed when there was no container
+   to sit in. It is now a flex item of .masthead-inner, so align-items:center
+   centres it against the brand for free and right:16px is replaced by the
+   inner box's own 28px inset. position:relative is kept only so the
+   dropdown's z-index still stacks above .controls (z-index:6). */
+.header-utility{position:relative;z-index:20}
 .quick-menu{position:relative}
 .quick-menu-btn svg{width:15px;height:15px}
 .quick-menu-caret{font-size:11px}
