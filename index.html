@@ -250,8 +250,6 @@ body{
 .venue-header{margin-bottom:18px}
 .venue-header .venue-name{font-family:'Alfa Slab One',serif;font-weight:400;font-size:26px;color:var(--cream);margin:6px 0 4px}
 .venue-header .venue-info{color:var(--cream);opacity:.85;font-size:14px}
-.back-link{display:inline-block;color:var(--rust);text-decoration:none;font-weight:600;font-size:14px;cursor:pointer}
-.back-link:hover{text-decoration:underline}
 
 /* GRID */
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
@@ -1353,7 +1351,42 @@ function auditPanelHtml(){
         wrap.appendChild(h);
       }
     }
+/* The filter pills' lit state is DERIVED from the filter flags, never hand-
+   maintained: render() re-syncs them on every feed render, so a pill is lit if
+   and only if its flag is set. renderShowRoute() clears them while a show page
+   owns #results WITHOUT touching the flags, so browser-back lands on the
+   filtered feed with its pill lit again. */
+var TOGGLE_PILL_IDS = ['tonightToggle','thisWeekToggle','picksToggle','venuesToggle',
+                       'myShowsToggle','comedyToggle','followingToggle','byHoodToggle'];
+function clearTogglePills(){
+  TOGGLE_PILL_IDS.forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.classList.remove('on');
+  });
+}
+function syncTogglePills(){
+  var on = {
+    tonightToggle:   state.tonight,
+    thisWeekToggle:  state.thisWeek,
+    picksToggle:     state.picks,
+    venuesToggle:    state.view === 'venues',
+    myShowsToggle:   state.myShows,
+    comedyToggle:    state.comedy,
+    followingToggle: state.following,
+    byHoodToggle:    state.byHood
+  };
+  TOGGLE_PILL_IDS.forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.classList.toggle('on', !!on[id]);
+  });
+}
 function render(){
+  // A permanent show page owns #results while the URL points at one; route away
+  // instead of racing it (e.g. a filter-pill click while viewing a show page).
+  if(parseRoute().type === 'show'){ if(location.hash){ location.hash = ''; } return; }
+  // Pill visuals are derived, not hand-managed. This sits AFTER the show-page
+  // bail above so it never re-lights a pill that renderShowRoute() cleared.
+  syncTogglePills();
   // Keep the mobile Browse dropdown matched to whichever of
   // Venues/Comedy is actually on, however it got there (pill click, Reset, etc).
   const _browseSel = document.getElementById('browseSelect');
@@ -1362,9 +1395,6 @@ function render(){
     const _comedyOn = document.getElementById('comedyToggle').classList.contains('on');
     _browseSel.value = _venuesOn ? 'venues' : _comedyOn ? 'comedy' : '';
   }
-  // A permanent show page owns #results while the URL points at one; route away
-  // instead of racing it (e.g. a filter-pill click while viewing a show page).
-  if(parseRoute().type === 'show'){ if(location.hash){ location.hash = ''; } return; }
   if(state.myShows){ renderFavorites(); return; }
   if(state.view === "venues"){ renderVenues(); return; }
   const list = filtered();
@@ -1475,11 +1505,9 @@ function renderVenues(){
     $('#resultCount').textContent = vshows.length ? `${vshows.length} show${vshows.length>1?'s':''} found` : "No results";
     const head = document.createElement('div');
     head.className = 'venue-header';
-    head.innerHTML = `<a class="back-link" id="backToVenues" href="#">\u2190 All shows</a>`
-      + `<h2 class="venue-name">${esc(state.selectedVenue)}${heartFav(venueFavKey(state.selectedVenue), state.selectedVenue, 'venue')}</h2>`
+    head.innerHTML = `<h2 class="venue-name">${esc(state.selectedVenue)}${heartFav(venueFavKey(state.selectedVenue), state.selectedVenue, 'venue')}</h2>`
       + `<div class="venue-info">${esc(first.neighborhood||'')}${first.address?' \u00b7 '+esc(first.address):''}</div>`;
     wrap.appendChild(head);
-    $('#backToVenues').addEventListener('click',(e)=>{e.preventDefault();state.selectedVenue=null;state.view='shows';$('#venuesToggle').classList.remove('on');render();});
     if(vshows.length){
       wrap.appendChild(listOf(vshows, true));
     } else {
@@ -1631,6 +1659,10 @@ async function renderShowRoute(slug){
   var wrap = $('#results');
   wrap.innerHTML = '';
   $('#resultCount').textContent = '';
+  // A show page is not the feed, so no filter pill should look pressed while
+  // it is up. Visual only: the flags stay set, so browser-back restores the
+  // filtered feed AND its lit pill via syncTogglePills() in render().
+  clearTogglePills();
   var show = state.shows.find(function(s){ return s._slug === slug; });
   var kind = 'upcoming';
   if(!show){
@@ -2860,15 +2892,15 @@ $('#byHoodToggle').addEventListener('click',()=>{state.byHood=!state.byHood;$('#
             state.tonight=false;$('#tonightToggle').classList.remove('on');
             state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');
             state.myShows=false;$('#myShowsToggle').classList.remove('on');
-            state.view='shows';state.selectedVenue=null;
+            state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');
             state.following=false;$('#followingToggle').classList.remove('on');
           }
           render();
         });
       function openVenue(name){ state.view='venues'; state.selectedVenue=name; state.q='';$('#searchInput').value='';  render(); document.querySelector('.controls').scrollIntoView({block:'start',behavior:'instant'}); }
       $('#results').addEventListener('click',e=>{const _del=e.target.closest('.stub-del'); if(_del){ e.preventDefault(); e.stopPropagation(); const id=_del.getAttribute('data-stubdel'); const kept=loadStubs().filter(s=>stubIdOf(s)!==id); saveStubs(kept); flashStub('Removed from your shelf'); reRenderCurrentView(); return; } const _iwt=e.target.closest('.iwt-btn'); if(_iwt){ e.preventDefault(); e.stopPropagation(); if(!_iwt.disabled){ const g=n=>_iwt.getAttribute('data-iwt-'+n)||''; const snap={title:g('title'),venue:g('venue'),neighborhood:g('neighborhood'),address:g('address'),date:g('date'),time:g('time')}; const r=mintStub(snap); if(r.ok){ flashStub('Stub added to your shelf \u2014 '+(snap.title||'show')); } else { flashStub('Already on your shelf'); } reRenderCurrentView(); } return; } const vlink=e.target.closest('[data-venue]');if(vlink){e.preventDefault();e.stopPropagation();openVenue(vlink.getAttribute('data-venue'));return;}const h=e.target.closest('.heart');if(h){e.preventDefault();e.stopPropagation();toggleFavKey(h.getAttribute('data-fav'));reRenderCurrentView();return;} const _interactive=e.target.closest('a, button'); if(_interactive) return; const _card=e.target.closest('.scard'); if(_card && _card.dataset.slug){ location.hash = '#/show/' + encodeURIComponent(_card.dataset.slug); }});
-$('#tonightToggle').addEventListener('click',()=>{state.picks=false;$('#picksToggle').classList.remove('on');state.tonight=!state.tonight;if(state.tonight){state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');}$('#tonightToggle').classList.toggle('on',state.tonight);render();});
-$('#thisWeekToggle').addEventListener('click',()=>{state.picks=false;$('#picksToggle').classList.remove('on');state.thisWeek=!state.thisWeek;if(state.thisWeek){state.tonight=false;$('#tonightToggle').classList.remove('on');}$('#thisWeekToggle').classList.toggle('on',state.thisWeek);render();});
+$('#tonightToggle').addEventListener('click',()=>{state.picks=false;$('#picksToggle').classList.remove('on');state.tonight=!state.tonight;if(state.tonight){state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');}$('#tonightToggle').classList.toggle('on',state.tonight);render();});
+$('#thisWeekToggle').addEventListener('click',()=>{state.picks=false;$('#picksToggle').classList.remove('on');state.thisWeek=!state.thisWeek;if(state.thisWeek){state.tonight=false;$('#tonightToggle').classList.remove('on');state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');}$('#thisWeekToggle').classList.toggle('on',state.thisWeek);render();});
 /* Audit (dev) toggle retired from the UI; audit view still reachable via ?audit=1 for dev. */
 $('#comedyToggle').addEventListener('click',()=>{state.comedy=!state.comedy;if(state.comedy){state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');state.myShows=false;$('#myShowsToggle').classList.remove('on');state.following=false;$('#followingToggle').classList.remove('on');}$('#comedyToggle').classList.toggle('on',state.comedy);render();});
 // FOLLOWING FILTER toggle: hide-style filter that collapses the feed to hearted
@@ -3106,11 +3138,7 @@ function goHome(){
   state.tonight=false; state.thisWeek=false; state.picks=false; state.byHood=false;
   state.myShows=false; state.comedy=false; state.following=false; state.q='';
   $('#searchInput').value='';
-  ['tonightToggle','thisWeekToggle','picksToggle','venuesToggle',
-   'myShowsToggle','comedyToggle','followingToggle',
-   'byHoodToggle'].forEach(function(id){
-    document.getElementById(id).classList.remove('on');
-  });
+  clearTogglePills();
   // #browseSelect needs no explicit reset: render() re-derives it from the
   // venuesToggle/comedyToggle classes we just cleared (see top of render()).
   render();
