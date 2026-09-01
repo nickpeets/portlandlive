@@ -620,6 +620,7 @@ body{
 .tx-state{font-family:'Bitter',Georgia,serif;font-size:13.5px;line-height:1.5;color:rgba(243,234,215,.75);padding:2px 0 6px}
 .tx-state.tx-error{color:#ffd9c9}
 .tx-list{list-style:none;margin:0 0 14px;padding:0;display:flex;flex-direction:column;gap:10px}
+.tx-post-done{opacity:.72}
 .tx-post{background:var(--cream);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;box-shadow:0 6px 14px rgba(20,40,30,.14)}
 .tx-qty{font-family:'Alfa Slab One',serif;font-size:20px;line-height:1;color:var(--forest);min-width:22px}
 .tx-post-main{display:flex;flex-direction:column;gap:2px;min-width:0}
@@ -1727,6 +1728,9 @@ const TX_THREADS = { byPost: {}, names: {} };
 // Handoff counts for the posters visible on this page, keyed by user id.
 // Filled by one RPC per render -- see txLoadHandoffCounts.
 const TX_HANDOFF = { counts: {} };
+// Per-POST handed-off counts (distinct from TX_HANDOFF, which is per-poster).
+// Drives whether a post still belongs in the listing.
+const TX_POST_HANDOFF = { byPost: {} };
 
 function txClient(){ return window.__plAuth || null; }
 
@@ -1745,6 +1749,58 @@ function txPriceLabel(t){ return t === 'free' ? 'Free' : 'At face value'; }
 // Stage 1's display_name_available -- and handoff_counts(uuid[]) is its
 // batched form, so a show page listing ten posters costs one request rather
 // than ten. See supabase/schema-handoff.sql.
+// How many of each POST's spares have been handed off. One call for the whole
+// page, not one per post. Same generation guard as the other two loaders.
+async function txLoadPostHandoffs(sb, posts){
+  const gen = (TX_POST_HANDOFF._gen = (TX_POST_HANDOFF._gen || 0) + 1);
+  const ids = posts.map(function(p){ return p.id; });
+  if(!ids.length){
+    if(gen === TX_POST_HANDOFF._gen) TX_POST_HANDOFF.byPost = {};
+    return;
+  }
+  const { data, error } = await sb.rpc('handoff_counts_for_posts', { post_ids: ids });
+  if(gen !== TX_POST_HANDOFF._gen) return;
+  if(error){
+    // Fail open: with no counts, nothing is filtered out. A post that should
+    // have disappeared lingering is a far smaller problem than the whole
+    // section emptying because one RPC failed.
+    console.warn('[handoff] per-post count load failed:', error.message);
+    TX_POST_HANDOFF.byPost = {};
+    return;
+  }
+  const byPost = {};
+  (data || []).forEach(function(r){ byPost[r.ticket_post_id] = r.handed_off; });
+  TX_POST_HANDOFF.byPost = byPost;
+}
+
+function txHandedOff(p){ return TX_POST_HANDOFF.byPost[p.id] || 0; }
+function txRemaining(p){
+  return Math.max(0, (parseInt(p.quantity,10) || 0) - txHandedOff(p));
+}
+
+// A post leaves the listing once every spare on it is handed off -- but only
+// for people with no stake in it.
+//
+// The poster keeps seeing their own posts so "N people messaged you" and the
+// thread picker stay reachable. Anyone with an existing thread keeps seeing it
+// too, and that clause is load-bearing: Stage 4 never built an inbox, so the
+// post IS the only route to a live conversation. Without it, a requester
+// mid-handoff loses the thread the moment the last spare is claimed.
+//
+// The stake is a real thread, not a page view: TX_THREADS.byPost is fetched
+// fresh each render and RLS already limits it to threads the viewer
+// participates in, so merely having loaded this page before grants nothing.
+//
+// This is listing curation, not a security boundary. ticket_posts is public;
+// a fully handed-off post is still readable by anyone querying the API
+// directly. Nothing secret is being hidden -- the listing just stops
+// advertising spares that are gone.
+function txPostVisible(p, myUserId){
+  if(txRemaining(p) > 0) return true;
+  if(myUserId && p.user_id === myUserId) return true;
+  return (TX_THREADS.byPost[p.id] || []).length > 0;
+}
+
 async function txLoadHandoffCounts(sb, posts){
   // Same generation guard as txLoadThreads: two renderExchange runs overlap
   // routinely (mountExchange starts one, onAuthStateChange's INITIAL_SESSION
@@ -1812,13 +1868,26 @@ function txRow(p, myUserId){
   const mine = myUserId && p.user_id === myUserId;
   const qty = Math.max(1, Math.min(TX_MAX_QTY, parseInt(p.quantity,10) || 1));
   const free = p.price_type === 'free';
-  return '<li class="tx-post" data-tx-id="'+esc(p.id)+'">'
-    + '<span class="tx-qty" aria-hidden="true">' + qty + '</span>'
+  const handed = txHandedOff(p);
+  const left = txRemaining(p);
+  // Untouched posts read as before. Once any spare is claimed the line counts
+  // down, and a fully handed-off post -- which only its poster or someone
+  // already in a thread on it can still see -- says so outright.
+  let line;
+  if(handed === 0){
+    line = ' has ' + qty + (qty === 1 ? ' miracle' : ' miracles');
+  } else if(left > 0){
+    line = ' has ' + left + ' left';
+  } else {
+    line = ' — all ' + qty + ' handed off';
+  }
+  return '<li class="tx-post' + (left === 0 ? ' tx-post-done' : '') + '" data-tx-id="'+esc(p.id)+'">'
+    + '<span class="tx-qty" aria-hidden="true">' + (handed ? left : qty) + '</span>'
     + '<span class="tx-post-main">'
       + '<span class="tx-post-line">'
         + txBadge(p.user_id)
         + '<span class="tx-who">' + esc(p.display_name || 'Someone') + '</span>'
-        + ' has ' + qty + (qty === 1 ? ' miracle' : ' miracles')
+        + line
       + '</span>'
       + '<span class="tx-when">' + esc(cmtRelTime(p.created_at)) + '</span>'
     + '</span>'
@@ -1876,23 +1945,35 @@ async function renderExchange(host, slug){
   }
 
   const rows = data || [];
-  const total = rows.reduce(function(n,p){ return n + (parseInt(p.quantity,10)||0); }, 0);
 
   TX_THREADS._posts = rows;
   // Independent of each other, so one round trip's latency, not two.
   await Promise.all([
     txLoadThreads(sb, rows, myUserId),
-    txLoadHandoffCounts(sb, rows)
+    txLoadHandoffCounts(sb, rows),
+    txLoadPostHandoffs(sb, rows)
   ]);
 
+  // Filtering happens after the loads, because visibility depends on both the
+  // per-post handoff counts and on whether this viewer has a thread.
+  const visible = rows.filter(function(p){ return txPostVisible(p, myUserId); });
+
+  const available = visible.reduce(function(n,p){ return n + txRemaining(p); }, 0);
+
   let html = '<div class="tx-head"><h3>Miracles ☝️</h3>'
-    + (rows.length ? '<span class="tx-count">' + total + ' available' + '</span>' : '')
+    + (visible.length ? '<span class="tx-count">' + available + ' available' + '</span>' : '')
     + '</div>'
     + '<p class="tx-note">Passed on at face value or free — never above. Arrange the handoff between yourselves.</p>';
 
-  html += rows.length
-    ? '<ul class="tx-list">' + rows.map(function(p){ return txRow(p, myUserId); }).join('') + '</ul>'
-    : '<div class="tx-state">No miracles posted for this show yet.</div>';
+  // Two different empty states, deliberately not the same sentence: one means
+  // nothing ever happened here, the other means everything did.
+  if(visible.length){
+    html += '<ul class="tx-list">' + visible.map(function(p){ return txRow(p, myUserId); }).join('') + '</ul>';
+  } else if(rows.length){
+    html += '<div class="tx-state">Every miracle for this show has been handed off.</div>';
+  } else {
+    html += '<div class="tx-state">No miracles posted for this show yet.</div>';
+  }
 
   if(myUserId){
     let opts = '';
