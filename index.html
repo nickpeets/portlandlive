@@ -1369,7 +1369,7 @@ function syncTogglePills(){
     tonightToggle:   state.tonight,
     thisWeekToggle:  state.thisWeek,
     picksToggle:     state.picks,
-    venuesToggle:    state.view === 'venues',
+    venuesToggle:    state.view === 'venues' && !state.selectedVenue,
     myShowsToggle:   state.myShows,
     comedyToggle:    state.comedy,
     followingToggle: state.following,
