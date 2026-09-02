@@ -678,6 +678,8 @@ body{
 .tx-msgbtn:hover{background:#2f463b}
 .tx-msgbtn.tx-msgbtn-quiet{background:rgba(61,87,74,.12);color:var(--forest)}
 .tx-msgbtn.tx-msgbtn-quiet:hover{background:rgba(61,87,74,.2)}
+.tx-msgbtn.tx-msgbtn-unread{background:var(--rust);color:var(--cream)}
+.tx-msgbtn.tx-msgbtn-unread:hover{filter:brightness(1.08)}
 .tx-actions{margin-left:auto;display:flex;align-items:center;gap:8px}
 .tx-thread{background:rgba(255,255,255,.55);border-radius:10px;margin-top:10px;padding:12px;width:100%}
 .tx-thread-head{display:flex;align-items:baseline;gap:8px;margin-bottom:8px}
@@ -1765,7 +1767,7 @@ const TX_MSG_MAX = 1000;
 // Threads visible to the current user for the posts on this page, grouped by
 // post. RLS already limits this to threads they participate in, so "every
 // thread I can see for this post" is exactly the right query.
-const TX_THREADS = { byPost: {}, names: {} };
+const TX_THREADS = { byPost: {}, names: {}, latest: {} };
 // Handoff counts for the posters visible on this page, keyed by user id.
 // Filled by one RPC per render -- see txLoadHandoffCounts.
 const TX_HANDOFF = { counts: {} };
@@ -1894,15 +1896,16 @@ function txThreadAffordance(p, mine, myUserId){
   if(!myUserId){
     return '<button type="button" class="tx-msgbtn" data-tx-signin-msg>Message</button>';
   }
+  const unread = txPostHasUnread(p.id, myUserId);
   if(mine){
     const n = (TX_THREADS.byPost[p.id] || []).length;
     if(!n) return '';
-    return '<button type="button" class="tx-msgbtn tx-msgbtn-quiet" data-tx-open="'+esc(p.id)+'">'
-      + n + (n === 1 ? ' person messaged you' : ' people messaged you') + '</button>';
+    return '<button type="button" class="tx-msgbtn' + (unread ? ' tx-msgbtn-unread' : ' tx-msgbtn-quiet') + '" data-tx-open="'+esc(p.id)+'">'
+      + n + (n === 1 ? ' person messaged you' : ' people messaged you') + (unread ? ' — new' : '') + '</button>';
   }
   const existing = (TX_THREADS.byPost[p.id] || [])[0];
-  return '<button type="button" class="tx-msgbtn" data-tx-open="'+esc(p.id)+'">'
-    + (existing ? 'View messages' : 'Message') + '</button>';
+  return '<button type="button" class="tx-msgbtn' + (unread ? ' tx-msgbtn-unread' : '') + '" data-tx-open="'+esc(p.id)+'">'
+    + (existing ? (unread ? 'New message' : 'View messages') : 'Message') + '</button>';
 }
 
 function txRow(p, myUserId){
@@ -1994,6 +1997,9 @@ async function renderExchange(host, slug){
     txLoadHandoffCounts(sb, rows),
     txLoadPostHandoffs(sb, rows)
   ]);
+  // Depends on txLoadThreads having already populated TX_THREADS.byPost, so
+  // it can't join the Promise.all above -- it needs the thread ids first.
+  await txLoadLatestMessages(sb, myUserId);
 
   // Filtering happens after the loads, because visibility depends on both the
   // per-post handoff counts and on whether this viewer has a thread.
@@ -2155,7 +2161,7 @@ function bindExchange(host, slug){
     if(close){
       e.preventDefault();
       const panel = host.querySelector('[data-tx-thread-for="'+close.getAttribute('data-tx-close')+'"]');
-      if(panel){ panel.hidden = true; panel.innerHTML = ''; }
+      if(panel){ txStopPoll(panel); panel.hidden = true; panel.innerHTML = ''; }
       return;
     }
     // ---------------------------------------------------------------------
@@ -2244,6 +2250,92 @@ function txOtherName(t, myUserId){
   return TX_THREADS.names[other] || 'Someone';
 }
 
+// ----- Unread tracking -------------------------------------------------
+// There is still no unified inbox (see the note above) -- this only answers
+// "does any thread already loaded for the posts on screen have a reply I
+// haven't opened yet." "Seen" is tracked client-side in localStorage, keyed
+// by thread id, since there is no read-receipt column and adding one is a
+// schema change, not a UI fix.
+async function txLoadLatestMessages(sb, myUserId){
+  const ids = [];
+  Object.keys(TX_THREADS.byPost).forEach(function(postId){
+    (TX_THREADS.byPost[postId] || []).forEach(function(t){ ids.push(t.id); });
+  });
+  if(!myUserId || !ids.length){ TX_THREADS.latest = {}; return; }
+  const { data, error } = await sb
+    .from('ticket_messages')
+    .select('thread_id,sender_id,created_at')
+    .in('thread_id', ids)
+    .order('created_at', { ascending: false });
+  if(error){ console.warn('[messaging] latest-message load failed:', error.message); return; }
+  const latest = {};
+  (data || []).forEach(function(m){
+    if(!latest[m.thread_id]) latest[m.thread_id] = m;   // DESC order, so first wins
+  });
+  TX_THREADS.latest = latest;
+}
+
+function txSeenMap(){
+  try{ return JSON.parse(localStorage.getItem('pl_tx_seen_v1') || '{}'); }catch(e){ return {}; }
+}
+function txMarkSeen(threadId, ts){
+  try{
+    const m = txSeenMap();
+    m[threadId] = ts || new Date().toISOString();
+    localStorage.setItem('pl_tx_seen_v1', JSON.stringify(m));
+  }catch(e){}
+}
+function txIsUnread(threadId, myUserId){
+  const latest = TX_THREADS.latest[threadId];
+  if(!latest || latest.sender_id === myUserId) return false;   // your own last word isn't unread
+  const seen = txSeenMap()[threadId];
+  return !seen || new Date(latest.created_at) > new Date(seen);
+}
+function txPostHasUnread(postId, myUserId){
+  return (TX_THREADS.byPost[postId] || []).some(function(t){ return txIsUnread(t.id, myUserId); });
+}
+
+// Re-render just one post's message affordance in place, so marking a thread
+// seen doesn't require a full renderExchange -- which would wipe out the
+// thread panel that's open right now.
+function txRefreshAffordance(host, postId, myUserId){
+  const post = (TX_THREADS._posts || []).find(function(p){ return p.id === postId; });
+  if(!post) return;
+  const li = host.querySelector('[data-tx-id="'+postId+'"]');
+  const actions = li && li.querySelector('.tx-actions');
+  if(!actions) return;
+  const mine = myUserId && post.user_id === myUserId;
+  actions.innerHTML = txThreadAffordance(post, mine, myUserId)
+    + (mine ? '<button type="button" class="tx-cancel" data-tx-cancel="'+esc(post.id)+'">Cancel</button>' : '');
+}
+
+// ----- Light polling on an open thread ----------------------------------
+// No Supabase Realtime subscription here (that's a bigger, separate change
+// requiring replication to be enabled on the tables) -- just a cheap
+// id-count check every few seconds so a reply shows up without the person
+// having to close and reopen the panel. Only re-renders when the count
+// actually changes, so an in-progress draft in the textarea isn't wiped for
+// no reason.
+function txStopPoll(panel){
+  if(panel && panel._txPoll){ clearInterval(panel._txPoll); panel._txPoll = null; }
+}
+function txStopAllPolls(host){
+  host.querySelectorAll('.tx-thread').forEach(function(p){ txStopPoll(p); });
+}
+function txStartPoll(panel, thread, postId, myUserId, slug, host){
+  txStopPoll(panel);
+  panel._txPoll = setInterval(async function(){
+    if(!document.body.contains(panel) || panel.hidden){ txStopPoll(panel); return; }
+    const sb = txClient();
+    const { data, error } = await sb.from('ticket_messages').select('id').eq('thread_id', thread.id);
+    if(error) return;
+    const known = panel.querySelectorAll('.tx-msg').length;
+    if((data || []).length !== known){
+      await txRenderThread(panel, thread, postId, myUserId, slug, host);
+    }
+  }, 6000);
+}
+
 function txMsgRow(m, myUserId, nameFor){
   const mine = m.sender_id === myUserId;
   return '<li class="tx-msg' + (mine ? ' tx-msg-mine' : '') + '">'
@@ -2261,6 +2353,7 @@ function txMsgRow(m, myUserId, nameFor){
 async function txOpenThread(host, slug, postId, myUserId, forceThreadId){
   const panel = host.querySelector('[data-tx-thread-for="'+postId+'"]');
   if(!panel) return;
+  txStopAllPolls(host);
   const sb = txClient();
   const post = (TX_THREADS._posts || []).find(function(p){ return p.id === postId; });
   const isMine = post && post.user_id === myUserId;
@@ -2313,6 +2406,7 @@ async function txOpenThread(host, slug, postId, myUserId, forceThreadId){
   if(!thread){ panel.hidden = true; return; }
 
   await txRenderThread(panel, thread, postId, myUserId, slug, host);
+  txStartPoll(panel, thread, postId, myUserId, slug, host);
 }
 
 async function txRenderThread(panel, thread, postId, myUserId, slug, host){
@@ -2337,6 +2431,16 @@ async function txRenderThread(panel, thread, postId, myUserId, slug, host){
     inner += msgs.length
       ? '<ul class="tx-msgs">' + msgs.map(function(m){ return txMsgRow(m, myUserId, nameFor); }).join('') + '</ul>'
       : '<p class="tx-thread-state">No messages yet. Say hello.</p>';
+    // Opening/refreshing a thread IS "reading" it here -- there's no separate
+    // read receipt. Mark the newest message seen and clear this post's
+    // unread affordance immediately, without a full renderExchange (which
+    // would blow away the panel that's open right now).
+    if(msgs.length){
+      const lastMsg = msgs[msgs.length - 1];
+      txMarkSeen(thread.id, lastMsg.created_at);
+      if(TX_THREADS.latest[thread.id]) TX_THREADS.latest[thread.id] = lastMsg;
+    }
+    txRefreshAffordance(host, postId, myUserId);
   }
 
   // Handoff (Stage 5). Only the poster can mark, and only once. The requester
