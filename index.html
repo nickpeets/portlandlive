@@ -1369,7 +1369,7 @@ function syncTogglePills(){
     tonightToggle:   state.tonight,
     thisWeekToggle:  state.thisWeek,
     picksToggle:     state.picks,
-    venuesToggle:    state.view === 'venues' && !state.selectedVenue,
+    venuesToggle:    state.view === 'venues',
     myShowsToggle:   state.myShows,
     comedyToggle:    state.comedy,
     followingToggle: state.following,
@@ -2897,7 +2897,14 @@ $('#byHoodToggle').addEventListener('click',()=>{state.byHood=!state.byHood;$('#
           }
           render();
         });
-      function openVenue(name){ state.view='venues'; state.selectedVenue=name; state.q='';$('#searchInput').value='';  render(); document.querySelector('.controls').scrollIntoView({block:'start',behavior:'instant'}); }
+      function openVenue(name){ state.view='venues'; state.selectedVenue=name; state.q='';$('#searchInput').value='';
+        state.picks=false;$('#picksToggle').classList.remove('on');
+        state.byHood=false;$('#byHoodToggle').classList.remove('on');
+        state.myShows=false;$('#myShowsToggle').classList.remove('on');
+        state.tonight=false;$('#tonightToggle').classList.remove('on');
+        state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');
+        state.following=false;$('#followingToggle').classList.remove('on');
+        render(); document.querySelector('.controls').scrollIntoView({block:'start',behavior:'instant'}); }
       $('#results').addEventListener('click',e=>{const _del=e.target.closest('.stub-del'); if(_del){ e.preventDefault(); e.stopPropagation(); const id=_del.getAttribute('data-stubdel'); const kept=loadStubs().filter(s=>stubIdOf(s)!==id); saveStubs(kept); flashStub('Removed from your shelf'); reRenderCurrentView(); return; } const _iwt=e.target.closest('.iwt-btn'); if(_iwt){ e.preventDefault(); e.stopPropagation(); if(!_iwt.disabled){ const g=n=>_iwt.getAttribute('data-iwt-'+n)||''; const snap={title:g('title'),venue:g('venue'),neighborhood:g('neighborhood'),address:g('address'),date:g('date'),time:g('time')}; const r=mintStub(snap); if(r.ok){ flashStub('Stub added to your shelf \u2014 '+(snap.title||'show')); } else { flashStub('Already on your shelf'); } reRenderCurrentView(); } return; } const vlink=e.target.closest('[data-venue]');if(vlink){e.preventDefault();e.stopPropagation();openVenue(vlink.getAttribute('data-venue'));return;}const h=e.target.closest('.heart');if(h){e.preventDefault();e.stopPropagation();toggleFavKey(h.getAttribute('data-fav'));reRenderCurrentView();return;} const _interactive=e.target.closest('a, button'); if(_interactive) return; const _card=e.target.closest('.scard'); if(_card && _card.dataset.slug){ location.hash = '#/show/' + encodeURIComponent(_card.dataset.slug); }});
 $('#tonightToggle').addEventListener('click',()=>{state.picks=false;$('#picksToggle').classList.remove('on');state.tonight=!state.tonight;if(state.tonight){state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');}$('#tonightToggle').classList.toggle('on',state.tonight);render();});
 $('#thisWeekToggle').addEventListener('click',()=>{state.picks=false;$('#picksToggle').classList.remove('on');state.thisWeek=!state.thisWeek;if(state.thisWeek){state.tonight=false;$('#tonightToggle').classList.remove('on');state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');}$('#thisWeekToggle').classList.toggle('on',state.thisWeek);render();});
