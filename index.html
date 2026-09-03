@@ -718,6 +718,16 @@ body{
 .tx-handoff:hover:not(:disabled){background:var(--rust-deep)}
 .tx-handoff:disabled{opacity:.55;cursor:default}
 .tx-handoff-state{display:flex;align-items:center;gap:5px;font-family:'Oswald',sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--forest);margin:0 0 8px}
+/* Who's Going (Fork Stage 6). Deliberately reuses .tx-thread/.tx-msgs/
+   .tx-reply/.tx-signin/.tx-msgbtn/.tx-submit/.tx-cancel wholesale for the
+   messaging UI below -- same visual language as ticket-exchange messaging,
+   even though show_threads is a fully separate table/door. Only the
+   attendee-list row itself needs new structure. */
+.wg-head{display:flex;align-items:baseline;gap:10px;margin-bottom:6px}
+.wg-head h3{font-family:'Alfa Slab One',serif;font-weight:400;font-size:19px;color:var(--cream);margin:0}
+.wg-list{list-style:none;margin:0 0 14px;padding:0;display:flex;flex-direction:column;gap:8px}
+.wg-row{background:var(--cream);border-radius:12px;padding:11px 14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;box-shadow:0 6px 14px rgba(20,40,30,.14)}
+.wg-name{font-family:'Bitter',Georgia,serif;font-size:14px;color:var(--ink);flex:1 1 auto;min-width:0;overflow-wrap:anywhere}
 .tx-handoff-err{font-family:'Bitter',Georgia,serif;font-size:12.5px;color:var(--rust-deep);margin:0 0 8px}
 .tx-pick-done{margin-left:6px;font-family:'Oswald',sans-serif;font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--forest)}
 @media (max-width:600px){
@@ -1684,12 +1694,6 @@ function renderShowNotFound(wrap, slug){
   wrap.innerHTML = '<div class="empty"><h2>Show not found</h2><p>We couldn’t find a show at that link. It may be mistyped, or the show may not be in our listings.</p></div>';
 }
 
-const SHOW_SOCIAL_PLACEHOLDER =
-  '<div class="show-social-placeholder">'
-  + '<h3>Coming soon</h3>'
-  + '<p>Who’s going will live here.</p>'
-  + '</div>';
-
 function renderShowDetail(wrap, show, kind){
   $('#resultCount').textContent = kind === 'past' ? 'Past show' : 'Upcoming show';
   var when = ordinalDate(show.date) + (show.time ? ' · ' + esc(show.time) : '');
@@ -1741,7 +1745,10 @@ function renderShowDetail(wrap, show, kind){
   // Spares are only meaningful before the show happens; a past show gets
   // comments (recaps) but no exchange.
   if(kind === 'upcoming') mountExchange(grid, _slug);
-  grid.insertAdjacentHTML('beforeend', SHOW_SOCIAL_PLACEHOLDER);
+  // Attendance is a forward-looking commitment, same scope as the ticket
+  // exchange -- so, like Miracles, this only shows on upcoming shows. A past
+  // show gets comments (recaps) but no Who's Going.
+  if(kind === 'upcoming') mountWhosGoing(grid, _slug);
   mountComments(grid, _slug);
 }
 
@@ -2497,6 +2504,384 @@ async function txRenderThread(panel, thread, postId, myUserId, slug, host){
     }
     ta.value = '';
     await txRenderThread(panel, thread, postId, myUserId, slug, host);
+  });
+}
+
+// ===== WHO'S GOING (Fork Stage 6) =====
+// Public attendee list for one show (schema-show-attendees.sql), plus a
+// SEPARATE messaging door scoped to "you're both marked as going to this
+// show" (schema-show-threads.sql / start_show_thread RPC).
+//
+// This is deliberately independent of ticket-exchange messaging above: a
+// person hunting for a spare ticket to a show they haven't committed to yet
+// can still message a Miracle poster with no attendance requirement at all.
+// Who's Going messaging is the narrower, second door -- you can reach a
+// fellow attendee BECAUSE you're both publicly on this list, not because you
+// found their name some other way.
+//
+// Scope, same shape as ticket exchange: no group chat here (Comments,
+// Stage 2, already is the public show-wide conversation), no unified inbox
+// (that's Stage 6c, separate work), no "maybe going," no capacity limits.
+const WG_MSG_MAX = 500;
+// Threads the current viewer is in for this show, keyed by the OTHER
+// participant's user id (not by thread id) -- every lookup in this UI is
+// "do I have a thread with THIS person," so that's the natural key.
+const WG_THREADS = { byUser: {}, latest: {}, _attendees: [] };
+
+async function mountWhosGoing(wrap, slug){
+  if(!slug) return;
+  const host = document.createElement('section');
+  host.className = 'wg';
+  host.setAttribute('aria-label', "Who's going");
+  host.innerHTML = '<div class="tx-head"><h3>Who\u2019s Going</h3></div>'
+    + '<div class="tx-state">Loading\u2026</div>';
+  wrap.appendChild(host);
+
+  const sb = txClient();
+  if(!sb){
+    host.querySelector('.tx-state').textContent = "Who's going is unavailable right now.";
+    return;
+  }
+  if(!host._wgAuthSub){
+    host._wgAuthSub = sb.auth.onAuthStateChange(function(){
+      if(document.body.contains(host)) renderWhosGoing(host, slug);
+    });
+  }
+  await renderWhosGoing(host, slug);
+}
+
+async function renderWhosGoing(host, slug){
+  const sb = txClient();
+  if(!sb) return;
+
+  let session = null;
+  try{ session = (await sb.auth.getSession()).data.session; }catch(e){ session = null; }
+  const myUserId = session && session.user ? session.user.id : null;
+
+  const { data, error } = await sb
+    .from('show_attendees')
+    .select('id,user_id,display_name,created_at')
+    .eq('show_slug', slug)
+    .order('created_at', { ascending: true });
+
+  if(error){
+    host.innerHTML = '<div class="tx-head"><h3>Who\u2019s Going</h3></div>'
+      + '<div class="tx-state tx-error">Couldn\u2019t load who\u2019s going. Reload to try again.</div>';
+    console.warn('[whosgoing] load failed:', error.message);
+    return;
+  }
+
+  const rows = data || [];
+  WG_THREADS._attendees = rows;
+  const iAmGoing = !!(myUserId && rows.some(function(r){ return r.user_id === myUserId; }));
+
+  // The messaging door only opens between two people already on this list --
+  // nothing to load if I'm not one of them.
+  if(myUserId && iAmGoing){
+    await wgLoadThreads(sb, myUserId, slug);
+    await wgLoadLatestMessages(sb, myUserId);
+  } else {
+    WG_THREADS.byUser = {};
+    WG_THREADS.latest = {};
+  }
+
+  let html = '<div class="tx-head"><h3>Who\u2019s Going</h3>'
+    + '<span class="tx-count">' + rows.length + (rows.length === 1 ? ' person' : ' people') + '</span></div>';
+
+  html += rows.length
+    ? '<ul class="wg-list">' + rows.map(function(r){ return wgRow(r, myUserId, iAmGoing); }).join('') + '</ul>'
+    : '<div class="tx-state">No one\u2019s marked themselves going yet.</div>';
+
+  if(myUserId){
+    html += iAmGoing
+      ? '<button type="button" class="tx-cancel" data-wg-leave>I\u2019m not going anymore</button>'
+      : '<button type="button" class="tx-submit" data-wg-join>I\u2019m going</button>';
+  } else {
+    html += '<div class="tx-signin">'
+      + '<p>Sign in to say you\u2019re going.</p>'
+      + '<button type="button" class="tx-signin-btn" data-wg-signin>Sign In</button>'
+      + '</div>';
+  }
+
+  host.innerHTML = html;
+  bindWhosGoing(host, slug);
+}
+
+function wgRow(r, myUserId, iAmGoing){
+  const mine = !!(myUserId && r.user_id === myUserId);
+  let actions = '';
+  // Messaging is only offered on a fellow attendee's row, and only if you're
+  // an attendee yourself -- start_show_thread() is the real enforcement of
+  // this, server-side; the UI just doesn't bother offering what it can't do.
+  if(myUserId && iAmGoing && !mine){
+    const unread = wgIsUnread(r.user_id, myUserId);
+    const existing = WG_THREADS.byUser[r.user_id];
+    actions = '<button type="button" class="tx-msgbtn' + (unread ? ' tx-msgbtn-unread' : '') + '" data-wg-open="'+esc(r.user_id)+'">'
+      + (existing ? (unread ? 'New message' : 'View messages') : 'Message') + '</button>';
+  }
+  return '<li class="wg-row" data-wg-id="'+esc(r.user_id)+'">'
+    + '<span class="wg-name">' + esc(r.display_name || 'Someone') + (mine ? ' (you)' : '') + '</span>'
+    + '<span class="tx-actions">' + actions + '</span>'
+    + '<div class="tx-thread" data-wg-thread-for="'+esc(r.user_id)+'" hidden></div>'
+    + '</li>';
+}
+
+async function wgLoadThreads(sb, myUserId, slug){
+  WG_THREADS.byUser = {};
+  const { data, error } = await sb
+    .from('show_threads')
+    .select('id,show_slug,user_a,user_b,created_at')
+    .eq('show_slug', slug);
+  if(error){ console.warn('[whosgoing] thread load failed:', error.message); return; }
+  // RLS already limits this to threads myUserId participates in; the check
+  // below is belt-and-braces, not the real boundary.
+  (data || []).forEach(function(t){
+    if(t.user_a !== myUserId && t.user_b !== myUserId) return;
+    const other = t.user_a === myUserId ? t.user_b : t.user_a;
+    WG_THREADS.byUser[other] = t;
+  });
+}
+
+async function wgLoadLatestMessages(sb, myUserId){
+  const ids = Object.keys(WG_THREADS.byUser).map(function(uid){ return WG_THREADS.byUser[uid].id; });
+  if(!ids.length){ WG_THREADS.latest = {}; return; }
+  const { data, error } = await sb
+    .from('show_messages')
+    .select('thread_id,sender_id,created_at')
+    .in('thread_id', ids)
+    .order('created_at', { ascending: false });
+  if(error){ console.warn('[whosgoing] latest-message load failed:', error.message); return; }
+  const latestByThread = {};
+  (data || []).forEach(function(m){ if(!latestByThread[m.thread_id]) latestByThread[m.thread_id] = m; });
+  // Re-keyed by the OTHER user's id, matching WG_THREADS.byUser, so wgIsUnread
+  // can look this up the same way it looks up the thread itself.
+  const latest = {};
+  Object.keys(WG_THREADS.byUser).forEach(function(otherId){
+    const m = latestByThread[WG_THREADS.byUser[otherId].id];
+    if(m) latest[otherId] = m;
+  });
+  WG_THREADS.latest = latest;
+}
+
+// Seen-state is tracked in the SAME localStorage map as ticket messaging
+// (txSeenMap/txMarkSeen, defined above) -- one shared "have I read this
+// thread" store for both messaging doors, namespaced by prefix so a
+// show_threads id can never collide with a ticket_threads id in the map.
+function wgIsUnread(otherUserId, myUserId){
+  const thread = WG_THREADS.byUser[otherUserId];
+  const latest = WG_THREADS.latest[otherUserId];
+  if(!thread || !latest || latest.sender_id === myUserId) return false;
+  const seen = txSeenMap()['wg:' + thread.id];
+  return !seen || new Date(latest.created_at) > new Date(seen);
+}
+function wgMarkSeen(threadId, ts){ txMarkSeen('wg:' + threadId, ts); }
+
+// Re-render just one attendee's row in place -- same reason as
+// txRefreshAffordance: marking a thread seen shouldn't require a full
+// renderWhosGoing, which would wipe out the panel that's open right now.
+function wgRefreshRow(host, otherUserId, myUserId, iAmGoing){
+  const attendee = WG_THREADS._attendees.find(function(a){ return a.user_id === otherUserId; });
+  if(!attendee) return;
+  const li = host.querySelector('[data-wg-id="'+otherUserId+'"]');
+  if(!li) return;
+  const tmp = document.createElement('ul');
+  tmp.innerHTML = wgRow(attendee, myUserId, iAmGoing);
+  const fresh = tmp.firstElementChild;
+  // The thread panel is a sibling inside the same <li>, already open -- don't
+  // replace the whole <li> (that would blow the panel away); just swap the
+  // actions button.
+  const actions = li.querySelector('.tx-actions');
+  const freshActions = fresh.querySelector('.tx-actions');
+  if(actions && freshActions) actions.innerHTML = freshActions.innerHTML;
+}
+
+function wgStopPoll(panel){
+  if(panel && panel._wgPoll){ clearInterval(panel._wgPoll); panel._wgPoll = null; }
+}
+function wgStopAllPolls(host){
+  host.querySelectorAll('[data-wg-thread-for]').forEach(function(p){ wgStopPoll(p); });
+}
+function wgStartPoll(panel, thread, otherUserId, myUserId, slug, host){
+  wgStopPoll(panel);
+  panel._wgPoll = setInterval(async function(){
+    if(!document.body.contains(panel) || panel.hidden){ wgStopPoll(panel); return; }
+    const sb = txClient();
+    const { data, error } = await sb.from('show_messages').select('id').eq('thread_id', thread.id);
+    if(error) return;
+    const known = panel.querySelectorAll('.tx-msg').length;
+    if((data || []).length !== known){
+      await wgRenderThread(panel, thread, otherUserId, myUserId, slug, host);
+    }
+  }, 6000);
+}
+
+function bindWhosGoing(host, slug){
+  const sb = txClient();
+
+  const signin = host.querySelector('[data-wg-signin]');
+  if(signin){
+    signin.addEventListener('click', function(){
+      const b = document.getElementById('authSignInBtn');
+      if(b) b.click();
+    });
+  }
+
+  const join = host.querySelector('[data-wg-join]');
+  if(join){
+    join.addEventListener('click', async function(){
+      join.disabled = true;
+      // user_id and display_name are set by the insert trigger.
+      const { error } = await sb.from('show_attendees').insert({ show_slug: slug });
+      if(error){
+        console.warn('[whosgoing] join failed:', error.message);
+        join.disabled = false;
+        return;
+      }
+      await renderWhosGoing(host, slug);
+    });
+  }
+
+  const leave = host.querySelector('[data-wg-leave]');
+  if(leave){
+    leave.addEventListener('click', async function(){
+      leave.disabled = true;
+      let session = null;
+      try{ session = (await sb.auth.getSession()).data.session; }catch(e){ session = null; }
+      const uid = session && session.user ? session.user.id : null;
+      if(!uid){ leave.disabled = false; return; }
+      const { error } = await sb.from('show_attendees').delete()
+        .eq('show_slug', slug).eq('user_id', uid);
+      if(error){
+        console.warn('[whosgoing] leave failed:', error.message);
+        leave.disabled = false;
+        return;
+      }
+      await renderWhosGoing(host, slug);
+    });
+  }
+
+  host.addEventListener('click', async function(e){
+    const open = e.target.closest('[data-wg-open]');
+    if(open){
+      e.preventDefault();
+      let session = null;
+      try{ session = (await sb.auth.getSession()).data.session; }catch(err){ session = null; }
+      const uid = session && session.user ? session.user.id : null;
+      if(!uid) return;
+      await wgOpenThread(host, slug, open.getAttribute('data-wg-open'), uid);
+      return;
+    }
+    const close = e.target.closest('[data-wg-close]');
+    if(close){
+      e.preventDefault();
+      const panel = host.querySelector('[data-wg-thread-for="'+close.getAttribute('data-wg-close')+'"]');
+      if(panel){ wgStopPoll(panel); panel.hidden = true; panel.innerHTML = ''; }
+      return;
+    }
+  });
+}
+
+async function wgOpenThread(host, slug, otherUserId, myUserId){
+  const panel = host.querySelector('[data-wg-thread-for="'+otherUserId+'"]');
+  if(!panel) return;
+  wgStopAllPolls(host);
+  const sb = txClient();
+
+  panel.hidden = false;
+
+  let thread = WG_THREADS.byUser[otherUserId];
+  if(!thread){
+    panel.innerHTML = '<p class="tx-thread-state">Starting conversation\u2026</p>';
+    // Either attendee can start this -- start_show_thread() normalizes the
+    // pair and both checks (both parties actually on this show's attendee
+    // list) server-side, so a stale/tampered client can't bypass it.
+    const { data, error } = await sb.rpc('start_show_thread', {
+      p_show_slug: slug, p_other_user_id: otherUserId
+    });
+    if(error || !data){
+      panel.innerHTML = '<p class="tx-thread-state">Couldn\u2019t start that conversation. Try again.</p>';
+      console.warn('[whosgoing] thread create failed:', error ? error.message : 'no id returned');
+      return;
+    }
+    thread = { id: data, show_slug: slug };
+    WG_THREADS.byUser[otherUserId] = thread;
+  }
+
+  await wgRenderThread(panel, thread, otherUserId, myUserId, slug, host);
+  wgStartPoll(panel, thread, otherUserId, myUserId, slug, host);
+}
+
+async function wgRenderThread(panel, thread, otherUserId, myUserId, slug, host){
+  const sb = txClient();
+  const { data, error } = await sb
+    .from('show_messages')
+    .select('id,sender_id,body,created_at')
+    .eq('thread_id', thread.id)
+    .order('created_at', { ascending: true });
+
+  const attendee = WG_THREADS._attendees.find(function(a){ return a.user_id === otherUserId; });
+  const nameFor = (attendee && attendee.display_name) || 'Someone';
+
+  let inner = '<div class="tx-thread-head">'
+    + '<span class="tx-thread-with">With ' + esc(nameFor) + '</span>'
+    + '<button type="button" class="tx-thread-close" data-wg-close="'+esc(otherUserId)+'">Close</button>'
+    + '</div>';
+
+  if(error){
+    inner += '<p class="tx-thread-state">Couldn\u2019t load these messages.</p>';
+    console.warn('[whosgoing] message load failed:', error.message);
+  } else {
+    const msgs = data || [];
+    inner += msgs.length
+      ? '<ul class="tx-msgs">' + msgs.map(function(m){ return txMsgRow(m, myUserId, nameFor); }).join('') + '</ul>'
+      : '<p class="tx-thread-state">No messages yet. Say hello.</p>';
+    if(msgs.length){
+      const lastMsg = msgs[msgs.length - 1];
+      wgMarkSeen(thread.id, lastMsg.created_at);
+      if(WG_THREADS.latest[otherUserId]) WG_THREADS.latest[otherUserId] = lastMsg;
+    }
+    const iAmGoing = WG_THREADS._attendees.some(function(a){ return a.user_id === myUserId; });
+    wgRefreshRow(host, otherUserId, myUserId, iAmGoing);
+  }
+
+  inner += '<form class="tx-reply" data-wg-reply="'+esc(thread.id)+'">'
+    + '<label class="sr-only" for="wgReply-'+esc(thread.id)+'">Message</label>'
+    + '<textarea id="wgReply-'+esc(thread.id)+'" maxlength="'+WG_MSG_MAX+'" placeholder="Write a message\u2026"></textarea>'
+    + '<div class="tx-reply-foot">'
+      + '<span class="tx-reply-count" data-wg-reply-count>0 / '+WG_MSG_MAX+'</span>'
+      + '<button type="submit" class="tx-send" disabled>Send</button>'
+    + '</div>'
+    + '</form>';
+
+  panel.innerHTML = inner;
+
+  const form = panel.querySelector('[data-wg-reply]');
+  const ta = form.querySelector('textarea');
+  const counter = form.querySelector('[data-wg-reply-count]');
+  const send = form.querySelector('.tx-send');
+  const sync = function(){
+    const len = ta.value.length;
+    counter.textContent = len + ' / ' + WG_MSG_MAX;
+    counter.classList.toggle('over', len > WG_MSG_MAX);
+    send.disabled = ta.value.trim().length === 0 || len > WG_MSG_MAX;
+  };
+  ta.addEventListener('input', sync);
+  sync();
+
+  form.addEventListener('submit', async function(e){
+    e.preventDefault();
+    const body = ta.value.trim();
+    if(!body || body.length > WG_MSG_MAX) return;
+    send.disabled = true;
+    // sender_id is set by the insert trigger; RLS re-checks participation.
+    const { error: err } = await sb.from('show_messages').insert({ thread_id: thread.id, body: body });
+    if(err){
+      send.disabled = false;
+      console.warn('[whosgoing] send failed:', err.message);
+      return;
+    }
+    ta.value = '';
+    await wgRenderThread(panel, thread, otherUserId, myUserId, slug, host);
   });
 }
 
