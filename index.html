@@ -757,10 +757,15 @@ body{
 /* Reporting (Fork Stage 8). Report sits beside Delete and borrows its
    understated styling on purpose -- reporting should be available, not
    advertised, and a loud button invites idle clicking. */
-.rp-btn{border:0;background:none;cursor:pointer;font-family:'Oswald',sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#7c6a55;padding:2px 4px;border-radius:6px}
-.rp-btn:hover{color:var(--rust-deep);background:rgba(181,86,43,.1)}
-.rp-btn:disabled{opacity:.55;cursor:default}
-.rp-btn.rp-reported{color:var(--rust-deep)}
+/* Small flag glyph, low contrast: reporting should be findable, not part of
+   the page's visual rhythm. A word-labelled button on every comment made an
+   ordinary conversation look policed. Full-size tap target is kept -- only
+   the ink is quiet, not the hit area. */
+.rp-btn{border:0;background:none;cursor:pointer;color:#7c6a55;opacity:.38;padding:4px 5px;border-radius:6px;line-height:0;display:inline-flex;align-items:center;transition:opacity .12s ease,color .12s ease}
+.rp-btn svg{width:12px;height:12px;display:block}
+.rp-btn:hover,.rp-btn:focus-visible{opacity:1;color:var(--rust-deep);background:rgba(181,86,43,.1)}
+.rp-btn:disabled{cursor:default}
+.rp-btn.rp-reported{opacity:.85;color:var(--rust-deep)}
 .cmt-top .rp-btn{margin-left:auto}
 .cmt-top .cmt-del + .rp-btn,.cmt-top .rp-btn + .cmt-del{margin-left:0}
 /* Content hidden pending review. Deliberately leaves a visible placeholder
@@ -2641,12 +2646,19 @@ async function rpIsModerator(){
 // The control itself. Nothing is offered to signed-out viewers (the insert
 // would fail on the trigger anyway) or on your own content -- deleting is the
 // right verb for that, and it already exists.
+const RP_FLAG_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 21V4"/><path d="M5 4h11l-2 4 2 4H5"/></svg>';
+
+// Icon only, no visible label -- the accessible name carries the meaning, so
+// screen readers still get "Report this comment" while sighted readers get a
+// faint flag that doesn't compete with the conversation.
 function rpButton(targetType, targetId, isMine, signedIn){
   if(!signedIn || isMine) return '';
   if(RP_MINE.has(targetId)){
-    return '<button type="button" class="rp-btn rp-reported" disabled>Reported</button>';
+    return '<button type="button" class="rp-btn rp-reported" disabled aria-label="You reported this" title="You reported this">'
+      + RP_FLAG_SVG + '</button>';
   }
-  return '<button type="button" class="rp-btn" data-rp-type="'+esc(targetType)+'" data-rp-id="'+esc(targetId)+'">Report</button>';
+  return '<button type="button" class="rp-btn" data-rp-type="'+esc(targetType)+'" data-rp-id="'+esc(targetId)+'"'
+    + ' aria-label="Report this" title="Report this">' + RP_FLAG_SVG + '</button>';
 }
 
 function rpHiddenPlaceholder(){
@@ -2681,8 +2693,10 @@ function rpHiddenPlaceholder(){
         return;
       }
       RP_MINE.add(targetId);
-      btn.textContent = 'Reported';
+      // Not textContent -- that would replace the flag svg with a bare word.
       btn.classList.add('rp-reported');
+      btn.setAttribute('aria-label', 'You reported this');
+      btn.setAttribute('title', 'You reported this');
       // The hide is server-side and immediate; repaint so it takes effect here
       // without needing a reload.
       if(typeof reRenderCurrentView === 'function') reRenderCurrentView();
