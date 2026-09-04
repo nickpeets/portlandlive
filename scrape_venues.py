@@ -70,6 +70,7 @@ VENUE_INFO = {
     "Mission Theater": ("Nob Hill/NW", "1624 NW Glisan St, Portland, OR 97209"),
     "Kennedy School": ("Concordia", "5736 NE 33rd Ave, Portland, OR 97211"),
     "The Goodfoot": ("Buckman", "2845 SE Stark St, Portland, OR 97214"),
+    "Music Millennium": ("Kerns", "3158 E Burnside St, Portland, OR 97214"),
     "Arlene Schnitzer Concert Hall": ("Downtown", "1037 SW Broadway"),
     "Paramount Theatre": ("Downtown", "911 SW Salmon St"),
     "The Old Church": ("Downtown", "1422 SW 11th Ave"),
@@ -1989,6 +1990,51 @@ def parse_goodfoot(html, today):
     return out
 
 
+# ---- Music Millennium (musicmillennium.com/InStore) -- WALLED, headless -----
+# AWS WAF challenges every path (verified Sep 2026); the headless tier clears
+# it. No JSON here -- the in-store list is a plain server-rendered table, which
+# is fine because it's regular: a <th> date header ("Wednesday, September  9",
+# no year, sometimes doubled spaces), then a <td colspan=4> title row, then a
+# detail row carrying the /Event/N link. Times are NOT on the listing page and
+# fetching each event page through Chromium isn't worth it for a record store,
+# so time is left blank. Listening parties are kept: they're real in-store
+# events for the same crowd.
+MM_URL = "https://musicmillennium.com/InStore"
+_MM_DATE = re.compile(r"(Mon|Tues|Wednes|Thurs|Fri|Satur|Sun)day,\s+([A-Z][a-z]+)\s+(\d{1,2})")
+
+def parse_musicmillennium(html, today):
+    from fetch_headless import fetch_headless
+    page = fetch_headless(MM_URL, wait_s=30)
+    soup = BeautifulSoup(page, "html.parser")
+    nb, addr = VENUE_INFO.get("Music Millennium", ("Kerns", "3158 E Burnside St"))
+    out, seen = [], set()
+    date, title = "", ""
+    for tr in soup.find_all("tr"):
+        th = tr.find("th")
+        if th:
+            m = _MM_DATE.search(_normalize_ws(th.get_text()))
+            if m and m.group(2)[:3] in MONTHS:
+                mon = MONTHS[m.group(2)[:3]]
+                date = f"{infer_year(mon, today)}-{mon:02d}-{int(m.group(3)):02d}"
+            title = ""
+            continue
+        td = tr.find("td", attrs={"colspan": "4"})
+        if td:
+            title = clean(td.get_text())
+            continue
+        link = tr.find("a", href=re.compile(r"/Event/\d+"))
+        if link and date and title:
+            url = "https://musicmillennium.com" + link["href"]
+            key = (date, title.lower())
+            if key not in seen:
+                seen.add(key)
+                out.append({"title": title, "venue": "Music Millennium",
+                            "neighborhood": nb, "address": addr, "date": date,
+                            "time": "", "venueUrl": url, "imageUrl": ""})
+            title = ""
+    return out
+
+
 def parse_novapdx(html, today):
     # NOVA PDX (Buckman, 722 E Burnside) -- venue's own Webflow site, Tixr buy-links.
     # .b-venue holds the FULL date with year (e.g. 'June 14, 2026') -- parse directly, no year inference.
@@ -2698,6 +2744,8 @@ SOURCES = [
      "urls": ["https://roselandpdx.com/events/"]},
     {"name": "The Goodfoot", "parser": parse_goodfoot, "walled": True,
      "urls": ["https://www.thegoodfoot.com/"]},
+    {"name": "Music Millennium", "parser": parse_musicmillennium, "walled": True,
+     "urls": [MM_URL]},
     {"name": "Dante's", "parser": parse_dantes,
      "urls": ["https://www.danteslive.com/",
               "https://www.danteslive.com/page/2/",
