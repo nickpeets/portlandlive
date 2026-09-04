@@ -754,6 +754,30 @@ body{
 .cmt-del{margin-left:auto;border:0;background:none;cursor:pointer;font-family:'Oswald',sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#7c6a55;padding:2px 4px;border-radius:6px}
 .cmt-del:hover{color:var(--rust-deep);background:rgba(181,86,43,.1)}
 .cmt-del:disabled{opacity:.5;cursor:default}
+/* Reporting (Fork Stage 8). Report sits beside Delete and borrows its
+   understated styling on purpose -- reporting should be available, not
+   advertised, and a loud button invites idle clicking. */
+.rp-btn{border:0;background:none;cursor:pointer;font-family:'Oswald',sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#7c6a55;padding:2px 4px;border-radius:6px}
+.rp-btn:hover{color:var(--rust-deep);background:rgba(181,86,43,.1)}
+.rp-btn:disabled{opacity:.55;cursor:default}
+.rp-btn.rp-reported{color:var(--rust-deep)}
+.cmt-top .rp-btn{margin-left:auto}
+.cmt-top .cmt-del + .rp-btn,.cmt-top .rp-btn + .cmt-del{margin-left:0}
+/* Content hidden pending review. Deliberately leaves a visible placeholder
+   rather than silently vanishing: a comment that disappears with no trace
+   reads as a bug, and the thread's shape stays intelligible. */
+.rp-hidden{background:rgba(124,106,85,.09);border-radius:10px;padding:10px 12px;font-family:'Bitter',Georgia,serif;font-size:12.5px;color:#7c6a55;font-style:italic}
+/* Moderator review panel -- only ever rendered for a moderator. */
+.mod-panel{background:var(--cream);border-radius:12px;padding:14px;margin:12px 0}
+.mod-panel h3{font-family:'Alfa Slab One',serif;font-weight:400;font-size:17px;color:var(--ink);margin:0 0 8px}
+.mod-item{border-top:1px solid rgba(124,106,85,.25);padding:10px 0}
+.mod-item-meta{font-family:'Oswald',sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#7c6a55;display:flex;gap:8px;flex-wrap:wrap}
+.mod-item-body{font-family:'Bitter',Georgia,serif;font-size:13px;color:var(--ink);margin:6px 0;overflow-wrap:anywhere}
+.mod-item-acts{display:flex;gap:8px}
+.mod-uphold,.mod-dismiss{border:0;cursor:pointer;font-family:'Oswald',sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;border-radius:999px;padding:6px 12px}
+.mod-uphold{background:var(--rust);color:var(--cream)}
+.mod-dismiss{background:rgba(61,87,74,.12);color:var(--forest)}
+.mod-uphold:disabled,.mod-dismiss:disabled{opacity:.5;cursor:default}
 .cmt-body{font-family:'Bitter',Georgia,serif;font-size:14px;line-height:1.5;color:var(--ink);white-space:pre-wrap;overflow-wrap:anywhere;margin:0}
 .cmt-form{background:var(--cream);border-radius:12px;padding:12px 14px;box-shadow:0 6px 14px rgba(20,40,30,.14)}
 .cmt-input{width:100%;box-sizing:border-box;resize:vertical;min-height:74px;font-family:'Bitter',Georgia,serif;font-size:14px;line-height:1.5;color:var(--ink);background:#fff;border:1px solid rgba(74,53,38,.25);border-radius:9px;padding:10px 12px}
@@ -1777,6 +1801,9 @@ function renderShowDetail(wrap, show, kind){
   // show gets comments (recaps) but no Who's Going.
   if(kind === 'upcoming') mountWhosGoing(grid, _slug);
   mountComments(grid, _slug);
+  // No-ops for everyone who isn't a moderator (report_queue() returns nothing
+  // to them), and renders nothing at all when the queue is empty.
+  mountModPanel(grid);
 }
 
 
@@ -2370,14 +2397,21 @@ function txStartPoll(panel, thread, postId, myUserId, slug, host){
   }, 6000);
 }
 
-function txMsgRow(m, myUserId, nameFor){
+// Shared by BOTH messaging doors, so targetType is passed in rather than
+// guessed: a ticket_messages row and a show_messages row look identical here
+// but are different rows in different tables to content_reports.
+function txMsgRow(m, myUserId, nameFor, targetType, hidden){
   const mine = m.sender_id === myUserId;
+  const body = hidden
+    ? rpHiddenPlaceholder()
+    : '<p class="tx-msg-body">' + esc(m.body || '') + '</p>';
   return '<li class="tx-msg' + (mine ? ' tx-msg-mine' : '') + '">'
     + '<div class="tx-msg-top">'
       + '<span class="tx-msg-who">' + esc(mine ? 'You' : nameFor) + '</span>'
       + '<span class="tx-msg-when">' + esc(cmtRelTime(m.created_at)) + '</span>'
+      + (hidden || !targetType ? '' : rpButton(targetType, m.id, mine, !!myUserId))
     + '</div>'
-    + '<p class="tx-msg-body">' + esc(m.body || '') + '</p>'
+    + body
     + '</li>';
 }
 
@@ -2462,8 +2496,10 @@ async function txRenderThread(panel, thread, postId, myUserId, slug, host){
     console.warn('[messaging] message load failed:', error.message);
   } else {
     const msgs = data || [];
+    const hiddenSet = await rpHidden('ticket_message', msgs.map(function(m){ return m.id; }));
+    if(myUserId) await rpLoadMine();
     inner += msgs.length
-      ? '<ul class="tx-msgs">' + msgs.map(function(m){ return txMsgRow(m, myUserId, nameFor); }).join('') + '</ul>'
+      ? '<ul class="tx-msgs">' + msgs.map(function(m){ return txMsgRow(m, myUserId, nameFor, 'ticket_message', hiddenSet.has(m.id)); }).join('') + '</ul>'
       : '<p class="tx-thread-state">No messages yet. Say hello.</p>';
     // Opening/refreshing a thread IS "reading" it here -- there's no separate
     // read receipt. Mark the newest message seen and clear this post's
@@ -2534,6 +2570,207 @@ async function txRenderThread(panel, thread, postId, myUserId, slug, host){
   });
 }
 
+
+
+// ===== REPORTING & MODERATION (Fork Stage 8) =====
+// Backed by content_reports / hidden_targets() / report_queue() /
+// resolve_report() -- see supabase/schema-reporting.sql for the reasoning
+// behind the design, which matters more than this UI does.
+//
+// The one load-bearing rule: a report HIDES THE CONTENT IMMEDIATELY, pending
+// review. With a single moderator, a queue that needs a fast response is a
+// queue that fails, so harm stops when someone reports rather than when the
+// moderator gets to it. Everything here follows from that.
+//
+// Reporting is REACTIVE and this UI can't change that: content is visible
+// between posting and the first report. That's a known limit, not an
+// oversight.
+const RP_REASONS = [
+  ['harassment', 'Harassment or abuse'],
+  ['spam',       'Spam'],
+  ['sexual',     'Sexual content'],
+  ['violence',   'Violence or threats'],
+  ['illegal',    'Illegal content'],
+  ['other',      'Something else']
+];
+// Ids this viewer has already reported, so the button can show it rather than
+// letting them click into a duplicate-key error.
+const RP_MINE = new Set();
+let RP_IS_MOD = null;   // null = not checked yet this session
+
+function rpClient(){ return window.__plAuth || null; }
+
+// Which of these ids are currently hidden. One RPC per content block, not one
+// per item -- the whole point of hidden_targets taking an array.
+async function rpHidden(targetType, ids){
+  const sb = rpClient();
+  if(!sb || !ids.length) return new Set();
+  try{
+    const { data, error } = await sb.rpc('hidden_targets', {
+      p_target_type: targetType, p_ids: ids
+    });
+    if(error){ console.warn('[report] hidden check failed:', error.message); return new Set(); }
+    return new Set((data || []).map(function(r){ return r.target_id; }));
+  }catch(e){ console.warn('[report] hidden check threw:', e); return new Set(); }
+}
+
+// Everything this viewer has reported, so already-reported items render as
+// such across the page. RLS limits the read to their own rows.
+async function rpLoadMine(){
+  const sb = rpClient();
+  if(!sb) return;
+  try{
+    const { data, error } = await sb.from('content_reports').select('target_id');
+    if(error) return;
+    RP_MINE.clear();
+    (data || []).forEach(function(r){ RP_MINE.add(r.target_id); });
+  }catch(e){}
+}
+
+async function rpIsModerator(){
+  if(RP_IS_MOD !== null) return RP_IS_MOD;
+  const sb = rpClient();
+  if(!sb){ RP_IS_MOD = false; return false; }
+  try{
+    const { data, error } = await sb.rpc('is_moderator');
+    RP_IS_MOD = !error && data === true;
+  }catch(e){ RP_IS_MOD = false; }
+  return RP_IS_MOD;
+}
+
+// The control itself. Nothing is offered to signed-out viewers (the insert
+// would fail on the trigger anyway) or on your own content -- deleting is the
+// right verb for that, and it already exists.
+function rpButton(targetType, targetId, isMine, signedIn){
+  if(!signedIn || isMine) return '';
+  if(RP_MINE.has(targetId)){
+    return '<button type="button" class="rp-btn rp-reported" disabled>Reported</button>';
+  }
+  return '<button type="button" class="rp-btn" data-rp-type="'+esc(targetType)+'" data-rp-id="'+esc(targetId)+'">Report</button>';
+}
+
+function rpHiddenPlaceholder(){
+  return '<div class="rp-hidden">Hidden pending review.</div>';
+}
+
+// One delegated listener for the whole document: report controls are rendered
+// by three different subsystems (comments, ticket messages, show messages)
+// that each re-render independently, so per-render binding would mean three
+// places to keep in sync and leak listeners on every repaint.
+(function rpWire(){
+  document.addEventListener('click', async function(e){
+    const btn = e.target.closest('[data-rp-id]');
+    if(!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+
+    const targetType = btn.getAttribute('data-rp-type');
+    const targetId = btn.getAttribute('data-rp-id');
+    const reason = await rpAskReason();
+    if(!reason) return;
+
+    btn.disabled = true;
+    const sb = rpClient();
+    try{
+      // reporter_id and pending status are both forced by the insert trigger.
+      const { error } = await sb.from('content_reports')
+        .insert({ target_type: targetType, target_id: targetId, reason: reason });
+      if(error){
+        console.warn('[report] failed:', error.message);
+        btn.disabled = false;
+        return;
+      }
+      RP_MINE.add(targetId);
+      btn.textContent = 'Reported';
+      btn.classList.add('rp-reported');
+      // The hide is server-side and immediate; repaint so it takes effect here
+      // without needing a reload.
+      if(typeof reRenderCurrentView === 'function') reRenderCurrentView();
+    }catch(err){
+      console.warn('[report] threw:', err);
+      btn.disabled = false;
+    }
+  });
+})();
+
+// Reason picker. A plain prompt-style list rather than a custom modal: the
+// vocabulary is fixed server-side by a CHECK constraint, so this only has to
+// return one of six known strings.
+function rpAskReason(){
+  return new Promise(function(resolve){
+    const lines = RP_REASONS.map(function(r, i){ return (i+1) + '. ' + r[1]; }).join('\n');
+    const answer = window.prompt('Report this content:\n\n' + lines + '\n\nEnter a number (1-' + RP_REASONS.length + '), or Cancel.');
+    if(answer === null){ resolve(null); return; }
+    const n = parseInt(String(answer).trim(), 10);
+    if(!(n >= 1 && n <= RP_REASONS.length)){ resolve(null); return; }
+    resolve(RP_REASONS[n-1][0]);
+  });
+}
+
+// ---- Moderator review ------------------------------------------------------
+// Rendered only for a moderator, and only when there's something pending --
+// report_queue() returns nothing at all to everyone else, so this is safe to
+// call unconditionally.
+async function mountModPanel(wrap){
+  const sb = rpClient();
+  if(!sb || !wrap) return;
+  if(!(await rpIsModerator())) return;
+
+  let rows = [];
+  try{
+    const { data, error } = await sb.rpc('report_queue');
+    if(error){ console.warn('[moderation] queue failed:', error.message); return; }
+    rows = data || [];
+  }catch(e){ return; }
+  if(!rows.length) return;
+
+  const host = document.createElement('section');
+  host.className = 'mod-panel';
+  host.setAttribute('aria-label', 'Reported content');
+  host.innerHTML = '<h3>Reported (' + rows.length + ')</h3>'
+    + rows.map(function(r){
+        return '<div class="mod-item" data-mod-report="'+esc(r.report_id)+'">'
+          + '<div class="mod-item-meta">'
+            + '<span>' + esc(r.reason) + '</span>'
+            + '<span>' + esc(r.target_type.replace('_', ' ')) + '</span>'
+            + (r.still_exists ? '' : '<span>already deleted</span>')
+          + '</div>'
+          + '<p class="mod-item-body">' + esc(r.body || '(content no longer exists)') + '</p>'
+          + '<div class="mod-item-acts">'
+            + '<button type="button" class="mod-uphold" data-mod-uphold="'+esc(r.report_id)+'">Remove it</button>'
+            + '<button type="button" class="mod-dismiss" data-mod-dismiss="'+esc(r.report_id)+'">Put it back</button>'
+          + '</div>'
+        + '</div>';
+      }).join('');
+  wrap.appendChild(host);
+
+  host.addEventListener('click', async function(e){
+    const up = e.target.closest('[data-mod-uphold]');
+    const dis = e.target.closest('[data-mod-dismiss]');
+    const btn = up || dis;
+    if(!btn) return;
+    e.preventDefault();
+    const id = btn.getAttribute(up ? 'data-mod-uphold' : 'data-mod-dismiss');
+    const item = host.querySelector('[data-mod-report="'+id+'"]');
+    if(item) item.querySelectorAll('button').forEach(function(b){ b.disabled = true; });
+    try{
+      const { error } = await sb.rpc('resolve_report', {
+        p_report_id: id, p_status: up ? 'upheld' : 'dismissed'
+      });
+      if(error){
+        console.warn('[moderation] resolve failed:', error.message);
+        if(item) item.querySelectorAll('button').forEach(function(b){ b.disabled = false; });
+        return;
+      }
+      if(item) item.remove();
+      if(!host.querySelector('[data-mod-report]')) host.remove();
+      if(typeof reRenderCurrentView === 'function') reRenderCurrentView();
+    }catch(err){
+      console.warn('[moderation] resolve threw:', err);
+      if(item) item.querySelectorAll('button').forEach(function(b){ b.disabled = false; });
+    }
+  });
+}
 
 // ===== INBOX (Fork Stage 6c) =====
 // One badge answering "does anyone want anything from me," from any page.
@@ -3064,8 +3301,10 @@ async function wgRenderThread(panel, thread, otherUserId, myUserId, slug, host){
     console.warn('[whosgoing] message load failed:', error.message);
   } else {
     const msgs = data || [];
+    const hiddenSet = await rpHidden('show_message', msgs.map(function(m){ return m.id; }));
+    if(myUserId) await rpLoadMine();
     inner += msgs.length
-      ? '<ul class="tx-msgs">' + msgs.map(function(m){ return txMsgRow(m, myUserId, nameFor); }).join('') + '</ul>'
+      ? '<ul class="tx-msgs">' + msgs.map(function(m){ return txMsgRow(m, myUserId, nameFor, 'show_message', hiddenSet.has(m.id)); }).join('') + '</ul>'
       : '<p class="tx-thread-state">No messages yet. Say hello.</p>';
     if(msgs.length){
       const lastMsg = msgs[msgs.length - 1];
@@ -3153,15 +3392,22 @@ function cmtRelTime(iso){
   return years + (years===1?' year ago':' years ago');
 }
 
-function cmtRow(c, myUserId){
+function cmtRow(c, myUserId, hidden){
   const mine = myUserId && c.user_id === myUserId;
+  // A reported comment keeps its byline but loses its body. Showing who wrote
+  // it and when preserves the thread's shape; showing the text would defeat
+  // the point of hiding it. The author still sees their own Delete.
+  const body = hidden
+    ? rpHiddenPlaceholder()
+    : '<p class="cmt-body">' + esc(c.body || '') + '</p>';
   return '<li class="cmt" data-cmt-id="'+esc(c.id)+'">'
     + '<div class="cmt-top">'
       + '<span class="cmt-name">' + esc(c.display_name || 'Someone') + '</span>'
       + '<span class="cmt-when">' + esc(cmtRelTime(c.created_at)) + '</span>'
       + (mine ? '<button type="button" class="cmt-del" data-cmt-del="'+esc(c.id)+'">Delete</button>' : '')
+      + (hidden ? '' : rpButton('comment', c.id, mine, !!myUserId))
     + '</div>'
-    + '<p class="cmt-body">' + esc(c.body || '') + '</p>'
+    + body
     + '</li>';
 }
 
@@ -3213,13 +3459,17 @@ async function renderComments(host, slug){
   }
 
   const rows = data || [];
+  // Which of these are hidden pending review, and which this viewer already
+  // reported. Both are one round trip for the whole list, not per comment.
+  const hiddenSet = await rpHidden('comment', rows.map(function(c){ return c.id; }));
+  if(myUserId) await rpLoadMine();
   const count = rows.length;
   let html = '<div class="cmts-head"><h3>Comments</h3>'
     + (count ? '<span class="cmts-count">' + count + (count===1?' comment':' comments') + '</span>' : '')
     + '</div>';
 
   html += count
-    ? '<ul class="cmts-list">' + rows.map(function(c){ return cmtRow(c, myUserId); }).join('') + '</ul>'
+    ? '<ul class="cmts-list">' + rows.map(function(c){ return cmtRow(c, myUserId, hiddenSet.has(c.id)); }).join('') + '</ul>'
     : '<div class="cmts-state">No comments yet — be the first.</div>';
 
   if(myUserId){
@@ -4015,6 +4265,10 @@ $('.masthead-brand').addEventListener('click', goHome);
     inboxWire();
     sb.auth.onAuthStateChange(async function(_evt, session){
       state._signedIn = !!(session && session.user);
+      // Moderator status and "what I've reported" are per-account; clearing
+      // them here stops one account's answers being reused for the next.
+      RP_IS_MOD = null;
+      RP_MINE.clear();
       await plLoadUserData();
       reRenderCurrentView();
       // Badge follows the account too -- signing out must clear it, not leave
