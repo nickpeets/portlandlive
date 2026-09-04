@@ -823,6 +823,23 @@ body{
              neither is a built feature (the stub shelf already renders inside
              Saved), so this doesn't add menu items pointing at nothing — same
              call already made for Festivals. -->
+        <!-- Inbox (Fork Stage 6c). The per-post/per-attendee unread dots added
+             earlier only tell you about threads on the page you happen to be
+             looking at; this is the one place that answers "does anyone want
+             anything from me" from anywhere on the site. It deliberately spans
+             BOTH messaging doors -- ticket_threads (spare tickets, open to any
+             signed-in user) and show_threads (fellow attendees) -- because from
+             the reader's side that distinction is an implementation detail.
+             Hidden entirely when signed out. -->
+        <div class="inbox" id="inbox" hidden>
+          <button class="auth-pill inbox-btn" id="inboxBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Messages">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M4 7l8 6 8-6"/></svg>
+            <span class="inbox-badge" id="inboxBadge" hidden>0</span>
+          </button>
+          <div class="inbox-list" id="inboxList" hidden>
+            <div class="inbox-state">Loading…</div>
+          </div>
+        </div>
         <div class="quick-menu" id="quickMenu">
           <button class="auth-pill quick-menu-btn" id="quickMenuBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Menu">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
@@ -2517,6 +2534,211 @@ async function txRenderThread(panel, thread, postId, myUserId, slug, host){
   });
 }
 
+
+// ===== INBOX (Fork Stage 6c) =====
+// One badge answering "does anyone want anything from me," from any page.
+//
+// This spans BOTH messaging doors on purpose. The reader doesn't care that a
+// spare-ticket thread (ticket_threads, open to any signed-in user) and an
+// attendee thread (show_threads, requires both parties on the show's Who's
+// Going list) are separate tables with separate rules -- they're both just
+// "someone messaged me." The per-post and per-attendee unread dots added
+// earlier only fire on the page that owns them; this is the site-wide view.
+//
+// Unread is computed the same way as those dots, against the SAME localStorage
+// seen-map (txSeenMap), so opening a thread on a show page clears it here too
+// and vice versa. Keys: a bare thread id for ticket threads, 'wg:'+id for show
+// threads -- the namespacing that keeps two different tables' uuids from
+// colliding in one map.
+const INBOX = { items: [], open: false };
+
+function inboxClient(){ return window.__plAuth || null; }
+
+async function inboxLoad(){
+  const sb = inboxClient();
+  const wrap = document.getElementById('inbox');
+  if(!sb || !wrap) return;
+
+  let uid = null;
+  try{
+    const { data } = await sb.auth.getSession();
+    uid = data && data.session && data.session.user ? data.session.user.id : null;
+  }catch(e){ uid = null; }
+
+  if(!uid){
+    wrap.hidden = true;
+    INBOX.items = [];
+    inboxRenderBadge();
+    return;
+  }
+  wrap.hidden = false;
+
+  const items = [];
+  try{
+    // ---- Ticket-exchange threads -------------------------------------
+    // show_slug lives on ticket_posts, not the thread, so it comes through
+    // the FK. RLS already limits this to threads I'm a participant in.
+    const tRes = await sb
+      .from('ticket_threads')
+      .select('id,poster_id,requester_id,ticket_posts(show_slug,display_name)');
+    if(tRes.error){
+      console.warn('[inbox] ticket threads failed:', tRes.error.message);
+    } else {
+      (tRes.data || []).forEach(function(t){
+        items.push({
+          kind: 'ticket',
+          seenKey: t.id,
+          threadId: t.id,
+          otherId: t.poster_id === uid ? t.requester_id : t.poster_id,
+          slug: t.ticket_posts ? t.ticket_posts.show_slug : '',
+          label: 'Spare ticket'
+        });
+      });
+    }
+
+    // ---- Who's Going threads -----------------------------------------
+    const sRes = await sb
+      .from('show_threads')
+      .select('id,show_slug,user_a,user_b');
+    if(sRes.error){
+      console.warn('[inbox] show threads failed:', sRes.error.message);
+    } else {
+      (sRes.data || []).forEach(function(t){
+        items.push({
+          kind: 'show',
+          seenKey: 'wg:' + t.id,
+          threadId: t.id,
+          otherId: t.user_a === uid ? t.user_b : t.user_a,
+          slug: t.show_slug,
+          label: 'Going'
+        });
+      });
+    }
+
+    if(!items.length){ INBOX.items = []; inboxRenderBadge(); return; }
+
+    // ---- Latest message per thread, per table ------------------------
+    const ticketIds = items.filter(function(i){ return i.kind === 'ticket'; }).map(function(i){ return i.threadId; });
+    const showIds = items.filter(function(i){ return i.kind === 'show'; }).map(function(i){ return i.threadId; });
+    const latest = {};
+
+    if(ticketIds.length){
+      const r = await sb.from('ticket_messages')
+        .select('thread_id,sender_id,body,created_at')
+        .in('thread_id', ticketIds)
+        .order('created_at', { ascending: false });
+      if(!r.error) (r.data || []).forEach(function(m){
+        if(!latest['t:' + m.thread_id]) latest['t:' + m.thread_id] = m;
+      });
+    }
+    if(showIds.length){
+      const r = await sb.from('show_messages')
+        .select('thread_id,sender_id,body,created_at')
+        .in('thread_id', showIds)
+        .order('created_at', { ascending: false });
+      if(!r.error) (r.data || []).forEach(function(m){
+        if(!latest['s:' + m.thread_id]) latest['s:' + m.thread_id] = m;
+      });
+    }
+
+    // ---- Names of the people on the other end ------------------------
+    // Readable via the participant-scoped profiles policies each door added.
+    const otherIds = [...new Set(items.map(function(i){ return i.otherId; }).filter(Boolean))];
+    const names = {};
+    if(otherIds.length){
+      const r = await sb.from('profiles').select('id,display_name').in('id', otherIds);
+      if(!r.error) (r.data || []).forEach(function(p){ names[p.id] = p.display_name; });
+    }
+
+    const seen = txSeenMap();
+    INBOX.items = items.map(function(i){
+      const m = latest[(i.kind === 'ticket' ? 't:' : 's:') + i.threadId];
+      const unread = !!(m && m.sender_id !== uid
+        && (!seen[i.seenKey] || new Date(m.created_at) > new Date(seen[i.seenKey])));
+      return Object.assign({}, i, {
+        who: names[i.otherId] || 'Someone',
+        snippet: m ? m.body : '',
+        at: m ? m.created_at : '',
+        unread: unread,
+        empty: !m
+      });
+    })
+    // An empty thread (created but never written to) is noise in a list whose
+    // job is "who said something," so it's dropped rather than shown blank.
+    .filter(function(i){ return !i.empty; })
+    .sort(function(a, b){
+      if(a.unread !== b.unread) return a.unread ? -1 : 1;   // unread first
+      return String(b.at).localeCompare(String(a.at));       // then newest
+    });
+  }catch(e){
+    console.warn('[inbox] load threw:', e);
+  }
+
+  inboxRenderBadge();
+  if(INBOX.open) inboxRenderList();
+}
+
+function inboxRenderBadge(){
+  const badge = document.getElementById('inboxBadge');
+  if(!badge) return;
+  const n = INBOX.items.filter(function(i){ return i.unread; }).length;
+  badge.textContent = n > 9 ? '9+' : String(n);
+  badge.hidden = n === 0;
+}
+
+function inboxRenderList(){
+  const list = document.getElementById('inboxList');
+  if(!list) return;
+  if(!INBOX.items.length){
+    list.innerHTML = '<div class="inbox-state">No messages yet.</div>';
+    return;
+  }
+  list.innerHTML = INBOX.items.map(function(i){
+    return '<button type="button" class="inbox-item" data-inbox-slug="'+esc(i.slug||'')+'">'
+      + '<span class="inbox-item-top">'
+        + '<span class="inbox-item-who">' + esc(i.who) + '</span>'
+        + (i.unread ? '<span class="inbox-item-dot" aria-label="unread"></span>' : '')
+      + '</span>'
+      + '<span class="inbox-item-show">' + esc(i.label) + '</span>'
+      + '<span class="inbox-item-snip">' + esc(i.snippet || '') + '</span>'
+      + '</button>';
+  }).join('');
+}
+
+function inboxWire(){
+  const btn = document.getElementById('inboxBtn');
+  const list = document.getElementById('inboxList');
+  const wrap = document.getElementById('inbox');
+  if(!btn || !list || !wrap) return;
+
+  btn.addEventListener('click', function(e){
+    e.stopPropagation();
+    INBOX.open = !INBOX.open;
+    list.hidden = !INBOX.open;
+    btn.setAttribute('aria-expanded', INBOX.open ? 'true' : 'false');
+    if(INBOX.open){ inboxRenderList(); inboxLoad(); }
+  });
+
+  // Clicking a row goes to the show that owns the thread. It deliberately does
+  // NOT mark anything read here -- opening the actual thread on the show page
+  // is what counts as reading, same rule both doors already use.
+  list.addEventListener('click', function(e){
+    const item = e.target.closest('[data-inbox-slug]');
+    if(!item) return;
+    const slug = item.getAttribute('data-inbox-slug');
+    INBOX.open = false; list.hidden = true;
+    btn.setAttribute('aria-expanded', 'false');
+    if(slug) location.hash = '#/show/' + encodeURIComponent(slug);
+  });
+
+  document.addEventListener('click', function(e){
+    if(!INBOX.open) return;
+    if(wrap.contains(e.target)) return;
+    INBOX.open = false; list.hidden = true;
+    btn.setAttribute('aria-expanded', 'false');
+  });
+}
+
 // ===== WHO'S GOING (Fork Stage 6) =====
 // Public attendee list for one show (schema-show-attendees.sql), plus a
 // SEPARATE messaging door scoped to "you're both marked as going to this
@@ -3790,10 +4012,14 @@ $('.masthead-brand').addEventListener('click', goHome);
       return;
     }
     clearInterval(tick);
+    inboxWire();
     sb.auth.onAuthStateChange(async function(_evt, session){
       state._signedIn = !!(session && session.user);
       await plLoadUserData();
       reRenderCurrentView();
+      // Badge follows the account too -- signing out must clear it, not leave
+      // the previous user's count sitting in the header.
+      inboxLoad();
     });
   }, 100);
 })();
@@ -3825,6 +4051,24 @@ load();
 .quick-menu{position:relative}
 .quick-menu-btn svg{width:15px;height:15px}
 .quick-menu-caret{font-size:11px}
+/* Inbox (Fork Stage 6c) -- sits beside the quick menu and mirrors its
+   trigger/dropdown geometry so the two read as one control cluster. */
+.inbox{position:relative}
+.inbox[hidden]{display:none}
+.inbox-btn{position:relative}
+.inbox-btn svg{width:15px;height:15px}
+.inbox-badge{position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;padding:0 4px;border-radius:999px;background:var(--rust);color:var(--cream);font-family:'Oswald',sans-serif;font-size:10px;font-weight:600;line-height:16px;text-align:center}
+.inbox-badge[hidden]{display:none}
+.inbox-list{position:absolute;top:calc(100% + 8px);right:0;background:var(--cream);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.25);overflow:hidden;width:290px;max-height:60vh;overflow-y:auto;padding:6px;display:flex;flex-direction:column;gap:2px;z-index:60}
+.inbox-list[hidden]{display:none}
+.inbox-state{font-family:'Bitter',Georgia,serif;font-size:12.5px;color:var(--ink);opacity:.75;padding:10px}
+.inbox-item{display:block;width:100%;text-align:left;border:0;background:transparent;cursor:pointer;border-radius:8px;padding:9px 10px;font-family:inherit}
+.inbox-item:hover{background:rgba(61,87,74,.1)}
+.inbox-item-top{display:flex;align-items:baseline;gap:6px}
+.inbox-item-who{font-family:'Oswald',sans-serif;font-size:11.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--forest)}
+.inbox-item-dot{width:7px;height:7px;border-radius:999px;background:var(--rust);flex:0 0 auto;margin-left:auto}
+.inbox-item-show{font-family:'Bitter',Georgia,serif;font-size:12.5px;color:var(--ink);margin-top:2px;overflow-wrap:anywhere}
+.inbox-item-snip{font-family:'Bitter',Georgia,serif;font-size:11.5px;color:var(--ink);opacity:.7;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .quick-menu-list{position:absolute;top:calc(100% + 8px);right:0;background:var(--cream);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.25);overflow:hidden;min-width:180px;padding:6px;display:flex;flex-direction:column;gap:2px}
 .quick-menu-list[hidden]{display:none}
 .quick-menu-pill{background:transparent;border:0;color:var(--ink);padding:9px 10px;border-radius:7px;width:100%;box-sizing:border-box}
