@@ -766,6 +766,21 @@ body{
 .rp-btn:hover,.rp-btn:focus-visible{opacity:1;color:var(--rust-deep);background:rgba(181,86,43,.1)}
 .rp-btn:disabled{cursor:default}
 .rp-btn.rp-reported{opacity:.85;color:var(--rust-deep)}
+/* Avatars (Fork Stage 9). Everyone gets a circle: a photo when they've set
+   one, otherwise their initial on a colour derived from their user id. That
+   deterministic fallback means layout never shifts depending on whether a
+   photo exists, and no row is ever visually "empty". */
+.av{width:26px;height:26px;border-radius:999px;flex:0 0 auto;object-fit:cover;background:var(--forest);display:inline-flex;align-items:center;justify-content:center;font-family:'Oswald',sans-serif;font-size:11px;font-weight:600;color:var(--cream);text-transform:uppercase;overflow:hidden;line-height:1}
+.av-lg{width:56px;height:56px;font-size:22px}
+.cmt-top .av,.tx-msg-top .av,.wg-row .av{margin-right:2px}
+.wg-row .av{width:30px;height:30px;font-size:12px}
+/* Avatar editor, in the header menu under the account row. */
+.av-edit{display:flex;align-items:center;gap:10px;padding:8px 10px}
+.av-edit-acts{display:flex;flex-direction:column;gap:4px}
+.av-edit-btn{border:0;background:none;cursor:pointer;font-family:'Oswald',sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--forest);padding:2px 0;text-align:left}
+.av-edit-btn:hover{color:var(--rust-deep)}
+.av-edit-btn:disabled{opacity:.5;cursor:default}
+.av-edit-note{font-family:'Bitter',Georgia,serif;font-size:10.5px;color:#7c6a55;padding:0 10px 8px}
 .cmt-top .rp-btn{margin-left:auto}
 .cmt-top .cmt-del + .rp-btn,.cmt-top .rp-btn + .cmt-del{margin-left:0}
 /* Content hidden pending review. Deliberately leaves a visible placeholder
@@ -876,6 +891,7 @@ body{
           </button>
           <div class="quick-menu-list" id="quickMenuList" hidden>
             <div class="quick-menu-account" id="quickMenuAccount">Signed in as <span id="authDisplayName"></span></div>
+            <div id="avEditor" hidden></div>
             <label class="pill quick-menu-pill my-shows" title="Show everything you have favorited — shows, bands, and venues">
               <span class="toggle" id="myShowsToggle"></span>
               <span>Saved</span>
@@ -2412,6 +2428,7 @@ function txMsgRow(m, myUserId, nameFor, targetType, hidden){
     : '<p class="tx-msg-body">' + esc(m.body || '') + '</p>';
   return '<li class="tx-msg' + (mine ? ' tx-msg-mine' : '') + '">'
     + '<div class="tx-msg-top">'
+      + avImg(m.sender_id, mine ? '' : nameFor)
       + '<span class="tx-msg-who">' + esc(mine ? 'You' : nameFor) + '</span>'
       + '<span class="tx-msg-when">' + esc(cmtRelTime(m.created_at)) + '</span>'
       + (hidden || !targetType ? '' : rpButton(targetType, m.id, mine, !!myUserId))
@@ -2502,6 +2519,7 @@ async function txRenderThread(panel, thread, postId, myUserId, slug, host){
   } else {
     const msgs = data || [];
     const hiddenSet = await rpHidden('ticket_message', msgs.map(function(m){ return m.id; }));
+    await avLoad(msgs.map(function(m){ return m.sender_id; }));
     if(myUserId) await rpLoadMine();
     inner += msgs.length
       ? '<ul class="tx-msgs">' + msgs.map(function(m){ return txMsgRow(m, myUserId, nameFor, 'ticket_message', hiddenSet.has(m.id)); }).join('') + '</ul>'
@@ -2576,6 +2594,185 @@ async function txRenderThread(panel, thread, postId, myUserId, slug, host){
 }
 
 
+
+
+// ===== AVATARS (Fork Stage 9) =====
+// A photo where someone has set one, a deterministic initial-circle where
+// they haven't. Two reasons for that fallback rather than a blank space:
+// layout never shifts depending on whether a photo exists, and nobody's row
+// looks broken just because they never uploaded anything.
+//
+// Uploaded images are the most abuse-prone thing here, which is why Stage 8's
+// reporting exists first -- an avatar is reportable exactly like a comment
+// (target_type 'avatar'), and upholding clears it. Still reactive: an image
+// is visible between upload and the first report.
+const AV_BUCKET_BASE = 'https://mhdysfdqoqrohlltgsig.supabase.co/storage/v1/object/public/avatars/';
+const AV_MAX_BYTES = 2 * 1024 * 1024;
+const AV_TYPES = ['image/jpeg','image/png','image/webp','image/gif'];
+// display_name/avatar_url by user id, filled per render. Avatars appear beside
+// content that already carries a denormalized display_name, so this is only
+// consulted for the picture.
+const AV_CACHE = {};
+
+function avClient(){ return window.__plAuth || null; }
+
+// Stable colour from the user id, so the same person is the same colour on
+// every page and across sessions without storing anything.
+function avColor(userId){
+  const palette = ['#3d574a','#b5562b','#4a6b8a','#7a4a6b','#6b5a3a','#3a5f5f'];
+  const s = String(userId || '');
+  let h = 0;
+  for(let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  return palette[h % palette.length];
+}
+
+function avInitial(name){
+  const t = String(name || '').trim();
+  return t ? t[0] : '?';
+}
+
+// One markup helper used everywhere an identity appears, so avatars can't
+// drift between comments, threads, attendee rows and the header.
+function avImg(userId, displayName, extraClass){
+  const cls = 'av' + (extraClass ? ' ' + extraClass : '');
+  const cached = AV_CACHE[userId];
+  const url = cached && cached.avatar_url;
+  const name = displayName || (cached && cached.display_name) || '';
+  if(url){
+    return '<img class="'+cls+'" src="'+esc(url)+'" alt="" loading="lazy" decoding="async">';
+  }
+  return '<span class="'+cls+'" style="background:'+esc(avColor(userId))+'" aria-hidden="true">'
+    + esc(avInitial(name)) + '</span>';
+}
+
+// Bulk-load avatars for the ids about to be rendered. One query per content
+// block, not one per row.
+async function avLoad(userIds){
+  const sb = avClient();
+  const ids = [...new Set((userIds || []).filter(Boolean))].filter(function(id){ return !(id in AV_CACHE); });
+  if(!sb || !ids.length) return;
+  try{
+    const { data, error } = await sb.from('profiles').select('id,display_name,avatar_url').in('id', ids);
+    if(error){ console.warn('[avatars] load failed:', error.message); return; }
+    (data || []).forEach(function(p){ AV_CACHE[p.id] = p; });
+    // Remember the misses too, so a missing profile isn't re-queried on every
+    // single render.
+    ids.forEach(function(id){ if(!(id in AV_CACHE)) AV_CACHE[id] = { id: id, display_name: null, avatar_url: null }; });
+  }catch(e){ console.warn('[avatars] load threw:', e); }
+}
+
+// ---- Upload -----------------------------------------------------------------
+// Path is <user_id>.<ext>, which is exactly what the storage policies check:
+// a user physically cannot write a filename another user's policy would match.
+async function avUpload(file){
+  const sb = avClient();
+  if(!sb) return { ok:false, msg:'Unavailable right now.' };
+  if(!file) return { ok:false, msg:'No file chosen.' };
+  if(AV_TYPES.indexOf(file.type) === -1) return { ok:false, msg:'JPEG, PNG, WebP or GIF only.' };
+  if(file.size > AV_MAX_BYTES) return { ok:false, msg:'Keep it under 2 MB.' };
+
+  let uid = null;
+  try{
+    const { data } = await sb.auth.getSession();
+    uid = data && data.session && data.session.user ? data.session.user.id : null;
+  }catch(e){}
+  if(!uid) return { ok:false, msg:'Sign in first.' };
+
+  const ext = ({ 'image/jpeg':'jpg', 'image/png':'png', 'image/webp':'webp', 'image/gif':'gif' })[file.type];
+  const path = uid + '.' + ext;
+  try{
+    // upsert so replacing a photo overwrites rather than accumulating files.
+    const up = await sb.storage.from('avatars').upload(path, file, { upsert: true, contentType: file.type });
+    if(up.error) return { ok:false, msg:'Upload failed.' };
+    // Cache-busting query: the path is stable across replacements, so without
+    // it a new photo would keep showing the old cached image.
+    const url = AV_BUCKET_BASE + path + '?v=' + Date.now();
+    const { error } = await sb.from('profiles').update({ avatar_url: url }).eq('id', uid);
+    if(error) return { ok:false, msg:'Saved the file but not the profile.' };
+    AV_CACHE[uid] = Object.assign({}, AV_CACHE[uid] || {}, { avatar_url: url });
+    return { ok:true, url: url };
+  }catch(e){
+    console.warn('[avatars] upload threw:', e);
+    return { ok:false, msg:'Upload failed.' };
+  }
+}
+
+async function avRemove(){
+  const sb = avClient();
+  if(!sb) return false;
+  let uid = null;
+  try{
+    const { data } = await sb.auth.getSession();
+    uid = data && data.session && data.session.user ? data.session.user.id : null;
+  }catch(e){}
+  if(!uid) return false;
+  const { error } = await sb.from('profiles').update({ avatar_url: null }).eq('id', uid);
+  if(error){ console.warn('[avatars] remove failed:', error.message); return false; }
+  if(AV_CACHE[uid]) AV_CACHE[uid].avatar_url = null;
+  return true;
+}
+
+// ---- Editor in the header menu ---------------------------------------------
+async function avRenderEditor(){
+  const slot = document.getElementById('avEditor');
+  if(!slot) return;
+  const sb = avClient();
+  let uid = null, name = '';
+  try{
+    const { data } = await sb.auth.getSession();
+    if(data && data.session && data.session.user){
+      uid = data.session.user.id;
+    }
+  }catch(e){}
+  if(!uid){ slot.hidden = true; slot.innerHTML = ''; return; }
+
+  await avLoad([uid]);
+  const me = AV_CACHE[uid] || {};
+  name = me.display_name || '';
+  slot.hidden = false;
+  slot.innerHTML = '<div class="av-edit">'
+      + avImg(uid, name, 'av-lg')
+      + '<div class="av-edit-acts">'
+        + '<button type="button" class="av-edit-btn" data-av-pick>'
+          + (me.avatar_url ? 'Change photo' : 'Add a photo') + '</button>'
+        + (me.avatar_url ? '<button type="button" class="av-edit-btn" data-av-remove>Remove</button>' : '')
+      + '</div>'
+      + '<input type="file" accept="image/jpeg,image/png,image/webp,image/gif" hidden data-av-file>'
+    + '</div>'
+    + '<div class="av-edit-note" data-av-note>Under 2 MB. Everyone can see it.</div>';
+
+  const fileInput = slot.querySelector('[data-av-file]');
+  const note = slot.querySelector('[data-av-note]');
+  const pick = slot.querySelector('[data-av-pick]');
+  const rem = slot.querySelector('[data-av-remove]');
+
+  if(pick) pick.addEventListener('click', function(){ fileInput.click(); });
+
+  fileInput.addEventListener('change', async function(){
+    const f = fileInput.files && fileInput.files[0];
+    if(!f) return;
+    if(pick) pick.disabled = true;
+    note.textContent = 'Uploading…';
+    const r = await avUpload(f);
+    if(!r.ok){
+      note.textContent = r.msg;
+      if(pick) pick.disabled = false;
+      return;
+    }
+    await avRenderEditor();
+    if(typeof reRenderCurrentView === 'function') reRenderCurrentView();
+  });
+
+  if(rem) rem.addEventListener('click', async function(){
+    rem.disabled = true;
+    if(await avRemove()){
+      await avRenderEditor();
+      if(typeof reRenderCurrentView === 'function') reRenderCurrentView();
+    } else {
+      rem.disabled = false;
+    }
+  });
+}
 
 // ===== REPORTING & MODERATION (Fork Stage 8) =====
 // Backed by content_reports / hidden_targets() / report_queue() /
@@ -2749,7 +2946,9 @@ async function mountModPanel(wrap){
             + '<span>' + esc(r.target_type.replace('_', ' ')) + '</span>'
             + (r.still_exists ? '' : '<span>already deleted</span>')
           + '</div>'
-          + '<p class="mod-item-body">' + esc(r.body || '(content no longer exists)') + '</p>'
+          + (r.target_type === 'avatar' && r.body
+              ? '<p class="mod-item-body"><img class="av av-lg" src="'+esc(r.body)+'" alt="Reported photo"></p>'
+              : '<p class="mod-item-body">' + esc(r.body || '(content no longer exists)') + '</p>')
           + '<div class="mod-item-acts">'
             + '<button type="button" class="mod-uphold" data-mod-uphold="'+esc(r.report_id)+'">Remove it</button>'
             + '<button type="button" class="mod-dismiss" data-mod-dismiss="'+esc(r.report_id)+'">Put it back</button>'
@@ -2925,6 +3124,7 @@ async function inboxLoad(){
     console.warn('[inbox] load threw:', e);
   }
 
+  await avLoad(INBOX.items.map(function(i){ return i.otherId; }));
   inboxRenderBadge();
   if(INBOX.open) inboxRenderList();
 }
@@ -2947,6 +3147,7 @@ function inboxRenderList(){
   list.innerHTML = INBOX.items.map(function(i){
     return '<button type="button" class="inbox-item" data-inbox-slug="'+esc(i.slug||'')+'">'
       + '<span class="inbox-item-top">'
+        + avImg(i.otherId, i.who)
         + '<span class="inbox-item-who">' + esc(i.who) + '</span>'
         + (i.unread ? '<span class="inbox-item-dot" aria-label="unread"></span>' : '')
       + '</span>'
@@ -3056,6 +3257,7 @@ async function renderWhosGoing(host, slug){
 
   const rows = data || [];
   WG_THREADS._attendees = rows;
+  await avLoad(rows.map(function(r){ return r.user_id; }));
   const iAmGoing = !!(myUserId && rows.some(function(r){ return r.user_id === myUserId; }));
 
   // The messaging door only opens between two people already on this list --
@@ -3102,7 +3304,14 @@ function wgRow(r, myUserId, iAmGoing){
     actions = '<button type="button" class="tx-msgbtn' + (unread ? ' tx-msgbtn-unread' : '') + '" data-wg-open="'+esc(r.user_id)+'">'
       + (existing ? (unread ? 'New message' : 'View messages') : 'Message') + '</button>';
   }
+  // An avatar has no row of its own, so it's reported by its owner's user id
+  // (target_type 'avatar'). Only offered where there's actually a photo to
+  // report -- an initial-circle can't be objectionable.
+  if(myUserId && !mine && AV_CACHE[r.user_id] && AV_CACHE[r.user_id].avatar_url){
+    actions += rpButton('avatar', r.user_id, false, true);
+  }
   return '<li class="wg-row" data-wg-id="'+esc(r.user_id)+'">'
+    + avImg(r.user_id, r.display_name)
     + '<span class="wg-name">' + esc(r.display_name || 'Someone') + (mine ? ' (you)' : '') + '</span>'
     + '<span class="tx-actions">' + actions + '</span>'
     + '<div class="tx-thread" data-wg-thread-for="'+esc(r.user_id)+'" hidden></div>'
@@ -3316,6 +3525,7 @@ async function wgRenderThread(panel, thread, otherUserId, myUserId, slug, host){
   } else {
     const msgs = data || [];
     const hiddenSet = await rpHidden('show_message', msgs.map(function(m){ return m.id; }));
+    await avLoad(msgs.map(function(m){ return m.sender_id; }));
     if(myUserId) await rpLoadMine();
     inner += msgs.length
       ? '<ul class="tx-msgs">' + msgs.map(function(m){ return txMsgRow(m, myUserId, nameFor, 'show_message', hiddenSet.has(m.id)); }).join('') + '</ul>'
@@ -3416,6 +3626,7 @@ function cmtRow(c, myUserId, hidden){
     : '<p class="cmt-body">' + esc(c.body || '') + '</p>';
   return '<li class="cmt" data-cmt-id="'+esc(c.id)+'">'
     + '<div class="cmt-top">'
+      + avImg(c.user_id, c.display_name)
       + '<span class="cmt-name">' + esc(c.display_name || 'Someone') + '</span>'
       + '<span class="cmt-when">' + esc(cmtRelTime(c.created_at)) + '</span>'
       + (mine ? '<button type="button" class="cmt-del" data-cmt-del="'+esc(c.id)+'">Delete</button>' : '')
@@ -3476,6 +3687,7 @@ async function renderComments(host, slug){
   // Which of these are hidden pending review, and which this viewer already
   // reported. Both are one round trip for the whole list, not per comment.
   const hiddenSet = await rpHidden('comment', rows.map(function(c){ return c.id; }));
+  await avLoad(rows.map(function(c){ return c.user_id; }));
   if(myUserId) await rpLoadMine();
   const count = rows.length;
   let html = '<div class="cmts-head"><h3>Comments</h3>'
@@ -4283,6 +4495,9 @@ $('.masthead-brand').addEventListener('click', goHome);
       // them here stops one account's answers being reused for the next.
       RP_IS_MOD = null;
       RP_MINE.clear();
+      // Avatars are per-account only insofar as WHOSE editor shows; the cache
+      // itself is keyed by user id so it stays valid across a sign-out.
+      avRenderEditor();
       await plLoadUserData();
       reRenderCurrentView();
       // Badge follows the account too -- signing out must clear it, not leave
