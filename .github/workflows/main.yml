@@ -12,7 +12,15 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install deps
-        run: pip install requests beautifulsoup4 python-dateutil
+        run: pip install requests beautifulsoup4 python-dateutil playwright
+      # Headless-browser tier for the two bot-walled venues (Goodfoot, Music
+      # Millennium). Chromium + its system libs; ~1 min. Only sources flagged
+      # walled use it -- the other 34 stay on plain requests. If this step
+      # fails, the walled venues WARN and skip; the rest of the scrape is
+      # unaffected (continue-on-error below already covers that).
+      - name: Install headless Chromium
+        continue-on-error: true
+        run: python3 -m playwright install chromium --with-deps
       - name: Scrape venue calendars
         continue-on-error: true
         run: python3 scrape_venues.py

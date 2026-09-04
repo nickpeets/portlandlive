@@ -69,6 +69,7 @@ VENUE_INFO = {
     "Al's Den": ("West End/Downtown", "303 SW 12th Ave, Portland, OR 97205"),
     "Mission Theater": ("Nob Hill/NW", "1624 NW Glisan St, Portland, OR 97209"),
     "Kennedy School": ("Concordia", "5736 NE 33rd Ave, Portland, OR 97211"),
+    "The Goodfoot": ("Buckman", "2845 SE Stark St, Portland, OR 97214"),
     "Arlene Schnitzer Concert Hall": ("Downtown", "1037 SW Broadway"),
     "Paramount Theatre": ("Downtown", "911 SW Salmon St"),
     "The Old Church": ("Downtown", "1422 SW 11th Ave"),
@@ -1927,6 +1928,67 @@ def parse_cascades(html, today):
     return out
 
 
+# ---- The Goodfoot (thegoodfoot.com) -- WALLED, headless tier -----------------
+# Cloudflare challenges every path on this site, REST API and iCal included
+# (verified Sep 2026). The site runs WordPress + The Events Calendar, whose JSON
+# API is the cleanest possible source -- so the headless fetcher clears the
+# challenge on the homepage, then reads /wp-json/tribe/events/v1/events in the
+# same browser session with the clearance cookie. Structured data, no HTML
+# scraping, no fragile selectors.
+#
+# The `html` argument is ignored: this parser does its own fetch. It's the
+# `walled` flag on the SOURCES entry that routes it here instead of fetch().
+GOODFOOT_HOME = "https://www.thegoodfoot.com/"
+GOODFOOT_API = ("https://www.thegoodfoot.com/wp-json/tribe/events/v1/events"
+                "?per_page=50&start_date=now")
+
+# Goodfoot has a music room downstairs and a pub upstairs; the pub's trivia and
+# hangout nights come through the same API. Drop the recognizable pub-only
+# formats. Comedy is deliberately NOT filtered: "Laugh Basement" is a real
+# recurring stand-up night and belongs in the Comedy section, not the trash.
+_GOODFOOT_NONMUSIC = re.compile(
+    r"triviology|trivia|pub\s*quiz|upstairs\s*pub|bingo|karaoke", re.I)
+
+def parse_goodfoot(html, today):
+    from fetch_headless import fetch_headless_json
+    import html as _html
+    data = fetch_headless_json(GOODFOOT_HOME, GOODFOOT_API)
+    events = data.get("events", []) if isinstance(data, dict) else []
+    nb, addr = VENUE_INFO.get("The Goodfoot", ("Buckman", "2845 SE Stark St"))
+    out, seen = [], set()
+    for ev in events:
+        # The API returns entity-encoded titles ("&#038;"); decode here so the
+        # intermediate file is clean rather than relying on a later pass.
+        title = clean(_html.unescape(re.sub(r"<[^>]+>", "", ev.get("title") or "")))
+        start = ev.get("start_date") or ""          # "2026-09-05 21:00:00"
+        if not title or len(start) < 10:
+            continue
+        if _GOODFOOT_NONMUSIC.search(title):
+            continue
+        date = start[:10]
+        tm = ""
+        try:
+            hh, mm = int(start[11:13]), int(start[14:16])
+            ampm = "AM" if hh < 12 else "PM"
+            h12 = hh % 12 or 12
+            tm = f"{h12}:{mm:02d} {ampm}"
+        except (ValueError, IndexError):
+            pass
+        url = (ev.get("url") or GOODFOOT_HOME).split("?")[0]
+        img = ""
+        image = ev.get("image")
+        if isinstance(image, dict):
+            img = image.get("url") or ""
+        key = (date, title.lower())
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append({"title": title, "venue": "The Goodfoot", "neighborhood": nb,
+                    "address": addr, "date": date, "time": tm,
+                    "venueUrl": url, "imageUrl": img})
+    return out
+
+
 def parse_novapdx(html, today):
     # NOVA PDX (Buckman, 722 E Burnside) -- venue's own Webflow site, Tixr buy-links.
     # .b-venue holds the FULL date with year (e.g. 'June 14, 2026') -- parse directly, no year inference.
@@ -2634,6 +2696,8 @@ SOURCES = [
      "urls": ["https://mississippistudios.com/"]},
     {"name": "Mammoth NW", "parser": parse_mammoth,
      "urls": ["https://roselandpdx.com/events/"]},
+    {"name": "The Goodfoot", "parser": parse_goodfoot, "walled": True,
+     "urls": ["https://www.thegoodfoot.com/"]},
     {"name": "Dante's", "parser": parse_dantes,
      "urls": ["https://www.danteslive.com/",
               "https://www.danteslive.com/page/2/",
@@ -2653,7 +2717,13 @@ def scrape():
             # bot-challenge, shape change) must NOT abort the scrape or lose the
             # other venues. Log loudly and continue.
             try:
-                got.extend(src["parser"](fetch(url), today))
+                if src.get("walled"):
+                    # Headless tier: the parser owns its own fetch (see
+                    # fetch_headless.py). fetch() would only get the
+                    # challenge page back.
+                    got.extend(src["parser"](None, today))
+                else:
+                    got.extend(src["parser"](fetch(url), today))
             except Exception as e:
                 print(f"  WARN: {src['name']} parser failed: {type(e).__name__}: {e} ({url})")
         got = [s for s in got if lower <= s["date"] <= horizon]
