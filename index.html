@@ -3041,7 +3041,7 @@ async function inboxLoad(){
           threadId: t.id,
           otherId: t.poster_id === uid ? t.requester_id : t.poster_id,
           slug: t.ticket_posts ? t.ticket_posts.show_slug : '',
-          label: 'Spare ticket'
+          kindLabel: 'Spare ticket'
         });
       });
     }
@@ -3060,7 +3060,7 @@ async function inboxLoad(){
           threadId: t.id,
           otherId: t.user_a === uid ? t.user_b : t.user_a,
           slug: t.show_slug,
-          label: 'Going'
+          kindLabel: 'Going'
         });
       });
     }
@@ -3131,6 +3131,18 @@ async function inboxLoad(){
   if(INBOX.open && INBOX.viewing === null) inboxRenderList();
 }
 
+// "Going" / "Spare ticket" on its own says which TABLE the thread came from,
+// which is meaningless to a reader. What they need is which show it's about,
+// so the slug is resolved against the feed that's already in memory and the
+// kind is demoted to a suffix.
+function inboxShowLabel(item){
+  // Matches how the router and cards derive a slug (see renderShowRoute).
+  const s = (state.shows || []).find(function(x){ return (x._slug || x.slug || makeSlug(x)) === item.slug; });
+  const name = s ? (s.title + ' · ' + s.venue) : '';
+  if(!name) return item.kindLabel || '';
+  return name + (item.kindLabel ? ' · ' + item.kindLabel.toLowerCase() : '');
+}
+
 function inboxRenderBadge(){
   const badge = document.getElementById('inboxBadge');
   if(!badge) return;
@@ -3154,7 +3166,7 @@ function inboxRenderList(){
         + '<span class="inbox-item-who">' + esc(i.who) + '</span>'
         + (i.unread ? '<span class="inbox-item-dot" aria-label="unread"></span>' : '')
       + '</span>'
-      + '<span class="inbox-item-show">' + esc(i.label) + '</span>'
+      + '<span class="inbox-item-show">' + esc(inboxShowLabel(i)) + '</span>'
       + '<span class="inbox-item-snip">' + esc(i.snippet || '') + '</span>'
       + '</button>';
   }).join('');
@@ -3182,6 +3194,7 @@ async function inboxOpenThread(idx){
       + avImg(item.otherId, item.who)
       + '<span class="inbox-thread-who">' + esc(item.who) + '</span>'
     + '</div>'
+    + '<div class="inbox-thread-about">' + esc(inboxShowLabel(item)) + '</div>'
     + '<div class="inbox-state">Loading…</div>';
 
   let uid = null;
@@ -4693,6 +4706,7 @@ load();
 .inbox-thread-head{display:flex;align-items:center;gap:8px;padding:6px 8px 8px;border-bottom:1px solid rgba(124,106,85,.25);margin-bottom:6px}
 .inbox-back{border:0;background:none;cursor:pointer;font-size:16px;line-height:1;color:var(--forest);padding:2px 6px;border-radius:6px}
 .inbox-back:hover{background:rgba(61,87,74,.12)}
+.inbox-thread-about{font-family:'Bitter',Georgia,serif;font-size:11px;color:#7c6a55;padding:0 8px 6px;overflow-wrap:anywhere}
 .inbox-thread-who{font-family:'Oswald',sans-serif;font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--forest)}
 .inbox-msgs{list-style:none;margin:0;padding:0 4px;display:flex;flex-direction:column;gap:6px;max-height:38vh;overflow-y:auto}
 .inbox-msg{display:flex}
