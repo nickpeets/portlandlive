@@ -37,6 +37,7 @@
     signInBtn: $("authSignInBtn"),
     userPill: $("authUserPill"),
     displayName: $("authDisplayName"),
+    quickMenuAccount: $("quickMenuAccount"),
     menuBtn: $("authMenuBtn"),
     menu: $("authMenu"),
     logoutBtn: $("authLogoutBtn"),
@@ -93,6 +94,13 @@
     el.signInBtn.hidden = false;
     el.userPill.hidden = true;
     el.menu.hidden = true;
+    // #authUserPill above is the RETIRED container (permanently hidden; kept
+    // only because this file still looks it up by id). The row people actually
+    // see is #quickMenuAccount inside the header quick-menu, and nothing was
+    // clearing it -- so after signing out the header kept saying "Signed in as
+    // <name>" until a reload. Clear the visible one too.
+    if (el.quickMenuAccount) el.quickMenuAccount.hidden = true;
+    if (el.displayName) el.displayName.textContent = "";
   }
 
   function renderLoggedIn(displayName) {
@@ -100,6 +108,7 @@
     el.userPill.hidden = false;
     el.displayName.textContent = displayName || "Account";
     el.menu.hidden = true;
+    if (el.quickMenuAccount) el.quickMenuAccount.hidden = false;
   }
 
   async function fetchDisplayName(userId) {
