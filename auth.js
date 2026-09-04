@@ -227,6 +227,15 @@
 
   async function handleLogout() {
     el.menu.hidden = true;
+    // el.menu above is #authMenu -- part of the retired, permanently-hidden
+    // #authUserPill block. The dropdown actually on screen is #quickMenuList,
+    // which nothing was closing, so it stayed open after signing out. Close it
+    // the same way its own outside-click handler in index.html does, including
+    // the aria state on its trigger.
+    const qlist = document.getElementById("quickMenuList");
+    const qbtn = document.getElementById("quickMenuBtn");
+    if (qlist) qlist.hidden = true;
+    if (qbtn) qbtn.setAttribute("aria-expanded", "false");
     await sb.auth.signOut();
     renderLoggedOut();
   }
