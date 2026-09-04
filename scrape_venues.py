@@ -2704,7 +2704,10 @@ SOURCES = [
     {"name": "CitySpark (Ponderosa + Old Church)", "parser": parse_cityspark,
      "urls": ["https://portal.cityspark.com/PortalScripts/WillametteWeek"]},
     {"name": "Havalina (havalinapdx.com)", "parser": parse_havalina, "urls": ["https://havalinapdx.com/events?format=json"]},
-    {"name": "Kelly's Olympian (kellysolympian.com)", "parser": parse_kellys_olympian, "urls": ["https://kellysolympian.com/events/"]},
+    # Intermittent bot challenge (6 of 10 runs zero by Sep 2026, then fully
+    # zero). Plain requests with a browser UA doesn't reliably pass; Chromium
+    # does. Parser unchanged -- it just gets its HTML through the headless tier.
+    {"name": "Kelly's Olympian (kellysolympian.com)", "parser": parse_kellys_olympian, "headless": True, "urls": ["https://kellysolympian.com/events/"]},
     {"name": "Barrel Room (barrelroompdx.com)", "parser": parse_barrelroom, "urls": ["https://www.barrelroompdx.com/events"]},
     {"name": "Arbor Beer Lodge (arborbeerlodge.com)", "parser": parse_arbor, "urls": ["https://www.arborbeerlodge.com/events?format=json"]},
     {"name": "Artichoke Music (artichokemusic.org)", "parser": parse_artichoke, "urls": ["https://www.eventbrite.com/cc/live-music-artichoke-4657563"]},
@@ -2766,10 +2769,17 @@ def scrape():
             # other venues. Log loudly and continue.
             try:
                 if src.get("walled"):
-                    # Headless tier: the parser owns its own fetch (see
-                    # fetch_headless.py). fetch() would only get the
-                    # challenge page back.
+                    # Headless tier, parser-owned fetch: the parser does its own
+                    # navigation (e.g. Goodfoot clears the challenge on the
+                    # homepage, then reads the site's JSON API in-session).
                     got.extend(src["parser"](None, today))
+                elif src.get("headless"):
+                    # Headless tier, loop-owned fetch: Chromium clears the
+                    # challenge and the parser gets ordinary rendered HTML, so
+                    # an existing HTML parser needs no changes to move behind a
+                    # wall. This is how Kelly's Olympian came back (Sep 2026).
+                    from fetch_headless import fetch_headless
+                    got.extend(src["parser"](fetch_headless(url), today))
                 else:
                     got.extend(src["parser"](fetch(url), today))
             except Exception as e:
