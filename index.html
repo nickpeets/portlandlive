@@ -810,8 +810,9 @@ body{
       <div class="header-utility" id="headerUtility">
         <!-- Unified menu (Aug 23 doc): one trigger, one dropdown, replacing the
              separate quick-menu + sign-in-gated account menu from the previous
-             pass. Saved + Following always work (localStorage-backed, no
-             account needed) regardless of sign-in state. Sign In / Log out
+             pass. Saved + Following are account-scoped as of Fork Stage 7 and
+             now require sign-in (they were localStorage-backed and
+             account-blind before). Sign In / Log out
              below are the EXACT #authSignInBtn / #authLogoutBtn elements
              auth.js already manages — relocated in here, not rebuilt, so its
              show/hide + click logic is fully untouched; a small observer just
@@ -1023,12 +1024,21 @@ let CARD_LAYOUT = 'a';
       if(MANUAL_PICKS.has(s.id)) return true;
       return isAffiliateTicketing(s.venueUrl) && MARQUEE_VENUES.has(s.venue);
     }
-const FAV_KEY = 'portlandlive:favorites';  // declared before state so loadFavorites() works at init
+// Favorites/stubs used to live in localStorage under these keys, with no
+// notion of an account -- so signing out didn't clear them, and two accounts
+// in the same browser shared one list. They're now per-account rows in
+// Supabase (user_favorites / user_stubs, Fork Stage 7).
+//
+// The in-memory Set/array below stays the SYNCHRONOUS source of truth for
+// every render path, exactly as before; only loading and persisting changed.
+// state.favorites starts empty and is filled by plLoadUserData() once auth
+// resolves -- signed out means genuinely empty, not "whatever this browser
+// happened to have."
 const state = {
   shows: [], stamp: "",
   layout: "grid", cardLayout: CARD_LAYOUT, view: "shows", selectedVenue: null, byHood: false,
   q: "", tonight: false, thisWeek: false, picks: false,
-  myShows: false, favorites: loadFavorites(),
+  myShows: false, favorites: new Set(),
   comedy: false, audit: new URLSearchParams(location.search).has('audit'), // comedy: future Comedy-shows toggle; audit: dev-only panel, reachable via ?audit=1 (no UI toggle)
   following: false, // FOLLOWING FILTER: collapse feed to shows by hearted bands/venues (self-contained, removable)
 };
@@ -3077,19 +3087,126 @@ function bindComments(host, slug, myUserId){
 }
 
 function favKey(s){ return (s.venue||'') + '|' + (s.date||'') + '|' + (s.title||''); }
-      function loadFavorites(){
-        try{ const raw = localStorage.getItem(FAV_KEY); const arr = raw ? JSON.parse(raw) : []; return new Set(Array.isArray(arr) ? arr : []); }
-        catch(e){ return new Set(); }
+      // ---- Account-scoped favorites (user_favorites) ----------------------
+      // FAV_SHADOW mirrors what the database is believed to hold. saveFavorites()
+      // diffs state.favorites against it and issues only the actual adds/removes,
+      // which is what lets every existing caller keep calling a plain synchronous
+      // saveFavorites() with no idea a network round trip is involved.
+      let FAV_SHADOW = new Set();
+
+      function plUserClient(){ return window.__plAuth || null; }
+
+      async function plCurrentUserId(){
+        const sb = plUserClient();
+        if(!sb) return null;
+        try{
+          const { data } = await sb.auth.getSession();
+          return data && data.session && data.session.user ? data.session.user.id : null;
+        }catch(e){ return null; }
       }
+
       function saveFavorites(){
-        try{ localStorage.setItem(FAV_KEY, JSON.stringify([...state.favorites])); }catch(e){}
+        const sb = plUserClient();
+        if(!sb) return;
+        const added = [...state.favorites].filter(function(k){ return !FAV_SHADOW.has(k); });
+        const removed = [...FAV_SHADOW].filter(function(k){ return !state.favorites.has(k); });
+        if(!added.length && !removed.length) return;
+        // Optimistic: the shadow moves now, so rapid clicking doesn't re-send the
+        // same row. A failed write is reported and the shadow is resynced from
+        // the server on the next plLoadUserData().
+        FAV_SHADOW = new Set(state.favorites);
+        (async function(){
+          try{
+            if(added.length){
+              // user_id is set by the insert trigger; we send only fav_key.
+              const rows = added.map(function(k){ return { fav_key: k }; });
+              const { error } = await sb.from('user_favorites').insert(rows);
+              if(error) console.warn('[favorites] save failed:', error.message);
+            }
+            if(removed.length){
+              const { error } = await sb.from('user_favorites').delete().in('fav_key', removed);
+              if(error) console.warn('[favorites] remove failed:', error.message);
+            }
+          }catch(e){ console.warn('[favorites] save threw:', e); }
+        })();
+      }
+
+      // Pulls both favorites and stubs for whoever is signed in now, and clears
+      // them outright when signed out. Called on every auth transition.
+      async function plLoadUserData(){
+        const sb = plUserClient();
+        const uid = await plCurrentUserId();
+        if(!sb || !uid){
+          state.favorites = new Set();
+          FAV_SHADOW = new Set();
+          STUBS_CACHE = [];
+          STUB_SHADOW = new Set();
+          return;
+        }
+        try{
+          const favRes = await sb.from('user_favorites').select('fav_key');
+          if(favRes.error){
+            console.warn('[favorites] load failed:', favRes.error.message);
+          } else {
+            state.favorites = new Set((favRes.data || []).map(function(r){ return r.fav_key; }));
+            FAV_SHADOW = new Set(state.favorites);
+          }
+          const stubRes = await sb.from('user_stubs')
+            .select('stub_id,title,venue,neighborhood,address,date,time,created_at')
+            .order('created_at', { ascending: false });
+          if(stubRes.error){
+            console.warn('[stubs] load failed:', stubRes.error.message);
+          } else {
+            // mintedAt keeps the shelf's existing sort working unchanged.
+            STUBS_CACHE = (stubRes.data || []).map(function(r){
+              return { title:r.title, venue:r.venue, neighborhood:r.neighborhood,
+                       address:r.address, date:r.date, time:r.time, mintedAt:r.created_at };
+            });
+            STUB_SHADOW = new Set(STUBS_CACHE.map(stubIdOf));
+          }
+        }catch(e){ console.warn('[userdata] load threw:', e); }
       }
     // ===== STUB SHELF: collectible "I was there" ticket stubs (self-contained) =====
     // Stubs are snapshots taken at mint time and stored separately from favorites.
     // Past shows drop out of shows.json, so the shelf renders ONLY from its own store.
-    const STUBS_KEY = 'portlandlive:stubs';
-    function loadStubs(){ try{ const r=localStorage.getItem(STUBS_KEY); const a=r?JSON.parse(r):[]; return Array.isArray(a)?a:[]; }catch(e){ return []; } }
-    function saveStubs(a){ try{ localStorage.setItem(STUBS_KEY, JSON.stringify(a)); }catch(e){} }
+    // Account-scoped as of Fork Stage 7 (user_stubs). STUBS_CACHE is the
+    // synchronous in-memory shelf every render path already reads via
+    // loadStubs(); STUB_SHADOW mirrors what the database is believed to hold so
+    // saveStubs() can diff and issue only real inserts/deletes -- same trick as
+    // FAV_SHADOW above, and the reason none of the existing callers changed.
+    let STUBS_CACHE = [];
+    let STUB_SHADOW = new Set();
+    function loadStubs(){ return STUBS_CACHE; }
+    function saveStubs(a){
+      const next = Array.isArray(a) ? a : [];
+      STUBS_CACHE = next;
+      const sb = (typeof plUserClient === 'function') ? plUserClient() : (window.__plAuth || null);
+      if(!sb) return;
+      const nextIds = new Set(next.map(stubIdOf));
+      const addedIds = [...nextIds].filter(function(id){ return !STUB_SHADOW.has(id); });
+      const removedIds = [...STUB_SHADOW].filter(function(id){ return !nextIds.has(id); });
+      if(!addedIds.length && !removedIds.length) return;
+      STUB_SHADOW = nextIds;
+      const addedRecs = next.filter(function(s){ return addedIds.indexOf(stubIdOf(s)) !== -1; });
+      (async function(){
+        try{
+          if(addedRecs.length){
+            // user_id comes from the insert trigger; stub_id mirrors stubIdOf().
+            const rows = addedRecs.map(function(s){
+              return { stub_id: stubIdOf(s), title: s.title||'', venue: s.venue||'',
+                       neighborhood: s.neighborhood||'', address: s.address||'',
+                       date: s.date||'', time: s.time||'' };
+            });
+            const { error } = await sb.from('user_stubs').insert(rows);
+            if(error) console.warn('[stubs] save failed:', error.message);
+          }
+          if(removedIds.length){
+            const { error } = await sb.from('user_stubs').delete().in('stub_id', removedIds);
+            if(error) console.warn('[stubs] remove failed:', error.message);
+          }
+        }catch(e){ console.warn('[stubs] save threw:', e); }
+      })();
+    }
     // ---- Stub Wall (canvas collage) + JSON backup (export/import) ----
     const STUB_BAND_COLORS = ['#123a6b','#6e1414','#123a1c','#161616'];
     function stubBandColor(o){ return STUB_BAND_COLORS[stubVariant(o)]; }
@@ -3205,6 +3322,7 @@ function favKey(s){ return (s.venue||'') + '|' + (s.date||'') + '|' + (s.title||
     function stubVariant(o){ var k=(o.title||''), h=0; for(var i=0;i<k.length;i++){ h=(h*31+k.charCodeAt(i))>>>0; } return h%4; }
     // Mint: snapshot a show into the permanent collection. Dedupe is a gentle no-op.
     function mintStub(snap){
+      if(!plRequireSignIn('keep stubs')) return {ok:false, reason:'signedout'};
       const stubs = loadStubs();
       const id = stubIdOf(snap);
       if(stubs.some(s => stubIdOf(s)===id)){ return {ok:false, reason:'dupe'}; }
@@ -3337,7 +3455,7 @@ function favKey(s){ return (s.venue||'') + '|' + (s.date||'') + '|' + (s.title||
     // Distinct favorite-key namespaces so a later filter can separate the three
     // kinds of hearts. Shows keep the bare "venue|date|title" key for back-compat;
     // bands/venues are prefixed. All three live in the same state.favorites Set
-    // and the same localStorage record (FAV_KEY) the show-hearts already use.
+    // and the same user_favorites rows the show-hearts already use.
     function bandFavKey(name){ return 'band::' + (name||''); }
     function venueFavKey(name){ return 'venue::' + (name||''); }
     // Generic heart for any favorite key (band or venue). Mirrors heartBtn() but
@@ -3348,7 +3466,18 @@ function favKey(s){ return (s.venue||'') + '|' + (s.date||'') + '|' + (s.title||
       const noun = kind === 'venue' ? 'venue' : 'band';
       return `<button type="button" class="heart heart-${kind}${on?' on':''}" data-fav="${esc(key)}" aria-pressed="${on}" aria-label="${on?('Remove '+noun+' from favorites'):('Save '+noun+' to favorites')}" title="${on?('Remove '+esc(name)+' from favorites'):('Save '+esc(name)+' to favorites')}">${heartSvg(on)}</button>`;
     }
+      // Saving is account-scoped now, so there's nothing meaningful to do when
+      // signed out -- silently writing to a Set that vanishes on reload is worse
+      // than saying so. Returns false if it blocked the action.
+      function plRequireSignIn(what){
+        if(state._signedIn) return true;
+        if(typeof flashStub === 'function') flashStub('Sign in to ' + what);
+        const b = document.getElementById('authSignInBtn');
+        if(b) b.click();
+        return false;
+      }
       function toggleFavKey(k){
+        if(!plRequireSignIn('save shows')) return;
         if(state.favorites.has(k)) state.favorites.delete(k); else state.favorites.add(k);
         saveFavorites();
       }
@@ -3357,6 +3486,7 @@ function favKey(s){ return (s.venue||'') + '|' + (s.date||'') + '|' + (s.title||
         return `<button type="button" class="heart${on?' on':''}" data-fav="${esc(k)}" aria-pressed="${on}" aria-label="${on?'Remove from favorites':'Save to favorites'}" title="${on?'Remove from favorites':'Save to favorites'}">${heartSvg(on)}</button>`;
       }
       function toggleFav(s){
+        if(!plRequireSignIn('save shows')) return;
         const k = favKey(s);
         if(state.favorites.has(k)) state.favorites.delete(k); else state.favorites.add(k);
         saveFavorites();
@@ -3643,6 +3773,30 @@ function goHome(){
   window.scrollTo({top:0,behavior:'instant'});
 }
 $('.masthead-brand').addEventListener('click', goHome);
+
+// ---- Favorites/stubs follow the signed-in account (Fork Stage 7) ----------
+// This subscription is what actually fixes the reported bug: signing out now
+// empties the in-memory Set/array instead of leaving the previous account's
+// list sitting there for the next person to see. auth.js loads deferred, so
+// the client may not exist yet on first paint -- poll briefly, then subscribe.
+(function plWireUserData(){
+  let tries = 0;
+  const tick = setInterval(function(){
+    const sb = window.__plAuth || null;
+    if(!sb){
+      // ~5s of 100ms tries. Auth genuinely unavailable (bad creds, CDN blocked)
+      // is already reported by auth.js; favorites just stay empty and gated.
+      if(++tries > 50) clearInterval(tick);
+      return;
+    }
+    clearInterval(tick);
+    sb.auth.onAuthStateChange(async function(_evt, session){
+      state._signedIn = !!(session && session.user);
+      await plLoadUserData();
+      reRenderCurrentView();
+    });
+  }, 100);
+})();
 
 load();
 </script>
