@@ -3139,8 +3139,7 @@ function inboxShowLabel(item){
   // Matches how the router and cards derive a slug (see renderShowRoute).
   const s = (state.shows || []).find(function(x){ return (x._slug || x.slug || makeSlug(x)) === item.slug; });
   const name = s ? (s.title + ' · ' + s.venue) : '';
-  if(!name) return item.kindLabel || '';
-  return name + (item.kindLabel ? ' · ' + item.kindLabel.toLowerCase() : '');
+  return name;
 }
 
 function inboxRenderBadge(){
@@ -3166,7 +3165,7 @@ function inboxRenderList(){
         + '<span class="inbox-item-who">' + esc(i.who) + '</span>'
         + (i.unread ? '<span class="inbox-item-dot" aria-label="unread"></span>' : '')
       + '</span>'
-      + '<span class="inbox-item-show">' + esc(inboxShowLabel(i)) + '</span>'
+      + '<span class="inbox-item-show">' + esc(i.kindLabel || '') + '</span>'
       + '<span class="inbox-item-snip">' + esc(i.snippet || '') + '</span>'
       + '</button>';
   }).join('');
@@ -3310,6 +3309,13 @@ function inboxWire(){
   });
 
   list.addEventListener('click', function(e){
+    // Everything below re-renders the panel synchronously, which DETACHES
+    // e.target. The document-level outside-click handler then asks
+    // wrap.contains(e.target) about a node no longer in the document, gets
+    // false, and closes the panel -- so opening a conversation looked exactly
+    // like dismissing the menu. The thread did render; it was hidden a
+    // millisecond later. Stop the click here.
+    e.stopPropagation();
     const openRow = e.target.closest('[data-inbox-open]');
     if(openRow){
       inboxOpenThread(parseInt(openRow.getAttribute('data-inbox-open'), 10));
