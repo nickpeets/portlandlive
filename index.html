@@ -3000,7 +3000,7 @@ async function mountModPanel(wrap){
 // and vice versa. Keys: a bare thread id for ticket threads, 'wg:'+id for show
 // threads -- the namespacing that keeps two different tables' uuids from
 // colliding in one map.
-const INBOX = { items: [], open: false };
+const INBOX = { items: [], open: false, viewing: null };
 
 function inboxClient(){ return window.__plAuth || null; }
 
@@ -3126,7 +3126,9 @@ async function inboxLoad(){
 
   await avLoad(INBOX.items.map(function(i){ return i.otherId; }));
   inboxRenderBadge();
-  if(INBOX.open) inboxRenderList();
+  // Only repaint the LIST if that's what's on screen -- a 30s poll must not
+  // yank someone out of a conversation they're mid-way through reading.
+  if(INBOX.open && INBOX.viewing === null) inboxRenderList();
 }
 
 function inboxRenderBadge(){
@@ -3140,12 +3142,13 @@ function inboxRenderBadge(){
 function inboxRenderList(){
   const list = document.getElementById('inboxList');
   if(!list) return;
+  INBOX.viewing = null;
   if(!INBOX.items.length){
     list.innerHTML = '<div class="inbox-state">No messages yet.</div>';
     return;
   }
-  list.innerHTML = INBOX.items.map(function(i){
-    return '<button type="button" class="inbox-item" data-inbox-slug="'+esc(i.slug||'')+'">'
+  list.innerHTML = INBOX.items.map(function(i, idx){
+    return '<button type="button" class="inbox-item" data-inbox-open="'+idx+'">'
       + '<span class="inbox-item-top">'
         + avImg(i.otherId, i.who)
         + '<span class="inbox-item-who">' + esc(i.who) + '</span>'
@@ -3155,6 +3158,127 @@ function inboxRenderList(){
       + '<span class="inbox-item-snip">' + esc(i.snippet || '') + '</span>'
       + '</button>';
   }).join('');
+}
+
+// Open a conversation INSIDE the panel. Previously clicking a row just
+// navigated to the show page and left you to find the thread yourself, which
+// made this a list of bookmarks rather than an inbox. Reading and replying now
+// happen here, without leaving the page.
+//
+// The two doors keep their own tables, so which one a thread belongs to
+// decides both where messages are read from and where a reply is written --
+// that's what item.kind carries.
+async function inboxOpenThread(idx){
+  const list = document.getElementById('inboxList');
+  const item = INBOX.items[idx];
+  if(!list || !item) return;
+  INBOX.viewing = idx;
+
+  const sb = inboxClient();
+  const table = item.kind === 'ticket' ? 'ticket_messages' : 'show_messages';
+
+  list.innerHTML = '<div class="inbox-thread-head">'
+      + '<button type="button" class="inbox-back" data-inbox-back aria-label="Back to messages">&#8592;</button>'
+      + avImg(item.otherId, item.who)
+      + '<span class="inbox-thread-who">' + esc(item.who) + '</span>'
+    + '</div>'
+    + '<div class="inbox-state">Loading…</div>';
+
+  let uid = null;
+  try{
+    const { data } = await sb.auth.getSession();
+    uid = data && data.session && data.session.user ? data.session.user.id : null;
+  }catch(e){}
+
+  const { data, error } = await sb.from(table)
+    .select('id,sender_id,body,created_at')
+    .eq('thread_id', item.threadId)
+    .order('created_at', { ascending: true });
+
+  const body = list.querySelector('.inbox-state');
+  if(error){
+    if(body) body.textContent = 'Couldn’t load this conversation.';
+    return;
+  }
+  const msgs = data || [];
+
+  // Reading here counts as reading, same rule the show-page threads use, and
+  // it writes to the SAME seen-map so the two never disagree.
+  if(msgs.length){
+    const last = msgs[msgs.length - 1];
+    txMarkSeen(item.seenKey, last.created_at);
+    item.unread = false;
+    inboxRenderBadge();
+  }
+
+  const rows = msgs.map(function(m){
+    const mine = m.sender_id === uid;
+    return '<li class="inbox-msg' + (mine ? ' inbox-msg-mine' : '') + '">'
+      + '<span class="inbox-msg-body">' + esc(m.body || '') + '</span>'
+      + '</li>';
+  }).join('');
+
+  if(body){
+    body.outerHTML = (msgs.length
+        ? '<ul class="inbox-msgs">' + rows + '</ul>'
+        : '<div class="inbox-state">No messages yet.</div>')
+      + '<form class="inbox-reply" data-inbox-reply>'
+        + '<input type="text" maxlength="500" placeholder="Reply…" aria-label="Reply">'
+        + '<button type="submit" disabled>Send</button>'
+      + '</form>'
+      + '<button type="button" class="inbox-goshow" data-inbox-slug="'+esc(item.slug||'')+'">Open the show page</button>';
+  }
+
+  const form = list.querySelector('[data-inbox-reply]');
+  if(form){
+    const input = form.querySelector('input');
+    const send = form.querySelector('button');
+    input.addEventListener('input', function(){ send.disabled = !input.value.trim(); });
+    form.addEventListener('submit', async function(e){
+      e.preventDefault();
+      const text = input.value.trim();
+      if(!text) return;
+      send.disabled = true;
+      // sender_id is set by each table's own insert trigger.
+      const { error: err } = await sb.from(table)
+        .insert({ thread_id: item.threadId, body: text });
+      if(err){
+        console.warn('[inbox] reply failed:', err.message);
+        send.disabled = false;
+        return;
+      }
+      input.value = '';
+      await inboxOpenThread(idx);
+    });
+    // Scroll to the newest message, which is what someone opening a
+    // conversation actually wants to see.
+    const ul = list.querySelector('.inbox-msgs');
+    if(ul) ul.scrollTop = ul.scrollHeight;
+  }
+}
+
+// The badge previously only refreshed on an auth change or when the dropdown
+// was opened -- so a message arriving while someone sat on the page lit
+// nothing until they reloaded or clicked. Thread panels already poll (6s);
+// this is the same idea at a slower cadence, since a header badge is ambient
+// rather than something being watched.
+//
+// 30s, and skipped entirely while the tab is hidden: this is two selects plus
+// two message queries per tick, and there's no reason to run them against a
+// backgrounded tab.
+let INBOX_POLL = null;
+function inboxStartPoll(){
+  if(INBOX_POLL) clearInterval(INBOX_POLL);
+  INBOX_POLL = setInterval(function(){
+    if(document.hidden) return;
+    if(!state._signedIn) return;
+    inboxLoad();
+  }, 30000);
+  // Coming back to the tab is exactly when a stale badge is most visible, so
+  // refresh immediately rather than waiting out the rest of the interval.
+  document.addEventListener('visibilitychange', function(){
+    if(!document.hidden && state._signedIn) inboxLoad();
+  });
 }
 
 function inboxWire(){
@@ -3168,19 +3292,29 @@ function inboxWire(){
     INBOX.open = !INBOX.open;
     list.hidden = !INBOX.open;
     btn.setAttribute('aria-expanded', INBOX.open ? 'true' : 'false');
-    if(INBOX.open){ inboxRenderList(); inboxLoad(); }
+    if(INBOX.open){ INBOX.viewing = null; inboxRenderList(); inboxLoad(); }
+    else INBOX.viewing = null;
   });
 
-  // Clicking a row goes to the show that owns the thread. It deliberately does
-  // NOT mark anything read here -- opening the actual thread on the show page
-  // is what counts as reading, same rule both doors already use.
   list.addEventListener('click', function(e){
-    const item = e.target.closest('[data-inbox-slug]');
-    if(!item) return;
-    const slug = item.getAttribute('data-inbox-slug');
-    INBOX.open = false; list.hidden = true;
-    btn.setAttribute('aria-expanded', 'false');
-    if(slug) location.hash = '#/show/' + encodeURIComponent(slug);
+    const openRow = e.target.closest('[data-inbox-open]');
+    if(openRow){
+      inboxOpenThread(parseInt(openRow.getAttribute('data-inbox-open'), 10));
+      return;
+    }
+    if(e.target.closest('[data-inbox-back]')){
+      inboxRenderList();
+      return;
+    }
+    // Still a way through to the show itself -- the conversation is about a
+    // specific show, and the exchange/attendee context lives there.
+    const go = e.target.closest('[data-inbox-slug]');
+    if(go){
+      const slug = go.getAttribute('data-inbox-slug');
+      INBOX.open = false; list.hidden = true;
+      btn.setAttribute('aria-expanded', 'false');
+      if(slug) location.hash = '#/show/' + encodeURIComponent(slug);
+    }
   });
 
   document.addEventListener('click', function(e){
@@ -4489,6 +4623,7 @@ $('.masthead-brand').addEventListener('click', goHome);
     }
     clearInterval(tick);
     inboxWire();
+    inboxStartPoll();
     sb.auth.onAuthStateChange(async function(_evt, session){
       state._signedIn = !!(session && session.user);
       // Moderator status and "what I've reported" are per-account; clearing
@@ -4552,6 +4687,22 @@ load();
 .inbox-item-dot{width:7px;height:7px;border-radius:999px;background:var(--rust);flex:0 0 auto;margin-left:auto}
 .inbox-item-show{font-family:'Bitter',Georgia,serif;font-size:12.5px;color:var(--ink);margin-top:2px;overflow-wrap:anywhere}
 .inbox-item-snip{font-family:'Bitter',Georgia,serif;font-size:11.5px;color:var(--ink);opacity:.7;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* Conversation view inside the panel. */
+.inbox-thread-head{display:flex;align-items:center;gap:8px;padding:6px 8px 8px;border-bottom:1px solid rgba(124,106,85,.25);margin-bottom:6px}
+.inbox-back{border:0;background:none;cursor:pointer;font-size:16px;line-height:1;color:var(--forest);padding:2px 6px;border-radius:6px}
+.inbox-back:hover{background:rgba(61,87,74,.12)}
+.inbox-thread-who{font-family:'Oswald',sans-serif;font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--forest)}
+.inbox-msgs{list-style:none;margin:0;padding:0 4px;display:flex;flex-direction:column;gap:6px;max-height:38vh;overflow-y:auto}
+.inbox-msg{display:flex}
+.inbox-msg-mine{justify-content:flex-end}
+.inbox-msg-body{font-family:'Bitter',Georgia,serif;font-size:12.5px;color:var(--ink);background:rgba(61,87,74,.1);border-radius:10px;padding:6px 10px;max-width:80%;overflow-wrap:anywhere}
+.inbox-msg-mine .inbox-msg-body{background:var(--forest);color:var(--cream)}
+.inbox-reply{display:flex;gap:6px;padding:8px 4px 4px}
+.inbox-reply input{flex:1 1 auto;min-width:0;border:1px solid rgba(124,106,85,.35);border-radius:999px;padding:7px 12px;font-family:'Bitter',Georgia,serif;font-size:12.5px;background:#fff;color:var(--ink)}
+.inbox-reply button{border:0;cursor:pointer;background:var(--forest);color:var(--cream);border-radius:999px;padding:7px 14px;font-family:'Oswald',sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.inbox-reply button:disabled{opacity:.45;cursor:default}
+.inbox-goshow{width:100%;border:0;background:none;cursor:pointer;font-family:'Oswald',sans-serif;font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#7c6a55;padding:6px 4px 2px}
+.inbox-goshow:hover{color:var(--rust-deep)}
 .quick-menu-list{position:absolute;top:calc(100% + 8px);right:0;background:var(--cream);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.25);overflow:hidden;min-width:180px;padding:6px;display:flex;flex-direction:column;gap:2px}
 .quick-menu-list[hidden]{display:none}
 .quick-menu-pill{background:transparent;border:0;color:var(--ink);padding:9px 10px;border-radius:7px;width:100%;box-sizing:border-box}
