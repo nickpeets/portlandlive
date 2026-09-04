@@ -486,7 +486,7 @@ body{
     .fav-band-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px;border:1px solid rgba(74,53,38,.18);border-left:4px solid var(--rust);border-radius:10px}
     .fav-band-name{font-weight:600;color:var(--ink)}
     .venue-chips{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 18px}
-    .venue-chip{display:inline-flex;align-items:center;gap:10px;cursor:pointer;text-align:left;font-family:inherit;color:var(--ink);background:var(--cream);border:1px solid rgba(74,53,38,.18);border-left:4px solid var(--rust);border-radius:10px;padding:9px 14px;box-shadow:0 2px 6px rgba(0,0,0,.12);transition:transform .08s ease,box-shadow .08s ease}
+    .venue-chip{display:inline-flex;align-items:center;gap:10px;cursor:pointer;text-align:left;font-family:inherit;text-decoration:none;color:var(--ink);background:var(--cream);border:1px solid rgba(74,53,38,.18);border-left:4px solid var(--rust);border-radius:10px;padding:9px 14px;box-shadow:0 2px 6px rgba(0,0,0,.12);transition:transform .08s ease,box-shadow .08s ease}
     .venue-chip:hover{transform:translateY(-1px);box-shadow:0 4px 10px rgba(0,0,0,.18)}
     .venue-chip:active{transform:translateY(0)}
     .venue-chip .vc-name{font-weight:600;font-size:15px}
@@ -1473,6 +1473,14 @@ function render(){
   // A permanent show page owns #results while the URL points at one; route away
   // instead of racing it (e.g. a filter-pill click while viewing a show page).
   if(parseRoute().type === 'show'){ if(location.hash){ location.hash = ''; } return; }
+  // If state says feed but the URL still says venue (a time pill was clicked
+  // while on a venue page), quietly drop the stale hash so the address bar
+  // doesn't advertise a page that isn't showing. replaceState, not a hash
+  // write, so this doesn't re-enter router() and double-render.
+  var rt = parseRoute().type;
+  if(state.view !== 'venues' && (rt === 'venue' || rt === 'venues')){
+    history.replaceState(null, '', location.pathname);
+  }
   // Pill visuals are derived, not hand-managed. This sits AFTER the show-page
   // bail above so it never re-lights a pill that renderShowRoute() cleared.
   syncTogglePills();
@@ -1531,11 +1539,11 @@ function render(){
     const box = document.createElement('div');
     box.className = 'venue-chips';
     box.innerHTML = vlist.map(v=>
-      `<button type="button" class="venue-chip" data-venue="${esc(v.name)}" title="View ${esc(v.name)} venue page">`
+      `<a class="venue-chip" href="#/venue/${encodeURIComponent(venueSlug(v.name))}" data-venue="${esc(v.name)}" title="View ${esc(v.name)} venue page">`
       + `<span class="vc-name">${esc(v.name)}</span>`
       + (v.neighborhood ? `<span class="vc-hood">${esc(v.neighborhood)}</span>` : '')
       + `<span class="vc-count">${v.count} show${v.count>1?'s':''}</span>`
-      + `</button>`
+      + `</a>`
     ).join('');
     wrap.appendChild(box);
   })();
@@ -1738,16 +1746,61 @@ function parseRoute(){
   var h = location.hash || '';
   var m = /^#\/show\/([^?#]+)/.exec(h);
   if(m) return {type:'show', slug: decodeURIComponent(m[1])};
+  // Venue pages and the directory are addressable too (Sep 2026): a venue's
+  // calendar is a more natural thing to text someone than one show, and
+  // before this the URL never changed when you opened one, so a shared link
+  // just landed on the feed.
+  m = /^#\/venue\/([^?#]+)/.exec(h);
+  if(m) return {type:'venue', slug: decodeURIComponent(m[1])};
+  if(/^#\/venues\/?$/.test(h)) return {type:'venues'};
   return {type:'feed'};
+}
+
+// Venue slug from its display name: "Laurelthirst Public House" ->
+// "laurelthirst-public-house". Same normalizer the show slugs use.
+function venueSlug(name){
+  return slugNormKey(name || '').replace(/\s+/g,'-').replace(/^-+|-+$/g,'').replace(/-{2,}/g,'-');
+}
+function venueFromSlug(slug){
+  var names = {};
+  state.shows.forEach(function(s){ if(s.venue) names[s.venue] = true; });
+  return Object.keys(names).find(function(n){ return venueSlug(n) === slug; }) || null;
 }
 
 function reRenderCurrentView(){
   if(parseRoute().type === 'show'){ router(); } else { render(); }
 }
 
+// Entering venue mode from a URL clears the time/curation filters the same
+// way clicking a venue name does, so a shared link shows the venue's full
+// calendar rather than whatever filter this browser last had on.
+function enterVenueState(name){
+  state.view = 'venues'; state.selectedVenue = name; state.q = '';
+  $('#searchInput').value = '';
+  state.picks=false; state.byHood=false; state.myShows=false;
+  state.tonight=false; state.thisWeek=false; state.following=false;
+}
+
 async function router(){
   var route = parseRoute();
   if(route.type === 'show'){ await renderShowRoute(route.slug); return; }
+  if(route.type === 'venue'){
+    var name = venueFromSlug(route.slug);
+    if(name){ enterVenueState(name); }
+    else {
+      // Unknown venue slug: fall back to the directory rather than an empty
+      // page, and drop the bad hash so back/forward doesn't loop on it.
+      enterVenueState(null);
+      history.replaceState(null, '', location.pathname + '#/venues');
+    }
+    render();
+    return;
+  }
+  if(route.type === 'venues'){
+    enterVenueState(null);
+    render();
+    return;
+  }
   render();
   if(location.hash) setTimeout(wiDeepLink, 60);
 }
@@ -4450,7 +4503,14 @@ function favKey(s){ return (s.venue||'') + '|' + (s.date||'') + '|' + (s.title||
 /* events */
 $('#searchInput').addEventListener('input',e=>{state.q=e.target.value;if(state.q && state.selectedVenue){state.selectedVenue=null;state.view='shows';}render();});
 $('#byHoodToggle').addEventListener('click',()=>{state.byHood=!state.byHood;$('#byHoodToggle').classList.toggle('on',state.byHood);render();});
-        $('#venuesToggle').addEventListener('click',()=>{const onDirectory=state.view==='venues'&&!state.selectedVenue;const on=!onDirectory;state.view=on?'venues':'shows';state.selectedVenue=null;if(on){state.picks=false;$('#picksToggle').classList.remove('on');state.byHood=false;$('#byHoodToggle').classList.remove('on');state.myShows=false;$('#myShowsToggle').classList.remove('on');state.tonight=false;$('#tonightToggle').classList.remove('on');state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');state.q='';$('#searchInput').value='';state.following=false;$('#followingToggle').classList.remove('on');}$('#venuesToggle').classList.toggle('on',on);render();});
+        $('#venuesToggle').addEventListener('click',()=>{const onDirectory=state.view==='venues'&&!state.selectedVenue;const on=!onDirectory;
+          // Directory is addressable (#/venues); turning it off returns to the
+          // bare feed URL. Either way hashchange -> router() sets the state.
+          const target = on ? '#/venues' : '';
+          if((location.hash||'') === target){ state.view=on?'venues':'shows'; state.selectedVenue=null; render(); }
+          else if(on){ location.hash = target; }
+          else { state.view='shows'; state.selectedVenue=null; history.replaceState(null,'',location.pathname); render(); }
+        });
       $('#myShowsToggle').addEventListener('click',e=>{state.myShows=!state.myShows;if(state.myShows){state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');state.comedy=false;$('#comedyToggle').classList.remove('on');state.tonight=false;$('#tonightToggle').classList.remove('on');state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');state.byHood=false;$('#byHoodToggle').classList.remove('on');state.picks=false;$('#picksToggle').classList.remove('on');state.following=false;$('#followingToggle').classList.remove('on');}e.currentTarget.classList.toggle('on',state.myShows);render();});
         // Picks of the Week: dominant filter. Turning it on switches to the curated, vertical showcase
         // and clears the Tonight / This Week / My Shows / Venues filters so only picks are shown.
@@ -4466,14 +4526,15 @@ $('#byHoodToggle').addEventListener('click',()=>{state.byHood=!state.byHood;$('#
           }
           render();
         });
-      function openVenue(name){ state.view='venues'; state.selectedVenue=name; state.q='';$('#searchInput').value='';
-        state.picks=false;$('#picksToggle').classList.remove('on');
-        state.byHood=false;$('#byHoodToggle').classList.remove('on');
-        state.myShows=false;$('#myShowsToggle').classList.remove('on');
-        state.tonight=false;$('#tonightToggle').classList.remove('on');
-        state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');
-        state.following=false;$('#followingToggle').classList.remove('on');
-        render(); document.querySelector('.controls').scrollIntoView({block:'start',behavior:'instant'}); }
+      function openVenue(name){
+        // The URL is the source of truth for venue pages now: set it and let
+        // hashchange -> router() build the state, so a click and a shared link
+        // take the identical path. If the hash is already right (re-clicking
+        // the venue you're on) hashchange won't fire, so route directly.
+        var target = '#/venue/' + encodeURIComponent(venueSlug(name));
+        if(location.hash === target){ router(); }
+        else { location.hash = target; }
+        document.querySelector('.controls').scrollIntoView({block:'start',behavior:'instant'}); }
       $('#results').addEventListener('click',e=>{const _del=e.target.closest('.stub-del'); if(_del){ e.preventDefault(); e.stopPropagation(); const id=_del.getAttribute('data-stubdel'); const kept=loadStubs().filter(s=>stubIdOf(s)!==id); saveStubs(kept); flashStub('Removed from your shelf'); reRenderCurrentView(); return; } const _iwt=e.target.closest('.iwt-btn'); if(_iwt){ e.preventDefault(); e.stopPropagation(); if(!_iwt.disabled){ const g=n=>_iwt.getAttribute('data-iwt-'+n)||''; const snap={title:g('title'),venue:g('venue'),neighborhood:g('neighborhood'),address:g('address'),date:g('date'),time:g('time')}; const r=mintStub(snap); if(r.ok){ flashStub('Stub added to your shelf \u2014 '+(snap.title||'show')); } else { flashStub('Already on your shelf'); } reRenderCurrentView(); } return; } const vlink=e.target.closest('[data-venue]');if(vlink){e.preventDefault();e.stopPropagation();openVenue(vlink.getAttribute('data-venue'));return;}const h=e.target.closest('.heart');if(h){e.preventDefault();e.stopPropagation();toggleFavKey(h.getAttribute('data-fav'));reRenderCurrentView();return;} const _interactive=e.target.closest('a, button'); if(_interactive) return; const _card=e.target.closest('.scard'); if(_card && _card.dataset.slug){ location.hash = '#/show/' + encodeURIComponent(_card.dataset.slug); }});
 $('#tonightToggle').addEventListener('click',()=>{state.picks=false;$('#picksToggle').classList.remove('on');state.tonight=!state.tonight;if(state.tonight){state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');}$('#tonightToggle').classList.toggle('on',state.tonight);render();});
 $('#thisWeekToggle').addEventListener('click',()=>{state.picks=false;$('#picksToggle').classList.remove('on');state.thisWeek=!state.thisWeek;if(state.thisWeek){state.tonight=false;$('#tonightToggle').classList.remove('on');state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');}$('#thisWeekToggle').classList.toggle('on',state.thisWeek);render();});
