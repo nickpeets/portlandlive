@@ -3065,6 +3065,37 @@ async function inboxLoad(){
       });
     }
 
+    // ---- Reported content, for a moderator ---------------------------
+    // The review panel only ever rendered on a show page that happened to
+    // have a pending report, so finding out about one was luck. Reports are
+    // "someone needs something from you" exactly like a message, so they
+    // belong in the same place. report_queue() returns nothing at all to
+    // non-moderators, so this is safe to call unconditionally.
+    try{
+      const q = await sb.rpc('report_queue');
+      if(!q.error){
+        (q.data || []).forEach(function(r){
+          items.push({
+            kind: 'report',
+            reportId: r.report_id,
+            targetType: r.target_type,
+            reason: r.reason,
+            body: r.body,
+            at: r.created_at,
+            who: 'Reported ' + String(r.target_type || '').replace('_', ' '),
+            kindLabel: r.reason,
+            snippet: r.target_type === 'avatar' ? '(photo)' : (r.body || '(already deleted)'),
+            slug: '',
+            otherId: null,
+            // A pending report is unread by definition -- it stays lit until
+            // it's actually resolved, not merely looked at.
+            unread: true,
+            empty: false
+          });
+        });
+      }
+    }catch(e){}
+
     if(!items.length){ INBOX.items = []; inboxRenderBadge(); return; }
 
     // ---- Latest message per thread, per table ------------------------
@@ -3101,7 +3132,8 @@ async function inboxLoad(){
     }
 
     const seen = txSeenMap();
-    INBOX.items = items.map(function(i){
+    const reports = items.filter(function(i){ return i.kind === 'report'; });
+    INBOX.items = items.filter(function(i){ return i.kind !== 'report'; }).map(function(i){
       const m = latest[(i.kind === 'ticket' ? 't:' : 's:') + i.threadId];
       const unread = !!(m && m.sender_id !== uid
         && (!seen[i.seenKey] || new Date(m.created_at) > new Date(seen[i.seenKey])));
@@ -3115,16 +3147,19 @@ async function inboxLoad(){
     })
     // An empty thread (created but never written to) is noise in a list whose
     // job is "who said something," so it's dropped rather than shown blank.
-    .filter(function(i){ return !i.empty; })
-    .sort(function(a, b){
-      if(a.unread !== b.unread) return a.unread ? -1 : 1;   // unread first
-      return String(b.at).localeCompare(String(a.at));       // then newest
-    });
+    .filter(function(i){ return !i.empty; });
+    // Reports go to the top: they're the only thing here with a deadline.
+    INBOX.items = reports.concat(INBOX.items)
+      .sort(function(a, b){
+        if((a.kind === 'report') !== (b.kind === 'report')) return a.kind === 'report' ? -1 : 1;
+        if(a.unread !== b.unread) return a.unread ? -1 : 1;
+        return String(b.at).localeCompare(String(a.at));
+      });
   }catch(e){
     console.warn('[inbox] load threw:', e);
   }
 
-  await avLoad(INBOX.items.map(function(i){ return i.otherId; }));
+  await avLoad(INBOX.items.map(function(i){ return i.otherId; }).filter(Boolean));
   inboxRenderBadge();
   // Only repaint the LIST if that's what's on screen -- a 30s poll must not
   // yank someone out of a conversation they're mid-way through reading.
@@ -3159,9 +3194,11 @@ function inboxRenderList(){
     return;
   }
   list.innerHTML = INBOX.items.map(function(i, idx){
-    return '<button type="button" class="inbox-item" data-inbox-open="'+idx+'">'
+    return '<button type="button" class="inbox-item' + (i.kind === 'report' ? ' inbox-item-report' : '') + '" data-inbox-open="'+idx+'">'
       + '<span class="inbox-item-top">'
-        + avImg(i.otherId, i.who)
+        + (i.kind === 'report'
+            ? '<span class="av inbox-report-flag" aria-hidden="true">!</span>'
+            : avImg(i.otherId, i.who))
         + '<span class="inbox-item-who">' + esc(i.who) + '</span>'
         + (i.unread ? '<span class="inbox-item-dot" aria-label="unread"></span>' : '')
       + '</span>'
@@ -3184,6 +3221,7 @@ async function inboxOpenThread(idx){
   const item = INBOX.items[idx];
   if(!list || !item) return;
   INBOX.viewing = idx;
+  if(item.kind === 'report'){ inboxRenderReport(idx); return; }
 
   const sb = inboxClient();
   const table = item.kind === 'ticket' ? 'ticket_messages' : 'show_messages';
@@ -3290,6 +3328,52 @@ function inboxStartPoll(){
   // refresh immediately rather than waiting out the rest of the interval.
   document.addEventListener('visibilitychange', function(){
     if(!document.hidden && state._signedIn) inboxLoad();
+  });
+}
+
+// Review a reported item without leaving whatever page you're on. Same two
+// outcomes the show-page panel offered: uphold deletes the content and keeps
+// it hidden, dismiss clears the hide and puts it back.
+function inboxRenderReport(idx){
+  const list = document.getElementById('inboxList');
+  const item = INBOX.items[idx];
+  if(!list || !item) return;
+
+  list.innerHTML = '<div class="inbox-thread-head">'
+      + '<button type="button" class="inbox-back" data-inbox-back aria-label="Back to messages">&#8592;</button>'
+      + '<span class="inbox-thread-who">Reported ' + esc(String(item.targetType || '').replace('_', ' ')) + '</span>'
+    + '</div>'
+    + '<div class="inbox-thread-about">Reason: ' + esc(item.reason || '') + '</div>'
+    + (item.targetType === 'avatar' && item.body
+        ? '<div class="inbox-report-body"><img class="av av-lg" src="'+esc(item.body)+'" alt="Reported photo"></div>'
+        : '<div class="inbox-report-body">' + esc(item.body || '(content no longer exists)') + '</div>')
+    + '<div class="inbox-report-acts">'
+      + '<button type="button" class="mod-uphold" data-inbox-resolve="upheld">Remove it</button>'
+      + '<button type="button" class="mod-dismiss" data-inbox-resolve="dismissed">Put it back</button>'
+    + '</div>';
+
+  list.querySelectorAll('[data-inbox-resolve]').forEach(function(b){
+    b.addEventListener('click', async function(){
+      const status = b.getAttribute('data-inbox-resolve');
+      list.querySelectorAll('[data-inbox-resolve]').forEach(function(x){ x.disabled = true; });
+      const sb = inboxClient();
+      try{
+        const { error } = await sb.rpc('resolve_report', {
+          p_report_id: item.reportId, p_status: status
+        });
+        if(error){
+          console.warn('[moderation] resolve failed:', error.message);
+          list.querySelectorAll('[data-inbox-resolve]').forEach(function(x){ x.disabled = false; });
+          return;
+        }
+        INBOX.viewing = null;
+        await inboxLoad();
+        inboxRenderList();
+        if(typeof reRenderCurrentView === 'function') reRenderCurrentView();
+      }catch(e){
+        list.querySelectorAll('[data-inbox-resolve]').forEach(function(x){ x.disabled = false; });
+      }
+    });
   });
 }
 
@@ -4712,6 +4796,10 @@ load();
 .inbox-thread-head{display:flex;align-items:center;gap:8px;padding:6px 8px 8px;border-bottom:1px solid rgba(124,106,85,.25);margin-bottom:6px}
 .inbox-back{border:0;background:none;cursor:pointer;font-size:16px;line-height:1;color:var(--forest);padding:2px 6px;border-radius:6px}
 .inbox-back:hover{background:rgba(61,87,74,.12)}
+.inbox-item-report .inbox-item-who{color:var(--rust-deep)}
+.inbox-report-flag{background:var(--rust)!important;color:var(--cream);font-size:14px}
+.inbox-report-body{font-family:'Bitter',Georgia,serif;font-size:12.5px;color:var(--ink);background:rgba(124,106,85,.09);border-radius:8px;padding:10px;margin:0 4px 8px;overflow-wrap:anywhere}
+.inbox-report-acts{display:flex;gap:8px;padding:0 4px 4px}
 .inbox-thread-about{font-family:'Bitter',Georgia,serif;font-size:11px;color:#7c6a55;padding:0 8px 6px;overflow-wrap:anywhere}
 .inbox-thread-who{font-family:'Oswald',sans-serif;font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--forest)}
 .inbox-msgs{list-style:none;margin:0;padding:0 4px;display:flex;flex-direction:column;gap:6px;max-height:38vh;overflow-y:auto}
