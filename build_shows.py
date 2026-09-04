@@ -30,6 +30,40 @@ def clean_title(t):
     return re.sub(r"\s+", " ", t).strip()
 
 
+# Age restriction, derived from the title. Sources put it there as a trailing
+# suffix ("... - 21+", "... (21+)", "... - ALL AGES!") rather than in a field
+# of its own, so this reads it back out into one.
+#
+# CRITICAL: this NEVER modifies the title. make_slug() derives a show's
+# permanent identity from its title, and those slugs are referenced by
+# archive.json and by every show_slug row in Supabase (comments, ticket_posts,
+# show_attendees, show_threads). Rewriting a title to strip the suffix would
+# silently break all of them.
+#
+# Three states, not two: "21+", "all-ages", or absent. Absent means UNKNOWN and
+# must stay distinguishable from "known to be all-ages" -- most shows carry no
+# age information at all, and a filter that quietly treats unknown as either
+# answer would be lying about coverage.
+_AGE_21 = re.compile(r"(?:^|[\s\-\u2013\u2014(\[])(?:21\s*\+|21\s*(?:&|and)\s*over|21\s*and\s*up)", re.I)
+_AGE_18 = re.compile(r"(?:^|[\s\-\u2013\u2014(\[])18\s*\+", re.I)
+_AGE_ALL = re.compile(r"(?:^|[\s\-\u2013\u2014(\[])all\s*ages", re.I)
+
+
+def detect_age(title):
+    """Return '21+', '18+', 'all-ages', or '' (unknown) for a show title."""
+    t = title or ""
+    # Checked most-restrictive first: a title carrying both (rare, e.g. an
+    # all-ages early show followed by a 21+ late one) should not be advertised
+    # as all-ages.
+    if _AGE_21.search(t):
+        return "21+"
+    if _AGE_18.search(t):
+        return "18+"
+    if _AGE_ALL.search(t):
+        return "all-ages"
+    return ""
+
+
 def _norm_key(s):
     # Aggressive normalization used ONLY for the dedupe key (not display):
     # strip HTML, dash-normalize, lower, and collapse every run of
@@ -62,7 +96,7 @@ ARCHIVE = os.path.join(HERE, "archive.json")
 
 _ARCHIVE_SOURCE = "Append-only archive of past shows (accumulated across builds)"
 _ARCHIVE_FIELDS = ("title", "venue", "neighborhood", "address",
-                   "date", "time", "venueUrl", "imageUrl")
+                   "date", "time", "venueUrl", "imageUrl", "age")
 
 
 def make_slug(show):
@@ -286,6 +320,14 @@ def main():
     for s in shows:
         if s.get("title"):
             s["title"] = clean_title(s["title"])
+
+    # Derive the age restriction from the (already sanitized) title. Additive:
+    # a show with no age information gets "", meaning UNKNOWN, and the title
+    # itself is left exactly as-is so slugs stay stable. A source that ever
+    # supplies a real age field wins over the title-derived guess.
+    for s in shows:
+        if not (s.get("age") or "").strip():
+            s["age"] = detect_age(s.get("title", ""))
 
     # dedupe on (normalized title, normalized venue, date)
     seen, deduped = {}, []
