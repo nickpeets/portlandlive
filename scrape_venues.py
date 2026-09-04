@@ -68,6 +68,7 @@ VENUE_INFO = {
     "White Eagle Saloon": ("Boise/Eliot", "836 N Russell St, Portland, OR 97227"),
     "Al's Den": ("West End/Downtown", "303 SW 12th Ave, Portland, OR 97205"),
     "Mission Theater": ("Nob Hill/NW", "1624 NW Glisan St, Portland, OR 97209"),
+    "Kennedy School": ("Concordia", "5736 NE 33rd Ave, Portland, OR 97211"),
     "Arlene Schnitzer Concert Hall": ("Downtown", "1037 SW Broadway"),
     "Paramount Theatre": ("Downtown", "911 SW Salmon St"),
     "The Old Church": ("Downtown", "1422 SW 11th Ave"),
@@ -1976,13 +1977,30 @@ def parse_novapdx(html, today):
 
 
 MCMENAMINS_BASE = "https://www.mcmenamins.com/to-do/live-music-events/music-event-calendar"
-# Music-first McMenamins rooms only. Crystal Ballroom(2)/Edgefield(3)/Grand Lodge(4)
-# are intentionally OMITTED -- they already arrive via parse_monqui; including them
-# here would double-list. Kennedy School & the pubs are skipped (mostly non-music).
+# McMenamins rooms via the music-event calendar. Crystal Ballroom(2)/Edgefield(3)/
+# Grand Lodge(4) are intentionally OMITTED -- they already arrive via parse_monqui;
+# including them here would double-list. Kennedy School (6) was previously skipped
+# as "mostly non-music"; added Sep 2026 on Nick's call to accept some noise for the
+# coverage -- and since this hits the MUSIC calendar specifically, the non-music
+# events (movies, trivia) may not surface here at all. The other pubs stay skipped.
 MCMENAMINS_VENUES = {
     "55": "White Eagle Saloon",
     "154": "Al's Den",
     "63": "Mission Theater",
+    "6": "Kennedy School",
+}
+# Kennedy School is a pub/hotel whose music-calendar entries are mostly NOT
+# music (the first live run was 8-of-10 non-music: building tours, bingo,
+# OMSI Science Pub, a film networking night). Rather than pollute a live-music
+# feed with "History & Art Tour", drop the recognizable non-music formats by
+# title. Applied ONLY to Kennedy School -- White Eagle / Al's Den / Mission are
+# music rooms and their entries are trusted as-is. Fragile by nature (a new
+# non-music format slips through until it's added here); tune as they appear.
+_MCM_NONMUSIC = {
+    "Kennedy School": re.compile(
+        r"history\s*&\s*art\s*tour|art\s*tour|\btour\b|bingo|science\s*pub|"
+        r"\bfilm\b|networking|trivia|showcase|pub\s*quiz|movie|screening",
+        re.I),
 }
 _MCM_PROP_CTRL = "ctl00$MainContent$propertyfilters"
 
@@ -2271,6 +2289,9 @@ def parse_mcmenamins(html, today):
             if key in seen:
                 continue
             seen.add(key)
+            nonmusic = _MCM_NONMUSIC.get(vname)
+            if nonmusic and nonmusic.search(title):
+                continue
             out.append({"title": title, "venue": vname, "neighborhood": nb,
                         "address": addr, "date": date, "time": tm_str,
                         "venueUrl": url, "imageUrl": img})
