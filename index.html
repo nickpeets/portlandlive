@@ -7,7 +7,7 @@
 <meta name="description" content="Your straight-forward guide to live music in Portland, OR.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Oswald:wght@400;500;600;700&family=Bitter:ital,wght@0,400;0,500;0,600;1,400&family=Josefin+Slab:wght@300;400;600;700&family=Yeseva+One&family=Lato:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Bevan&family=Oswald:wght@400;500;600;700&family=Bitter:ital,wght@0,400;0,500;0,600;1,400&family=Josefin+Slab:wght@300;400;600;700&family=Yeseva+One&family=Lato:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <style>
 :root{
   --ink:#4a3526;          /* warm brown text */
@@ -103,21 +103,27 @@ body{
 }
 .masthead-brand{display:flex;align-items:center;gap:10px;cursor:pointer}
 .masthead-brand:hover{opacity:.85}
-.masthead-logo{
-  display:grid;place-items:center;width:32px;height:32px;border-radius:999px;
-  background:var(--cream);flex:0 0 auto;
-}
-.masthead-logo img{width:22px;height:22px;object-fit:contain}
+.masthead-logo{position:relative;width:54px;height:54px;flex:0 0 auto}
+/* StumpWire mark: off-centre "true growth" rings, paper-tone palette for
+   the dark masthead bg (per the Sep 2026 rebrand kit, section 03 "Horizontal
+   on pine" + README's dark-background inversion note). Plain CSS circles,
+   no image file -- same technique the rebrand kit itself used, reproduced
+   here at its approved size so it renders identically. */
+.masthead-logo .sw-ring{position:absolute;border-radius:50%;border-style:solid}
+.masthead-logo .sw-ring-1{left:0;top:0;width:50px;height:50px;border-width:2px;border-color:#ded9a8}
+.masthead-logo .sw-ring-2{left:8px;top:5px;width:36px;height:38px;border-width:2px;border-color:#8fae4e}
+.masthead-logo .sw-ring-3{left:16px;top:11px;width:22px;height:26px;border-width:2px;border-color:#d99a2b}
+.masthead-logo .sw-dot{position:absolute;left:24px;top:20px;width:6px;height:6px;border-radius:50%;background:#f2ecd9}
 .masthead-word{
-  font-family:'Josefin Slab',Georgia,serif;font-size:18px;font-weight:700;
-  letter-spacing:.05em;text-transform:uppercase;color:var(--cream);white-space:nowrap;
+  font-family:'Bevan',Georgia,serif;font-size:30px;font-weight:400;
+  letter-spacing:.01em;text-transform:none;color:var(--cream);white-space:nowrap;
 }
 @media(max-width:600px){
   /* The 16px inset the old .masthead padding carried, moved onto the inner
      box so it still matches .controls-inner's mobile padding. */
   .masthead{padding:12px 0 10px}
   .masthead-inner{padding:0 16px}
-  .masthead-word{font-size:17px}
+  .masthead-word{font-size:28px}
 }
 
 
@@ -404,8 +410,14 @@ body{
 }
 .foot-bar a{color:var(--cream)}
 .foot-bar .brand{display:inline-flex;align-items:center;gap:9px;margin-bottom:8px}
-.foot-bar .brand img{width:30px;height:30px}
-.foot-bar .brand span{font-family:'Alfa Slab One';font-size:17px;color:var(--cream)}
+/* Same StumpWire ring mark as the header, scaled down for the footer. */
+.foot-bar .brand .sw-mark{position:relative;width:32px;height:32px;flex:0 0 auto}
+.foot-bar .brand .sw-ring{position:absolute;border-radius:50%;border-style:solid}
+.foot-bar .brand .sw-ring-1{left:0;top:0;width:30px;height:30px;border-width:1.5px;border-color:#ded9a8}
+.foot-bar .brand .sw-ring-2{left:5px;top:3px;width:21px;height:22px;border-width:1.5px;border-color:#8fae4e}
+.foot-bar .brand .sw-ring-3{left:10px;top:7px;width:13px;height:15px;border-width:1.5px;border-color:#d99a2b}
+.foot-bar .brand .sw-dot{position:absolute;left:14px;top:12px;width:4px;height:4px;border-radius:50%;background:#f2ecd9}
+.foot-bar .brand span{font-family:'Bevan',Georgia,serif;font-weight:400;font-size:17px;color:var(--cream)}
 
 @media(max-width:640px){
   .statusbar{font-size:11px}
@@ -853,8 +865,13 @@ body{
   <div class="masthead" id="masthead">
     <div class="masthead-inner">
       <div class="masthead-brand">
-        <span class="masthead-logo"><img src="/logo_trans.png" alt=""></span>
-        <span class="masthead-word">PortlandLive</span>
+        <span class="masthead-logo" aria-hidden="true">
+          <span class="sw-ring sw-ring-1"></span>
+          <span class="sw-ring sw-ring-2"></span>
+          <span class="sw-ring sw-ring-3"></span>
+          <span class="sw-dot"></span>
+        </span>
+        <span class="masthead-word">StumpWire</span>
       </div>
       <div class="header-utility" id="headerUtility">
         <!-- Unified menu (Aug 23 doc): one trigger, one dropdown, replacing the
@@ -1002,7 +1019,15 @@ body{
 </main>
 
 <footer class="foot-bar">
-  <div class="brand"><img src="/logo_trans.png" alt=""><span>PortlandLive</span></div>
+  <div class="brand">
+    <span class="sw-mark" aria-hidden="true">
+      <span class="sw-ring sw-ring-1"></span>
+      <span class="sw-ring sw-ring-2"></span>
+      <span class="sw-ring sw-ring-3"></span>
+      <span class="sw-dot"></span>
+    </span>
+    <span>StumpWire</span>
+  </div>
   <div>A revived guide to live music in Portland, OR · Listings aggregated from public venue calendars</div>
   <div style="margin-top:8px;opacity:.7">Always confirm dates &amp; times with the venue before heading out.</div>
 </footer>
