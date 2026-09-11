@@ -57,10 +57,28 @@ create policy profiles_update_own
 -- cascade (i.e. full account deletion), never a standalone row delete.
 
 -- RLS policies alone do not grant table-level access -- Postgres still
--- requires the role to have base privileges on the table. Anon has no
--- legitimate reason to touch profiles in Stage 1 (no public reads), so only
--- authenticated gets them; delete is intentionally omitted (see above).
-grant select, insert, update on public.profiles to authenticated;
+-- requires the role to have base privileges on the table. Delete is
+-- intentionally omitted (see above).
+--
+-- AMENDED at Stage 10 Part 0 to match the live catalog. This line used to be
+--   grant select, insert, update on public.profiles to authenticated;
+-- Stage 10's D3 replaced the table-wide SELECT with per-column grants, so a
+-- column added later (D3 exists for `handle`) is unreadable until granted on
+-- purpose, and `select=*` on profiles is a permission error by design. The
+-- live migration was
+--   revoke select on public.profiles from anon, authenticated;
+-- followed by the grants below. That revoke is deliberately NOT repeated
+-- here: a table-level REVOKE SELECT also drops every column-level SELECT
+-- grant on the table (verified, Postgres 16), so re-running it after
+-- schema-avatars.sql would silently take avatar_url away from every reader.
+-- This file never grants table-wide SELECT, so a fresh run needs no revoke.
+--
+-- anon appears here because Stage 9's profiles_select_public_avatar policy
+-- (schema-avatars.sql) reads these columns for signed-out visitors; the
+-- policy is useless without the grant. avatar_url itself is granted in
+-- schema-avatars.sql, where the column is created.
+grant insert, update on public.profiles to authenticated;
+grant select (id, display_name, created_at) on public.profiles to anon, authenticated;
 
 -- Auto-create the profile row the moment an auth.users row is created, so
 -- signup works correctly even when email confirmation is enabled (the
