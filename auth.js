@@ -1,4 +1,10 @@
 // PortlandLive -- Fork Stage 1: Supabase accounts (sign up / log in / log out)
+// Stage 10 Part 1 added handles: a required @handle at sign-up
+// (handle_available RPC, stored via handle_new_user), the caller's own
+// handle in the header menu (my_handle RPC -- profiles.handle is not
+// selectable by any client role, see supabase/schema-handles.sql), and a
+// one-time rename for accounts whose handle was assigned from their name
+// (set_handle RPC).
 //
 // This is the ONLY backend surface at this stage: an auth.users identity
 // plus a display_name in public.profiles. No comments, no ticket posts, no
@@ -50,6 +56,10 @@
     form: $("authForm"),
     displayNameField: $("authDisplayNameField"),
     displayNameInput: $("authDisplayNameInput"),
+    handleField: $("authHandleField"),
+    handleInput: $("authHandleInput"),
+    handle: $("authHandle"),
+    handleEditor: $("handleEditor"),
     emailInput: $("authEmailInput"),
     passwordInput: $("authPasswordInput"),
     submitBtn: $("authSubmitBtn"),
@@ -65,6 +75,8 @@
     el.tabSignUp.classList.toggle("active", isSignUp);
     el.displayNameField.hidden = !isSignUp;
     el.displayNameInput.required = isSignUp;
+    if (el.handleField) el.handleField.hidden = !isSignUp;
+    if (el.handleInput) el.handleInput.required = isSignUp;
     el.passwordInput.autocomplete = isSignUp ? "new-password" : "current-password";
     el.title.textContent = isSignUp ? "Sign Up" : "Sign In";
     el.submitBtn.textContent = isSignUp ? "Create account" : "Sign In";
@@ -101,14 +113,18 @@
     // <name>" until a reload. Clear the visible one too.
     if (el.quickMenuAccount) el.quickMenuAccount.hidden = true;
     if (el.displayName) el.displayName.textContent = "";
+    if (el.handle) el.handle.textContent = "";
+    renderHandleEditor(null);
   }
 
-  function renderLoggedIn(displayName) {
+  function renderLoggedIn(displayName, handleInfo) {
     el.signInBtn.hidden = true;
     el.userPill.hidden = false;
     el.displayName.textContent = displayName || "Account";
     el.menu.hidden = true;
     if (el.quickMenuAccount) el.quickMenuAccount.hidden = false;
+    if (el.handle) el.handle.textContent = handleInfo && handleInfo.handle ? "@" + handleInfo.handle : "";
+    renderHandleEditor(handleInfo);
   }
 
   async function fetchDisplayName(userId) {
@@ -124,37 +140,121 @@
     return data && data.display_name;
   }
 
+  // profiles.handle is granted to no client role (D3), so even your own is
+  // read through a SECURITY DEFINER function. Returns
+  // { handle, rename_available } or null.
+  async function fetchMyHandle() {
+    try {
+      const { data, error } = await sb.rpc("my_handle");
+      if (error) {
+        console.warn("[auth] my_handle unavailable:", error.message);
+        return null;
+      }
+      const row = Array.isArray(data) ? data[0] : data;
+      return row && row.handle ? { handle: row.handle, rename_available: !!row.rename_available } : null;
+    } catch (err) {
+      console.warn("[auth] my_handle threw:", err);
+      return null;
+    }
+  }
+
   async function refreshAuthUI() {
     const { data: { session } } = await sb.auth.getSession();
     if (!session || !session.user) {
       renderLoggedOut();
       return;
     }
-    const name = await fetchDisplayName(session.user.id);
-    renderLoggedIn(name);
+    const [name, handleInfo] = await Promise.all([
+      fetchDisplayName(session.user.id),
+      fetchMyHandle()
+    ]);
+    renderLoggedIn(name, handleInfo);
   }
 
-  // true = definitely taken, false = definitely free, null = could not tell
-  // (RPC missing or errored). Null deliberately does NOT block signup.
-  async function displayNameTaken(name) {
+  // Same charset and length as the database CHECK. Checked here first so the
+  // form can explain the rule instead of round-tripping a guaranteed no.
+  const HANDLE_RE = /^[A-Za-z0-9_]{3,20}$/;
+  const HANDLE_RULE = "Handles are 3\u201320 letters, numbers or underscores.";
+
+  // true = definitely taken (or reserved -- the RPC does not say which),
+  // false = definitely free, null = could not tell (RPC missing or errored).
+  // Null deliberately does NOT block signup; the database is the final word.
+  async function handleTaken(handle) {
     try {
-      const { data, error } = await sb.rpc("display_name_available", { candidate: name });
+      const { data, error } = await sb.rpc("handle_available", { candidate: handle });
       if (error || typeof data !== "boolean") {
-        console.warn("[auth] display_name_available unavailable:", error && error.message);
+        console.warn("[auth] handle_available unavailable:", error && error.message);
         return null;
       }
       return !data;
     } catch (err) {
-      console.warn("[auth] display_name_available threw:", err);
+      console.warn("[auth] handle_available threw:", err);
       return null;
     }
   }
 
-  function isNameTakenError(error) {
+  // Tokens raised by handle_new_user / set_handle, plus GoTrue's flattening
+  // of any trigger error into a generic "Database error saving new user".
+  function handleErrorMessage(error) {
     const msg = ((error && error.message) || "").toLowerCase();
-    return msg.indexOf("display_name_taken") !== -1
-        || msg.indexOf("profiles_display_name_unique_idx") !== -1
-        || msg.indexOf("database error saving new user") !== -1;
+    if (msg.indexOf("handle_taken") !== -1 || msg.indexOf("profiles_handle_lower_idx") !== -1) return "That handle is taken. Try another.";
+    if (msg.indexOf("handle_reserved") !== -1) return "That handle is reserved. Try another.";
+    if (msg.indexOf("handle_invalid") !== -1) return HANDLE_RULE;
+    if (msg.indexOf("handle_rename_unavailable") !== -1) return "This handle has already been changed once.";
+    if (msg.indexOf("database error saving new user") !== -1) return "That handle is taken. Try another.";
+    return null;
+  }
+
+  // The one-time rename. Shown only when the account's handle was assigned
+  // from its display name (backfill, or a sign-up from before handles) and
+  // the rename has not been used. set_handle() clears the flag server-side;
+  // nothing here can grant a second go.
+  function renderHandleEditor(info) {
+    const slot = el.handleEditor;
+    if (!slot) return;
+    if (!info || !info.rename_available) {
+      slot.hidden = true;
+      slot.innerHTML = "";
+      return;
+    }
+    slot.hidden = false;
+    slot.innerHTML =
+      '<div class="handle-edit">' +
+        '<div class="av-edit-note" style="padding:0">Your handle was made from your name. You can change it once.</div>' +
+        '<div class="handle-edit-row">' +
+          '<input type="text" maxlength="20" autocapitalize="off" spellcheck="false" placeholder="' + info.handle.replace(/"/g, "&quot;") + '" data-handle-input>' +
+          '<button type="button" class="av-edit-btn" data-handle-save>Save</button>' +
+        '</div>' +
+        '<div class="handle-edit-msg" data-handle-msg></div>' +
+      '</div>';
+    const input = slot.querySelector("[data-handle-input]");
+    const save = slot.querySelector("[data-handle-save]");
+    const msg = slot.querySelector("[data-handle-msg]");
+    const say = (t, isErr) => { msg.textContent = t || ""; msg.classList.toggle("is-error", !!isErr); };
+
+    async function submit() {
+      const next = input.value.trim();
+      if (!HANDLE_RE.test(next)) { say(HANDLE_RULE, true); input.focus(); return; }
+      if (next.toLowerCase() === info.handle.toLowerCase()) { say("That is already your handle.", true); return; }
+      save.disabled = true;
+      say("Saving\u2026");
+      try {
+        const { error } = await sb.rpc("set_handle", { p_handle: next });
+        if (error) {
+          say(handleErrorMessage(error) || error.message, true);
+          save.disabled = false;
+          return;
+        }
+        // Server confirmed; re-read so the flag and header come from the
+        // database, not from what we hoped happened.
+        await refreshAuthUI();
+      } catch (err) {
+        say("Something went wrong. Try again.", true);
+        save.disabled = false;
+      }
+    }
+    save.addEventListener("click", submit);
+    input.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); submit(); } });
   }
 
   async function handleSubmit(evt) {
@@ -168,34 +268,41 @@
           setMsg("Enter a display name.", true);
           return;
         }
-        // Display names are unique, case- and whitespace-insensitively.
-        // This cannot be checked with a plain select: anon has no privileges
-        // on profiles, and profiles_select_own limits an authenticated user to
-        // their own row, so a select would call every name free. The
-        // display_name_available RPC (SECURITY DEFINER) is the only honest
-        // way to ask. If the check itself fails we fall through and let the
-        // database decide rather than blocking a legitimate signup.
-        const taken = await displayNameTaken(displayName);
+        // Display names are no longer unique (Stage 10 Part 1); the handle
+        // is. It is the addressable key, so it is required, shape-checked
+        // here, and availability-checked through handle_available -- a
+        // SECURITY DEFINER RPC granted to anon, because sign-up has no
+        // session and profiles.handle is selectable by nobody. If the check
+        // itself fails we fall through and let the database decide rather
+        // than blocking a legitimate signup.
+        const handle = (el.handleInput ? el.handleInput.value : "").trim();
+        if (!HANDLE_RE.test(handle)) {
+          setMsg(HANDLE_RULE, true);
+          if (el.handleInput) { el.handleInput.focus(); el.handleInput.select(); }
+          return;
+        }
+        const taken = await handleTaken(handle);
         if (taken === true) {
-          setMsg("That name is taken. Try another.", true);
-          el.displayNameInput.focus();
-          el.displayNameInput.select();
+          setMsg("That handle is taken. Try another.", true);
+          el.handleInput.focus();
+          el.handleInput.select();
           return;
         }
         const { data, error } = await sb.auth.signUp({
           email: el.emailInput.value.trim(),
           password: el.passwordInput.value,
-          options: { data: { display_name: displayName } }
+          options: { data: { display_name: displayName, handle: handle } }
         });
         if (error) {
           // Backstop for the race between the check above and the insert:
-          // two people can claim the same name in the same instant, and only
-          // the unique index settles it. handle_new_user re-raises that as
-          // 'display_name_taken'; GoTrue may also flatten it into a generic
-          // "Database error saving new user", so treat both as the same thing
-          // rather than showing a raw database error to a person.
-          setMsg(isNameTakenError(error) ? "That name is taken. Try another." : error.message, true);
-          if (isNameTakenError(error)) { el.displayNameInput.focus(); el.displayNameInput.select(); }
+          // two people can claim the same handle in the same instant, and
+          // only profiles_handle_lower_idx settles it. handle_new_user
+          // re-raises that as 'handle_taken'; GoTrue may also flatten it into
+          // a generic "Database error saving new user", so both read as the
+          // same thing rather than showing a raw database error to a person.
+          const friendly = handleErrorMessage(error);
+          setMsg(friendly || error.message, true);
+          if (friendly && el.handleInput) { el.handleInput.focus(); el.handleInput.select(); }
           return;
         }
         if (data.session) {

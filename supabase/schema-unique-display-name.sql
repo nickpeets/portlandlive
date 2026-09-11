@@ -1,5 +1,12 @@
 -- PortlandLive — Stage 1 amendment: display names become unique
 --
+-- SUPERSEDED by schema-handles.sql (Stage 10, Part 1). DO NOT RE-RUN.
+-- That file drops the unique index and display_name_available() created
+-- here and replaces handle_new_user(). Re-running this file afterwards would
+-- reinstate the index, resurrect the RPC nothing calls, and overwrite the
+-- sign-up trigger with a version that does not set handle -- which is NOT
+-- NULL -- so every sign-up would fail. Kept for history only.
+--
 -- Run this once, in full, in the Supabase SQL Editor. It reverses the original
 -- Stage 1 decision (schema.sql: "display_name is NOT unique, NOT a handle").
 -- Uniqueness is case-insensitive and whitespace-trimmed, so "Nick P",

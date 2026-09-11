@@ -77,8 +77,13 @@ create policy profiles_update_own
 -- (schema-avatars.sql) reads these columns for signed-out visitors; the
 -- policy is useless without the grant. avatar_url itself is granted in
 -- schema-avatars.sql, where the column is created.
-grant insert, update on public.profiles to authenticated;
+-- AMENDED again at Stage 10 Part 1: UPDATE is per-column too. handle is
+-- permanent (one rename via set_handle() only), which a table-wide UPDATE
+-- plus profiles_update_own would silently defeat. avatar_url's UPDATE is
+-- granted in schema-avatars.sql; handle's is granted to nobody.
+grant insert on public.profiles to authenticated;
 grant select (id, display_name, created_at) on public.profiles to anon, authenticated;
+grant update (display_name) on public.profiles to authenticated;
 
 -- Auto-create the profile row the moment an auth.users row is created, so
 -- signup works correctly even when email confirmation is enabled (the

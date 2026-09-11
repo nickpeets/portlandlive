@@ -905,8 +905,9 @@ body{
             <span class="quick-menu-caret">&#9662;</span>
           </button>
           <div class="quick-menu-list" id="quickMenuList" hidden>
-            <div class="quick-menu-account" id="quickMenuAccount">Signed in as <span id="authDisplayName"></span></div>
+            <div class="quick-menu-account" id="quickMenuAccount">Signed in as <span id="authDisplayName"></span> <span class="quick-menu-handle" id="authHandle"></span></div>
             <div id="avEditor" hidden></div>
+            <div id="handleEditor" hidden></div>
             <label class="pill quick-menu-pill my-shows" title="Show everything you have favorited — shows, bands, and venues">
               <span class="toggle" id="myShowsToggle"></span>
               <span>Saved</span>
@@ -1062,6 +1063,11 @@ body{
           <div class="auth-field" id="authDisplayNameField" hidden>
             <label class="auth-label" for="authDisplayNameInput">Display name</label>
             <input type="text" id="authDisplayNameInput" maxlength="60" autocomplete="nickname" placeholder="What should we call you?">
+          </div>
+          <div class="auth-field" id="authHandleField" hidden>
+            <label class="auth-label" for="authHandleInput">Handle</label>
+            <input type="text" id="authHandleInput" maxlength="20" autocomplete="username" autocapitalize="off" spellcheck="false" placeholder="yourhandle">
+            <div class="auth-hint">3&ndash;20 letters, numbers or underscores. This is how people @mention you, and it can&rsquo;t be changed later.</div>
           </div>
           <div class="auth-field">
             <label class="auth-label" for="authEmailInput">Email</label>
@@ -2115,7 +2121,7 @@ function txPriceLabel(t){ return t === 'free' ? 'Free' : 'At face value'; }
 // ticket_threads is unreadable to anyone outside a thread, so this number
 // cannot be computed client-side. public.handoff_count(uuid) is a SECURITY
 // DEFINER function returning a bare integer -- same shape and reasoning as
-// Stage 1's display_name_available -- and handoff_counts(uuid[]) is its
+// Stage 10's handle_available -- and handoff_counts(uuid[]) is its
 // batched form, so a show page listing ten posters costs one request rather
 // than ten. See supabase/schema-handoff.sql.
 // How many of each POST's spares have been handed off. One call for the whole
@@ -5224,6 +5230,16 @@ load();
 .quick-menu-pill .toggle::after{background:var(--cream)}
 .quick-menu-account{padding:4px 10px 8px;font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:rgba(74,53,38,.6)}
 .quick-menu-account:has(#authDisplayName:empty){display:none}
+.quick-menu-handle{text-transform:none;letter-spacing:0;color:var(--rust)}
+.quick-menu-handle:empty{display:none}
+/* One-time handle rename for accounts whose handle was assigned, not chosen
+   (Stage 10 Part 1). Rendered by auth.js into #handleEditor. */
+.handle-edit{padding:4px 10px 8px}
+.handle-edit-row{display:flex;gap:6px;align-items:center;margin-top:6px}
+.handle-edit-row input{flex:1;min-width:0;font-family:'Bitter',Georgia,serif;font-size:13px;color:var(--ink);background:#fff;border:1px solid rgba(74,53,38,.16);border-radius:8px;padding:6px 8px}
+.handle-edit-row input:focus{outline:2px solid var(--water-d);outline-offset:1px}
+.handle-edit-msg{font-family:'Bitter',Georgia,serif;font-size:10.5px;color:#7c6a55;min-height:1.1em;margin-top:4px}
+.handle-edit-msg.is-error{color:var(--rust-deep)}
 #authDisplayName{font-weight:600;color:var(--ink);text-transform:none;letter-spacing:normal}
 .quick-menu-divider{height:1px;background:rgba(74,53,38,.14);margin:4px 6px}
 .quick-menu-authitem{text-align:left;font-family:'Oswald',sans-serif;font-weight:600;font-size:13px;letter-spacing:.04em;text-transform:uppercase;cursor:pointer}
@@ -5250,6 +5266,7 @@ load();
 .auth-title{font-family:'Alfa Slab One',serif;color:var(--ink);font-size:22px;margin:0 0 14px}
 .auth-field{margin-bottom:14px}
 .auth-label{display:block;font-family:'Oswald',sans-serif;font-weight:600;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(74,53,38,.62);margin:0 0 6px}
+.auth-hint{font-family:'Bitter',Georgia,serif;font-size:11.5px;line-height:1.4;color:#7c6a55;margin-top:6px}
 .auth-field input{width:100%;box-sizing:border-box;font-family:'Bitter',Georgia,serif;font-size:15px;color:var(--ink);background:#fff;border:1px solid rgba(74,53,38,.16);border-radius:10px;padding:12px}
 .auth-field input:focus{outline:2px solid var(--water-d);outline-offset:1px}
 .auth-submit{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;font-family:'Oswald',sans-serif;font-weight:600;border:0;border-radius:11px;cursor:pointer;font-size:15px;letter-spacing:.02em;padding:14px;background:var(--rust);color:#fff;margin-top:4px}
