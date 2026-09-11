@@ -20,7 +20,10 @@
   --cream:#f3ead7;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
+/* Offsets every anchor jump and scrollIntoView by the pinned masthead's
+   height, so targets don't land underneath it. Notably .controls, which
+   the venue/comedy toggles scrollIntoView to. */
+html{scroll-behavior:smooth;scroll-padding-top:66px}
 body{
   font-family:'Bitter',Georgia,serif;
   color:var(--ink);
@@ -35,7 +38,14 @@ body{
    Sort directly beneath it in the untouched .controls section. The
    collapsible mural hero that used to sit above the masthead was removed
    Sep 2026 -- see BUILDLOG. mural.png is retained in the repo. */
-.site-header{position:relative}
+/* Sticky on .site-header rather than .masthead: a sticky element only sticks
+   within its parent's box, so pinning .masthead would unpin it the moment
+   .site-header scrolled past. Since the mural hero was removed, .site-header
+   holds nothing but the masthead anyway.
+   z-index 40 clears .controls (6) and lets the inbox/account dropdowns (20,
+   inside the masthead's stacking context) open over the feed, while staying
+   under every overlay (50/60/80/9999). */
+.site-header{position:sticky;top:0;z-index:40}
 
 .masthead{
   position:relative;
@@ -64,6 +74,7 @@ body{
 @media(max-width:600px){
   /* The 16px inset the old .masthead padding carried, moved onto the inner
      box so it still matches .controls-inner's mobile padding. */
+  html{scroll-padding-top:64px}
   .masthead{padding:12px 0 10px}
   .masthead-inner{padding:0 16px}
   .masthead-word{font-size:18px}
