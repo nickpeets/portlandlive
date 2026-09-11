@@ -4666,13 +4666,14 @@ $('#browseSelect').addEventListener('change', e => {
            + '<li>Open <b>rainorshows.com</b> in Safari, then use this menu again.</li>';
     }
     if(isIOS){
-      return '<li>Tap the <b>Share</b> button — the square with an arrow, at the bottom of Safari.</li>'
-           + '<li>Scroll down the list and tap <b>Add to Home Screen</b>. It may be under <b>Edit Actions</b> or <b>More</b>.</li>'
-           + '<li>Tap <b>Add</b>.</li>';
+      return '<li>Tap the <b>&#8943;</b> button to the right of the address bar, then tap <b>Share</b>. (On older iOS, tap the <b>Share</b> icon — a square with an arrow — directly.)</li>'
+           + '<li>Scroll down the list and tap <b>Add to Home Screen</b>. If it is not there, scroll to the bottom, tap <b>Edit Actions</b>, and add it.</li>'
+           + '<li>Leave <b>Open as Web App</b> switched on — that is what hides the address bar.</li>'
+           + '<li>Name it <b>ROS</b> and tap <b>Add</b>.</li>';
     }
-    return '<li>Open your browser menu — the three dots.</li>'
-         + '<li>Tap <b>Install app</b> or <b>Add to Home screen</b>.</li>'
-         + '<li>Confirm.</li>';
+    return '<li>Open your browser menu — the three dots, top right.</li>'
+         + '<li>Tap <b>Install app</b>, or <b>Add to Home screen</b> if you do not see it.</li>'
+         + '<li>Tap <b>Install</b> to confirm.</li>';
   }
 
   btn.hidden = false;
