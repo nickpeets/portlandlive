@@ -352,8 +352,24 @@ body{
   font-size:13px;color:rgba(243,234,215,.7);font-family:'Oswald';letter-spacing:.05em;
 }
 .foot-bar a{color:var(--cream)}
+/* The feed is scraped, so it will be wrong sometimes. Saying so plainly and
+   giving people a way to report it is the honest version. Stopgap until the
+   Submission API lands -- swap the mailto for the form then. */
+.foot-correct{margin-top:14px;padding-top:12px;border-top:1px solid rgba(243,234,215,.18);display:inline-block}
+.foot-correct a{text-decoration:underline;text-underline-offset:2px}
 .foot-bar .brand{display:inline-flex;align-items:center;gap:9px;margin-bottom:8px}
-.foot-bar .brand img{width:30px;height:30px}
+/* The logo is #3d574a, which sits almost on top of the --water-dd footer
+   background and disappears. logo_trans.png has a real alpha channel, so
+   mask it and paint it --cream instead -- same colour as the wordmark,
+   rather than a brightness filter that would land on pure white. */
+.foot-bar .brand .foot-mark{width:30px;height:30px;flex:0 0 auto;display:block}
+@supports (mask-image:url('/logo_trans.png')) or (-webkit-mask-image:url('/logo_trans.png')){
+  .foot-bar .brand .foot-mark{
+    background:var(--cream);
+    -webkit-mask:url('/logo_trans.png') center/contain no-repeat;
+    mask:url('/logo_trans.png') center/contain no-repeat;
+  }
+}
 .foot-bar .brand span{
   font-family:'Bevan',Georgia,serif;font-weight:400;font-size:16px;
   letter-spacing:.02em;text-transform:uppercase;color:var(--cream);
@@ -937,11 +953,12 @@ body{
 
 <footer class="foot-bar">
   <div class="brand">
-    <img src="/logo_trans.png" alt="">
+    <span class="foot-mark" aria-hidden="true"></span>
     <span>Rain Or Shows</span>
   </div>
   <div>A revived guide to live music in Portland, OR · Listings aggregated from public venue calendars</div>
   <div style="margin-top:8px;opacity:.7">Always confirm dates &amp; times with the venue before heading out.</div>
+  <div class="foot-correct">Got a correction, or a show we missed? <a href="mailto:corrections@rainorshows.com?subject=Correction">Let us know</a>.</div>
 </footer>
 
     <div class="auth-overlay" id="authOverlay" aria-hidden="true">
