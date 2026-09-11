@@ -31,62 +31,11 @@ body{
 /* ---------- SITE HEADER ----------
    Aug 23 doc (Site.dc.html): the old illustrated sky/hills hero + centered
    eyebrow/headline/starts text is replaced by (1) a persistent masthead —
-   logo mark + PORTLANDLIVE wordmark on the water-texture background, with
-   search + Sort directly beneath it in the untouched .controls section —
-   and (2) a mobile-only collapsible mural hero, closed by default
-   (state.heroOpen === false in the doc), that carries the old headline
-   copy when expanded. Available at every viewport width, not just
-   mobile — the collapsed strip toggles it open/closed everywhere. */
+   logo mark + wordmark on the water-texture background, with search +
+   Sort directly beneath it in the untouched .controls section. The
+   collapsible mural hero that used to sit above the masthead was removed
+   Sep 2026 -- see BUILDLOG. mural.png is retained in the repo. */
 .site-header{position:relative}
-
-.mural-hero{display:block}
-.mural-hero-panel{
-  /* aspect-ratio matches mural.png's real 1963x486 proportions, so the
-     panel is always exactly tall enough for the full image at any width --
-     no vertical crop, ever, instead of a fixed height that only worked by
-     coincidence at one width. Confirmed: 96.55px at 390px, 316.90px at
-     1280px, crossover at 605.86px (150 * 1963/486). */
-  position:relative;aspect-ratio:1963/486;overflow:hidden;
-  background:#6E9C8A url('/mural.png') center/cover no-repeat;
-}
-@media(max-width:605px){
-  /* Below the exact crossover, the ratio would make the panel shorter than
-     150px, which changes mobile's proportions even though mobile wasn't
-     the original complaint -- at 390px it goes from a 150px-tall crop
-     (losing left/right edges) to a 96.5px letterbox (losing nothing, but
-     shrinking the art and crowding "STARTS HERE" against the treeline).
-     Revert to the original fixed height below the crossover; above it the
-     aspect-ratio already yields >=150px on its own, so this is inert. */
-  .mural-hero-panel{aspect-ratio:auto;height:150px}
-}
-.mural-hero-collapse{
-  position:absolute;top:10px;right:10px;width:26px;height:26px;z-index:2;
-  border-radius:999px;background:rgba(251,249,244,.85);border:0;
-  display:grid;place-items:center;font-size:13px;line-height:1;
-  color:#5C4032;cursor:pointer;padding:0;
-}
-.mural-hero-caption{
-  position:absolute;inset:0;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;padding:0 22px;text-align:center;
-}
-.mural-hero-eyebrow{
-  font-family:'Josefin Slab',Georgia,serif;font-size:10px;font-weight:700;
-  letter-spacing:.2em;text-transform:uppercase;color:#A0563C;
-}
-.mural-hero-eyebrow--sub{margin-top:3px}
-.mural-hero-headline{
-  margin:3px 0 0;font-family:'Yeseva One',Georgia,serif;font-size:21px;
-  font-weight:400;color:#6E4335;line-height:1.1;
-}
-.mural-hero-strip{
-  width:100%;padding:8px 16px;display:flex;align-items:center;gap:8px;
-  background:#DFD8BE;border:0;border-bottom:1px solid #D5D0BB;cursor:pointer;
-  font-family:'Lato',Helvetica,sans-serif;
-}
-.mural-hero-strip-label{margin-left:auto;font-size:11px;color:#8A8272}
-/* heroOpen state: default closed (matches state.heroOpen:false in the doc) */
-.mural-hero[data-open="true"] .mural-hero-strip{display:none}
-.mural-hero[data-open="false"] .mural-hero-panel{display:none}
 
 .masthead{
   position:relative;
@@ -835,24 +784,6 @@ body{
 <div id="staleBanner" class="stale-banner" hidden role="status" aria-live="polite"></div>
 
 <header class="site-header" id="siteHeader">
-  <!-- Collapsible mural hero (mobile only, per Site.dc.html's feed screen).
-       Closed by default (state.heroOpen:false in the doc). The "Ad space"
-       strip copy shown in the doc's collapsed state is deliberately NOT
-       reproduced here — see report: first ad inventory, needs a decision. -->
-  <div class="mural-hero" id="muralHero" data-open="false">
-    <div class="mural-hero-panel" id="muralHeroPanel">
-      <button class="mural-hero-collapse" id="muralCollapseBtn" type="button" aria-expanded="true" aria-controls="muralHero" aria-label="Collapse header art">&#9652;</button>
-      <div class="mural-hero-caption">
-        <div class="mural-hero-eyebrow">Your search for</div>
-        <h1 class="mural-hero-headline">Portland's Best Live Music</h1>
-        <div class="mural-hero-eyebrow mural-hero-eyebrow--sub">Starts here</div>
-      </div>
-    </div>
-    <button class="mural-hero-strip" id="muralExpandBtn" type="button" aria-expanded="false" aria-controls="muralHero" aria-label="Show header art">
-      <span class="mural-hero-strip-label">Show art <span aria-hidden="true">&#9662;</span></span>
-    </button>
-  </div>
-
   <div class="masthead" id="masthead">
     <div class="masthead-inner">
       <div class="masthead-brand">
@@ -4573,23 +4504,6 @@ $('#browseSelect').addEventListener('change', e => {
   else if(v === 'comedy'){ if(!comedyOn) $('#comedyToggle').click(); }
   else { if(venuesOn) $('#venuesToggle').click(); if(comedyOn) $('#comedyToggle').click(); }
 });
-
-// Collapsible mural hero (mobile only, Aug 23 doc): closed by default,
-// toggled by tapping either the collapsed strip or the ▴ collapse control.
-// Purely presentational — no interaction with filter/view state.
-(function(){
-  const hero = document.getElementById('muralHero');
-  const expandBtn = document.getElementById('muralExpandBtn');
-  const collapseBtn = document.getElementById('muralCollapseBtn');
-  if(!hero || !expandBtn || !collapseBtn) return;
-  const setOpen = (open) => {
-    hero.setAttribute('data-open', String(open));
-    expandBtn.setAttribute('aria-expanded', String(open));
-    collapseBtn.setAttribute('aria-expanded', String(open));
-  };
-  expandBtn.addEventListener('click', () => setOpen(true));
-  collapseBtn.addEventListener('click', () => setOpen(false));
-})();
 
 // Quick menu (Saved / Following): dropdown relocated out of the control bar.
 // The toggle elements/listeners above are untouched — only their markup moved.
