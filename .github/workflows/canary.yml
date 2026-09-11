@@ -34,7 +34,7 @@ jobs:
           python3 - <<'PY'
           import datetime, json, os, sys, urllib.request
 
-          FEED_URL = "https://shows.nickpeets.com/shows.json"
+          FEED_URL = "https://rainorshows.com/shows.json"
           MAX_AGE_HOURS = 48
           MIN_SHOWS = 600
 
