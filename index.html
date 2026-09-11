@@ -224,6 +224,12 @@ body{
 .venue-header{margin-bottom:18px}
 .venue-header .venue-name{font-family:'Alfa Slab One',serif;font-weight:400;font-size:26px;color:var(--cream);margin:6px 0 4px}
 .venue-header .venue-info{color:var(--cream);opacity:.85;font-size:14px}
+.venue-header .venue-when{font-family:'Oswald',sans-serif;letter-spacing:.03em}
+.venue-header .venue-where{margin-top:2px}
+.venue-header .venue-where .s-venue{color:var(--cream);text-decoration:underline;text-underline-offset:2px}
+.venue-header .venue-addr{margin-top:4px;font-size:13px;opacity:.72}
+.venue-header .venue-dir{color:var(--cream);text-decoration:underline;text-underline-offset:2px;white-space:nowrap}
+.venue-header .venue-dir:hover{opacity:1}
 
 /* GRID */
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
@@ -672,6 +678,11 @@ body{
 .tx-cancel{margin-left:auto;border:0;background:none;cursor:pointer;font-family:'Oswald',sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#7c6a55;padding:2px 4px;border-radius:6px}
 .tx-cancel:hover{color:var(--rust-deep);background:rgba(181,86,43,.1)}
 .tx-cancel:disabled{opacity:.5;cursor:default}
+/* The Who's Going panel sits on the teal page background, where .tx-cancel's
+   #7c6a55 is effectively invisible. Scoped to the wg control only, so the
+   ticket-exchange uses of .tx-cancel on cream keep their existing colour. */
+.tx-cancel[data-wg-leave]{color:var(--cream);opacity:.8;text-decoration:underline;text-underline-offset:2px}
+.tx-cancel[data-wg-leave]:hover{color:var(--cream);opacity:1;background:rgba(243,234,215,.14)}
 .tx-form{background:var(--cream);border-radius:12px;padding:14px;box-shadow:0 6px 14px rgba(20,40,30,.14);display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap}
 .tx-field{display:flex;flex-direction:column;gap:6px}
 .tx-label{font-family:'Oswald',sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#7c6a55}
@@ -1671,7 +1682,10 @@ function renderVenues(){
     const head = document.createElement('div');
     head.className = 'venue-header';
     head.innerHTML = `<h2 class="venue-name">${esc(state.selectedVenue)}${heartFav(venueFavKey(state.selectedVenue), state.selectedVenue, 'venue')}</h2>`
-      + `<div class="venue-info">${esc(first.neighborhood||'')}${first.address?' \u00b7 '+esc(first.address):''}</div>`;
+      + `<div class="venue-info">${esc(first.neighborhood||'')}</div>`
+      + (mapsHref(first.address, state.selectedVenue)
+          ? `<div class="venue-info venue-addr">${first.address ? esc(first.address)+' ' : ''}<a class="venue-dir" href="${mapsHref(first.address, state.selectedVenue)}" target="_blank" rel="noopener">Directions</a></div>`
+          : '');
     wrap.appendChild(head);
     if(vshows.length){
       wrap.appendChild(listOf(vshows, true));
@@ -1905,16 +1919,41 @@ function renderShowNotFound(wrap, slug){
   wrap.innerHTML = '<div class="empty"><h2>Show not found</h2><p>We couldn’t find a show at that link. It may be mistyped, or the show may not be in our listings.</p></div>';
 }
 
+// Directions link. Uses Google's universal maps URL, which hands off to the
+// native app on iOS and Android and opens the web map on desktop -- one URL,
+// no platform branching. Prefers a real street address; falls back to
+// searching the venue name in Portland, which is what the festival venues
+// need since their listings carry no address.
+function mapsHref(address, venue){
+  var q = (address && String(address).trim())
+    ? String(address)
+    : (venue ? String(venue) + ', Portland, OR' : '');
+  if(!q) return '';
+  return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(q);
+}
+
 function renderShowDetail(wrap, show, kind){
   $('#resultCount').textContent = kind === 'past' ? 'Past show' : 'Upcoming show';
-  var when = ordinalDate(show.date) + (show.time ? ' · ' + esc(show.time) : '');
+  // Three lines instead of one run-on: when, where, then the address as a
+  // directions link. The venue is a link to its own page, using the same
+  // [data-venue] delegation the feed cards use.
+  var when = ordinalDate(show.date) + (show.time ? ' \u00b7 ' + esc(show.time) : '');
+  var where = (show.venue
+      ? '<a class="s-venue" href="#" data-venue="' + esc(show.venue) + '" title="View this venue">' + esc(show.venue) + '</a>'
+      : '')
+    + (show.neighborhood ? ' \u00b7 ' + esc(show.neighborhood) : '')
+    // Only when known -- absence means unknown, not all-ages.
+    + (show.age ? ' \u00b7 ' + esc(show.age === 'all-ages' ? 'All Ages' : show.age) : '');
+  var _m = mapsHref(show.address, show.venue);
   var head = '<div class="venue-header">'
     + '<h2 class="venue-name">' + esc(show.title||'') + '</h2>'
-    + '<div class="venue-info">' + when + (show.venue ? ' · ' + esc(show.venue) : '')
-      + (show.neighborhood ? ' · ' + esc(show.neighborhood) : '')
-      // Only when known -- absence means unknown, not all-ages.
-      + (show.age ? ' · ' + esc(show.age === 'all-ages' ? 'All Ages' : show.age) : '') + '</div>'
-    + (show.address ? '<div class="venue-info">' + esc(show.address) + '</div>' : '')
+    + '<div class="venue-info venue-when">' + when + '</div>'
+    + (where ? '<div class="venue-info venue-where">' + where + '</div>' : '')
+    + (_m ? '<div class="venue-info venue-addr">'
+              + (show.address ? esc(show.address) + ' ' : '')
+              + '<a class="venue-dir" href="' + _m + '" target="_blank" rel="noopener">Directions</a>'
+            + '</div>'
+       : '')
     + '</div>';
 
   const card = document.createElement('div');
