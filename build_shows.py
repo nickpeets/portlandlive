@@ -386,6 +386,11 @@ def main():
         "source": "Scraped from venue calendars + hand-added listings",
         "shows": deduped,
     }
+    # Strip internal-only keys (leading underscore, e.g. the scraper's _hand
+    # retention flag) so they never reach the public feed.
+    if isinstance(out, dict) and "shows" in out:
+        out["shows"] = [{k: v for k, v in s.items() if not k.startswith("_")}
+                        for s in out["shows"]]
     with open(OUT, "w") as f:
         json.dump(out, f, indent=2, ensure_ascii=False)
     venues = len(set(s.get("venue","") for s in deduped))

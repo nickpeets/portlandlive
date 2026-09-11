@@ -2933,8 +2933,9 @@ def main():
     if os.path.exists(target):
         try:
             hand = [s for s in json.load(open(target)).get("shows", [])
-                    if s.get("venue") not in scraped_venues
-                    and s.get("venue") not in _expired]
+                    if s.get("_hand")
+                    or (s.get("venue") not in scraped_venues
+                        and s.get("venue") not in _expired)]
         except Exception:
             pass
 
