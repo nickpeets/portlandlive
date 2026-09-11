@@ -378,6 +378,19 @@ body{
 }
 .foot-bar a{color:var(--cream)}
 /* Add-to-home-screen sheet */
+.a2hs-bar{position:fixed;left:0;right:0;bottom:0;z-index:65;display:flex;align-items:center;gap:10px;background:var(--cream);border-top:2px solid var(--rust);padding:11px 12px calc(11px + env(safe-area-inset-bottom,0px));font-family:'Bitter',Georgia,serif}
+.a2hs-bar[hidden]{display:none}
+@media(min-width:700px){.a2hs-bar{display:none}}
+.a2hs-bar-mark{width:30px;height:30px;border-radius:7px;background:var(--water-dd);flex:0 0 auto;background-image:url('/logo_trans.png');background-size:19px 19px;background-position:center;background-repeat:no-repeat}
+@supports (mask-image:url('/logo_trans.png')) or (-webkit-mask-image:url('/logo_trans.png')){
+  .a2hs-bar-mark{background-image:none;position:relative}
+  .a2hs-bar-mark::after{content:"";position:absolute;inset:6px;background:var(--cream);-webkit-mask:url('/logo_trans.png') center/contain no-repeat;mask:url('/logo_trans.png') center/contain no-repeat}
+}
+.a2hs-bar-copy{flex:1;min-width:0;display:block;line-height:1.3}
+.a2hs-bar-copy b{display:block;font-weight:600;font-size:12.5px;color:var(--ink)}
+.a2hs-bar-copy em{display:block;font-style:normal;font-size:11px;color:rgba(74,53,38,.65)}
+.a2hs-bar-go{flex:0 0 auto;border:0;border-radius:5px;background:var(--rust);color:var(--cream);font-family:'Oswald',sans-serif;font-weight:600;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;padding:7px 10px;cursor:pointer;white-space:nowrap}
+.a2hs-bar-x{flex:0 0 auto;border:0;background:transparent;color:rgba(74,53,38,.45);font-size:19px;line-height:1;padding:2px 4px;cursor:pointer}
 .a2hs-ov{position:fixed;inset:0;background:rgba(36,26,18,.55);display:none;align-items:flex-end;justify-content:center;z-index:70}
 .a2hs-ov.on{display:flex}
 .a2hs-card{background:var(--cream);color:var(--ink);width:100%;max-width:440px;border-radius:14px 14px 0 0;padding:20px 20px calc(20px + env(safe-area-inset-bottom,0px));font-family:'Bitter',Georgia,serif}
@@ -992,6 +1005,20 @@ body{
 <!-- Add-to-home-screen instructions. Purely informational on iOS, where the
      install can only be done by hand from the Safari share sheet; on Android
      the beforeinstallprompt event gives us a real button instead. -->
+<!-- Install banner. Mobile only, shown once after a little scrolling, and
+     only over HTTPS -- Chrome will not fire beforeinstallprompt or offer the
+     menu install on plain HTTP, so on Android the button would be dead.
+     Dismissal is permanent (localStorage). -->
+<div class="a2hs-bar" id="a2hsBar" hidden>
+  <span class="a2hs-bar-mark" aria-hidden="true"></span>
+  <span class="a2hs-bar-copy">
+    <b>Add ROS to your home screen</b>
+    <em>Opens full screen, no address bar</em>
+  </span>
+  <button type="button" class="a2hs-bar-go" id="a2hsBarGo">Show me</button>
+  <button type="button" class="a2hs-bar-x" id="a2hsBarX" aria-label="Dismiss">&#215;</button>
+</div>
+
 <div class="a2hs-ov" id="a2hsOv" role="dialog" aria-modal="true" aria-labelledby="a2hsTitle">
   <div class="a2hs-card">
     <h3 id="a2hsTitle">Add Rain Or Shows to your home screen</h3>
@@ -4679,17 +4706,63 @@ $('#browseSelect').addEventListener('change', e => {
   btn.hidden = false;
   if(divider) divider.hidden = false;
 
-  btn.addEventListener('click', function(){
+  function launch(){
     var qlist = document.getElementById('quickMenuList');
     if(qlist) qlist.hidden = true;
+    // Android/Chrome: fire the real install dialog, no instructions needed.
     if(deferred){
       deferred.prompt();
-      deferred.userChoice.then(function(){ deferred = null; });
+      deferred.userChoice.then(function(){ deferred = null; hideBar(); });
       return;
     }
     steps.innerHTML = html();
     ov.classList.add('on');
-  });
+  }
+  btn.addEventListener('click', launch);
+
+  // ---- install banner -------------------------------------------------
+  // Shown once, on mobile, after a little scrolling, and only over HTTPS:
+  // Chrome fires neither beforeinstallprompt nor the menu install on plain
+  // HTTP, so on Android the button would look broken. Once the certificate
+  // is issued this lights up on its own with no redeploy.
+  var bar = document.getElementById('a2hsBar');
+  var barGo = document.getElementById('a2hsBarGo');
+  var barX = document.getElementById('a2hsBarX');
+  var KEY = 'portlandlive:a2hsDismissed';
+
+  function hideBar(){ if(bar) bar.hidden = true; }
+
+  function dismissForever(){
+    hideBar();
+    try { localStorage.setItem(KEY, '1'); } catch(e){}
+  }
+
+  if(bar && barGo && barX){
+    var dismissed = false;
+    try { dismissed = localStorage.getItem(KEY) === '1'; } catch(e){}
+    var secure = location.protocol === 'https:';
+    var small = window.matchMedia && window.matchMedia('(max-width: 699px)').matches;
+
+    if(!dismissed && secure && small){
+      var shown = false;
+      var reveal = function(){
+        if(shown) return;
+        if(window.scrollY < 400) return;
+        shown = true;
+        bar.hidden = false;
+        window.removeEventListener('scroll', reveal);
+      };
+      window.addEventListener('scroll', reveal, { passive: true });
+    }
+
+    barGo.addEventListener('click', function(){
+      dismissForever();
+      launch();
+    });
+    barX.addEventListener('click', dismissForever);
+    // Installing by any route retires the banner for good.
+    window.addEventListener('appinstalled', dismissForever);
+  }
 
   function close(){ ov.classList.remove('on'); }
   closeBtn.addEventListener('click', close);
