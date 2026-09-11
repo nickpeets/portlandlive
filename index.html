@@ -1701,8 +1701,13 @@ function listOf(items, showDate){
     const dateBit = showDate ? `<span class="s-date rdate">${ordinalDate(s.date)}</span>` : '';
     const timeBit = s.time ? `<span class="s-time">${esc(s.time)}</span>` : '';
     const sep1 = (dateBit && timeBit) ? `<span class="rdot">\u00b7</span>` : '';
-    const titleHtml = (s.venueUrl
-      ? `<a class="rtitle" href="${s.venueUrl}" target="_blank" rel="noopener">${formatTitle(s.title)}</a>`
+    // The title goes to the show's own page, not the venue's site. The card
+    // body already navigates there on click; making the title a real anchor to
+    // the same place keeps middle-click and open-in-new-tab working, and stops
+    // the one element people actually aim at from being the one that leaves
+    // the site. The outbound link lives on the show page's Tickets button.
+    const titleHtml = (s._slug
+      ? `<a class="rtitle" href="#/show/${encodeURIComponent(s._slug)}">${formatTitle(s.title)}</a>`
       : `<span class="rtitle">${formatTitle(s.title)}</span>`);
     const venueLink = `<a class="s-venue" href="#" data-venue="${esc(s.venue)}" title="View this venue">${esc(s.venue)}</a>`;
     const nb = s.neighborhood ? `<span class="s-nb">${esc(s.neighborhood)}</span>` : '';
