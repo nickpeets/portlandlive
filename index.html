@@ -1035,7 +1035,7 @@ body{
   </div>
   <div>A revived guide to live music in Portland, OR · Listings aggregated from public venue calendars</div>
   <div style="margin-top:8px;opacity:.7">Always confirm dates &amp; times with the venue before heading out.</div>
-  <div class="foot-correct">Got a correction, or a show we missed? <a href="mailto:corrections@rainorshows.com?subject=Correction">Let us know</a>.</div>
+  <div class="foot-correct">Got a correction, or a show we missed? <a id="footCorrectLink" href="mailto:corrections@rainorshows.com?subject=%5BROS%5D%20Correction">Let us know</a>.</div>
 </footer>
 
     <div class="auth-overlay" id="authOverlay" aria-hidden="true">
@@ -4775,6 +4775,31 @@ $('#browseSelect').addEventListener('change', e => {
   ov.addEventListener('click', function(e){ if(e.target === ov) close(); });
   document.addEventListener('keydown', function(e){
     if(e.key === 'Escape' && ov.classList.contains('on')) close();
+  });
+})();
+
+// Corrections link: build the mailto at click time so the subject says what
+// page they were on, and the body carries the URL. A bare "Correction" told
+// us nothing -- and because Porkbun forwards without rewriting the envelope
+// sender, these land looking anonymous, so the subject is the only reliable
+// signal about what the message concerns.
+(function(){
+  var link = document.getElementById('footCorrectLink');
+  if(!link) return;
+  link.addEventListener('click', function(e){
+    var subject = '[ROS] Correction';
+    try {
+      var r = parseRoute();
+      if(r.type === 'show' && r.slug)  subject = '[ROS] Correction: ' + r.slug;
+      else if(r.type === 'venue' && r.slug) subject = '[ROS] Correction: ' + r.slug + ' (venue)';
+      else if(r.type === 'venues')     subject = '[ROS] Correction: venue directory';
+      else                             subject = '[ROS] Correction: feed';
+    } catch(err){}
+    var body = '\n\n---\nPage: ' + location.href;
+    link.setAttribute('href',
+      'mailto:corrections@rainorshows.com'
+      + '?subject=' + encodeURIComponent(subject)
+      + '&body=' + encodeURIComponent(body));
   });
 })();
 
