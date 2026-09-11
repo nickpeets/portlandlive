@@ -2,9 +2,23 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Rain Or Shows — Your search for Portland's best live music starts here</title>
 <meta name="description" content="Your straight-forward guide to live music in Portland, OR.">
+<!-- Home-screen install. iOS already drops the URL bar on Add to Home Screen,
+     but without an apple-touch-icon it uses a screenshot of the page as the
+     icon, and without a manifest Android won't offer the install at all.
+     viewport-fit=cover + black-translucent runs the teal masthead up into the
+     status bar; .masthead carries a matching safe-area inset so nothing lands
+     under the notch. -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#3f6555">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<meta name="apple-mobile-web-app-title" content="Rain Or Shows">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Bevan&family=Oswald:wght@400;500;600;700&family=Bitter:ital,wght@0,400;0,500;0,600;1,400&family=Josefin+Slab:wght@300;400;600;700&family=Yeseva+One&family=Lato:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
@@ -52,7 +66,7 @@ body{
   background:var(--water-dd);
   /* Horizontal insets now live on .masthead-inner, so the brand and the
      utility land on the same box as .controls-inner / .results-inner. */
-  padding:14px 0 10px;
+  padding:calc(14px + env(safe-area-inset-top,0px)) 0 10px;
 }
 /* Same box model as .controls-inner and .results-inner, so the logo's left
    edge and the menu pill's right edge sit exactly on the search bar's edges. */
@@ -75,7 +89,7 @@ body{
   /* The 16px inset the old .masthead padding carried, moved onto the inner
      box so it still matches .controls-inner's mobile padding. */
   html{scroll-padding-top:64px}
-  .masthead{padding:12px 0 10px}
+  .masthead{padding:calc(12px + env(safe-area-inset-top,0px)) 0 10px}
   .masthead-inner{padding:0 16px}
   .masthead-word{font-size:18px}
 }
@@ -363,6 +377,17 @@ body{
   font-size:13px;color:rgba(243,234,215,.7);font-family:'Oswald';letter-spacing:.05em;
 }
 .foot-bar a{color:var(--cream)}
+/* Add-to-home-screen sheet */
+.a2hs-ov{position:fixed;inset:0;background:rgba(36,26,18,.55);display:none;align-items:flex-end;justify-content:center;z-index:70}
+.a2hs-ov.on{display:flex}
+.a2hs-card{background:var(--cream);color:var(--ink);width:100%;max-width:440px;border-radius:14px 14px 0 0;padding:20px 20px calc(20px + env(safe-area-inset-bottom,0px));font-family:'Bitter',Georgia,serif}
+@media(min-width:560px){.a2hs-ov{align-items:center}.a2hs-card{border-radius:14px}}
+.a2hs-card h3{font-family:'Alfa Slab One',serif;font-weight:400;font-size:18px;margin:0 0 6px;line-height:1.2}
+.a2hs-lede{font-size:14px;opacity:.75;margin:0 0 14px}
+.a2hs-steps{margin:0 0 16px;padding-left:20px;font-size:14px;line-height:1.55}
+.a2hs-steps li{margin-bottom:7px}
+.a2hs-steps b{font-weight:600}
+.a2hs-close{width:100%;border:0;border-radius:8px;background:var(--rust);color:var(--cream);font-family:'Oswald',sans-serif;font-weight:600;font-size:13px;letter-spacing:.06em;text-transform:uppercase;padding:12px;cursor:pointer}
 /* The feed is scraped, so it will be wrong sometimes. Saying so plainly and
    giving people a way to report it is the honest version. Stopgap until the
    Submission API lands -- swap the mailto for the form then. */
@@ -867,6 +892,8 @@ body{
               <span>&#9733; Following</span>
             </label>
             <div class="quick-menu-divider" aria-hidden="true"></div>
+            <button class="quick-menu-pill quick-menu-authitem" id="a2hsBtn" type="button" hidden>Add to home screen</button>
+            <div class="quick-menu-divider" id="a2hsDivider" aria-hidden="true" hidden></div>
             <button class="quick-menu-pill quick-menu-authitem" id="authSignInBtn" type="button">Sign In</button>
             <button class="quick-menu-pill quick-menu-authitem" id="authLogoutBtn" type="button" hidden>Log out</button>
           </div>
@@ -961,6 +988,18 @@ body{
   </div>
   <div class="results-inner" id="results"></div>
 </main>
+
+<!-- Add-to-home-screen instructions. Purely informational on iOS, where the
+     install can only be done by hand from the Safari share sheet; on Android
+     the beforeinstallprompt event gives us a real button instead. -->
+<div class="a2hs-ov" id="a2hsOv" role="dialog" aria-modal="true" aria-labelledby="a2hsTitle">
+  <div class="a2hs-card">
+    <h3 id="a2hsTitle">Add Rain Or Shows to your home screen</h3>
+    <p class="a2hs-lede">It opens like an app, full screen, with no address bar.</p>
+    <ol class="a2hs-steps" id="a2hsSteps"></ol>
+    <button type="button" class="a2hs-close" id="a2hsClose">Close</button>
+  </div>
+</div>
 
 <footer class="foot-bar">
   <div class="brand">
@@ -4592,6 +4631,72 @@ $('#browseSelect').addEventListener('change', e => {
   else if(v === 'comedy'){ if(!comedyOn) $('#comedyToggle').click(); }
   else { if(venuesOn) $('#venuesToggle').click(); if(comedyOn) $('#comedyToggle').click(); }
 });
+
+// ===== ADD TO HOME SCREEN =====
+// iOS gives no programmatic install: the user has to do it from the Safari
+// share sheet, so all we can offer there is instructions. Android/Chrome fire
+// beforeinstallprompt, which we capture and replay as a real install button.
+// The menu entry hides itself entirely once the app is already installed.
+(function(){
+  var btn = document.getElementById('a2hsBtn');
+  var divider = document.getElementById('a2hsDivider');
+  var ov = document.getElementById('a2hsOv');
+  var steps = document.getElementById('a2hsSteps');
+  var closeBtn = document.getElementById('a2hsClose');
+  if(!btn || !ov || !steps || !closeBtn) return;
+
+  var standalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)
+                   || window.navigator.standalone === true;
+  if(standalone) return;   // already installed: never offer it
+
+  var ua = navigator.userAgent || '';
+  var isIOS = /iPad|iPhone|iPod/.test(ua)
+              || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  var isSafari = isIOS && !/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua);
+  var deferred = null;
+
+  window.addEventListener('beforeinstallprompt', function(e){
+    e.preventDefault();
+    deferred = e;
+  });
+
+  function html(){
+    if(isIOS && !isSafari){
+      return '<li>You are in a third-party browser. iOS only allows this from <b>Safari</b>.</li>'
+           + '<li>Open <b>rainorshows.com</b> in Safari, then use this menu again.</li>';
+    }
+    if(isIOS){
+      return '<li>Tap the <b>Share</b> button — the square with an arrow, at the bottom of Safari.</li>'
+           + '<li>Scroll down the list and tap <b>Add to Home Screen</b>. It may be under <b>Edit Actions</b> or <b>More</b>.</li>'
+           + '<li>Tap <b>Add</b>.</li>';
+    }
+    return '<li>Open your browser menu — the three dots.</li>'
+         + '<li>Tap <b>Install app</b> or <b>Add to Home screen</b>.</li>'
+         + '<li>Confirm.</li>';
+  }
+
+  btn.hidden = false;
+  if(divider) divider.hidden = false;
+
+  btn.addEventListener('click', function(){
+    var qlist = document.getElementById('quickMenuList');
+    if(qlist) qlist.hidden = true;
+    if(deferred){
+      deferred.prompt();
+      deferred.userChoice.then(function(){ deferred = null; });
+      return;
+    }
+    steps.innerHTML = html();
+    ov.classList.add('on');
+  });
+
+  function close(){ ov.classList.remove('on'); }
+  closeBtn.addEventListener('click', close);
+  ov.addEventListener('click', function(e){ if(e.target === ov) close(); });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && ov.classList.contains('on')) close();
+  });
+})();
 
 // Quick menu (Saved / Following): dropdown relocated out of the control bar.
 // The toggle elements/listeners above are untouched — only their markup moved.
