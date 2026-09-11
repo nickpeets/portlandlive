@@ -4703,8 +4703,14 @@ $('#browseSelect').addEventListener('change', e => {
          + '<li>Tap <b>Install</b> to confirm.</li>';
   }
 
-  btn.hidden = false;
-  if(divider) divider.hidden = false;
+  // Mobile only. Desktop Chrome can technically install a PWA, but a home
+  // screen is a phone concept and the menu entry just reads as noise there.
+  // Same 699px breakpoint the banner uses, so the two never disagree.
+  var isSmall = window.matchMedia && window.matchMedia('(max-width: 699px)').matches;
+  if(isSmall){
+    btn.hidden = false;
+    if(divider) divider.hidden = false;
+  }
 
   function launch(){
     var qlist = document.getElementById('quickMenuList');
