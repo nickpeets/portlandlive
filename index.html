@@ -1849,7 +1849,7 @@ function renderShowDetail(wrap, show, kind){
   // order is deterministic even though both are async.
   // Spares are only meaningful before the show happens; a past show gets
   // comments (recaps) but no exchange.
-  if(kind === 'upcoming') mountExchange(grid, _slug);
+  if(kind === 'upcoming' && showIsTicketed(show)) mountExchange(grid, _slug);
   // Attendance is a forward-looking commitment, same scope as the ticket
   // exchange -- so, like Miracles, this only shows on upcoming shows. A past
   // show gets comments (recaps) but no Who's Going.
@@ -1860,6 +1860,66 @@ function renderShowDetail(wrap, show, kind){
   mountModPanel(grid);
 }
 
+
+// ===== IS THIS SHOW TICKETED? (gates Miracles only) =====
+// Miracles is a face-value-or-free handoff for a ticket that exists. At a
+// door-cover bar there is no ticket to hand off, so the section is just
+// clutter. This decides which shows get it.
+//
+// Two signals, in order:
+//   1. venueUrl points at a ticketing platform -> ticketed, full stop. This
+//      is per-show and beats the venue default, so a one-off ticketed night
+//      at a door bar still gets Miracles.
+//   2. otherwise fall back to the venue default below.
+//
+// Unknown FAILS OPEN (shows Miracles). Hiding it on a sold-out show costs a
+// real handoff; showing it on a door show costs little, because the form is
+// face-value-or-free and a free show simply won't attract posts.
+//
+// Who's Going is deliberately NOT gated -- attendance works fine at a free
+// bar show.
+var TICKETED_HOSTS = [
+  'etix.com','tixr.com','eventbrite.com','livenation.com','monqui.com',
+  'rosequarter.com','portland5.com','ticketmaster.com','axs.com',
+  'seetickets.us','dice.fm','ticketweb.com','seatgeek.com'
+];
+
+// ---- EDIT ME ----------------------------------------------------------
+// Venues that take cover at the door rather than selling in advance.
+// Anything NOT on this list is treated as ticketed (fail-open). This is a
+// first pass and is the part most likely to be wrong -- correct it freely,
+// it is the only place venue ticketing policy lives.
+var DOOR_VENUES = [
+  "Starday Tavern",
+  "Laurelthirst Public House",
+  "No Fun",
+  "Tomorrow's Verse",
+  "Alberta Street Pub",
+  "Mississippi Pizza",
+  "Havalina",
+  "Music Millennium",
+  "Showdown Saloon",
+  "Arbor Beer Lodge",
+  "Dublin Pub",
+  "Twilight Cafe & Bar",
+  "The Goodfoot",
+  "Kelly's Olympian"
+];
+// -----------------------------------------------------------------------
+
+function showIsTicketed(show){
+  if(!show) return true;
+  var u = show.venueUrl || '';
+  if(u.indexOf('http') === 0){
+    var host = '';
+    try { host = new URL(u).hostname.replace(/^www\./,'').toLowerCase(); } catch(e){ host = ''; }
+    for(var i=0;i<TICKETED_HOSTS.length;i++){
+      var t = TICKETED_HOSTS[i];
+      if(host === t || (host.length > t.length && host.slice(-(t.length+1)) === '.'+t)) return true;
+    }
+  }
+  return DOOR_VENUES.indexOf(show.venue) === -1;
+}
 
 // ===== TICKET EXCHANGE (Fork Stage 3) =====
 // Spare tickets for ONE show, shown only on that show's page. There is no
