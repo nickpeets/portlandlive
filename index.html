@@ -1215,7 +1215,7 @@ const FESTIVALS = [
   { name: "St. Johns Music Fest",
     match: "st. johns music fest",
     start: "2026-09-11", end: "2026-09-13",
-    url: "https://www.stjohnsmusicfest.com/schedule" },
+    url: "https://havalinapdx.com/st-johns-music-fest" },
 ];
 
 function festivalFor(s){
@@ -2056,6 +2056,10 @@ var DOOR_VENUES = [
 
 function showIsTicketed(show){
   if(!show) return true;
+  // Festival sets are free and carry no ticket, so there is nothing to hand
+  // off. The registry is the authority -- this stays correct for every
+  // festival added later without touching DOOR_VENUES.
+  if(typeof isFestivalShow === 'function' && isFestivalShow(show)) return false;
   var u = show.venueUrl || '';
   if(u.indexOf('http') === 0){
     var host = '';
