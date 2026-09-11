@@ -966,9 +966,10 @@ body{
            so this is deliberately not wired to any click handler or state variable.
            Deliberately kept disabled even though the Aug 23 mockup shows it active —
            there's still no festival data object backing it. -->
-      <span class="pill pill-narrow pill-disabled" title="Festival coverage is coming soon" aria-disabled="true">
-        <span>Festivals</span><span class="soon-tag">Coming soon</span>
-      </span>
+      <label class="pill pill-narrow" id="festivalsPill" title="Show only festival sets" hidden>
+        <span class="toggle" id="festivalsToggle"></span>
+        <span>Festivals</span>
+      </label>
       <label class="pill pill-narrow" title="Show comedy / stand-up shows instead of music">
         <span class="toggle" id="comedyToggle"></span>
         <span>Comedy</span>
@@ -984,7 +985,7 @@ body{
         <select id="browseSelect" aria-label="Browse">
           <option value="" selected>Browse</option>
           <option value="venues">Venues</option>
-          <option value="festivals" disabled>Festivals — Coming soon</option>
+          <option value="festivals" id="browseFestivals" hidden>Festivals</option>
           <option value="comedy">Comedy</option>
         </select>
       </div>
@@ -1137,6 +1138,7 @@ const state = {
   layout: "grid", cardLayout: CARD_LAYOUT, view: "shows", selectedVenue: null, byHood: false,
   q: "", tonight: false, thisWeek: false, picks: false,
   myShows: false, favorites: new Set(),
+  festivals: false, // Festivals pill: registry-backed filter, see FESTIVALS
   comedy: false, audit: new URLSearchParams(location.search).has('audit'), // comedy: future Comedy-shows toggle; audit: dev-only panel, reachable via ?audit=1 (no UI toggle)
   following: false, // FOLLOWING FILTER: collapse feed to shows by hearted bands/venues (self-contained, removable)
 };
@@ -1188,6 +1190,35 @@ const FORCE_NON_MUSIC = [
   "poetry slam",
   "drag brunch",
 ];
+
+// ===== FESTIVALS =====
+// A festival is a multi-day, multi-venue run whose sets are ordinary show rows
+// sharing a title suffix. There is no festival object in the 8-field schema and
+// this does not invent one -- it is a registry plus a filter, which is honest
+// about what the data actually is.
+//
+// To add a festival: add an entry here. `match` is matched against the lowercased
+// title; `start`/`end` are inclusive ISO dates used only to decide whether the
+// festival is still worth showing in the pill.
+const FESTIVALS = [
+  { name: "St. Johns Music Fest",
+    match: "st. johns music fest",
+    start: "2026-09-11", end: "2026-09-13",
+    url: "https://www.stjohnsmusicfest.com/schedule" },
+];
+
+function festivalFor(s){
+  const nt = _normTitle(s && s.title);
+  for(const f of FESTIVALS){ if(nt.includes(f.match)) return f; }
+  return null;
+}
+function isFestivalShow(s){ return festivalFor(s) !== null; }
+// Festivals with at least one show still ahead of us. Drives whether the pill
+// is offered at all -- an empty Festivals view is worse than no pill.
+function liveFestivals(){
+  const today = new Intl.DateTimeFormat('en-CA',{timeZone:'America/Los_Angeles',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+  return FESTIVALS.filter(f => f.end >= today);
+}
 
 // Normalize a title for matching: lowercase + collapse whitespace.
 function _normTitle(t){ return String(t||'').toLowerCase().replace(/\s+/g,' ').trim(); }
@@ -1365,6 +1396,9 @@ function filtered(){
     if(state.comedy) out = out.filter(s => s.contentType === 'comedy');
     else out = out.filter(s => s.contentType === 'music');
   }
+  // Festivals view: only shows belonging to a registered festival. Sits after
+  // the content gate so a comedy set inside a festival still behaves sanely.
+  if(state.festivals) out = out.filter(isFestivalShow);
   const q = state.q.trim().toLowerCase();
   if(q) out = out.filter(s => (s.title+" "+s.venue+" "+s.neighborhood).toLowerCase().includes(q));
    // FOLLOWING FILTER: hide-style collapse to shows whose band (band:: key) OR venue
@@ -1478,7 +1512,7 @@ function auditPanelHtml(){
    owns #results WITHOUT touching the flags, so browser-back lands on the
    filtered feed with its pill lit again. */
 var TOGGLE_PILL_IDS = ['tonightToggle','thisWeekToggle','picksToggle','venuesToggle',
-                       'myShowsToggle','comedyToggle','followingToggle','byHoodToggle'];
+                       'myShowsToggle','comedyToggle','followingToggle','byHoodToggle','festivalsToggle'];
 function clearTogglePills(){
   TOGGLE_PILL_IDS.forEach(function(id){
     var el = document.getElementById(id);
@@ -1493,6 +1527,7 @@ function syncTogglePills(){
     venuesToggle:    state.view === 'venues' && !state.selectedVenue,
     myShowsToggle:   state.myShows,
     comedyToggle:    state.comedy,
+    festivalsToggle: state.festivals,
     followingToggle: state.following,
     byHoodToggle:    state.byHood
   };
@@ -1522,7 +1557,8 @@ function render(){
   if(_browseSel){
     const _venuesOn = document.getElementById('venuesToggle').classList.contains('on');
     const _comedyOn = document.getElementById('comedyToggle').classList.contains('on');
-    _browseSel.value = _venuesOn ? 'venues' : _comedyOn ? 'comedy' : '';
+    const _festOn = state.festivals;
+    _browseSel.value = _venuesOn ? 'venues' : _comedyOn ? 'comedy' : _festOn ? 'festivals' : '';
   }
   if(state.myShows){ renderFavorites(); return; }
   if(state.view === "venues"){ renderVenues(); return; }
@@ -4636,6 +4672,27 @@ $('#byHoodToggle').addEventListener('click',()=>{state.byHood=!state.byHood;$('#
 $('#tonightToggle').addEventListener('click',()=>{state.picks=false;$('#picksToggle').classList.remove('on');state.tonight=!state.tonight;if(state.tonight){state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');}$('#tonightToggle').classList.toggle('on',state.tonight);render();});
 $('#thisWeekToggle').addEventListener('click',()=>{state.picks=false;$('#picksToggle').classList.remove('on');state.thisWeek=!state.thisWeek;if(state.thisWeek){state.tonight=false;$('#tonightToggle').classList.remove('on');state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');}$('#thisWeekToggle').classList.toggle('on',state.thisWeek);render();});
 /* Audit (dev) toggle retired from the UI; audit view still reachable via ?audit=1 for dev. */
+$('#festivalsToggle') && $('#festivalsToggle').addEventListener('click',()=>{
+  state.festivals=!state.festivals;
+  if(state.festivals){
+    state.view='shows'; state.selectedVenue=null;
+    $('#venuesToggle').classList.remove('on');
+    state.myShows=false; $('#myShowsToggle').classList.remove('on');
+    state.comedy=false; $('#comedyToggle').classList.remove('on');
+    state.following=false; $('#followingToggle').classList.remove('on');
+  }
+  $('#festivalsToggle').classList.toggle('on',state.festivals);
+  render();
+});
+// Reveal the pill only while a registered festival still has dates ahead. An
+// empty Festivals view is worse than no pill at all.
+(function(){
+  if(!liveFestivals().length) return;
+  const pill = document.getElementById('festivalsPill');
+  const opt  = document.getElementById('browseFestivals');
+  if(pill) pill.hidden = false;
+  if(opt)  opt.hidden  = false;
+})();
 $('#comedyToggle').addEventListener('click',()=>{state.comedy=!state.comedy;if(state.comedy){state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');state.myShows=false;$('#myShowsToggle').classList.remove('on');state.following=false;$('#followingToggle').classList.remove('on');}$('#comedyToggle').classList.toggle('on',state.comedy);render();});
 // FOLLOWING FILTER toggle: hide-style filter that collapses the feed to hearted
 // bands/venues. Turning it on clears the alternate views/modes; the other view
@@ -4647,6 +4704,7 @@ $('#followingToggle').addEventListener('click',()=>{
     state.picks=false;$('#picksToggle').classList.remove('on');
     
     state.comedy=false;$('#comedyToggle').classList.remove('on');
+    state.festivals=false;$('#festivalsToggle')&&$('#festivalsToggle').classList.remove('on');
     state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');
   }
   $('#followingToggle').classList.toggle('on',state.following);
@@ -4662,6 +4720,7 @@ $('#browseSelect').addEventListener('change', e => {
   const comedyOn = $('#comedyToggle').classList.contains('on');
   if(v === 'venues'){ if(!venuesOn) $('#venuesToggle').click(); }
   else if(v === 'comedy'){ if(!comedyOn) $('#comedyToggle').click(); }
+  else if(v === 'festivals'){ if(!$('#festivalsToggle').classList.contains('on')) $('#festivalsToggle').click(); }
   else { if(venuesOn) $('#venuesToggle').click(); if(comedyOn) $('#comedyToggle').click(); }
 });
 
