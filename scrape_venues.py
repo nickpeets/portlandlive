@@ -166,6 +166,74 @@ def fetch(url):
     return r.text
 
 
+# ---- Per-show age restriction ------------------------------------------------
+# Most venues in this feed publish an age restriction PER SHOW, in the same
+# listing HTML we already fetch -- we were simply throwing it away. Reading it
+# is strictly better than inferring a house policy: Aladdin's own FAQ says most
+# of its shows are all-ages but to check the event page, and Wonder's listing
+# carries both "all ages" and "ages 21 +" on different nights. A venue-level
+# default would assert one answer for every show and be wrong on the exceptions.
+#
+# Three template families emit it, found by probing the live pages:
+#   .event-age-restriction  (WLCR theme)   Revolution Hall, Mississippi/Polaris
+#   .eventAgeRestriction    (RHP/Elementor) Holocene, Wonder, Miss. Pizza, Monqui
+#   .age-restriction        (Suki child)    Dante's
+# Monqui's carries d-none (visually hidden, still in the DOM) -- fine, we read
+# the markup, not the rendering.
+_AGE_SEL = ".event-age-restriction, .eventAgeRestriction, .age-restriction, .rhp-event-notes-box"
+
+# Deliberately conservative. Anything unrecognized returns "" (UNKNOWN) rather
+# than a guess: a wrong age sends someone to a door they can't get through, and
+# "" is already a first-class state everywhere downstream.
+_AGE_ALL_RE = re.compile(r"\ball\s*ages\b", re.I)
+_AGE_21_RE = re.compile(r"(?<![$\d.])\b(?:ages?\s*)?21\s*(?:\+|&|and)?\s*(?:over|up|plus)?\b", re.I)
+_AGE_18_RE = re.compile(r"(?<![$\d.])\b(?:ages?\s*)?18\s*(?:\+|&|and)?\s*(?:over|up|plus)?\b", re.I)
+
+
+# A restriction qualified by a time or a companion is NOT the same claim as the
+# bare one. "All ages until 9pm" tells a parent their kid gets in; it does not
+# tell them the kid gets thrown out mid-set. The three-value field cannot hold
+# the qualifier, so these resolve to UNKNOWN rather than to the half-truth.
+_AGE_CONDITIONAL = re.compile(
+    r"\b(?:until|till|til|before|after|w/?\s*(?:a\s+)?(?:parent|guardian|adult)|"
+    r"with\s+(?:a\s+)?(?:parent|guardian|adult)|accompanied)\b", re.I)
+
+
+def _norm_age(text):
+    """Normalize a venue's printed age restriction to the feed's vocabulary.
+
+    Returns '21+', '18+', 'all-ages', or '' (unknown). Checked most-restrictive
+    first so a string carrying both ("All Ages / 21+ to drink") resolves to the
+    restriction on ENTRY, which is what the field means."""
+    t = clean(text or "")
+    if not t:
+        return ""
+    if _AGE_CONDITIONAL.search(t):
+        return ""
+    if _AGE_21_RE.search(t):
+        return "21+"
+    if _AGE_18_RE.search(t):
+        return "18+"
+    if _AGE_ALL_RE.search(t):
+        return "all-ages"
+    # Seen in the wild and deliberately NOT mapped: "Minors w/ parent or
+    # guardian", "All ages until 9pm". Both are real door policies that the
+    # three-value field cannot express, and flattening them to either answer
+    # would be a lie. They stay unknown until the field can hold them.
+    return ""
+
+
+def _age_from(el):
+    """Read the age restriction out of one event's container element, or ''."""
+    if el is None:
+        return ""
+    for node in el.select(_AGE_SEL):
+        age = _norm_age(node.get_text(" ", strip=True))
+        if age:
+            return age
+    return ""
+
+
 def _img_from(el, needle):
     """First <img> src under el whose src/data-src contains needle, else ''."""
     if el is None:
@@ -638,7 +706,8 @@ def _revhall_events(markup, today, seen, shows):
         full = f"{title} (w/ {support})" if support else title
         img = _img_from(ev, "performance-image")
         shows.append({"title": full, "venue": venue, "neighborhood": nb,
-                      "address": addr, "date": date, "time": showtime, "venueUrl": url, "imageUrl": img})
+                      "address": addr, "date": date, "time": showtime, "venueUrl": url,
+                      "imageUrl": img, "age": _age_from(ev)})
     return len(wrappers)
 
 def parse_revolutionhall(html, today):
@@ -692,7 +761,8 @@ def parse_aladdin(html, today):
         img = _img_from(ev, "performance-image")
         shows.append({"title": title, "venue": "Aladdin Theater",
                       "neighborhood": nb, "address": addr, "date": date,
-                      "time": showtime, "venueUrl": url, "imageUrl": img})
+                      "time": showtime, "venueUrl": url, "imageUrl": img,
+                      "age": _age_from(ev)})
     return shows
 
 
@@ -794,7 +864,8 @@ def parse_monqui(html, today):
         seen.add(key)
         nb, addr = VENUE_INFO.get(venue, ("Portland", ""))
         shows.append({"title": title, "venue": venue, "neighborhood": nb,
-                      "address": addr, "date": date, "time": "", "venueUrl": href, "imageUrl": ""})
+                      "address": addr, "date": date, "time": "", "venueUrl": href,
+                      "imageUrl": "", "age": _age_from(ev)})
     # show times only live on each event detail page; fetch concurrently
     import concurrent.futures
     urls = list({s["venueUrl"] for s in shows})
@@ -1495,7 +1566,8 @@ def parse_mississippipizza(html, today):
         shows.append({"title": title, "venue": "Mississippi Pizza",
                       "neighborhood": nb, "address": addr,
                       "date": date, "time": tm,
-                      "venueUrl": a.get("href", ""), "imageUrl": ""})
+                      "venueUrl": a.get("href", ""), "imageUrl": "",
+                      "age": _age_from(e)})
     return shows
 
 
