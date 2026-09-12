@@ -234,6 +234,37 @@ def _age_from(el):
     return ""
 
 
+def _age_near(el, max_up=6):
+    """Age for an event whose age element sits OUTSIDE its own container.
+
+    Monqui is the case: the parser iterates .rhp-event-thumb, but the
+    .eventAgeRestriction div lives five levels up in a sibling branch, so
+    _age_from(thumb) finds nothing. Hardcoding the intervening class names
+    (.bottomSection, .rhp-event-info) would break the next time Elementor
+    reshuffles the card.
+
+    Instead, climb until an ancestor contains an age element -- but only accept
+    it while that ancestor still holds exactly ONE event link. The moment an
+    ancestor covers two events we have left the card and any age we read could
+    belong to the wrong show, so we stop and return unknown. That makes the
+    card boundary self-validating rather than a guess about markup."""
+    if el is None:
+        return ""
+    node = el
+    for _ in range(max_up):
+        node = node.parent
+        if node is None or getattr(node, "name", None) is None:
+            break
+        # Left the card once a second event is in scope -- an age read here
+        # could be the neighbouring show's. Unknown beats wrong.
+        if len(node.select('a[href*="/event/"]')) > 1:
+            break
+        age = _age_from(node)
+        if age:
+            return age
+    return ""
+
+
 def _img_from(el, needle):
     """First <img> src under el whose src/data-src contains needle, else ''."""
     if el is None:
@@ -865,7 +896,7 @@ def parse_monqui(html, today):
         nb, addr = VENUE_INFO.get(venue, ("Portland", ""))
         shows.append({"title": title, "venue": venue, "neighborhood": nb,
                       "address": addr, "date": date, "time": "", "venueUrl": href,
-                      "imageUrl": "", "age": _age_from(ev)})
+                      "imageUrl": "", "age": _age_from(ev) or _age_near(ev)})
     # show times only live on each event detail page; fetch concurrently
     import concurrent.futures
     urls = list({s["venueUrl"] for s in shows})
