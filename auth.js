@@ -203,9 +203,8 @@
     }
   }
 
-  // Who may see your upcoming shows (D1). Part 2 has no follows yet, so
-  // "followers only" currently means only you -- the note says so rather
-  // than letting the label imply an audience that does not exist.
+  // Who may see your upcoming shows (D1): your followers (Part 4), or
+  // everyone.
   function renderVisibilityEditor(visibility, userId) {
     const slot = el.visibilityEditor;
     if (!slot) return;
@@ -222,7 +221,7 @@
           '<option value="followers">Followers only</option>' +
           '<option value="public">Everyone</option>' +
         "</select>" +
-        '<div class="handle-edit-msg" data-vis-msg>Until follows launch, \u201cfollowers only\u201d means just you.</div>' +
+        '<div class="handle-edit-msg" data-vis-msg>Who can see the shows you\u2019re going to.</div>' +
       "</div>";
     const sel = slot.querySelector("[data-vis-select]");
     const msg = slot.querySelector("[data-vis-msg]");
