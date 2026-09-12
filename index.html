@@ -908,6 +908,7 @@ body{
             <div class="quick-menu-account" id="quickMenuAccount">Signed in as <span id="authDisplayName"></span> <span class="quick-menu-handle" id="authHandle"></span></div>
             <div id="avEditor" hidden></div>
             <div id="handleEditor" hidden></div>
+            <div id="visibilityEditor" hidden></div>
             <label class="pill quick-menu-pill my-shows" title="Show everything you have favorited — shows, bands, and venues">
               <span class="toggle" id="myShowsToggle"></span>
               <span>Saved</span>
@@ -1846,6 +1847,11 @@ function parseRoute(){
   m = /^#\/venue\/([^?#]+)/.exec(h);
   if(m) return {type:'venue', slug: decodeURIComponent(m[1])};
   if(/^#\/venues\/?$/.test(h)) return {type:'venues'};
+  // Profile pages (Stage 10 Part 2): #/u/<handle>. The handle charset is
+  // [A-Za-z0-9_]{3,20}; anything else falls through to the lookup, which
+  // answers "no one here" rather than the feed pretending nothing happened.
+  m = /^#\/u\/([^?#\/]+)/.exec(h);
+  if(m) return {type:'profile', handle: decodeURIComponent(m[1])};
   return {type:'feed'};
 }
 
@@ -1861,7 +1867,8 @@ function venueFromSlug(slug){
 }
 
 function reRenderCurrentView(){
-  if(parseRoute().type === 'show'){ router(); } else { render(); }
+  var t = parseRoute().type;
+  if(t === 'show' || t === 'profile'){ router(); } else { render(); }
 }
 
 // Entering venue mode from a URL clears the time/curation filters the same
@@ -1877,6 +1884,7 @@ function enterVenueState(name){
 async function router(){
   var route = parseRoute();
   if(route.type === 'show'){ await renderShowRoute(route.slug); return; }
+  if(route.type === 'profile'){ await renderProfileRoute(route.handle); return; }
   if(route.type === 'venue'){
     var name = venueFromSlug(route.slug);
     if(name){ enterVenueState(name); }
@@ -1923,6 +1931,158 @@ async function renderShowRoute(slug){
 function renderShowNotFound(wrap, slug){
   $('#resultCount').textContent = 'Not found';
   wrap.innerHTML = '<div class="empty"><h2>Show not found</h2><p>We couldn’t find a show at that link. It may be mistyped, or the show may not be in our listings.</p></div>';
+}
+
+// ===== PROFILE PAGES (Fork Stage 10, Part 2) =====
+// #/u/<handle>. Every read on this page goes through a SECURITY DEFINER
+// function in supabase/schema-profile-pages.sql: profile_by_handle for the
+// header (profiles.handle is selectable by no client role -- D3),
+// stubs_for_user for the grid (user_stubs is self-scoped), attendance_for_user
+// for upcoming shows (gated by upcoming_visibility -- D1), and Stage 5's
+// handoff_count for reputation. Nothing here selects a table directly.
+function profileClient(){ return window.__plAuth || null; }
+
+function memberSince(iso){
+  var d = new Date(iso);
+  if(isNaN(d.getTime())) return '';
+  return d.toLocaleDateString('en-US', { month:'short', year:'numeric' });
+}
+
+function renderProfileNotFound(wrap, handle, msg){
+  $('#resultCount').textContent = msg ? 'Profile' : 'Not found';
+  wrap.innerHTML = '<div class="empty"><h2>' + (msg ? 'Profiles are unavailable' : 'No one here') + '</h2><p>'
+    + esc(msg || ('There\u2019s no one at @' + handle + '. Handles are 3\u201320 letters, numbers or underscores \u2014 check the spelling.'))
+    + '</p></div>';
+}
+
+// One stub as a canvas tile, drawn by the same drawStubTile / stubRot /
+// stubBandColor the Stub Wall collage uses, so the grid on a profile and an
+// exported wall are the same picture. There is no image and no slug in a
+// user_stubs row and nothing to fetch: past shows leave shows.json, so the
+// stub is the record. Drawn at 2x and scaled down by CSS.
+function stubTileCanvas(o){
+  var w = 360, h = 150, pad = 28, W = w + pad * 2, H = h + pad * 2;
+  var dpr = Math.min(2, window.devicePixelRatio || 1);
+  var cv = document.createElement('canvas');
+  cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+  cv.className = 'pf-stub';
+  cv.setAttribute('role', 'img');
+  cv.setAttribute('aria-label', (o.title || 'Stub') + (o.venue ? ' at ' + o.venue : '') + (o.date ? ', ' + o.date : ''));
+  var ctx = cv.getContext('2d');
+  ctx.scale(dpr, dpr);
+  drawStubTile(ctx, o, pad, pad, w, h, stubRot(o) * Math.PI / 180);
+  return cv;
+}
+
+async function renderProfileRoute(handle){
+  var wrap = $('#results');
+  wrap.innerHTML = '';
+  $('#resultCount').textContent = 'Profile';
+  clearTogglePills();
+  var sb = profileClient();
+  if(!sb){ renderProfileNotFound(wrap, handle, 'The account service did not load. Reload to try again.'); return; }
+
+  var res;
+  try{ res = await sb.rpc('profile_by_handle', { p_handle: handle }); }
+  catch(e){ res = { error: e }; }
+  // The hash may have moved while the lookup was in flight.
+  if(parseRoute().handle !== handle) return;
+  if(res.error){
+    console.warn('[profile] lookup failed:', res.error.message);
+    // profile_by_handle is rate-limited per viewer (30/min); over it the
+    // function raises 'rate_limited' rather than answering "no one here".
+    var limited = /rate_limited/i.test(String(res.error.message || ''));
+    renderProfileNotFound(wrap, handle, limited
+      ? 'Too many profile lookups from here. Wait a minute and try again.'
+      : 'Couldn\u2019t load that profile. Reload to try again.');
+    return;
+  }
+  var p = Array.isArray(res.data) ? res.data[0] : res.data;
+  if(!p || !p.id){ renderProfileNotFound(wrap, handle); return; }
+
+  var session = null;
+  try{ session = (await sb.auth.getSession()).data.session; }catch(e){ session = null; }
+  var myId = session && session.user ? session.user.id : null;
+  var isMe = !!myId && myId === p.id;
+
+  // profile_by_handle already carried the avatar; seed the cache so avImg
+  // renders it without a second round trip through avLoad.
+  AV_CACHE[p.id] = { id: p.id, display_name: p.display_name, avatar_url: p.avatar_url };
+
+  // "Upcoming" is decided here, not in the database: it has no show dates.
+  // The feed's slugs go up, the intersection comes back, and nothing about
+  // shows outside the feed -- past or otherwise -- is ever returned.
+  var slugs = state.shows.map(function(s){ return s._slug; }).filter(Boolean);
+  function safe(pr){ return pr.catch(function(e){ return { error: e }; }); }
+  var out = await Promise.all([
+    safe(sb.rpc('stubs_for_user', { p_target: p.id })),
+    safe(sb.rpc('attendance_for_user', { p_target: p.id, p_slugs: slugs })),
+    safe(sb.rpc('handoff_count', { target_user_id: p.id }))
+  ]);
+  if(parseRoute().handle !== handle) return;
+  var stubs = (!out[0].error && Array.isArray(out[0].data)) ? out[0].data : [];
+  var going = (!out[1].error && Array.isArray(out[1].data)) ? out[1].data : [];
+  var handoffs = (!out[2].error && typeof out[2].data === 'number') ? out[2].data : 0;
+  if(out[0].error) console.warn('[profile] stubs failed:', out[0].error.message);
+  if(out[1].error) console.warn('[profile] attendance failed:', out[1].error.message);
+
+  var page = document.createElement('div');
+  page.className = 'pf-page';
+
+  // Header. Follower / following counts are zero until Part 4 ships follows;
+  // the Follow button is placeholder markup, hidden until then, and per the
+  // spec never shown signed-out or on your own page.
+  page.innerHTML = '<div class="pf-head">'
+    + avImg(p.id, p.display_name, 'av-lg pf-av')
+    + '<div class="pf-id">'
+      + '<h2 class="pf-name">' + esc(p.display_name || '') + '</h2>'
+      + '<div class="pf-handle">@' + esc(p.handle) + (isMe ? ' <span class="pf-you">(you)</span>' : '') + '</div>'
+      + '<div class="pf-meta">Member since ' + esc(memberSince(p.created_at)) + '</div>'
+      + '<div class="pf-counts">'
+        + '<span data-pf-followers>0 followers</span> \u00b7 '
+        + '<span data-pf-following>0 following</span> \u00b7 '
+        + '<span data-pf-handoffs>' + handoffs + (handoffs === 1 ? ' handoff' : ' handoffs') + '</span>'
+      + '</div>'
+    + '</div>'
+    + ((myId && !isMe) ? '<button type="button" class="pf-follow" data-pf-follow hidden>Follow</button>' : '')
+    + '</div>';
+
+  // Upcoming shows, per D1: attendance_for_user returns nothing unless the
+  // viewer may see it. An empty list and "not allowed" look the same on the
+  // wire by design; upcoming_visibility (public in the header row) is what
+  // lets the page word the difference.
+  var up = document.createElement('section');
+  up.className = 'pf-section';
+  up.innerHTML = '<h3 class="pf-section-head">Upcoming shows</h3>';
+  if(going.length){
+    var bySlug = {};
+    state.shows.forEach(function(s){ if(s._slug) bySlug[s._slug] = s; });
+    var shows = sortShows(going.map(function(r){ return bySlug[r.show_slug]; }).filter(Boolean));
+    if(shows.length){ up.appendChild(listOf(shows, true)); }
+    else { up.innerHTML += '<div class="pf-empty">No upcoming shows.</div>'; }
+  } else if(!isMe && p.upcoming_visibility === 'followers'){
+    up.innerHTML += '<div class="pf-empty">' + esc(p.display_name || 'This person') + ' shares upcoming shows with followers.</div>';
+  } else {
+    up.innerHTML += '<div class="pf-empty">' + (isMe ? 'You haven\u2019t marked any upcoming shows as going.' : 'No upcoming shows.') + '</div>';
+  }
+  page.appendChild(up);
+
+  // The stub grid -- the main body.
+  var st = document.createElement('section');
+  st.className = 'pf-section';
+  st.innerHTML = '<h3 class="pf-section-head">Stubs <span class="pf-count">' + stubs.length + '</span></h3>';
+  if(stubs.length){
+    var grid = document.createElement('div');
+    grid.className = 'pf-stubs';
+    stubs.forEach(function(o){ grid.appendChild(stubTileCanvas(o)); });
+    st.appendChild(grid);
+  } else {
+    st.innerHTML += '<div class="pf-empty">' + (isMe ? 'No stubs yet. After a show, tap \u201CI was there\u201D and keep the stub.' : 'No stubs yet.') + '</div>';
+  }
+  page.appendChild(st);
+
+  wrap.innerHTML = '';
+  wrap.appendChild(page);
 }
 
 // Directions link. Uses Google's universal maps URL, which hands off to the
@@ -3729,11 +3889,12 @@ async function renderWhosGoing(host, slug){
   try{ session = (await sb.auth.getSession()).data.session; }catch(e){ session = null; }
   const myUserId = session && session.user ? session.user.id : null;
 
-  const { data, error } = await sb
-    .from('show_attendees')
-    .select('id,user_id,display_name,created_at')
-    .eq('show_slug', slug)
-    .order('created_at', { ascending: true });
+  // D1 (Stage 10 Part 2): show_attendees is selectable only for your own
+  // rows now. The roster comes from attendees_for_show(), a SECURITY DEFINER
+  // function returning the same columns in the same order -- see
+  // supabase/schema-profile-pages.sql. Join and leave still write the table
+  // directly; only the read moved.
+  const { data, error } = await sb.rpc('attendees_for_show', { p_show_slug: slug });
 
   if(error){
     host.innerHTML = '<div class="tx-head"><h3>Who\u2019s Going</h3></div>'
@@ -5232,6 +5393,8 @@ load();
 .quick-menu-account:has(#authDisplayName:empty){display:none}
 .quick-menu-handle{text-transform:none;letter-spacing:0;color:var(--rust)}
 .quick-menu-handle:empty{display:none}
+.quick-menu-handle a{color:var(--rust);text-decoration:none}
+.quick-menu-handle a:hover{text-decoration:underline;text-underline-offset:2px}
 /* One-time handle rename for accounts whose handle was assigned, not chosen
    (Stage 10 Part 1). Rendered by auth.js into #handleEditor. */
 .handle-edit{padding:4px 10px 8px}
@@ -5240,6 +5403,24 @@ load();
 .handle-edit-row input:focus{outline:2px solid var(--water-d);outline-offset:1px}
 .handle-edit-msg{font-family:'Bitter',Georgia,serif;font-size:10.5px;color:#7c6a55;min-height:1.1em;margin-top:4px}
 .handle-edit-msg.is-error{color:var(--rust-deep)}
+.handle-edit select{width:100%;font-family:'Bitter',Georgia,serif;font-size:13px;color:var(--ink);background:#fff;border:1px solid rgba(74,53,38,.16);border-radius:8px;padding:6px 8px;margin-top:6px}
+/* ===== Profile pages (Stage 10 Part 2) ===== */
+.pf-page{max-width:920px;margin:0 auto}
+.pf-head{display:flex;align-items:center;gap:16px;margin:6px 0 24px;color:var(--cream)}
+.pf-av.av-lg{width:72px;height:72px;font-size:28px}
+.pf-id{min-width:0;flex:1}
+.pf-name{font-family:'Alfa Slab One',serif;font-weight:400;font-size:26px;margin:0;line-height:1.1;overflow-wrap:anywhere}
+.pf-handle{font-family:'Oswald',sans-serif;font-size:15px;letter-spacing:.03em;color:var(--cream);opacity:.9;margin-top:3px}
+.pf-you{color:var(--cream);opacity:.6;font-size:12px;letter-spacing:0}
+.pf-meta,.pf-counts{font-size:13px;opacity:.8;margin-top:3px}
+.pf-follow{border:1px solid var(--cream);background:none;color:var(--cream);border-radius:999px;padding:6px 14px;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+.pf-section{margin:0 0 28px}
+.pf-section-head{font-family:'Oswald',sans-serif;font-weight:600;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--cream);opacity:.85;margin:0 0 10px}
+.pf-count{opacity:.6;margin-left:6px}
+.pf-empty{color:var(--cream);opacity:.75;font-size:14px;padding:6px 0 4px}
+.pf-stubs{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:2px;background:#1a1a1c;background-image:repeating-linear-gradient(0deg,#232326 0 1px,transparent 1px 4px);padding:12px;border-radius:12px}
+.pf-stub{width:100%;height:auto;display:block}
+@media (max-width:520px){.pf-head{gap:12px}.pf-av.av-lg{width:56px;height:56px;font-size:22px}.pf-name{font-size:22px}}
 #authDisplayName{font-weight:600;color:var(--ink);text-transform:none;letter-spacing:normal}
 .quick-menu-divider{height:1px;background:rgba(74,53,38,.14);margin:4px 6px}
 .quick-menu-authitem{text-align:left;font-family:'Oswald',sans-serif;font-weight:600;font-size:13px;letter-spacing:.04em;text-transform:uppercase;cursor:pointer}

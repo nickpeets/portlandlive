@@ -60,6 +60,7 @@
     handleInput: $("authHandleInput"),
     handle: $("authHandle"),
     handleEditor: $("handleEditor"),
+    visibilityEditor: $("visibilityEditor"),
     emailInput: $("authEmailInput"),
     passwordInput: $("authPasswordInput"),
     submitBtn: $("authSubmitBtn"),
@@ -115,16 +116,39 @@
     if (el.displayName) el.displayName.textContent = "";
     if (el.handle) el.handle.textContent = "";
     renderHandleEditor(null);
+    renderVisibilityEditor(null, null);
   }
 
-  function renderLoggedIn(displayName, handleInfo) {
+  // The header quick-menu is closed by its own outside-click handler in
+  // index.html; a link inside it navigates without an outside click, so
+  // close it the way handleLogout does.
+  function closeQuickMenu() {
+    const qlist = document.getElementById("quickMenuList");
+    const qbtn = document.getElementById("quickMenuBtn");
+    if (qlist) qlist.hidden = true;
+    if (qbtn) qbtn.setAttribute("aria-expanded", "false");
+  }
+
+  function renderLoggedIn(displayName, handleInfo, visibility, userId) {
     el.signInBtn.hidden = true;
     el.userPill.hidden = false;
     el.displayName.textContent = displayName || "Account";
     el.menu.hidden = true;
     if (el.quickMenuAccount) el.quickMenuAccount.hidden = false;
-    if (el.handle) el.handle.textContent = handleInfo && handleInfo.handle ? "@" + handleInfo.handle : "";
+    if (el.handle) {
+      // Your @handle links to your own profile page (Stage 10 Part 2). The
+      // handle charset is [A-Za-z0-9_] by database CHECK, so it is inert in
+      // both the href and the text.
+      if (handleInfo && handleInfo.handle) {
+        el.handle.innerHTML = '<a href="#/u/' + encodeURIComponent(handleInfo.handle) + '">@' + handleInfo.handle + "</a>";
+        const a = el.handle.querySelector("a");
+        if (a) a.addEventListener("click", closeQuickMenu);
+      } else {
+        el.handle.textContent = "";
+      }
+    }
     renderHandleEditor(handleInfo);
+    renderVisibilityEditor(visibility, userId);
   }
 
   async function fetchDisplayName(userId) {
@@ -158,17 +182,88 @@
     }
   }
 
+  // upcoming_visibility has an explicit column grant (schema-profile-pages.sql),
+  // and profiles_update_own scopes the write to your own row. Returns
+  // 'followers' | 'public' | null.
+  async function fetchVisibility(userId) {
+    try {
+      const { data, error } = await sb
+        .from("profiles")
+        .select("upcoming_visibility")
+        .eq("id", userId)
+        .single();
+      if (error) {
+        console.warn("[auth] could not load visibility:", error.message);
+        return null;
+      }
+      return data && data.upcoming_visibility ? data.upcoming_visibility : null;
+    } catch (err) {
+      console.warn("[auth] visibility threw:", err);
+      return null;
+    }
+  }
+
+  // Who may see your upcoming shows (D1). Part 2 has no follows yet, so
+  // "followers only" currently means only you -- the note says so rather
+  // than letting the label imply an audience that does not exist.
+  function renderVisibilityEditor(visibility, userId) {
+    const slot = el.visibilityEditor;
+    if (!slot) return;
+    if (!visibility || !userId) {
+      slot.hidden = true;
+      slot.innerHTML = "";
+      return;
+    }
+    slot.hidden = false;
+    slot.innerHTML =
+      '<div class="handle-edit">' +
+        '<label class="av-edit-note" style="padding:0" for="pfVisSelect">Upcoming shows visible to</label>' +
+        '<select id="pfVisSelect" data-vis-select>' +
+          '<option value="followers">Followers only</option>' +
+          '<option value="public">Everyone</option>' +
+        "</select>" +
+        '<div class="handle-edit-msg" data-vis-msg>Until follows launch, \u201cfollowers only\u201d means just you.</div>' +
+      "</div>";
+    const sel = slot.querySelector("[data-vis-select]");
+    const msg = slot.querySelector("[data-vis-msg]");
+    sel.value = visibility;
+    sel.addEventListener("change", async () => {
+      const next = sel.value === "public" ? "public" : "followers";
+      sel.disabled = true;
+      msg.classList.remove("is-error");
+      msg.textContent = "Saving\u2026";
+      try {
+        const { error } = await sb.from("profiles").update({ upcoming_visibility: next }).eq("id", userId);
+        if (error) {
+          msg.textContent = "Couldn\u2019t save. Try again.";
+          msg.classList.add("is-error");
+          sel.value = visibility;
+        } else {
+          visibility = next;
+          msg.textContent = next === "public" ? "Anyone can see your upcoming shows." : "Only followers can see your upcoming shows.";
+        }
+      } catch (err) {
+        msg.textContent = "Couldn\u2019t save. Try again.";
+        msg.classList.add("is-error");
+        sel.value = visibility;
+      } finally {
+        sel.disabled = false;
+      }
+    });
+  }
+
   async function refreshAuthUI() {
     const { data: { session } } = await sb.auth.getSession();
     if (!session || !session.user) {
       renderLoggedOut();
       return;
     }
-    const [name, handleInfo] = await Promise.all([
+    const [name, handleInfo, visibility] = await Promise.all([
       fetchDisplayName(session.user.id),
-      fetchMyHandle()
+      fetchMyHandle(),
+      fetchVisibility(session.user.id)
     ]);
-    renderLoggedIn(name, handleInfo);
+    renderLoggedIn(name, handleInfo, visibility, session.user.id);
   }
 
   // Same charset and length as the database CHECK. Checked here first so the
@@ -201,6 +296,7 @@
     if (msg.indexOf("handle_reserved") !== -1) return "That handle is reserved. Try another.";
     if (msg.indexOf("handle_invalid") !== -1) return HANDLE_RULE;
     if (msg.indexOf("handle_rename_unavailable") !== -1) return "This handle has already been changed once.";
+    if (msg.indexOf("rate_limited") !== -1) return "Too many attempts. Wait a minute and try again.";
     if (msg.indexOf("database error saving new user") !== -1) return "That handle is taken. Try another.";
     return null;
   }
@@ -239,9 +335,19 @@
       save.disabled = true;
       say("Saving\u2026");
       try {
-        const { error } = await sb.rpc("set_handle", { p_handle: next });
+        // set_handle returns its outcome as a status string ('ok' or a
+        // token) rather than raising, so a refused or failed attempt is
+        // still counted against the rate limit -- see
+        // supabase/schema-profile-pages.sql. A thrown error here is
+        // something else (network, not signed in).
+        const { data, error } = await sb.rpc("set_handle", { p_handle: next });
         if (error) {
           say(handleErrorMessage(error) || error.message, true);
+          save.disabled = false;
+          return;
+        }
+        if (data !== "ok") {
+          say(handleErrorMessage({ message: String(data || "") }) || "Couldn\u2019t change that. Try another.", true);
           save.disabled = false;
           return;
         }

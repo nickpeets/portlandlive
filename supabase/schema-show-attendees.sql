@@ -13,6 +13,12 @@
 -- What the dump shows, in one line: the roster for a show is world-readable,
 -- and a row can be written or removed only by the user it names. That open
 -- SELECT is the fact Stage 10's D1 is built on (see the spec).
+--
+-- SUPERSEDED IN PART by schema-profile-pages.sql (Stage 10, Part 2 -- D1):
+-- show_attendees_select_all is dropped there, replaced by a self-only
+-- policy, anon's SELECT grant is revoked, and attendees_for_show() becomes
+-- the public per-show read. Re-running THIS file afterwards would reopen
+-- the table; run schema-profile-pages.sql again if you do.
 
 create table if not exists public.show_attendees (
   id uuid primary key default gen_random_uuid(),

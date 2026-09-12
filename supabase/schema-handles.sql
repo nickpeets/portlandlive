@@ -23,7 +23,10 @@
 --   7. lock UPDATE on profiles down to named columns so a handle cannot be
 --      changed by a direct PATCH -- "permanent" has to be enforced, not hoped
 --
--- Re-running: safe. Every step is idempotent or guarded.
+-- Re-running: safe. Every step is idempotent or guarded -- BUT NOTE:
+-- schema-profile-pages.sql (Part 2) re-declares handle_available() and
+-- set_handle() with a rate limit. Re-running this file afterwards puts the
+-- unlimited versions back; run schema-profile-pages.sql again if you do.
 
 -- ---------------------------------------------------------------------------
 -- 1. Columns
