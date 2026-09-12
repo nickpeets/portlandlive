@@ -1716,7 +1716,18 @@ def _wix_warmup_events(html):
             continue
         ev = widget.get("events")
         if isinstance(ev, dict) and isinstance(ev.get("events"), list):
-            return ev["events"], widget.get("instance"), bool(ev.get("hasMore"))
+            # The warmup's `instance` is a bare token string on some sites and
+            # a dict ({instance, instanceId, appDefId, ...}) on others --
+            # theruins.org ships the first shape, youenjoymybeer.com the
+            # second. Handing the dict straight to the Authorization header
+            # raises InvalidHeader and falls back to the warmup page, which is
+            # what kept Tomorrow's Verse at 20 instead of its full calendar.
+            inst = widget.get("instance")
+            if isinstance(inst, dict):
+                inst = inst.get("instance")
+            if not isinstance(inst, str):
+                inst = None
+            return ev["events"], inst, bool(ev.get("hasMore"))
     return [], None, False
 
 def _wix_all_events(page_url, prefetched_html):
