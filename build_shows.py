@@ -64,6 +64,40 @@ def detect_age(title):
     return ""
 
 
+# Venue-level age defaults, applied ONLY where the title says nothing.
+#
+# Title detection covers about 3% of the feed, because most venues simply do
+# not put an age in the show title. The rest of the coverage has to come from
+# house policy -- but a wrong age here is worse than no age at all: it sends
+# someone to a door they cannot get through, or keeps a parent home from a
+# show their kid could have attended. That is exactly the trust this site
+# trades on, so the bar for entry is deliberately high.
+#
+# ADMISSION STANDARD -- a venue belongs here only if BOTH hold:
+#   1. The venue states the policy ITSELF (its own site, its own ticketing
+#      page, its own booking info). Aggregators and ticket resellers hedge
+#      ("most events are 21+") and are not evidence of a blanket rule.
+#   2. The policy is UNCONDITIONAL -- "all shows are 21+", not "most shows".
+#      A venue that runs all-ages matinees, has a kid-friendly dining room,
+#      or varies by show does NOT get a default, no matter how many of its
+#      shows are in fact 21+.
+#
+# Laurelthirst is the worked example of an exclusion: a full bar that is also
+# kid-friendly and runs free all-ages bluegrass matinees. At 90 shows it is
+# the second-largest venue in the feed and defaulting it to 21+ would be
+# wrong on every matinee. It stays unknown until the venue is asked directly.
+#
+# Each entry carries the source it was read from, so a future maintainer can
+# re-check it rather than inheriting an unsourced assertion. Venues drift --
+# ownership changes, licenses change -- so these are re-verifiable claims,
+# not permanent facts.
+VENUE_AGE_DEFAULT = {
+    # "All shows are 21+" -- venue's own Eventbrite organizer page.
+    # https://www.eventbrite.com/o/kellys-olympian-3225803660
+    "Kelly's Olympian": "21+",
+}
+
+
 def _norm_key(s):
     # Aggressive normalization used ONLY for the dedupe key (not display):
     # strip HTML, dash-normalize, lower, and collapse every run of
@@ -325,9 +359,18 @@ def main():
     # a show with no age information gets "", meaning UNKNOWN, and the title
     # itself is left exactly as-is so slugs stay stable. A source that ever
     # supplies a real age field wins over the title-derived guess.
+    #
+    # Precedence, most specific first:
+    #   1. an age the scraper supplied for THIS show
+    #   2. an age stated in THIS show's title
+    #   3. the venue's unconditional house policy (VENUE_AGE_DEFAULT)
+    # The venue default is last on purpose: a house that is normally 21+ but
+    # advertises a given show as all-ages must not have that overwritten.
     for s in shows:
         if not (s.get("age") or "").strip():
             s["age"] = detect_age(s.get("title", ""))
+        if not (s.get("age") or "").strip():
+            s["age"] = VENUE_AGE_DEFAULT.get(s.get("venue", ""), "")
 
     # dedupe on (normalized title, normalized venue, date)
     seen, deduped = {}, []
