@@ -255,9 +255,17 @@ def _age_near(el, max_up=6):
         node = node.parent
         if node is None or getattr(node, "name", None) is None:
             break
-        # Left the card once a second event is in scope -- an age read here
-        # could be the neighbouring show's. Unknown beats wrong.
-        if len(node.select('a[href*="/event/"]')) > 1:
+        # Left the card once a SECOND, DIFFERENT event is in scope -- an age
+        # read here could be the neighbouring show's. Unknown beats wrong.
+        #
+        # Count distinct hrefs, not <a> elements: one card links to its own
+        # event several times (artwork, title, ticket button), so counting
+        # elements made this trip on the very first step and the walk never
+        # got anywhere. That is exactly why the first Monqui attempt changed
+        # nothing -- Crystal and Edgefield stayed unknown.
+        hrefs = {a["href"].split("?")[0].rstrip("/")
+                 for a in node.select('a[href*="/event/"]') if a.get("href")}
+        if len(hrefs) > 1:
             break
         age = _age_from(node)
         if age:
