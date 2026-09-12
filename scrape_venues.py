@@ -711,7 +711,19 @@ MONQUI_SLUG_NAME = {
 }
 
 
-_MQ_LD = re.compile(r"<script[^>]*application/ld\+json[^>]*>(.*?)</script>", re.S)
+# Attribute-tolerant JSON-LD matcher, shared by every parser that reads
+# schema.org blocks out of raw HTML. The three JSON-LD parsers below used to
+# hardcode r'<script type="application/ld\+json">' -- a pattern that demands the
+# tag CLOSE immediately after the type attribute. When Eventbrite moved its
+# collection pages to Next.js (Sep 2026) the tag became
+#   <script type="application/ld+json" data-next-head="">
+# and that pattern matched nothing, so parse_artichoke silently returned 0
+# events while the page still served all 42. Any framework adding any attribute
+# to the tag takes a venue down the same way, so match the type anywhere in the
+# tag instead. _MQ_LD (Monqui) already did this correctly; this is the same
+# pattern, named for shared use.
+_LD_JSON = re.compile(r"<script[^>]*application/ld\+json[^>]*>(.*?)</script>", re.S)
+_MQ_LD = _LD_JSON
 
 
 def _monqui_event_time(url):
@@ -2553,7 +2565,7 @@ def parse_kellys_olympian(html_text, today):
     horizon = today + datetime.timedelta(days=HORIZON_DAYS)
     lower = today
     nb, addr = VENUE_INFO.get("Kelly's Olympian", ("Downtown", ""))
-    blocks = re.findall(r'<script type="application/ld\+json">(.*?)</script>', html_text, re.S)
+    blocks = _LD_JSON.findall(html_text)
     for b in blocks:
         try:
             data = json.loads(b)
@@ -2603,7 +2615,7 @@ def parse_barrelroom(html_text, today):
     horizon = today + datetime.timedelta(days=HORIZON_DAYS)
     lower = today
     nb, addr = VENUE_INFO.get("Barrel Room", ("Old Town/Chinatown", ""))
-    blocks = re.findall(r'<script type="application/ld\+json">(.*?)</script>', html_text, re.S)
+    blocks = _LD_JSON.findall(html_text)
     evs = []
     for b in blocks:
         try:
@@ -2701,7 +2713,7 @@ def parse_artichoke(html_text, today):
     horizon = today + datetime.timedelta(days=HORIZON_DAYS)
     lower = today
     nb, addr = VENUE_INFO.get("Artichoke Music", ("Brooklyn", ""))
-    blocks = re.findall(r'<script type="application/ld\+json">(.*?)</script>', html_text, re.S)
+    blocks = _LD_JSON.findall(html_text)
     evs = []
     for b in blocks:
         try:
