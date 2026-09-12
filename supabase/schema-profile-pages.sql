@@ -62,7 +62,15 @@ revoke select on public.show_attendees from anon;
 
 -- The per-show roster, unchanged behaviour: public, in join order. This is
 -- what Who's Going calls now instead of selecting the table.
-create or replace function public.attendees_for_show(p_show_slug text)
+--
+-- SUPERSEDED by schema-name-links.sql (Part 3.5), which re-creates this
+-- with a handle column. The DROP below is what lets this file re-run at all
+-- (a return-type change cannot go through CREATE OR REPLACE); re-running it
+-- reverts to the four-column version -- Who's Going still renders, names
+-- stop linking -- until schema-name-links.sql is run again.
+drop function if exists public.attendees_for_show(text);
+
+create function public.attendees_for_show(p_show_slug text)
 returns table (id uuid, user_id uuid, display_name text, created_at timestamptz)
 language sql
 security definer
