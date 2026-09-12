@@ -832,6 +832,8 @@ body{
 .mod-dismiss{background:rgba(61,87,74,.12);color:var(--forest)}
 .mod-uphold:disabled,.mod-dismiss:disabled{opacity:.5;cursor:default}
 .cmt-body{font-family:'Bitter',Georgia,serif;font-size:14px;line-height:1.5;color:var(--ink);white-space:pre-wrap;overflow-wrap:anywhere;margin:0}
+.cmt-body .mention{color:var(--rust);font-weight:600;text-decoration:none}
+.cmt-body .mention:hover{text-decoration:underline;text-underline-offset:2px}
 .cmt-form{background:var(--cream);border-radius:12px;padding:12px 14px;box-shadow:0 6px 14px rgba(20,40,30,.14)}
 .cmt-input{width:100%;box-sizing:border-box;resize:vertical;min-height:74px;font-family:'Bitter',Georgia,serif;font-size:14px;line-height:1.5;color:var(--ink);background:#fff;border:1px solid rgba(74,53,38,.25);border-radius:9px;padding:10px 12px}
 .cmt-input:focus{outline:2px solid rgba(181,86,43,.45);outline-offset:1px;border-color:transparent}
@@ -3510,6 +3512,40 @@ async function inboxLoad(){
       }
     }catch(e){}
 
+    // ---- Mentions (Stage 10 Part 3) ----------------------------------
+    // No thread behind these, so they must bypass the latest-message
+    // pipeline below exactly as reports do: it sets empty:!m and its
+    // trailing filter drops anything without a message, which would eat
+    // every mention silently. Unread is "never opened" -- a mention has no
+    // later messages to compare against, only the one moment it happened.
+    try{
+      const q = await sb.rpc('my_mentions', { p_limit: 50 });
+      if(!q.error){
+        const seenNow = txSeenMap();
+        (q.data || []).forEach(function(m){
+          const label = inboxShowLabel({ slug: m.show_slug });
+          items.push({
+            kind: 'mention',
+            mentionId: m.mention_id,
+            seenKey: 'mn:' + m.mention_id,
+            otherId: m.author_id,
+            who: m.author_name || 'Someone',
+            slug: m.show_slug || '',
+            // inboxShowLabel only knows the upcoming feed and returns '' for
+            // an archived show; a mention on one would otherwise render a
+            // blank line.
+            kindLabel: 'Mentioned you' + (label ? ' \u00b7 ' + label : ' \u00b7 a past show'),
+            snippet: String(m.body || '').slice(0, 80),
+            at: m.created_at,
+            unread: !seenNow['mn:' + m.mention_id],
+            empty: false
+          });
+        });
+      } else {
+        console.warn('[inbox] mentions failed:', q.error.message);
+      }
+    }catch(e){ console.warn('[inbox] mentions threw:', e); }
+
     if(!items.length){ INBOX.items = []; inboxRenderBadge(); return; }
 
     // ---- Latest message per thread, per table ------------------------
@@ -3546,8 +3582,10 @@ async function inboxLoad(){
     }
 
     const seen = txSeenMap();
-    const reports = items.filter(function(i){ return i.kind === 'report'; });
-    INBOX.items = items.filter(function(i){ return i.kind !== 'report'; }).map(function(i){
+    // Reports and mentions are complete as pushed; only threads go through
+    // the latest-message join.
+    const direct = items.filter(function(i){ return i.kind === 'report' || i.kind === 'mention'; });
+    INBOX.items = items.filter(function(i){ return i.kind === 'ticket' || i.kind === 'show'; }).map(function(i){
       const m = latest[(i.kind === 'ticket' ? 't:' : 's:') + i.threadId];
       const unread = !!(m && m.sender_id !== uid
         && (!seen[i.seenKey] || new Date(m.created_at) > new Date(seen[i.seenKey])));
@@ -3563,7 +3601,7 @@ async function inboxLoad(){
     // job is "who said something," so it's dropped rather than shown blank.
     .filter(function(i){ return !i.empty; });
     // Reports go to the top: they're the only thing here with a deadline.
-    INBOX.items = reports.concat(INBOX.items)
+    INBOX.items = direct.concat(INBOX.items)
       .sort(function(a, b){
         if((a.kind === 'report') !== (b.kind === 'report')) return a.kind === 'report' ? -1 : 1;
         if(a.unread !== b.unread) return a.unread ? -1 : 1;
@@ -3636,6 +3674,7 @@ async function inboxOpenThread(idx){
   if(!list || !item) return;
   INBOX.viewing = idx;
   if(item.kind === 'report'){ inboxRenderReport(idx); return; }
+  if(item.kind === 'mention'){ inboxOpenMention(idx); return; }
 
   const sb = inboxClient();
   const table = item.kind === 'ticket' ? 'ticket_messages' : 'show_messages';
@@ -3719,6 +3758,23 @@ async function inboxOpenThread(idx){
     const ul = list.querySelector('.inbox-msgs');
     if(ul) ul.scrollTop = ul.scrollHeight;
   }
+}
+
+// A mention is not a conversation: opening it counts as read, closes the
+// panel and goes to the show, where the comment is. Same seen-map as
+// everything else, keyed 'mn:' + mention id.
+function inboxOpenMention(idx){
+  const item = INBOX.items[idx];
+  if(!item) return;
+  txMarkSeen(item.seenKey, item.at || new Date().toISOString());
+  item.unread = false;
+  inboxRenderBadge();
+  const list = document.getElementById('inboxList');
+  const btn = document.getElementById('inboxBtn');
+  INBOX.open = false; INBOX.viewing = null;
+  if(list) list.hidden = true;
+  if(btn) btn.setAttribute('aria-expanded', 'false');
+  if(item.slug) location.hash = '#/show/' + encodeURIComponent(item.slug);
 }
 
 // The badge previously only refreshed on an auth change or when the dropdown
@@ -4268,14 +4324,53 @@ function cmtRelTime(iso){
   return years + (years===1?' year ago':' years ago');
 }
 
-function cmtRow(c, myUserId, hidden){
+// ===== @MENTIONS (Fork Stage 10, Part 3) =====
+// Parsing and resolution happen in the database (set_comment_mentions, an
+// after-insert trigger -- supabase/schema-mentions.sql). The client only
+// asks, per page, which tokens in these comments resolved, and links exactly
+// those. Same regex as the trigger, both boundaries: unanchored,
+// @shakedownsteve_the_third would light up as a different real user.
+const MENTION_RE = /(^|[^A-Za-z0-9_])@([A-Za-z0-9_]{3,20})(?![A-Za-z0-9_])/g;
+
+// Linkify an ALREADY-ESCAPED body. Only handles in `resolved` (lowercased)
+// become links; everything else stays the text the author typed. esc()
+// escapes & < > " but not ', so every attribute written here is
+// double-quoted; the handle charset is inert either way, and escaping
+// never touches '@' or [A-Za-z0-9_], so the regex sees the same tokens the
+// trigger saw.
+function cmtLinkify(escaped, resolved){
+  if(!resolved || !resolved.size) return escaped;
+  return escaped.replace(MENTION_RE, function(all, pre, h){
+    if(!resolved.has(h.toLowerCase())) return all;
+    return pre + '<a class="mention" href="#/u/' + encodeURIComponent(h) + '">@' + h + '</a>';
+  });
+}
+
+// comment_id -> Set of lowercased handles that resolved. One round trip for
+// the whole list. Any failure degrades to plain text, never to an error.
+async function cmtMentions(ids){
+  const map = {};
+  const sb = cmtClient();
+  if(!sb || !ids.length) return map;
+  try{
+    const { data, error } = await sb.rpc('mentions_for_comments', { p_comment_ids: ids });
+    if(error){ console.warn('[mentions] load failed:', error.message); return map; }
+    (data || []).forEach(function(r){
+      if(!map[r.comment_id]) map[r.comment_id] = new Set();
+      map[r.comment_id].add(String(r.handle || '').toLowerCase());
+    });
+  }catch(e){ console.warn('[mentions] load threw:', e); }
+  return map;
+}
+
+function cmtRow(c, myUserId, hidden, resolved){
   const mine = myUserId && c.user_id === myUserId;
   // A reported comment keeps its byline but loses its body. Showing who wrote
   // it and when preserves the thread's shape; showing the text would defeat
   // the point of hiding it. The author still sees their own Delete.
   const body = hidden
     ? rpHiddenPlaceholder()
-    : '<p class="cmt-body">' + esc(c.body || '') + '</p>';
+    : '<p class="cmt-body">' + cmtLinkify(esc(c.body || ''), resolved) + '</p>';
   return '<li class="cmt" data-cmt-id="'+esc(c.id)+'">'
     + '<div class="cmt-top">'
       + avImg(c.user_id, c.display_name)
@@ -4339,6 +4434,7 @@ async function renderComments(host, slug){
   // Which of these are hidden pending review, and which this viewer already
   // reported. Both are one round trip for the whole list, not per comment.
   const hiddenSet = await rpHidden('comment', rows.map(function(c){ return c.id; }));
+  const mentions = await cmtMentions(rows.map(function(c){ return c.id; }));
   await avLoad(rows.map(function(c){ return c.user_id; }));
   if(myUserId) await rpLoadMine();
   const count = rows.length;
@@ -4347,13 +4443,13 @@ async function renderComments(host, slug){
     + '</div>';
 
   html += count
-    ? '<ul class="cmts-list">' + rows.map(function(c){ return cmtRow(c, myUserId, hiddenSet.has(c.id)); }).join('') + '</ul>'
+    ? '<ul class="cmts-list">' + rows.map(function(c){ return cmtRow(c, myUserId, hiddenSet.has(c.id), mentions[c.id]); }).join('') + '</ul>'
     : '<div class="cmts-state">No comments yet — be the first.</div>';
 
   if(myUserId){
     html += '<form class="cmt-form" data-cmt-form>'
       + '<label class="sr-only" for="cmtInput">Add a comment</label>'
-      + '<textarea class="cmt-input" id="cmtInput" maxlength="'+CMT_MAX+'" placeholder="Add a comment…"></textarea>'
+      + '<textarea class="cmt-input" id="cmtInput" maxlength="'+CMT_MAX+'" placeholder="Add a comment… (@handle to mention someone)"></textarea>'
       + '<div class="cmt-form-foot">'
         + '<span class="cmt-counter" data-cmt-counter>0 / '+CMT_MAX+'</span>'
         + '<button type="submit" class="cmt-post" disabled>Post</button>'
