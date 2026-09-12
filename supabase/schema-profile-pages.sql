@@ -89,6 +89,11 @@ grant execute on function public.attendees_for_show(text) to anon, authenticated
 -- The one gate for "may the caller see this person's upcoming shows".
 -- Part 2: yourself, or a profile set to 'public'. Part 4 adds followers here
 -- (or follows_me(p_target)) and nowhere else.
+--
+-- SUPERSEDED by schema-follows.sql (Part 4), which re-declares this with the
+-- follower clause. Re-running THIS file afterwards puts the Part 2 version
+-- back -- followers-only profiles become visible to nobody but themselves --
+-- until schema-follows.sql is run again.
 create or replace function public.can_see_upcoming(p_target uuid)
 returns boolean
 language sql

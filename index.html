@@ -2029,21 +2029,33 @@ async function renderProfileRoute(handle){
   var out = await Promise.all([
     safe(sb.rpc('stubs_for_user', { p_target: p.id })),
     safe(sb.rpc('attendance_for_user', { p_target: p.id, p_slugs: slugs })),
-    safe(sb.rpc('handoff_count', { target_user_id: p.id }))
+    safe(sb.rpc('handoff_count', { target_user_id: p.id })),
+    safe(sb.rpc('follow_counts', { p_target: p.id })),
+    // Relationship only matters signed in and on someone else's page.
+    (myId && !isMe) ? safe(sb.rpc('follow_state', { p_target: p.id })) : Promise.resolve({ data: null })
   ]);
   if(parseRoute().handle !== handle) return;
   var stubs = (!out[0].error && Array.isArray(out[0].data)) ? out[0].data : [];
   var going = (!out[1].error && Array.isArray(out[1].data)) ? out[1].data : [];
   var handoffs = (!out[2].error && typeof out[2].data === 'number') ? out[2].data : 0;
+  var countsRow = (!out[3].error && Array.isArray(out[3].data)) ? out[3].data[0] : null;
+  var followers = countsRow ? (countsRow.followers | 0) : 0;
+  var following = countsRow ? (countsRow.following | 0) : 0;
+  var stateRow = (out[4] && !out[4].error && Array.isArray(out[4].data)) ? out[4].data[0] : null;
+  var iFollow = !!(stateRow && stateRow.i_follow);
+  var followsMe = !!(stateRow && stateRow.follows_me);
   if(out[0].error) console.warn('[profile] stubs failed:', out[0].error.message);
   if(out[1].error) console.warn('[profile] attendance failed:', out[1].error.message);
+  if(out[3].error) console.warn('[profile] follow counts failed:', out[3].error.message);
 
   var page = document.createElement('div');
   page.className = 'pf-page';
 
-  // Header. Follower / following counts are zero until Part 4 ships follows;
-  // the Follow button is placeholder markup, hidden until then, and per the
-  // spec never shown signed-out or on your own page.
+  // Header. The Follow button (Stage 10 Part 4) is never shown signed-out
+  // or on your own page. Three states: Follow / Follow back (they already
+  // follow you) / Following (click to unfollow -- a follow is one row, and
+  // redoing it costs nothing, so no confirm step).
+  var followLabel = iFollow ? 'Following' : (followsMe ? 'Follow back' : 'Follow');
   page.innerHTML = '<div class="pf-head">'
     + avImg(p.id, p.display_name, 'av-lg pf-av')
     + '<div class="pf-id">'
@@ -2051,13 +2063,36 @@ async function renderProfileRoute(handle){
       + '<div class="pf-handle">@' + esc(p.handle) + (isMe ? ' <span class="pf-you">(you)</span>' : '') + '</div>'
       + '<div class="pf-meta">Member since ' + esc(memberSince(p.created_at)) + '</div>'
       + '<div class="pf-counts">'
-        + '<span data-pf-followers>0 followers</span> \u00b7 '
-        + '<span data-pf-following>0 following</span> \u00b7 '
+        + '<span data-pf-followers>' + followers + (followers === 1 ? ' follower' : ' followers') + '</span> \u00b7 '
+        + '<span data-pf-following>' + following + ' following</span> \u00b7 '
         + '<span data-pf-handoffs>' + handoffs + (handoffs === 1 ? ' handoff' : ' handoffs') + '</span>'
       + '</div>'
     + '</div>'
-    + ((myId && !isMe) ? '<button type="button" class="pf-follow" data-pf-follow hidden>Follow</button>' : '')
+    + ((myId && !isMe)
+        ? '<button type="button" class="pf-follow' + (iFollow ? ' is-following' : '') + '" data-pf-follow="' + (iFollow ? 'unfollow' : 'follow') + '"'
+          + (iFollow ? ' title="Unfollow"' : '') + '>' + followLabel + '</button>'
+        : '')
     + '</div>';
+
+  // Follow / unfollow, then re-render from the server: counts, the button
+  // state and -- for a followers-only profile -- the upcoming list all
+  // change together, and the page should say what the database says.
+  var followBtn = page.querySelector('[data-pf-follow]');
+  if(followBtn){
+    followBtn.addEventListener('click', async function(){
+      followBtn.disabled = true;
+      var action = followBtn.getAttribute('data-pf-follow');
+      try{
+        var r = action === 'unfollow'
+          // follower_id is the session on both paths: the insert trigger sets
+          // it, and the delete policy only matches your own rows.
+          ? await sb.from('follows').delete().eq('followee_id', p.id)
+          : await sb.from('follows').insert({ followee_id: p.id });
+        if(r.error){ console.warn('[profile] ' + action + ' failed:', r.error.message); followBtn.disabled = false; return; }
+      }catch(e){ console.warn('[profile] ' + action + ' threw:', e); followBtn.disabled = false; return; }
+      if(parseRoute().handle === handle) renderProfileRoute(handle);
+    });
+  }
 
   // Upcoming shows, per D1: attendance_for_user returns nothing unless the
   // viewer may see it. An empty list and "not allowed" look the same on the
@@ -3552,6 +3587,35 @@ async function inboxLoad(){
       }
     }catch(e){ console.warn('[inbox] mentions threw:', e); }
 
+    // ---- New followers (Stage 10 Part 4) -----------------------------
+    // Notification only: no accept, no decline. Same bypass as mentions.
+    // The key includes created_at on purpose: follows has no id, and
+    // unfollow-then-refollow is a new row that should light up again.
+    try{
+      const q = await sb.rpc('my_new_followers', { p_limit: 50 });
+      if(!q.error){
+        const seenNow = txSeenMap();
+        (q.data || []).forEach(function(f){
+          const key = 'fl:' + f.follower_id + ':' + f.created_at;
+          items.push({
+            kind: 'follow',
+            seenKey: key,
+            otherId: f.follower_id,
+            who: f.display_name || 'Someone',
+            handle: f.handle || '',
+            slug: '',
+            kindLabel: f.handle ? '@' + f.handle : 'New follower',
+            snippet: 'started following you',
+            at: f.created_at,
+            unread: !seenNow[key],
+            empty: false
+          });
+        });
+      } else {
+        console.warn('[inbox] followers failed:', q.error.message);
+      }
+    }catch(e){ console.warn('[inbox] followers threw:', e); }
+
     if(!items.length){ INBOX.items = []; inboxRenderBadge(); return; }
 
     // ---- Latest message per thread, per table ------------------------
@@ -3590,7 +3654,7 @@ async function inboxLoad(){
     const seen = txSeenMap();
     // Reports and mentions are complete as pushed; only threads go through
     // the latest-message join.
-    const direct = items.filter(function(i){ return i.kind === 'report' || i.kind === 'mention'; });
+    const direct = items.filter(function(i){ return i.kind === 'report' || i.kind === 'mention' || i.kind === 'follow'; });
     INBOX.items = items.filter(function(i){ return i.kind === 'ticket' || i.kind === 'show'; }).map(function(i){
       const m = latest[(i.kind === 'ticket' ? 't:' : 's:') + i.threadId];
       const unread = !!(m && m.sender_id !== uid
@@ -3681,6 +3745,7 @@ async function inboxOpenThread(idx){
   INBOX.viewing = idx;
   if(item.kind === 'report'){ inboxRenderReport(idx); return; }
   if(item.kind === 'mention'){ inboxOpenMention(idx); return; }
+  if(item.kind === 'follow'){ inboxOpenFollow(idx); return; }
 
   const sb = inboxClient();
   const table = item.kind === 'ticket' ? 'ticket_messages' : 'show_messages';
@@ -3781,6 +3846,22 @@ function inboxOpenMention(idx){
   if(list) list.hidden = true;
   if(btn) btn.setAttribute('aria-expanded', 'false');
   if(item.slug) location.hash = '#/show/' + encodeURIComponent(item.slug);
+}
+
+// A new follower is read by opening it; it closes the panel and goes to
+// their profile. Nothing to accept or decline.
+function inboxOpenFollow(idx){
+  const item = INBOX.items[idx];
+  if(!item) return;
+  txMarkSeen(item.seenKey, item.at || new Date().toISOString());
+  item.unread = false;
+  inboxRenderBadge();
+  const list = document.getElementById('inboxList');
+  const btn = document.getElementById('inboxBtn');
+  INBOX.open = false; INBOX.viewing = null;
+  if(list) list.hidden = true;
+  if(btn) btn.setAttribute('aria-expanded', 'false');
+  if(item.handle) location.hash = '#/u/' + encodeURIComponent(item.handle);
 }
 
 // The badge previously only refreshed on an auth change or when the dropdown
@@ -5547,7 +5628,11 @@ load();
 .pf-handle{font-family:'Oswald',sans-serif;font-size:15px;letter-spacing:.03em;color:var(--cream);opacity:.9;margin-top:3px}
 .pf-you{color:var(--cream);opacity:.6;font-size:12px;letter-spacing:0}
 .pf-meta,.pf-counts{font-size:13px;opacity:.8;margin-top:3px}
-.pf-follow{border:1px solid var(--cream);background:none;color:var(--cream);border-radius:999px;padding:6px 14px;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+.pf-follow{border:1px solid var(--cream);background:none;color:var(--cream);border-radius:999px;padding:6px 14px;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;flex:0 0 auto}
+.pf-follow:hover{background:rgba(243,234,215,.12)}
+.pf-follow.is-following{background:var(--cream);color:var(--forest)}
+.pf-follow.is-following:hover{background:rgba(243,234,215,.85)}
+.pf-follow:disabled{opacity:.6;cursor:default}
 .pf-section{margin:0 0 28px}
 .pf-section-head{font-family:'Oswald',sans-serif;font-weight:600;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--cream);opacity:.85;margin:0 0 10px}
 .pf-count{opacity:.6;margin-left:6px}
