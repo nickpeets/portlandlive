@@ -106,6 +106,10 @@ VENUE_INFO = {
     "Alberta Street Pub": ("Alberta Arts", "1036 NE Alberta St"),
     "Tomorrow's Verse": ("Beaumont-Wilshire", "4605 NE Fremont St, Portland, OR 97213"),
     "Cascades Amphitheater": ("Ridgefield, WA", "17200 NE Delfel Rd, Ridgefield, WA 98642"),
+    # Columbia Gorge (Sep 2026). Outside Portland, so neighborhood is the
+    # town, the way Cascades Amphitheater does it.
+    "Trout Lake Hall": ("Trout Lake, WA", "15 Guler Rd, Trout Lake, WA 98650"),
+    "The Ruins": ("Hood River, OR", "13 Railroad St, Hood River, OR 97031"),
 }
 
 def clean(s):
@@ -1662,98 +1666,221 @@ def parse_pdxlive(html, today):
                     "date": date, "time": tm, "venueUrl": url, "imageUrl": ((e.get("logo") or {}).get("url") or "")})
     return out
 
-# ---- Tomorrow's Verse (youenjoymybeer.com) -- Wix Events app, browserless.
-# Two-step chain: (1) GET the events page and pull the wix-events "instance"
-# token out of the SSR'd HTML (signed fresh per request), (2) POST it to the
-# Wix Events query API to get a clean JSON event list. Recurring series come
-# back as individual dated rows -- we keep each as its own dated show.
-_TV_APPDEF = "140603ad-af8d-84a5-2c80-a0f60cb47351"  # Wix Events appDefId
-_TV_EVENTS_PAGE = "https://www.youenjoymybeer.com/events"
-_TV_QUERY_API = "https://www.youenjoymybeer.com/_api/wix-events-web/v1/events/query"
-_TV_INSTANCE_RE = re.compile(r'"instance":"([\w-]+\.[\w-]+)"')
+# ---- Wix Events sites (Tomorrow's Verse, The Ruins) -- browserless, two tiers.
+#
+# History: the first Tomorrow's Verse parser regex-hunted an "instance" token
+# in the page and POSTed it to the Wix Events query API with a bare
+# requests.post(). That returned 401/428 on every run, so the venue scraped
+# zero for weeks. Two things were wrong, found by driving the site from a
+# browser in Sep 2026: the token it wanted lives in the SSR'd warmup blob (its
+# payload is not the base64 JSON the regex filter demanded, so it was never
+# picked), and the API refuses requests that arrive without the cookies the
+# page response sets (428 Precondition Required with no cookies; 200 with
+# them, even with no Authorization header at all).
+#
+# So, two tiers, cheapest first:
+#   1. WARMUP. Every Wix page ships <script id="wix-warmup-data"> with the
+#      events widget's first page of events already in it -- full objects,
+#      no request beyond the page GET. For a small calendar (The Ruins:
+#      hasMore=false) this is everything.
+#   2. API, only when the warmup says hasMore. The page is fetched in a
+#      requests.Session so its cookies carry into the POST, plus the warmup
+#      instance as Authorization and the XSRF cookie mirrored as a header.
+#      Any failure here falls back to the warmup events with a WARN --
+#      strictly better than the zero this venue produced before.
+#
+# Event URLs are /event-details/<slug> on both sites (the old parser built
+# /events/<slug>, which 404s).
+_WIX_EVENTS_APPDEF = "140603ad-af8d-84a5-2c80-a0f60cb47351"  # Wix Events appDefId
+_WIX_WARMUP_RE = re.compile(r'<script[^>]*id="wix-warmup-data"[^>]*>(.*?)</script>', re.S)
 
-def _tv_instance_token(html):
-    """Find the wix-events app instance token in the events page HTML.
-    Tolerant of surrounding JSON: scan every "instance":"a.b" candidate and
-    keep the one whose base64 payload decodes to the wix-events appDefId."""
-    import base64
-    for tok in _TV_INSTANCE_RE.findall(html):
-        try:
-            payload = tok.split(".", 1)[1]
-            payload += "=" * (-len(payload) % 4)
-            data = json.loads(base64.urlsafe_b64decode(payload))
-        except Exception:
-            continue
-        if data.get("appDefId") == _TV_APPDEF:
-            return tok
-    return None
-
-def parse_tomorrowsverse(html, today):
-    # `html` is the GET of _TV_EVENTS_PAGE supplied by fetch() in scrape().
+def _tz(tzid):
     try:
         from zoneinfo import ZoneInfo
+        return ZoneInfo(tzid or "America/Los_Angeles")
     except Exception:
-        ZoneInfo = None
-    token = _tv_instance_token(html)
-    if not token:
-        raise RuntimeError("Tomorrow's Verse: wix-events instance token not found in page HTML")
-    headers = {
-        "User-Agent": "Mozilla/5.0 (compatible; PortlandLive/1.0; listings aggregator)",
-        "Authorization": token,
-        "Content-Type": "application/json",
-    }
-    raw = []
-    offset = 0
-    while True:
-        body = json.dumps({"limit": 100, "offset": offset, "fieldset": ["FULL"],
-                           "filter": {"status": ["SCHEDULED", "STARTED"]}})
-        resp = requests.post(_TV_QUERY_API, headers=headers, data=body, timeout=30)
-        resp.raise_for_status()
-        page = resp.json()
-        evs = page.get("events", []) or []
-        raw.extend(evs)
-        total = page.get("total", len(raw))
-        offset += len(evs)
-        if not evs or offset >= total or len(raw) >= 2000:
-            break
-    venue = "Tomorrow's Verse"
-    nb, addr = VENUE_INFO.get(venue, ("Beaumont-Wilshire", "4605 NE Fremont St, Portland, OR 97213"))
+        return _ASP_PDT
+
+def _wix_warmup_events(html):
+    """(events, instance, has_more) from the page's warmup blob; ([], None, False) if absent."""
+    m = _WIX_WARMUP_RE.search(html or "")
+    if not m:
+        return [], None, False
+    try:
+        data = json.loads(m.group(1))
+    except Exception:
+        return [], None, False
+    app = (data.get("appsWarmupData") or {}).get(_WIX_EVENTS_APPDEF) or {}
+    for widget in app.values():
+        if not isinstance(widget, dict):
+            continue
+        ev = widget.get("events")
+        if isinstance(ev, dict) and isinstance(ev.get("events"), list):
+            return ev["events"], widget.get("instance"), bool(ev.get("hasMore"))
+    return [], None, False
+
+def _wix_all_events(page_url, prefetched_html):
+    """Every scheduled event for one Wix Events site (see tiers above)."""
+    origin = re.match(r"https?://[^/]+", page_url).group(0)
+    sess = requests.Session()
+    headers = {"User-Agent": _BROWSER_UA}
+    html = prefetched_html
+    try:
+        r = sess.get(page_url, headers=headers, timeout=30)
+        r.raise_for_status()
+        html = r.text
+    except Exception as e:
+        print(f"  WARN: Wix page re-fetch failed ({page_url}): {type(e).__name__}: {e}; using the first fetch")
+    initial, instance, has_more = _wix_warmup_events(html)
+    if not initial and not has_more:
+        raise RuntimeError(f"Wix: no wix-warmup-data events block in {page_url}")
+    if not has_more:
+        return initial
+    api = origin + "/_api/wix-events-web/v1/events/query"
+    h = dict(headers)
+    h["Content-Type"] = "application/json"
+    if instance:
+        h["Authorization"] = instance
+    xsrf = sess.cookies.get("XSRF-TOKEN")
+    if xsrf:
+        h["x-xsrf-token"] = xsrf
+    raw, offset = [], 0
+    try:
+        while True:
+            body = json.dumps({"limit": 100, "offset": offset, "fieldset": ["FULL"],
+                               "filter": {"status": ["SCHEDULED", "STARTED"]}})
+            resp = sess.post(api, headers=h, data=body, timeout=30)
+            if resp.status_code != 200:
+                raise RuntimeError(f"HTTP {resp.status_code}")
+            page = resp.json()
+            evs = page.get("events") or []
+            raw.extend(evs)
+            total = page.get("total", len(raw))
+            offset += len(evs)
+            if not evs or offset >= total or len(raw) >= 2000:
+                break
+        return raw if raw else initial
+    except Exception as e:
+        print(f"  WARN: Wix events API failed ({origin}): {type(e).__name__}: {e}; "
+              f"using the {len(initial)} warmup events")
+        return initial
+
+def _wix_rows(raw, venue, origin, today):
+    """Wix event objects (warmup or API shape -- they differ only in status
+    encoding and startDate millis) -> show dicts."""
+    nb, addr = VENUE_INFO.get(venue, ("", ""))
     out, seen = [], set()
     for e in raw:
+        st = e.get("status")
+        if st not in (0, "SCHEDULED", "STARTED", None):
+            continue
         cfg = (e.get("scheduling") or {}).get("config") or {}
         sd = cfg.get("startDate")
-        if not sd:
+        if not sd or cfg.get("scheduleTbd"):
             continue
         try:
-            dt = datetime.datetime.strptime(sd, "%Y-%m-%dT%H:%M:%SZ").replace(
-                tzinfo=datetime.timezone.utc)
+            iso = re.sub(r"\.\d+Z$", "Z", str(sd)).replace("Z", "+00:00")
+            dt = datetime.datetime.fromisoformat(iso).astimezone(_tz(cfg.get("timeZoneId")))
         except Exception:
             continue
-        tzid = cfg.get("timeZoneId") or "America/Los_Angeles"
-        if ZoneInfo is not None:
-            try:
-                dt = dt.astimezone(ZoneInfo(tzid))
-            except Exception:
-                dt = dt.astimezone(datetime.timezone(datetime.timedelta(hours=-8)))
-        else:
-            dt = dt.astimezone(datetime.timezone(datetime.timedelta(hours=-8)))
         date = dt.date().isoformat()
-        ampm = "am" if dt.hour < 12 else "pm"
-        tm = to_time("%d:%02d%s" % (dt.hour % 12 or 12, dt.minute, ampm))
+        tm = "%d:%02d %s" % (dt.hour % 12 or 12, dt.minute, "AM" if dt.hour < 12 else "PM")
         title = clean(e.get("title") or "")
-        title = re.sub(r"\s+", " ", re.sub(r"[\u2010-\u2015]", "-", title)).strip()
+        title = re.sub(r"\s+", " ", re.sub(r"[‐-―]", "-", title)).strip()
         if not title:
             continue
         slug = e.get("slug") or ""
-        url = "https://www.youenjoymybeer.com/events/" + slug if slug else _TV_EVENTS_PAGE
+        url = origin + "/event-details/" + slug if slug else origin
+        mi = e.get("mainImage") or {}
+        img = mi.get("url") or (("https://static.wixstatic.com/media/" + mi["id"]) if mi.get("id") else "")
         key = (date, title.lower())
         if key in seen:
             continue
         seen.add(key)
         out.append({"title": title, "venue": venue, "neighborhood": nb, "address": addr,
-                    "date": date, "time": tm, "venueUrl": url, "imageUrl": ""})
+                    "date": date, "time": tm, "venueUrl": url, "imageUrl": img})
     return out
 
+_TV_EVENTS_PAGE = "https://www.youenjoymybeer.com/events"
+
+def parse_tomorrowsverse(html, today):
+    raw = _wix_all_events(_TV_EVENTS_PAGE, html)
+    return _wix_rows(raw, "Tomorrow's Verse", "https://www.youenjoymybeer.com", today)
+
+_RUINS_PAGE = "https://www.theruins.org/music-calendar"
+
+def parse_theruins(html, today):
+    # The Ruins, Hood River (Columbia Gorge) -- Wix Events. Small calendar;
+    # the warmup blob has carried every upcoming show (hasMore=false) each
+    # time it was checked, so tier 2 is rarely reached.
+    raw = _wix_all_events(_RUINS_PAGE, html)
+    return _wix_rows(raw, "The Ruins", "https://www.theruins.org", today)
+
+
+# ---- Trout Lake Hall (troutlakehall.com) -- Squarespace + Event Calendar App, browserless.
+# The Squarespace site itself has no events collection (its /?format=json is a
+# plain page titled "Shows"). The calendar is a third-party embed,
+# eventcalendarapp.com, mounted by a website-component block. Two ids are in
+# the homepage HTML -- data-widgetuuid on the container and window.eventCalId
+# in the inline script beside it -- and the widget's own feed is a plain GET:
+#   https://api.eventcalendarapp.com/events?id=<calId>&widgetUuid=<uuid>&inAdminPanel=false
+# JSON: {events:[...], pages:{current,total,nextPage}}; utcStartTime is epoch
+# SECONDS with a per-event IANA timezone. 15 per page, follow nextPage.
+# Both ids are required: without id the API answers 403.
+_TLH_HOME = "https://www.troutlakehall.com/"
+_TLH_API = "https://api.eventcalendarapp.com/events"
+# Not shows. The hall's calendar also carries its own closures and community
+# nights; the site-wide classifier does not know these titles, so they are
+# dropped here. Open mics are kept -- they are live music.
+_TLH_SKIP = re.compile(r"closed|private event|bingo|boo-o|gift-o|game night|trivia|cook-off", re.I)
+
+def _tlh_ids(html):
+    m_uuid = re.search(r'data-widgetuuid="([0-9a-fA-F-]{36})"', html or "")
+    m_id = re.search(r'window\.eventCalId\s*=\s*["\']?(\d+)', html or "")
+    return (m_id.group(1) if m_id else None), (m_uuid.group(1) if m_uuid else None)
+
+def _tlh_rows(pages, today):
+    nb, addr = VENUE_INFO["Trout Lake Hall"]
+    out, seen = [], set()
+    for page in pages:
+        for e in (page.get("events") or []):
+            ts = e.get("utcStartTime")
+            title = re.sub(r"\s+", " ", clean(e.get("summary") or "")).strip()
+            if not ts or not title or _TLH_SKIP.search(title):
+                continue
+            try:
+                dt = datetime.datetime.fromtimestamp(int(ts), tz=datetime.timezone.utc).astimezone(_tz(e.get("timezone")))
+            except Exception:
+                continue
+            date = dt.date().isoformat()
+            tm = "" if e.get("isAllDayEvent") else "%d:%02d %s" % (dt.hour % 12 or 12, dt.minute, "AM" if dt.hour < 12 else "PM")
+            key = (date, title.lower())
+            if key in seen:
+                continue
+            seen.add(key)
+            out.append({"title": title, "venue": "Trout Lake Hall", "neighborhood": nb, "address": addr,
+                        "date": date, "time": tm,
+                        "venueUrl": e.get("ticketsLink") or _TLH_HOME,
+                        "imageUrl": e.get("image") or e.get("thumbnail") or ""})
+    return out
+
+def parse_troutlakehall(html, today):
+    cal_id, uuid = _tlh_ids(html)
+    if not (cal_id and uuid):
+        raise RuntimeError("Trout Lake Hall: eventcalendarapp ids (window.eventCalId / data-widgetuuid) not found in page HTML")
+    url = f"{_TLH_API}?id={cal_id}&widgetUuid={uuid}&inAdminPanel=false"
+    headers = {"User-Agent": _BROWSER_UA, "Referer": _TLH_HOME, "Origin": _TLH_HOME.rstrip("/")}
+    pages, n = [], 0
+    while url and n < 10:
+        r = requests.get(url, headers=headers, timeout=30)
+        r.raise_for_status()
+        j = r.json()
+        pages.append(j)
+        n += 1
+        pg = j.get("pages") or {}
+        nxt = pg.get("nextPage")
+        url = nxt if (nxt and (pg.get("current") or 0) < (pg.get("total") or 0)) else None
+    return _tlh_rows(pages, today)
 
 
 # ---- Cascades Amphitheater (Ridgefield, WA) -- Live Nation / Ticketmaster, browserless.
@@ -2723,6 +2850,9 @@ SOURCES = [
     {"name": "Alberta Street Pub (albertastreetpub.com)", "parser": parse_albertastreetpub, "urls": ["https://www.albertastreetpub.com/music?format=json"]},
     {"name": "Tomorrow's Verse (youenjoymybeer.com)", "parser": parse_tomorrowsverse, "urls": ["https://www.youenjoymybeer.com/events"]},
     {"name": "Cascades Amphitheater (livenation.com)", "parser": parse_cascades, "urls": [_CASCADES_URL]},
+    # Columbia Gorge (Sep 2026)
+    {"name": "Trout Lake Hall (troutlakehall.com)", "parser": parse_troutlakehall, "urls": [_TLH_HOME]},
+    {"name": "The Ruins (theruins.org)", "parser": parse_theruins, "urls": [_RUINS_PAGE]},
     {"name": "Laurelthirst (laurelthirst.com)", "parser": parse_laurelthirst, "urls": ["https://laurelthirst.com/music-calendar/"]},
     {"name": "Showdown Saloon", "parser": parse_showdown, "urls": ["https://showdownpdx.com/"]},
     {"name": "The Get Down", "parser": parse_getdown, "urls": ["https://thegetdownpdx.com/"]},
