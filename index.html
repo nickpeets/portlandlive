@@ -2013,7 +2013,11 @@ async function renderProfileRoute(handle){
   // The feed's slugs go up, the intersection comes back, and nothing about
   // shows outside the feed -- past or otherwise -- is ever returned.
   var slugs = state.shows.map(function(s){ return s._slug; }).filter(Boolean);
-  function safe(pr){ return pr.catch(function(e){ return { error: e }; }); }
+  // sb.rpc() returns a PostgrestFilterBuilder, which is a THENABLE -- it
+  // implements .then() but not .catch(). Promise.resolve() adopts it into a
+  // real promise so .catch exists. Without this the first safe() call throws
+  // TypeError before anything renders, and the page comes out blank.
+  function safe(pr){ return Promise.resolve(pr).catch(function(e){ return { error: e }; }); }
   var out = await Promise.all([
     safe(sb.rpc('stubs_for_user', { p_target: p.id })),
     safe(sb.rpc('attendance_for_user', { p_target: p.id, p_slugs: slugs })),
