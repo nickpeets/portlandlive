@@ -725,7 +725,7 @@ body{
 .tx-msgs{list-style:none;margin:0 0 10px;padding:0;display:flex;flex-direction:column;gap:8px;max-height:280px;overflow-y:auto}
 .tx-msg{background:#fff;border-radius:9px;padding:9px 11px}
 .tx-msg.tx-msg-mine{background:rgba(61,87,74,.1)}
-.tx-msg-top{display:flex;align-items:baseline;gap:8px;margin-bottom:3px}
+.tx-msg-top{display:flex;align-items:center;gap:8px;margin-bottom:3px}
 .tx-msg-who{font-family:'Oswald',sans-serif;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--forest)}
 .tx-msg-when{font-size:11px;color:#7c6a55}
 .tx-msg-body{font-family:'Bitter',Georgia,serif;font-size:13.5px;line-height:1.5;color:var(--ink);white-space:pre-wrap;overflow-wrap:anywhere;margin:0}
@@ -781,7 +781,11 @@ body{
 .cmts-state.cmts-error{color:#ffd9c9}
 .cmts-list{list-style:none;margin:0 0 14px;padding:0;display:flex;flex-direction:column;gap:10px}
 .cmt{background:var(--cream);border-radius:12px;padding:12px 14px;box-shadow:0 6px 14px rgba(20,40,30,.14)}
-.cmt-top{display:flex;align-items:baseline;gap:8px;margin-bottom:5px}
+/* align-items:center, not baseline: this row holds an .av, which is either
+   an <img> (baseline = its bottom edge) or a letter <span> (baseline = the
+   letter). Under baseline alignment a photo avatar sits lower than a letter
+   one on the very same row. .wg-row already centers for this reason. */
+.cmt-top{display:flex;align-items:center;gap:8px;margin-bottom:5px}
 .cmt-name{font-family:'Oswald',sans-serif;font-weight:600;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--forest)}
 .cmt-when{font-size:11.5px;color:#7c6a55}
 .cmt-del{margin-left:auto;border:0;background:none;cursor:pointer;font-family:'Oswald',sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#7c6a55;padding:2px 4px;border-radius:6px}
