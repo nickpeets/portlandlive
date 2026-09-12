@@ -982,6 +982,14 @@ body{
         <span class="toggle" id="picksToggle"></span>
         <span>Picks</span>
       </label>
+      <!-- All Ages: a door-policy filter, not a taste judgement. Deliberately
+           narrows to shows we KNOW are all-ages; it never hides 21+ shows on the
+           strength of a guess, because most of the feed has no age published at
+           all. See filtered() for why unknown is not treated as either answer. -->
+      <label class="pill pill-when" id="allAgesPill" title="Only shows the venue lists as all-ages. Most shows publish no age, and those are not shown here.">
+        <span class="toggle" id="allAgesToggle"></span>
+        <span>All Ages</span>
+      </label>
       <div class="ctl-group">
             <label class="pill pill-narrow" title="Browse all venues we cover (coverage directory)">
             <span class="toggle" id="venuesToggle"></span>
@@ -1170,6 +1178,7 @@ const state = {
   q: "", tonight: false, thisWeek: false, picks: false,
   myShows: false, favorites: new Set(),
   festivals: false, // Festivals pill: registry-backed filter, see FESTIVALS
+  allAges: false, // All Ages pill: keeps ONLY shows KNOWN to be all-ages (see filtered())
   comedy: false, audit: new URLSearchParams(location.search).has('audit'), // comedy: future Comedy-shows toggle; audit: dev-only panel, reachable via ?audit=1 (no UI toggle)
   following: false, // FOLLOWING FILTER: collapse feed to shows by hearted bands/venues (self-contained, removable)
 };
@@ -1430,6 +1439,17 @@ function filtered(){
   // Festivals view: only shows belonging to a registered festival. Sits after
   // the content gate so a comedy set inside a festival still behaves sanely.
   if(state.festivals) out = out.filter(isFestivalShow);
+  // ALL AGES: keep only shows POSITIVELY KNOWN to be all-ages.
+  //
+  // `age` has three real states plus absence, and absence dominates the feed --
+  // most venues publish no age at all. So this filter is deliberately one-way:
+  // it narrows to age === 'all-ages' and offers no "hide 21+" counterpart,
+  // because hiding 21+ would silently also hide every unknown show and imply we
+  // had checked them. A parent filtering here sees a short, trustworthy list
+  // rather than a long, partly-guessed one. Conditional door policies ("all
+  // ages until 9pm", "minors w/ guardian") are stored as unknown upstream and
+  // correctly do not appear.
+  if(state.allAges) out = out.filter(s => s.age === 'all-ages');
   const q = state.q.trim().toLowerCase();
   if(q) out = out.filter(s => (s.title+" "+s.venue+" "+s.neighborhood).toLowerCase().includes(q));
    // FOLLOWING FILTER: hide-style collapse to shows whose band (band:: key) OR venue
@@ -1546,7 +1566,8 @@ function auditPanelHtml(){
    owns #results WITHOUT touching the flags, so browser-back lands on the
    filtered feed with its pill lit again. */
 var TOGGLE_PILL_IDS = ['tonightToggle','thisWeekToggle','picksToggle','venuesToggle',
-                       'myShowsToggle','comedyToggle','followingToggle','byHoodToggle','festivalsToggle'];
+                       'myShowsToggle','comedyToggle','followingToggle','byHoodToggle','festivalsToggle',
+                       'allAgesToggle'];
 function clearTogglePills(){
   TOGGLE_PILL_IDS.forEach(function(id){
     var el = document.getElementById(id);
@@ -1562,6 +1583,7 @@ function syncTogglePills(){
     myShowsToggle:   state.myShows,
     comedyToggle:    state.comedy,
     festivalsToggle: state.festivals,
+    allAgesToggle:   state.allAges,
     followingToggle: state.following,
     byHoodToggle:    state.byHood
   };
@@ -5197,6 +5219,19 @@ $('#festivalsToggle') && $('#festivalsToggle').addEventListener('click',()=>{
   $('#festivalsToggle').classList.toggle('on',state.festivals);
   render();
 });
+// All Ages is an independent narrowing filter, so unlike Venues/Comedy/Festivals
+// it deliberately does NOT clear the other pills -- all-ages + tonight, or
+// all-ages + comedy, are both reasonable things to ask for. It only drops the
+// venue-directory view, which shows no show rows to filter.
+$('#allAgesToggle') && $('#allAgesToggle').addEventListener('click',()=>{
+  state.allAges=!state.allAges;
+  if(state.allAges && state.view==='venues'){
+    state.view='shows'; state.selectedVenue=null;
+    $('#venuesToggle').classList.remove('on');
+  }
+  $('#allAgesToggle').classList.toggle('on',state.allAges);
+  render();
+});
 // Reveal the pill only while a registered festival still has dates ahead. An
 // empty Festivals view is worse than no pill at all.
 (function(){
@@ -5573,6 +5608,11 @@ function goHome(){
   state.view='shows'; state.selectedVenue=null;
   state.tonight=false; state.thisWeek=false; state.picks=false; state.byHood=false;
   state.myShows=false; state.comedy=false; state.following=false; state.q='';
+  // state.festivals was NOT being cleared here: clearTogglePills() below only
+  // removes the lit class, and render()'s syncTogglePills() immediately
+  // re-derives it from the still-true flag, so a logo click left the Festivals
+  // filter applied with its pill lit again. Cleared with allAges.
+  state.festivals=false; state.allAges=false;
   $('#searchInput').value='';
   clearTogglePills();
   // #browseSelect needs no explicit reset: render() re-derives it from the
