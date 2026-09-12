@@ -2962,21 +2962,21 @@ SOURCES = [
     # CitySpark JSON API (single feed -> 2 venues). The parser ignores the
     # GET body below and drives the POST API itself; the URL is only a cheap
     # liveness fetch so per-source isolation in scrape() behaves normally.
-    {"name": "CitySpark (Ponderosa + Old Church)", "parser": parse_cityspark,
+    {"name": "CitySpark (Ponderosa + Old Church)", "parser": parse_cityspark, "may_be_empty": True,
      "urls": ["https://portal.cityspark.com/PortalScripts/WillametteWeek"]},
     {"name": "Havalina (havalinapdx.com)", "parser": parse_havalina, "urls": ["https://havalinapdx.com/events?format=json"]},
     # Intermittent bot challenge (6 of 10 runs zero by Sep 2026, then fully
     # zero). Plain requests with a browser UA doesn't reliably pass; Chromium
     # does. Parser unchanged -- it just gets its HTML through the headless tier.
     {"name": "Kelly's Olympian (kellysolympian.com)", "parser": parse_kellys_olympian, "headless": True, "urls": ["https://kellysolympian.com/events/"]},
-    {"name": "Barrel Room (barrelroompdx.com)", "parser": parse_barrelroom, "urls": ["https://www.barrelroompdx.com/events"]},
+    {"name": "Barrel Room (barrelroompdx.com)", "parser": parse_barrelroom, "may_be_empty": True, "urls": ["https://www.barrelroompdx.com/events"]},
     {"name": "Arbor Beer Lodge (arborbeerlodge.com)", "parser": parse_arbor, "urls": ["https://www.arborbeerlodge.com/events?format=json"]},
     {"name": "Artichoke Music (artichokemusic.org)", "parser": parse_artichoke, "urls": ["https://www.eventbrite.com/cc/live-music-artichoke-4657563"]},
     {"name": "Starday Tavern (stardaytavern.com / Genghis Records)", "parser": parse_starday, "urls": ["https://calendar.google.com/calendar/ical/m59vjhvcv0iflpv2iknoqlmuqo%40group.calendar.google.com/public/basic.ics"]},
     {"name": "McMenamins (White Eagle/Al's Den/Mission)", "parser": parse_mcmenamins,
      "urls": ["https://www.mcmenamins.com/to-do/live-music-events/music-event-calendar"]},
     {"name": "NOVA PDX", "parser": parse_novapdx, "urls": ["https://novapdxevents.com/event-calendar"]},
-    {"name": "Pioneer Courthouse Square / PDX Live (pdx-live.com)", "parser": parse_pdxlive, "urls": ["https://pdx-live.com/wp-json/wlcr/v1/events/raw"]},
+    {"name": "Pioneer Courthouse Square / PDX Live (pdx-live.com)", "parser": parse_pdxlive, "may_be_empty": True, "urls": ["https://pdx-live.com/wp-json/wlcr/v1/events/raw"]},
     {"name": "Twilight Cafe & Bar (twilightcafeandbar.com)", "parser": parse_twilight, "urls": ["https://twilightcafeandbar.com/calendar_list"]},
     {"name": "No Fun (nofunportland.com)", "parser": parse_nofun, "urls": ["https://www.nofunportland.com/events?format=json"]},
     {"name": "Bunk Bar (shows.bunksandwiches.com)", "parser": parse_bunkbar, "urls": ["https://shows.bunksandwiches.com/"]},
@@ -3025,8 +3025,26 @@ def scrape():
     horizon = (today + datetime.timedelta(days=HORIZON_DAYS)).isoformat()
     lower = today.isoformat()
     out = []
+    # YIELD-ZERO detection. "0 shows" has always been printed identically for
+    # three completely different situations, and that ambiguity is what let
+    # Artichoke serve stale data for four runs: Eventbrite changed a tag, the
+    # parser matched nothing, returned [] with no exception, and the line read
+    # exactly like a venue with an empty calendar. Nothing warned until
+    # DROPPED-TO-0 fired -- by which point the feed had been wrong for days.
+    #
+    #   fetch failed        -> already loud (WARN, from the except below)
+    #   fetched, parsed 0   -> SUSPECT: a live page the parser can no longer read
+    #   parsed N, kept 0    -> SUSPECT: every row fell outside the date window
+    #   genuinely empty     -> fine, and the only one that should be quiet
+    #
+    # The middle two are near-certainly bugs and are now reported on the FIRST
+    # run rather than the fourth. Sources that legitimately sit empty opt out
+    # with {"may_be_empty": True} so the signal stays worth reading.
+    zero_reports = []
     for src in SOURCES:
         got = []
+        fetched_ok = False
+        raw_count = 0
         for url in src["urls"]:
             # Per-venue isolation: a single source throwing (exception, timeout,
             # bot-challenge, shape change) must NOT abort the scrape or lose the
@@ -3036,22 +3054,38 @@ def scrape():
                     # Headless tier, parser-owned fetch: the parser does its own
                     # navigation (e.g. Goodfoot clears the challenge on the
                     # homepage, then reads the site's JSON API in-session).
-                    got.extend(src["parser"](None, today))
+                    rows = src["parser"](None, today)
                 elif src.get("headless"):
                     # Headless tier, loop-owned fetch: Chromium clears the
                     # challenge and the parser gets ordinary rendered HTML, so
                     # an existing HTML parser needs no changes to move behind a
                     # wall. This is how Kelly's Olympian came back (Sep 2026).
                     from fetch_headless import fetch_headless
-                    got.extend(src["parser"](fetch_headless(url), today))
+                    rows = src["parser"](fetch_headless(url), today)
                 else:
-                    got.extend(src["parser"](fetch(url), today))
+                    rows = src["parser"](fetch(url), today)
+                # Reaching here means the fetch returned real content and the
+                # parser ran without raising -- so a zero count below is the
+                # parser's verdict on a live page, not a transport failure.
+                fetched_ok = True
+                rows = rows or []
+                raw_count += len(rows)
+                got.extend(rows)
             except Exception as e:
                 print(f"  WARN: {src['name']} parser failed: {type(e).__name__}: {e} ({url})")
         got = [s for s in got if lower <= s["date"] <= horizon]
         print(f"  {src['name']}: {len(got)} shows")
+        if not got and fetched_ok and not src.get("may_be_empty"):
+            if raw_count:
+                zero_reports.append(
+                    (src["name"], f"parsed {raw_count} row(s) but every one fell outside "
+                                  f"today..+{HORIZON_DAYS}d -- stale calendar or a date-parsing bug"))
+            else:
+                zero_reports.append(
+                    (src["name"], "fetched OK but the parser found no events -- "
+                                  "the page shape likely changed"))
         out.extend(got)
-    return out
+    return out, zero_reports
 
 _BASELINE_FILE = os.path.join(os.path.dirname(__file__), "venue_baselines.json")
 _BASELINE_HISTORY = 10   # rolling window of recent run counts per venue
@@ -3183,8 +3217,19 @@ def retention_status(hist):
 
 
 def main():
-    scraped = scrape()
+    scraped, zero_reports = scrape()
     check_baselines(scraped)
+    # Reported BEFORE the retention/staleness block, because this is the
+    # upstream cause of the staleness that block describes -- and unlike
+    # DROPPED-TO-0 it fires on the first bad run, not the fourth.
+    if zero_reports:
+        print(f"YIELD-ZERO: {len(zero_reports)} source(s) returned nothing from a page "
+              f"that loaded fine:")
+        for name, why in zero_reports:
+            print(f"  SUSPECT: {name} -- {why}")
+        print("  ^ a source that loads but yields nothing is a parser problem, not an "
+              "empty calendar. If a source is legitimately empty (seasonal, closed), "
+              'mark it {"may_be_empty": True} in SOURCES so this stays worth reading.')
     scraped_venues = {s["venue"] for s in scraped}
     target = os.path.join(os.path.dirname(__file__), "manual_shows.json")
     try:
