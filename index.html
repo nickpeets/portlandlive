@@ -311,6 +311,11 @@ body{
 .scard .s-age-all{background:rgba(181,86,43,.13);color:var(--rust-deep)}
 .scard .s-age-over{background:rgba(124,106,85,.15);color:#6b5a45}
     .scard .follow-reason{display:inline-flex;align-items:baseline;gap:4px;font-family:'Oswald';font-size:11px;letter-spacing:.02em;background:rgba(181,86,43,.1);color:var(--rust);padding:3px 9px;border-radius:20px;font-weight:600}
+    .scard .follow-reason-people{align-items:center;gap:5px;background:rgba(74,53,38,.08);color:var(--ink);opacity:.85}
+    .scard .follow-reason .av-xs{width:16px;height:16px;font-size:8px}
+    .scard .av-stack{display:inline-flex;align-items:center}
+    .scard .av-stack .av{margin-left:-6px;border:1px solid var(--cream)}
+    .scard .av-stack .av:first-child{margin-left:0}
 .scard .heart{color:var(--ink);opacity:.5}
 .scard .heart.on{color:var(--rust);opacity:1}
 .scard .listen{align-self:center}
@@ -921,7 +926,7 @@ body{
               <span class="toggle" id="myShowsToggle"></span>
               <span>Saved</span>
             </label>
-            <label class="pill quick-menu-pill following-pill" title="Filter the feed to shows by the bands & venues you've hearted">
+            <label class="pill quick-menu-pill following-pill" title="Filter the feed to shows by the bands, venues and people you follow">
               <span class="toggle" id="followingToggle"></span>
               <span>&#9733; Following</span>
             </label>
@@ -1431,7 +1436,10 @@ function filtered(){
    // (venue:: key) is hearted. Uses the SAME key construction as favoriting
    // (bandFavKey(s.title) / venueFavKey(s.venue)) so a hearted band/venue reliably
    // catches its shows. Ordering stays time-anchored via sortShows() below.
-   if(state.following){ const _normFav = new Set([...state.favorites].map(function(k){ var i=k.indexOf('::'); return i<0 ? k : k.slice(0,i+2)+_normTitle(k.slice(i+2)); })); out = out.filter(s => _normFav.has('band::'+_normTitle(s.title)) || _normFav.has('venue::'+_normTitle(s.venue))); }
+   // Stage 10 Part 5 (D2): a followed person going is a third reason. One
+   // pass over the canonical list, so a show with several reasons is still
+   // one row. Order stays chronological via sortShows() below.
+   if(state.following){ const _normFav = new Set([...state.favorites].map(function(k){ var i=k.indexOf('::'); return i<0 ? k : k.slice(0,i+2)+_normTitle(k.slice(i+2)); })); out = out.filter(s => _normFav.has('band::'+_normTitle(s.title)) || _normFav.has('venue::'+_normTitle(s.venue)) || followPeopleFor(s).length > 0); }
    if(state.picks){
      // Picks overrides time-window / favorites filters: it is the showcase view.
      out = out.filter(isPick);
@@ -1591,11 +1599,16 @@ function render(){
   const list = filtered();
   if(state.following){
     const _fs = new Set([...state.favorites].map(function(k){ var i=k.indexOf('::'); return i<0 ? k : k.slice(0,i+2)+_normTitle(k.slice(i+2)); }));
-    const _vSet = new Set(), _bSet = new Set();
-    list.forEach(function(s){ if(_fs.has('venue::'+_normTitle(s.venue))){ _vSet.add(_normTitle(s.venue)); } else if(_fs.has('band::'+_normTitle(s.title))){ _bSet.add(_normTitle(s.title)); } });
+    const _vSet = new Set(), _bSet = new Set(), _pSet = new Set();
+    list.forEach(function(s){
+      if(_fs.has('venue::'+_normTitle(s.venue))){ _vSet.add(_normTitle(s.venue)); }
+      if(_fs.has('band::'+_normTitle(s.title))){ _bSet.add(_normTitle(s.title)); }
+      followPeopleFor(s).forEach(function(p){ _pSet.add(p.user_id); });
+    });
     const _seg = [];
     _seg.push('Following ' + _vSet.size + ' venue' + (_vSet.size===1?'':'s'));
     if(_bSet.size) _seg.push(_bSet.size + ' band' + (_bSet.size===1?'':'s'));
+    if(_pSet.size) _seg.push(_pSet.size + (_pSet.size===1?' person':' people'));
     _seg.push(list.length + ' show' + (list.length===1?'':'s'));
     $('#resultCount').textContent = list.length ? _seg.join(' \u00b7 ') : 'Following \u2014 no upcoming shows';
   } else {
@@ -1611,7 +1624,7 @@ function render(){
       if(state.audit){ wrap.insertAdjacentHTML('beforeend', auditPanelHtml()); }
 
   if(!list.length){
-    wrap.innerHTML = state.picks ? '<div class="empty"><h2>No picks this week</h2><p>Check back soon — fresh picks are curated weekly.</p></div>' : state.following ? '<div class="empty"><h2>Nothing here yet</h2><p>Heart some bands and venues to see their shows here.</p></div>' : state.myShows ? '<div class="empty"><h2>No favorites yet</h2><p>Tap the heart on a show to save it.</p></div>' : '<div class="empty"><h2>No Results Found.</h2><p>Try widening your dates or clearing the search.</p></div>';
+    wrap.innerHTML = state.picks ? '<div class="empty"><h2>No picks this week</h2><p>Check back soon — fresh picks are curated weekly.</p></div>' : state.following ? '<div class="empty"><h2>Nothing here yet</h2><p>Heart some bands and venues, or follow people from their profiles, to see their shows here.</p></div>' : state.myShows ? '<div class="empty"><h2>No favorites yet</h2><p>Tap the heart on a show to save it.</p></div>' : '<div class="empty"><h2>No Results Found.</h2><p>Try widening your dates or clearing the search.</p></div>';
     return;
   }
 
@@ -1752,6 +1765,81 @@ function smediaFor(s){
   if(PLACEHOLDER_MODE === 'collapse') return '';
   return `<div class="s-media">${tile}</div>`;
 }
+// ===== FOLLOWING FEED: the people half (Fork Stage 10, Part 5 / D2) =====
+// "Following" means bands, venues AND people. Bands and venues are local
+// (user_favorites keys already in state.favorites). People come from
+// followed_attendance(slugs) -- supabase/schema-following-feed.sql -- which
+// answers, for the shows currently in the feed, which of the people I
+// follow are going. Bounded by the feed's slugs like attendance_for_user,
+// gated by can_see_upcoming.
+//
+// DEDUPE BY SHOW is by construction: filtered() walks state.shows once and
+// asks each show "do you have any reason to be here"; nothing is unioned
+// from two result sets, so a show cannot appear twice however many reasons
+// it has. The reasons are collected per row in followReasonChips().
+const FOLLOW_GOING = { bySlug: {}, loadedAt: 0, forKey: '', loading: null };
+
+function followFeedClient(){ return window.__plAuth || null; }
+
+// Refresh the slug -> people map. Cheap to call: no-op within 60s for the
+// same feed unless forced. Anonymous viewers get an empty map (the RPC is
+// authenticated-only) and the feed degrades to bands and venues.
+function followFeedLoad(force){
+  const sb = followFeedClient();
+  if(!sb || !state._signedIn){
+    FOLLOW_GOING.bySlug = {}; FOLLOW_GOING.loadedAt = 0; FOLLOW_GOING.forKey = '';
+    return Promise.resolve();
+  }
+  const slugs = (state.shows || []).map(function(s){ return s._slug; }).filter(Boolean);
+  const key = slugs.length + ':' + (slugs[0] || '') + ':' + (slugs[slugs.length - 1] || '');
+  if(!force && FOLLOW_GOING.forKey === key && (Date.now() - FOLLOW_GOING.loadedAt) < 60000) return Promise.resolve();
+  if(FOLLOW_GOING.loading) return FOLLOW_GOING.loading;
+  FOLLOW_GOING.loading = (async function(){
+    try{
+      const { data, error } = await sb.rpc('followed_attendance', { p_slugs: slugs });
+      if(error){ console.warn('[following] people failed:', error.message); return; }
+      const by = {};
+      (data || []).forEach(function(r){
+        if(!by[r.show_slug]) by[r.show_slug] = [];
+        by[r.show_slug].push(r);
+        // The RPC carries the avatar; seed the cache so avImg has it.
+        AV_CACHE[r.user_id] = { id: r.user_id, display_name: r.display_name, avatar_url: r.avatar_url };
+      });
+      FOLLOW_GOING.bySlug = by; FOLLOW_GOING.loadedAt = Date.now(); FOLLOW_GOING.forKey = key;
+    }catch(e){ console.warn('[following] people threw:', e); }
+    finally{ FOLLOW_GOING.loading = null; }
+  })();
+  return FOLLOW_GOING.loading;
+}
+
+function followPeopleFor(s){
+  return (s && s._slug && FOLLOW_GOING.bySlug[s._slug]) || [];
+}
+
+// The reason line for one card. A show may carry several; people rank
+// above band, band above venue -- a person you follow choosing to go is
+// stronger signal than a venue you hearted once. Band and venue in rust
+// (the existing chip), people in muted ink with their avatar(s).
+function followReasonChips(s, followSet){
+  if(!followSet) return '';
+  const chips = [];
+  const people = followPeopleFor(s);
+  if(people.length === 1){
+    const p = people[0];
+    chips.push('<span class="follow-reason follow-reason-people" title="Someone you follow is going">'
+      + avImg(p.user_id, p.display_name, 'av-xs')
+      + (p.handle ? '@' + esc(p.handle) : esc(p.display_name || 'Someone')) + ' going</span>');
+  } else if(people.length > 1){
+    const shown = people.slice(0, 3).map(function(p){ return avImg(p.user_id, p.display_name, 'av-xs'); }).join('');
+    const names = people.map(function(p){ return p.handle ? '@' + p.handle : (p.display_name || 'Someone'); }).join(', ');
+    chips.push('<span class="follow-reason follow-reason-people" title="' + esc(names) + '">'
+      + '<span class="av-stack">' + shown + '</span>' + people.length + ' people going</span>');
+  }
+  if(followSet.has('band::' + _normTitle(s.title))) chips.push('<span class="follow-reason" title="' + esc(s.title) + '">\u2665 Band you follow</span>');
+  if(followSet.has('venue::' + _normTitle(s.venue))) chips.push('<span class="follow-reason" title="' + esc(s.venue) + '">\u2665 Venue you follow</span>');
+  return chips.join('');
+}
+
 function listOf(items, showDate){
   const l=document.createElement('div');
   const eff = state.picks ? 'b' : state.cardLayout;
@@ -1759,8 +1847,8 @@ function listOf(items, showDate){
   l.className = 'list ' + (eff==='b' ? 'list--b' : 'list--a');
   items.forEach(s=>{
     const c=document.createElement('div'); c.className='scard'; if(s.id!=null){ c.id='show-'+s.id; c.dataset.showid=s.id; } if(s._slug){ c.dataset.slug=s._slug; }
-    let reasonChip = '';
-    if(_followSet){ if(_followSet.has('venue::'+_normTitle(s.venue))){ reasonChip = `<span class="follow-reason" title="Followed venue">\u2665 ${esc(s.venue)}</span>`; } else if(_followSet.has('band::'+_normTitle(s.title))){ reasonChip = `<span class="follow-reason" title="Followed artist">\u2665 ${esc(s.title)}</span>`; } }
+    // Every reason the show is here, people first (Stage 10 Part 5 / D2).
+    const reasonChip = followReasonChips(s, _followSet);
     const media = smediaFor(s);
     if(!media) c.classList.add('no-media');
     const dateBit = showDate ? `<span class="s-date rdate">${ordinalDate(s.date)}</span>` : '';
@@ -5134,6 +5222,9 @@ $('#followingToggle').addEventListener('click',()=>{
   }
   $('#followingToggle').classList.toggle('on',state.following);
   render();
+  // The people half arrives async; paint bands and venues now, repaint with
+  // people when the RPC answers (no-op within 60s for the same feed).
+  if(state.following) followFeedLoad().then(function(){ if(state.following) render(); });
 });
 
 // Browse dropdown (mobile row 2): re-triggers the existing #venuesToggle /
@@ -5521,6 +5612,10 @@ $('.masthead-brand').addEventListener('click', goHome);
       // itself is keyed by user id so it stays valid across a sign-out.
       avRenderEditor();
       await plLoadUserData();
+      // The people half of ★ Following is per-account (Stage 10 Part 5):
+      // drop the previous account's map, reload only if the pill is on.
+      FOLLOW_GOING.bySlug = {}; FOLLOW_GOING.forKey = ''; FOLLOW_GOING.loadedAt = 0;
+      if(state.following) await followFeedLoad(true);
       reRenderCurrentView();
       // Badge follows the account too -- signing out must clear it, not leave
       // the previous user's count sitting in the header.
