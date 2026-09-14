@@ -236,19 +236,28 @@ _AGE_TXT_18 = re.compile(r"(?<![$\d.])\b(?:ages?\s*)?18\s*(?:\+|&\s*(?:over|up)|
 def _age_in_text(text):
     """Read an age restriction out of a longer event blurb, or ''.
 
-    For parsers that have no per-event element to read -- Roseland builds a text
-    window between one event's date anchor and the next, and the age is in
-    there. Same conservative contract as _norm_age: unrecognized or conditional
-    means UNKNOWN, never a guess."""
+    For parsers that have no per-event element to read -- Jack London Revue
+    prints "Doors: 7:00pm Show: 8:00pm Ages 21+." inside a description that
+    then runs on into the artist bio. Same conservative contract as _norm_age:
+    unrecognized or conditional means UNKNOWN, never a guess.
+
+    The conditional check is scoped to a window around the age phrase, not the
+    whole blurb. Checking the whole text was how every Jack London show came
+    back unknown: "George Benson's reaction after hearing the Mel Brown B-3
+    Organ Group" contains "after", and the guard read that as an "all ages
+    until/after 9pm" qualifier. A qualifier that actually modifies the age
+    sits next to it; one three sentences into a bio does not."""
     t = clean(text or "")
-    if not t or _AGE_CONDITIONAL.search(t):
+    if not t:
         return ""
-    if _AGE_TXT_21.search(t):
-        return "21+"
-    if _AGE_TXT_18.search(t):
-        return "18+"
-    if _AGE_TXT_ALL.search(t):
-        return "all-ages"
+    for rx, val in ((_AGE_TXT_21, "21+"), (_AGE_TXT_18, "18+"), (_AGE_TXT_ALL, "all-ages")):
+        m = rx.search(t)
+        if not m:
+            continue
+        window = t[max(0, m.start() - 40):m.end() + 40]
+        if _AGE_CONDITIONAL.search(window):
+            return ""
+        return val
     return ""
 
 
@@ -456,7 +465,12 @@ def parse_mammoth(html, today):
         shows.append({"title": full, "venue": venue, "neighborhood": nb,
                       "address": addr, "date": date, "time": showtime, "venueUrl": tix,
                       "imageUrl": "",
-                      "age": age_by_url.get((tix or "").split("?")[0], "") or _age_in_text(seg)})
+                      # Keyed on the /event/ page URL (`url`), not `tix`: tix is
+                      # overwritten with the etix.com ticket link, which is not
+                      # what the age map is keyed by. Verified against the real
+                      # page: the map resolves 46 of 47 events; the tix lookup
+                      # resolved 1.
+                      "age": age_by_url.get(url.split("?")[0], "") or _age_in_text(seg)})
 
     if not shows:
         ev_links = [a for a in soup.find_all("a", href=True) if "/event/" in a["href"]]
@@ -1311,9 +1325,27 @@ def parse_jacklondonrevue(html, today):
         # above stops at the first ancestor containing a .tw-name, and if that
         # ancestor ever wraps several events the text would not belong to this
         # show. Unknown beats attaching a neighbour's door policy.
+        # The calendar renders each event TWICE in separate lists: a compact
+        # calendar list with no blurb, and a full list where .tw-description
+        # carries "Doors: 7:00pm Show: 8:00pm Ages 21+." -- 30 of 56 events on
+        # the real page. `cont` stops at the first ancestor holding a .tw-name,
+        # which sits BELOW the description in the full list, so climb a little
+        # further -- only while the ancestor still holds exactly one event
+        # name, so a neighbour's blurb can never be read as this show's.
         age = _age_from(cont)
-        if not age and len(cont.select(".tw-name")) == 1:
-            age = _age_in_text(cont.get_text(" "))
+        if not age:
+            box = cont
+            for _ in range(4):
+                if box is None or getattr(box, "name", None) is None:
+                    break
+                if len(box.select(".tw-name")) != 1:
+                    box = None
+                    break
+                if box.select_one(".tw-description"):
+                    break
+                box = box.parent
+            if box is not None and len(box.select(".tw-name")) == 1:
+                age = _age_in_text(box.get_text(" "))
         rec = {"title": title, "venue": venue, "neighborhood": nb,
                "address": addr, "date": date, "time": showtime,
                "venueUrl": url, "imageUrl": img, "age": age}
