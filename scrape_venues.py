@@ -3329,6 +3329,22 @@ _DECLINE_CUM_PCT = 0.20   # cumulative loss vs the start of the window
 DEGRADED_VENUES = set()
 _DEGRADED_ORIGINS = set()
 
+# Venues whose calendar goes to zero every year on purpose. For these, a
+# decline into autumn and a spike in spring are the venue working, not the
+# scraper breaking. Their counts are still compared and still learned into
+# history -- an off-season IS real data -- but the decline-shaped alerts
+# (DROPPED TO 0, drop, SUSTAINED DECLINE) print as expected-seasonal notes
+# rather than ALERTs, so the alert block stays worth reading. Edgefield's
+# 18 -> 6 in Aug 2026 fired as "possible slow scraper bleed"; it was the
+# lawn closing for the year. Spikes are left alone: a season opening is
+# worth a glance, and it is one line a year.
+SEASONAL_VENUES = {
+    "McMenamins Edgefield",      # outdoor concerts, summer only
+    "Cascades Amphitheater",     # outdoor, summer only
+    "Pioneer Courthouse Square", # summer series
+    "The Ruins",                 # Columbia Gorge, seasonal
+}
+
 
 def check_baselines(scraped):
     # S1: per-venue count baseline + zero-drop/anomaly alert. Compares each
@@ -3342,6 +3358,7 @@ def check_baselines(scraped):
     except Exception:
         hist = {}
     alerts = []
+    seasonal_notes = []
     venues = set(hist) | set(counts)
     for v in sorted(venues):
         if not v:
@@ -3350,11 +3367,16 @@ def check_baselines(scraped):
         past = hist.get(v, [])
         if past:
             avg = sum(past) / len(past)
+            msg = None
             if now == 0 and avg > 0:
-                alerts.append(f"{v}: DROPPED TO 0 (trailing avg {avg:.1f})")
+                msg = f"{v}: DROPPED TO 0 (trailing avg {avg:.1f})"
+                decline = True
             elif avg > 0 and abs(now - avg) / avg > _ANOMALY_PCT:
                 direction = "spike" if now > avg else "drop"
-                alerts.append(f"{v}: {direction} {now} vs avg {avg:.1f} (>{int(_ANOMALY_PCT*100)}%)")
+                msg = f"{v}: {direction} {now} vs avg {avg:.1f} (>{int(_ANOMALY_PCT*100)}%)"
+                decline = direction == "drop"
+            if msg:
+                (seasonal_notes if (decline and v in SEASONAL_VENUES) else alerts).append(msg)
     # roll the history forward (append this run, cap window); seed new venues
     new_hist = {}
     for v in venues:
@@ -3391,7 +3413,7 @@ def check_baselines(scraped):
             continue
         cum = (h[-1] - start) / start
         if steps >= _DECLINE_MIN_STEPS and cum <= -_DECLINE_CUM_PCT:
-            alerts.append(
+            (seasonal_notes if v in SEASONAL_VENUES else alerts).append(
                 f"{v}: SUSTAINED DECLINE {h[-1]} vs {start:.1f} at window start "
                 f"({cum * 100:+.0f}%, {steps} declining steps) -- possible slow scraper bleed")
 
@@ -3399,6 +3421,10 @@ def check_baselines(scraped):
         print(f"BASELINE ALERT: {len(alerts)} venue(s) anomalous:")
         for a in alerts:
             print(f"  ALERT: {a}")
+    if seasonal_notes:
+        print(f"  seasonal (expected, not counted as alerts): {len(seasonal_notes)}")
+        for a in seasonal_notes:
+            print(f"    season: {a}")
     else:
         print(f"BASELINE: {len([v for v in counts if v])} venues OK, 0 anomalies")
     try:
@@ -3490,7 +3516,11 @@ def main():
         print(f"RETENTION EXPIRED: {len(_expired)} venue(s) dropped after "
               f"{_RETENTION_MAX_ZERO_RUNS}+ zero-scrape runs (now honest-empty):")
         for v, z in sorted(_expired.items()):
-            print(f"  EXPIRED: {v} ({z} consecutive zero runs) -- source likely dead, fix or remove the parser")
+            if v in SEASONAL_VENUES:
+                print(f"  EXPIRED: {v} ({z} consecutive zero runs) -- seasonal venue, off-season; "
+                      f"nothing to fix, it comes back on its own")
+            else:
+                print(f"  EXPIRED: {v} ({z} consecutive zero runs) -- source likely dead, fix or remove the parser")
     if _retained:
         print(f"SERVING RETAINED DATA: {len(_retained)} venue(s) are showing a previous "
               f"scrape, not fresh data:")
