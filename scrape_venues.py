@@ -61,6 +61,10 @@ VENUE_INFO = {
     "Peter's Room (Roseland)": ("Old Town/Chinatown", "8 NW 6th Ave"),
     "Roseland Ballroom": ("Old Town/Chinatown", "8 NW 6th Ave"),
     "Hawthorne Theatre": ("Mt Tabor/Hawthorne", "1507 SE 39th Ave"),
+    # The lounge is the small room inside the Theatre; same address. Without
+    # this entry its five shows fell through to the parser's "Roseland
+    # Theater" default.
+    "Hawthorne Lounge": ("Mt Tabor/Hawthorne", "1507 SE 39th Ave"),
     "Aladdin Theater": ("Brooklyn", "3017 SE Milwaukie Ave"),
     "Crystal Ballroom": ("Downtown", "1332 W Burnside St"),
     "McMenamins Edgefield": ("Troutdale", "2126 SW Halsey St, Troutdale"),
@@ -449,14 +453,29 @@ def parse_mammoth(html, today):
                and date_link_match(el.get_text()):
                 break
             between.append(el)
-            if len(between) > 60:
+            # Was 60. The show time sits 75-89 elements past the date link
+            # on both roselandpdx.com and hawthornetheatre.com (measured on
+            # captured pages, Sep 2026), so the window closed before
+            # reaching it and every Roseland show shipped without a time --
+            # 0 of 41 in the live feed while every other RHP venue was
+            # 100%. Nothing flagged it: a missing time is not an error, the
+            # row is still valid, it just says less. 160 leaves headroom.
+            if len(between) > 160:
                 break
         seg = clean(" ".join(getattr(el, "string", "") or "" for el in between
                              if getattr(el, "string", None)))
         sm = re.search(r'Show:\s*([\d:]+\s*[ap]m)', seg, re.I)
         if sm:
             showtime = to_time(sm.group(1))
-        wm = re.search(r'\bwith\s+(.+?)(?:\s+All Ages|\s+\d+\+|\s+Doors:|$)', seg)
+        # Terminators widened when the window grew from 60 to 160 elements:
+        # the page lists the support act twice (thumb + info) and the window
+        # now also crosses HTML comments ("end event image container"), all of
+        # which arrive in seg as bare strings. Without stopping at a second
+        # "with", a "Show:", or a comment fragment, the capture ran on and
+        # appended junk to titles -- and titles feed slugs, so that would have
+        # orphaned every attendance row and comment on those shows.
+        wm = re.search(r'\bwith\s+(.+?)(?:\s+All Ages|\s+\d+\+|\s+Doors:|\s+Show:'
+                       r'|\s+with\s|\s+end\s|\s+Ages\s|\s+\d+\s*&\s*Over|$)', seg)
         if wm:
             support = clean(wm.group(1))
 
@@ -3184,6 +3203,10 @@ SOURCES = [
      "urls": ["https://mississippistudios.com/"]},
     {"name": "Mammoth NW", "parser": parse_mammoth,
      "urls": ["https://roselandpdx.com/events/"]},
+    # Same RHP template and parser as Roseland. The Mammoth feed at
+    # roselandpdx.com went Roseland-only, so Hawthorne needs its own URL.
+    {"name": "Hawthorne Theatre (hawthornetheatre.com)", "parser": parse_mammoth,
+     "urls": ["https://hawthornetheatre.com/events/"]},
     {"name": "The Goodfoot", "parser": parse_goodfoot, "walled": True,
      "urls": ["https://www.thegoodfoot.com/"]},
     {"name": "Music Millennium", "parser": parse_musicmillennium, "walled": True,
