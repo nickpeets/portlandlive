@@ -638,18 +638,30 @@ body{
      drop its 6px top margin so its top edge matches .tx-head h3 in column 2. */
   .show-grid > .venue-header .venue-name{margin-top:0}
   .show-grid > .list{grid-column:1;grid-row:2}
-  .show-grid > .show-social-placeholder{grid-column:1;grid-row:3}
   .show-grid > .cmts{grid-column:1;grid-row:4}
+  /* Explicit row 5: comments are pinned to row 4, so an unplaced panel
+     auto-fills the first free cell -- row 3 -- and renders ABOVE the
+     comments it should follow. */
+  .show-grid > .mod-panel{grid-row:5}
+  /* Default every child to column 1. The rule this replaces targeted
+     .show-social-placeholder, a class removed when Who's Going took its slot
+     -- so it matched nothing, Who's Going was auto-placed, and on shows with
+     no exchange it landed in row 1 / column 2 and stretched the title row.
+     Anything unplaced now falls into the content column instead of the
+     sidebar; .mod-panel was drifting the same way. */
+  .show-grid > *{grid-column:1}
   /* Spanning the whole left stack, not just row 1: otherwise a sidebar
      taller than the title would stretch row 1 and open a gap between the
      title and the poster card. min-width:0 keeps long words from forcing
      the 300px track wider. */
-  .show-grid > .tx{grid-column:2;grid-row:1 / 5;align-self:start;margin-top:0;min-width:0}
+  .show-grid > .show-side{grid-column:2;grid-row:1 / 5;align-self:start;margin-top:0;min-width:0;
+                          display:flex;flex-direction:column;gap:28px}
+  .show-grid > .show-side > *{margin-top:0}
   /* The exchange row is a wide-page layout squeezed into 300px, so the
      actions wrap under the name instead of being pushed right. */
-  .show-grid > .tx .tx-actions{margin-left:0;width:100%}
-  .show-grid > .tx .tx-submit{margin-left:0;width:100%}
-  .show-grid > .tx .tx-form{align-items:stretch}
+  .show-grid > .show-side .tx-actions{margin-left:0;width:100%}
+  .show-grid > .show-side .tx-submit{margin-left:0;width:100%}
+  .show-grid > .show-side .tx-form{align-items:stretch}
 }
 .show-social-placeholder{margin:24px 0 4px;border:1px dashed rgba(243,234,215,.35);border-radius:10px;padding:16px 18px;color:rgba(243,234,215,.75)}
 .show-social-placeholder h3{font-family:'Oswald',sans-serif;font-weight:600;font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;color:rgba(243,234,215,.9)}
@@ -2319,11 +2331,25 @@ function renderShowDetail(wrap, show, kind){
   // order is deterministic even though both are async.
   // Spares are only meaningful before the show happens; a past show gets
   // comments (recaps) but no exchange.
-  if(kind === 'upcoming' && showIsTicketed(show)) mountExchange(grid, _slug);
+  // Both sidebar panels go in ONE wrapper rather than straight into the grid.
+  // Two flat children cannot share column 2: whichever is unplaced gets
+  // auto-placed, and on a non-ticketed show (no exchange) Who's Going landed
+  // in row 1 / column 2 and stretched the title row to its own height --
+  // that was the 134px hole under the address line. A single wrapper owns the
+  // column, and the panels stack inside it.
+  //
+  // Wrapping costs nothing on mobile: the exchange and Who's Going are already
+  // adjacent in DOM order, so the wrapper occupies the same slot and the
+  // reading order (actions -> exchange -> Who's Going -> comments) is
+  // unchanged.
+  const side = document.createElement('div');
+  side.className = 'show-side';
+  grid.appendChild(side);
+  if(kind === 'upcoming' && showIsTicketed(show)) mountExchange(side, _slug);
   // Attendance is a forward-looking commitment, same scope as the ticket
   // exchange -- so, like Miracles, this only shows on upcoming shows. A past
   // show gets comments (recaps) but no Who's Going.
-  if(kind === 'upcoming') mountWhosGoing(grid, _slug);
+  if(kind === 'upcoming') mountWhosGoing(side, _slug);
   mountComments(grid, _slug);
   // No-ops for everyone who isn't a moderator (report_queue() returns nothing
   // to them), and renders nothing at all when the queue is empty.
