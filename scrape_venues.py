@@ -1965,6 +1965,20 @@ def _wix_warmup_events(html):
             return ev["events"], inst, bool(ev.get("hasMore"))
     return [], None, False
 
+def _wix_fresh_instance(sess, origin, headers):
+    """A live Wix Events instance token from the site's dynamic model, or None."""
+    try:
+        r = sess.get(origin + "/_api/v2/dynamicmodel", headers=headers, timeout=30)
+        if r.status_code != 200:
+            return None
+        inst = ((r.json().get("apps") or {}).get(_WIX_EVENTS_APPDEF) or {}).get("instance")
+        return inst if isinstance(inst, str) and inst else None
+    except Exception as e:
+        print(f"  WARN: Wix dynamicmodel fetch failed ({origin}): {type(e).__name__}: {e}; "
+              f"falling back to the warmup token")
+        return None
+
+
 def _wix_all_events(page_url, prefetched_html):
     """Every scheduled event for one Wix Events site (see tiers above)."""
     origin = re.match(r"https?://[^/]+", page_url).group(0)
@@ -1985,6 +1999,20 @@ def _wix_all_events(page_url, prefetched_html):
     api = origin + "/_api/wix-events-web/v1/events/query"
     h = dict(headers)
     h["Content-Type"] = "application/json"
+    # The warmup instance is NOT safe to send. The page is served through a
+    # CDN cache (the response sets an `ssr-caching` cookie), so the warmup
+    # blob -- token included -- is frozen at whenever that cache was rendered.
+    # Diagnosed 2026-09-14: the page's token carried signDate 2026-09-13T05:34,
+    # 36 hours old, and the API answered 401. It had worked the night before
+    # only because the cache happened to be fresh then.
+    #
+    # /_api/v2/dynamicmodel is what the Wix client itself calls to bootstrap
+    # app instances, is never served from the page cache, and returned a token
+    # signed to the second. One extra GET, in the same session so cookies
+    # carry. The warmup token stays as the fallback if this fails.
+    fresh = _wix_fresh_instance(sess, origin, headers)
+    if fresh:
+        instance = fresh
     if instance:
         h["Authorization"] = instance
     xsrf = sess.cookies.get("XSRF-TOKEN")
