@@ -95,6 +95,11 @@ VENUE_AGE_DEFAULT = {
     # "All shows are 21+" -- venue's own Eventbrite organizer page.
     # https://www.eventbrite.com/o/kellys-olympian-3225803660
     "Kelly's Olympian": "21+",
+    # 21+ with no exceptions -- confirmed by Nick, who plays and books these
+    # rooms, against the same standard as Kelly's: no all-ages nights, no
+    # matinees, minors never admitted. Asked about eight bars at once; this is
+    # the only one he was certain enough to put on the list. 2026-09-14.
+    "Starday Tavern": "21+",
 }
 
 
