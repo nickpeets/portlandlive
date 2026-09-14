@@ -4323,17 +4323,50 @@ function bindWhosGoing(host, slug){
     });
   }
 
+  // A failed join used to console.warn and silently re-enable the button: the
+  // person tapped "I'm going", saw the button flick back, and had no idea it
+  // had not saved. That is how one user ended up with five shows marked and
+  // one row in the table. The database was never the problem -- the insert
+  // trigger raises "not signed in" (auth.uid() null, i.e. an expired session)
+  // or "no profile row", both perfectly clear -- the message just went
+  // somewhere nobody looks. Say it on screen instead, next to the button.
+  function wgSay(afterEl, msg, kind){
+    let el = host.querySelector('[data-wg-msg]');
+    if(!el){
+      el = document.createElement('div');
+      el.setAttribute('data-wg-msg', '');
+      afterEl.insertAdjacentElement('afterend', el);
+    }
+    el.className = 'tx-state' + (kind === 'error' ? ' tx-error' : '');
+    el.textContent = msg;
+  }
+  function wgClearSay(){
+    const el = host.querySelector('[data-wg-msg]');
+    if(el) el.remove();
+  }
+
   const join = host.querySelector('[data-wg-join]');
   if(join){
     join.addEventListener('click', async function(){
       join.disabled = true;
+      wgClearSay();
       // user_id and display_name are set by the insert trigger.
       const { error } = await sb.from('show_attendees').insert({ show_slug: slug });
       if(error){
         console.warn('[whosgoing] join failed:', error.message);
+        // An expired session is the common case and the only one the person
+        // can actually act on, so name it rather than showing a generic
+        // failure they would just retry into.
+        const stale = /not signed in|insufficient_privilege|JWT|row-level security/i
+          .test(error.message || '');
+        wgSay(join,
+          stale ? 'Your sign-in expired, so this didn\u2019t save. Sign in again and retry.'
+                : 'Couldn\u2019t save that \u2014 please try again.',
+          'error');
         join.disabled = false;
         return;
       }
+      wgClearSay();
       await renderWhosGoing(host, slug);
     });
   }
@@ -4345,11 +4378,16 @@ function bindWhosGoing(host, slug){
       let session = null;
       try{ session = (await sb.auth.getSession()).data.session; }catch(e){ session = null; }
       const uid = session && session.user ? session.user.id : null;
-      if(!uid){ leave.disabled = false; return; }
+      if(!uid){
+        wgSay(leave, 'Your sign-in expired. Sign in again and retry.', 'error');
+        leave.disabled = false;
+        return;
+      }
       const { error } = await sb.from('show_attendees').delete()
         .eq('show_slug', slug).eq('user_id', uid);
       if(error){
         console.warn('[whosgoing] leave failed:', error.message);
+        wgSay(leave, 'Couldn\u2019t update that \u2014 please try again.', 'error');
         leave.disabled = false;
         return;
       }
