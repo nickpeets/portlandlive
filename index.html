@@ -4873,6 +4873,14 @@ function favKey(s){ return (s.venue||'') + '|' + (s.date||'') + '|' + (s.title||
             });
             STUB_SHADOW = new Set(STUBS_CACHE.map(stubIdOf));
           }
+          // Not awaited: it needs archive.json, and blocking favourites and
+          // stubs on that fetch would delay the whole Saved view. It re-renders
+          // itself when it lands.
+          loadAttendedSnapshots().then(function(){
+            // Saved is gated by state.myShows, not a view name (render() checks
+            // it at the top and hands off to renderFavorites).
+            if(ATTENDED_CACHE.length && state.myShows) reRenderCurrentView();
+          });
         }catch(e){ console.warn('[userdata] load threw:', e); }
       }
     // ===== STUB SHELF: collectible "I was there" ticket stubs (self-contained) =====
@@ -5025,6 +5033,49 @@ function favKey(s){ return (s.venue||'') + '|' + (s.date||'') + '|' + (s.title||
     }
     // Dedupe identity: one stub per (title, venue, date).
     function stubIdOf(o){ return (o.title||'')+'|'+(o.venue||'')+'|'+(o.date||''); }
+    // Past shows the user marked "I'm going" to, as stub-shaped snapshots.
+    //
+    // Hearting and going are both statements of intent, but only hearting could
+    // ever earn a stub: "Did you make it?" was built from state.favorites alone,
+    // so someone who tapped I'm going -- the stronger, public signal -- got
+    // nothing when the show passed. This closes that gap. Claiming is unchanged;
+    // a show still becomes a stub only when its "I was there" is tapped.
+    //
+    // show_attendees stores only show_slug, and a past show is gone from
+    // shows.json, so the title/venue/date have to come from somewhere else:
+    // archive.json, which build_shows.py appends every past show to and which
+    // the page already fetches. Keyed by the same slug, so no schema change and
+    // rows recorded before this shipped resolve too.
+    let ATTENDED_CACHE = [];
+    async function loadAttendedSnapshots(){
+      const sb = txClient(); if(!sb) return;
+      try{
+        // RLS (show_attendees_select_own) restricts this to the caller's own
+        // rows, which is what a personal shelf should show anyway. Not using
+        // attendance_for_user: that intersects with the live feed's slugs, so
+        // it returns nothing for exactly the past shows wanted here.
+        const res = await sb.from('show_attendees').select('show_slug');
+        if(res.error){ console.warn('[attended] load failed:', res.error.message); return; }
+        const slugs = (res.data || []).map(function(r){ return r.show_slug; }).filter(Boolean);
+        if(!slugs.length){ ATTENDED_CACHE = []; return; }
+        const arch = await loadArchive();
+        const bySlug = {};
+        (arch && arch.shows || []).forEach(function(a){ if(a.slug) bySlug[a.slug] = a; });
+        const today = stubToday();
+        const out = [];
+        slugs.forEach(function(sl){
+          const a = bySlug[sl];
+          // Unresolvable slugs are skipped, not guessed at. A show that has
+          // passed but has not been archived yet (the archive is written by the
+          // next build) simply appears after that build, rather than rendering
+          // a row with a slug where the title should be.
+          if(!a || !a.date || a.date >= today) return;
+          out.push({ title:a.title, venue:a.venue, neighborhood:a.neighborhood || '',
+                     address:a.address || '', date:a.date, time:a.time || '' });
+        });
+        ATTENDED_CACHE = out;
+      }catch(e){ console.warn('[attended] load threw:', e); }
+    }
     // Today as an ISO YYYY-MM-DD string in Portland time (mirrors the feed's todayPacific).
     function stubToday(){ return new Intl.DateTimeFormat('en-CA',{timeZone:'America/Los_Angeles'}).format(new Date()); }
     // Deterministic 0..3 header-band color from the title (never changes between renders).
@@ -5147,6 +5198,16 @@ function favKey(s){ return (s.venue||'') + '|' + (s.date||'') + '|' + (s.title||
         const live = state.shows.find(s=> favKey(s)===k);
         out.push(live ? {title:live.title,venue:live.venue,neighborhood:live.neighborhood,address:live.address,date:live.date,time:live.time}
                       : {title, venue, neighborhood:'', address:'', date, time:''});
+      });
+      // Union in past "I'm going" shows. Deduped by stub id so a show that was
+      // both hearted and marked going offers one claim button, not two; the
+      // hearted copy wins because it may carry live-feed enrichment above.
+      const seen = new Set(out.map(stubIdOf));
+      ATTENDED_CACHE.forEach(function(a){
+        const id = stubIdOf(a);
+        if(seen.has(id)) return;
+        seen.add(id);
+        out.push(a);
       });
       return out.sort((a,b)=> String(b.date).localeCompare(String(a.date)));
     }
