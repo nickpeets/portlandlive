@@ -367,7 +367,38 @@ def main():
     cutoff = today_pacific.isoformat()
     # Accumulate past shows into the append-only archive BEFORE the live
     # feed drops them. Live feed (shows.json) is unchanged by this step.
+    #
+    # Sourced from BOTH manual_shows.json and the PREVIOUS shows.json, because
+    # manual_shows alone silently loses most of them. CI runs scrape_venues.py
+    # first, and the scraper rewrites manual_shows.json keeping only today
+    # forward -- so by the time this runs, a show from a HEALTHY scraper is
+    # already gone and never reaches the archive. The only past shows left in
+    # the file are hand-added ones and the stale entries a BROKEN scraper
+    # retains, which is why the archive was 218 rows of Barrel Room, Hawthorne,
+    # Main Street and Pioneer Courthouse Square -- the dead sources -- while
+    # every Laurelthirst and Holocene show that ever happened vanished.
+    #
+    # The previous shows.json is exactly the last known-good feed and still
+    # holds yesterday's shows at this point, so it closes the gap. Merging is
+    # safe: archive_past_shows is add-only and dedupes on slug, so a show
+    # present in both sources archives once.
+    _prev_feed = []
+    if os.path.exists(OUT):
+        try:
+            _prev_feed = json.load(open(OUT)).get("shows", [])
+        except Exception as e:
+            print(f"  archive: previous shows.json unreadable ({e}); "
+                  f"archiving from manual_shows.json only")
     _past = [s for s in shows if s.get("date", "") < cutoff]
+    _seen_past = {(s.get("venue", ""), s.get("date", ""), s.get("title", "")) for s in _past}
+    for s in _prev_feed:
+        if s.get("date", "") >= cutoff:
+            continue
+        k = (s.get("venue", ""), s.get("date", ""), s.get("title", ""))
+        if k in _seen_past:
+            continue
+        _seen_past.add(k)
+        _past.append(s)
     _archive_gen = datetime.datetime.now().astimezone().isoformat(timespec="seconds")
     archive_past_shows(_past, _archive_gen)
     shows = [s for s in shows if s.get("date", "") >= cutoff]
