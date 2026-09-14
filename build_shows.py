@@ -313,6 +313,15 @@ _TITLE_JUNK = (
 )
 _TITLE_MAX = 140
 
+# Listing pages verified (captured HTML, Sep 2026) to carry NO show time in
+# any format. The time exists only on each event's detail page, so getting
+# it means one extra fetch per show -- a runtime decision, not a parser bug.
+# Listed here so the 0%-time check does not keep reporting them as broken.
+_NO_LISTING_TIME = {
+    "Twilight Cafe & Bar",   # twilightcafeandbar.com/calendar_list: title, flyer, link
+    "NOVA PDX",              # novapdxevents.com/event-calendar: same shape
+}
+
 
 def check_shape(shows):
     """Warn about rows that are VALID but WRONG. Never fatal.
@@ -355,7 +364,13 @@ def check_shape(shows):
         problems.append(f"{v}: {len(hits)} bad title(s) -- {why} -- e.g. {sample[:70]!r}")
 
     # 2. Venues where NO show has a time. One missing time is normal; a venue
-    #    at 0% means the parser's time extraction is broken for that source.
+    #    at 0% is either a parser missing data the page carries (Dante's:
+    #    the block was the name wrapper, time sat one level up) or a listing
+    #    page that never carries a time at all (Twilight, NOVA PDX: title +
+    #    flyer + link, nothing else -- the time is on each detail page). The
+    #    check cannot tell those apart, so it says so rather than blaming the
+    #    parser. Sources known to publish no time on the listing are named in
+    #    _NO_LISTING_TIME so they stop appearing here.
     per_venue = defaultdict(lambda: [0, 0])
     for sh in shows:
         c = per_venue[sh.get("venue") or "?"]
@@ -363,8 +378,9 @@ def check_shape(shows):
         if (sh.get("time") or "").strip():
             c[1] += 1
     for v, (n, timed) in sorted(per_venue.items()):
-        if n >= 5 and timed == 0:
-            problems.append(f"{v}: 0 of {n} shows have a time -- time extraction likely broken")
+        if n >= 5 and timed == 0 and v not in _NO_LISTING_TIME:
+            problems.append(f"{v}: 0 of {n} shows have a time -- either the parser misses it "
+                            f"or the listing page never carries one; capture the page to tell")
 
     if problems:
         print(f"SHAPE WARNING: {len(problems)} issue(s) in rows that are valid but wrong:")

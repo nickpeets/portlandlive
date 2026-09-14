@@ -529,6 +529,22 @@ def parse_dantes(html, today):
         title = clean(re.sub(r'-\s*\d{2}/\d{2}/\d{2}\s*$', '', title_attr))
         # show time + ticketweb from the enclosing block
         block = a.find_parent(["article", "div", "li"]) or a.parent
+        # find_parent takes the TIGHTEST match, and on danteslive.com that is
+        # the .tw-name wrapper -- 17 characters of text, no time in it. The
+        # .tw-event-time-complete element sits one level up. So climb until
+        # the block holds a time element, but only while it still holds
+        # exactly one event name; past that we'd be reading the neighbour's
+        # card. Measured on the captured page: 0 of 48 shows had a time
+        # before, 48 of 48 after.
+        for _ in range(4):
+            if block.select_one(".tw-event-time-complete, .tw-event-time"):
+                break
+            up = block.parent
+            if up is None or getattr(up, "name", None) is None:
+                break
+            if len(up.select(".tw-name")) != 1:
+                break
+            block = up
         btext = clean(block.get_text(" "))
         sm = re.search(r'Show:\s*([\d:]+\s*[ap]m)', btext, re.I)
         showtime = to_time(sm.group(1)) if sm else ""
