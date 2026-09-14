@@ -557,11 +557,33 @@ def parse_dantes(html, today):
         btext = clean(block.get_text(" "))
         sm = re.search(r'Show:\s*([\d:]+\s*[ap]m)', btext, re.I)
         showtime = to_time(sm.group(1)) if sm else ""
-        tlink = block.find("a", href=re.compile(r'ticketweb\.com'))
-        tix = tlink["href"] if tlink else url
+        # venueUrl stays the venue's own event page: it carries the
+        # description, poster and door info, and it is the venue's own
+        # property. ticketUrl is the ticketing platform link, stored
+        # separately so an affiliate wrapper can be applied to it later
+        # without touching the venue link or the render.
+        # The TicketWeb link is in .tw-info-price-buy-tix, which sits under
+        # the event's .tw-section -- outside `block`, which stops as soon as
+        # it holds a time element. Climb to the section, but only while it
+        # still holds exactly one event name, so a neighbour's ticket link
+        # can never be attached to this show.
+        scope = block
+        for _ in range(4):
+            if scope.find("a", href=re.compile(r'ticketweb\.com')):
+                break
+            up = scope.parent
+            if up is None or getattr(up, "name", None) is None:
+                break
+            if len(up.select(".tw-name")) != 1:
+                break
+            scope = up
+        tlink = scope.find("a", href=re.compile(r'ticketweb\.com'))
+        tixurl = tlink["href"] if tlink else ""
+        tix = url
         nb, addr = VENUE_INFO["Dante's"]
         shows.append({"title": title, "venue": "Dante's", "neighborhood": nb,
                       "address": addr, "date": date, "time": showtime, "venueUrl": tix,
+                      "ticketUrl": tixurl,
                       "imageUrl": "", "age": _age_from(block) or _age_in_text(btext)})
     return shows
 
@@ -1390,9 +1412,20 @@ def parse_jacklondonrevue(html, today):
                 box = box.parent
             if box is not None and len(box.select(".tw-name")) == 1:
                 age = _age_in_text(box.get_text(" "))
+        # The TicketWeb link sits in .tw-info-price-buy-tix, which lives in
+        # the full-list fragment alongside the description -- the same place
+        # `box` climbs to for the age. venueUrl stays the venue's own page.
+        tixurl = ""
+        for scope in (cont, box if 'box' in dir() else None):
+            if scope is None:
+                continue
+            tl = scope.find("a", href=re.compile(r'ticketweb\.com'))
+            if tl and tl.get("href"):
+                tixurl = tl["href"]
+                break
         rec = {"title": title, "venue": venue, "neighborhood": nb,
                "address": addr, "date": date, "time": showtime,
-               "venueUrl": url, "imageUrl": img, "age": age}
+               "venueUrl": url, "ticketUrl": tixurl, "imageUrl": img, "age": age}
         prev = bykey.get(key)
         # JLR renders two date elements per event (one timed, one not);
         # keep one record per (venue,date,title), preferring the one WITH a time.
@@ -1402,6 +1435,8 @@ def parse_jacklondonrevue(html, today):
             rec["imageUrl"] = prev["imageUrl"]
         if prev is not None and not rec.get("age") and prev.get("age"):
             rec["age"] = prev["age"]
+        if prev is not None and not rec.get("ticketUrl") and prev.get("ticketUrl"):
+            rec["ticketUrl"] = prev["ticketUrl"]
         if prev is None or (not prev.get("time") and showtime):
             bykey[key] = rec
         else:
@@ -1409,6 +1444,8 @@ def parse_jacklondonrevue(html, today):
                 bykey[key]["imageUrl"] = rec["imageUrl"]
             if not bykey[key].get("age") and rec.get("age"):
                 bykey[key]["age"] = rec["age"]
+            if not bykey[key].get("ticketUrl") and rec.get("ticketUrl"):
+                bykey[key]["ticketUrl"] = rec["ticketUrl"]
 
     return list(bykey.values())
 

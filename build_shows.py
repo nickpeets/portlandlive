@@ -135,7 +135,7 @@ ARCHIVE = os.path.join(HERE, "archive.json")
 
 _ARCHIVE_SOURCE = "Append-only archive of past shows (accumulated across builds)"
 _ARCHIVE_FIELDS = ("title", "venue", "neighborhood", "address",
-                   "date", "time", "venueUrl", "imageUrl", "age")
+                   "date", "time", "venueUrl", "ticketUrl", "imageUrl", "age")
 
 
 def make_slug(show):
@@ -542,7 +542,7 @@ def main():
             # lacks. Adopt the dup's value for any field the kept row left
             # empty so dedupe never discards information (e.g. a missing time,
             # image, or ticket link filled in by a second listing of the show).
-            for _f in ("time", "imageUrl", "venueUrl"):
+            for _f in ("time", "imageUrl", "venueUrl", "ticketUrl"):
                 if not (kept.get(_f) or "").strip() and (s.get(_f) or "").strip():
                     kept[_f] = s[_f]
 
