@@ -223,6 +223,89 @@ def _norm_age(text):
     return ""
 
 
+# Scanning a whole event BLURB is different from reading a dedicated age
+# element, and needs a stricter pattern. _AGE_21_RE makes its trailing marker
+# optional -- fine when the element contains nothing but the age, but in prose a
+# bare "21" appears in dates ("Sat, Sep 21"), prices and street numbers. These
+# require an explicit marker, so only a real age statement matches.
+_AGE_TXT_ALL = re.compile(r"\ball\s*ages\b", re.I)
+_AGE_TXT_21 = re.compile(r"(?<![$\d.])\b(?:ages?\s*)?21\s*(?:\+|&\s*(?:over|up)|and\s+(?:over|up)|\s*over)", re.I)
+_AGE_TXT_18 = re.compile(r"(?<![$\d.])\b(?:ages?\s*)?18\s*(?:\+|&\s*(?:over|up)|and\s+(?:over|up)|\s*over)", re.I)
+
+
+def _age_in_text(text):
+    """Read an age restriction out of a longer event blurb, or ''.
+
+    For parsers that have no per-event element to read -- Roseland builds a text
+    window between one event's date anchor and the next, and the age is in
+    there. Same conservative contract as _norm_age: unrecognized or conditional
+    means UNKNOWN, never a guess."""
+    t = clean(text or "")
+    if not t or _AGE_CONDITIONAL.search(t):
+        return ""
+    if _AGE_TXT_21.search(t):
+        return "21+"
+    if _AGE_TXT_18.search(t):
+        return "18+"
+    if _AGE_TXT_ALL.search(t):
+        return "all-ages"
+    return ""
+
+
+def _age_map_by_event_url(soup, max_up=6):
+    """Map each event URL on a listing page to its age, or {}.
+
+    For RHP-family listings (Wonder, Roseland, Monqui) where the age element is
+    NOT inside the event container the parser iterates -- probing the live pages
+    showed 0 of 50 Wonder thumbs and 0 of 47 Roseland thumbs contain one; the
+    thumb holds only the date. So instead of searching down from the event,
+    search UP from each age node to the card that owns it.
+
+    An age is only claimed while the ancestor holds exactly ONE distinct event
+    URL. Past that the card boundary is gone and the age could belong to a
+    neighbouring show, so it is dropped rather than guessed.
+
+    Junk nodes fall out for free: Wonder emits 78 age elements for 50 events
+    because .cust_age placeholders contain just a comma, and _norm_age turns
+    those into '' which is skipped."""
+    out = {}
+    for node in soup.select(_AGE_SEL):
+        age = _norm_age(node.get_text(" ", strip=True))
+        if not age:
+            continue
+        anc = node
+        for _ in range(max_up):
+            anc = anc.parent
+            if anc is None or getattr(anc, "name", None) is None:
+                break
+            hrefs = {a["href"].split("?")[0]
+                     for a in anc.select('a[href*="/event/"]') if a.get("href")}
+            if len(hrefs) == 1:
+                out.setdefault(hrefs.pop(), age)
+                break
+            if len(hrefs) > 1:
+                break
+    return out
+
+
+def _age_positional(soup, n_events):
+    """Ages for a listing whose parser has no per-event container at all.
+
+    Wonder Ballroom keys events by slug off loose anchors, so there is nothing
+    to scope a lookup to. Its parser already pairs show times to events by
+    document order, and the age divs sit in the same order.
+
+    Positional pairing is only safe while the counts line up exactly -- one
+    missing age would shift every later show onto the wrong door policy, which
+    is precisely the mislabelling worth avoiding. So this returns a usable list
+    ONLY on an exact match, and otherwise gives back nothing and leaves every
+    show unknown."""
+    nodes = soup.select(".eventAgeRestriction, .event-age-restriction, .age-restriction")
+    if len(nodes) != n_events:
+        return None
+    return [_norm_age(n.get_text(" ", strip=True)) for n in nodes]
+
+
 def _age_from(el):
     """Read the age restriction out of one event's container element, or ''."""
     if el is None:
@@ -310,6 +393,11 @@ def parse_mammoth(html, today):
     # All anchors in document order. Events appear as: [date-link][title-link]...
     # [venue-link][etix-link][More Info-link], then the next event's date-link.
     anchors = soup.find_all("a", href=True)
+    # Roseland prints the age in a .rhp-event-notes-box that sits OUTSIDE the
+    # event thumb (0 of 47 thumbs contain one), and outside the `seg` text
+    # window this parser builds -- which is why scanning seg found nothing.
+    # Resolve it by event URL instead.
+    age_by_url = _age_map_by_event_url(soup)
     shows = []
     seen = set()
 
@@ -366,7 +454,9 @@ def parse_mammoth(html, today):
         nb, addr = VENUE_INFO.get(venue, ("Portland", ""))
         full = f"{title} (w/ {support})" if support else title
         shows.append({"title": full, "venue": venue, "neighborhood": nb,
-                      "address": addr, "date": date, "time": showtime, "venueUrl": tix, "imageUrl": ""})
+                      "address": addr, "date": date, "time": showtime, "venueUrl": tix,
+                      "imageUrl": "",
+                      "age": age_by_url.get((tix or "").split("?")[0], "") or _age_in_text(seg)})
 
     if not shows:
         ev_links = [a for a in soup.find_all("a", href=True) if "/event/" in a["href"]]
@@ -413,7 +503,8 @@ def parse_dantes(html, today):
         tix = tlink["href"] if tlink else url
         nb, addr = VENUE_INFO["Dante's"]
         shows.append({"title": title, "venue": "Dante's", "neighborhood": nb,
-                      "address": addr, "date": date, "time": showtime, "venueUrl": tix, "imageUrl": ""})
+                      "address": addr, "date": date, "time": showtime, "venueUrl": tix,
+                      "imageUrl": "", "age": _age_from(block) or _age_in_text(btext)})
     return shows
 
 
@@ -610,6 +701,9 @@ def parse_wonder(html, today):
 
     # show times appear in document order as "Show : 8 pm" per event
     show_times = re.findall(r'Show\s*:?\s*([\d:]+\s*[apAP][mM])', soup.get_text(" "))
+    # Ages come from the card that owns each event link, not from the thumb --
+    # a live probe found 0 of 50 thumbs contain an age element.
+    age_by_url = _age_map_by_event_url(soup)
     shows = []
     ti = 0
     for slug, e in events.items():
@@ -624,7 +718,8 @@ def parse_wonder(html, today):
         ti += 1
         shows.append({"title": e["title"], "venue": "Wonder Ballroom",
                       "neighborhood": "Eliot/Boise", "address": "128 NE Russell St",
-                      "date": e["date"], "time": showtime, "venueUrl": tix, "imageUrl": ""})
+                      "date": e["date"], "time": showtime, "venueUrl": tix, "imageUrl": "",
+                      "age": age_by_url.get(slug.split("?")[0], "")})
     return shows
 # ---- Holocene (holocene.org/events/) -----------------------------------------
 # Each event: a title <h2> linking to /event/... with an etix ticket link whose
@@ -1210,17 +1305,34 @@ def parse_jacklondonrevue(html, today):
         key = (venue, date, slug or norm_title)
         nb, addr = VENUE_INFO.get(venue, ("Downtown", ""))
         img = _img_from(cont, "i.ticketweb.com")
+        # JLR prints the age in the event blurb rather than a dedicated element
+        # ("Doors: 7:00pm / Show: 8:00pm / Ages 21+."), so this scans cont's
+        # text -- but only while cont holds exactly ONE event name. The walk
+        # above stops at the first ancestor containing a .tw-name, and if that
+        # ancestor ever wraps several events the text would not belong to this
+        # show. Unknown beats attaching a neighbour's door policy.
+        age = _age_from(cont)
+        if not age and len(cont.select(".tw-name")) == 1:
+            age = _age_in_text(cont.get_text(" "))
         rec = {"title": title, "venue": venue, "neighborhood": nb,
-               "address": addr, "date": date, "time": showtime, "venueUrl": url, "imageUrl": img}
+               "address": addr, "date": date, "time": showtime,
+               "venueUrl": url, "imageUrl": img, "age": age}
         prev = bykey.get(key)
         # JLR renders two date elements per event (one timed, one not);
         # keep one record per (venue,date,title), preferring the one WITH a time.
+        # Age rides along the same way imageUrl does: only one of the two
+        # fragments carries the blurb, and it is not always the timed one.
         if prev is not None and not rec.get("imageUrl") and prev.get("imageUrl"):
             rec["imageUrl"] = prev["imageUrl"]
+        if prev is not None and not rec.get("age") and prev.get("age"):
+            rec["age"] = prev["age"]
         if prev is None or (not prev.get("time") and showtime):
             bykey[key] = rec
-        elif not bykey[key].get("imageUrl") and rec.get("imageUrl"):
-            bykey[key]["imageUrl"] = rec["imageUrl"]
+        else:
+            if not bykey[key].get("imageUrl") and rec.get("imageUrl"):
+                bykey[key]["imageUrl"] = rec["imageUrl"]
+            if not bykey[key].get("age") and rec.get("age"):
+                bykey[key]["age"] = rec["age"]
 
     return list(bykey.values())
 
