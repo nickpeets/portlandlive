@@ -303,6 +303,78 @@ MIN_TOTAL_SHOWS = 600      # ~48% of the healthy 1239; lowest healthy run observ
 MAX_NEW_ZERO_VENUES = 3    # historical newly-zero-per-run: 0,0,0,0,0,1,2,4
 
 
+# Junk that has actually reached the live feed. Each pattern is a thing that
+# was seen in production, not a guess about what might go wrong.
+_TITLE_JUNK = (
+    ("end event",           "HTML comment leaked into title"),      # Roseland, Sep 2026
+    ("sub header",          "HTML comment leaked into title"),
+    ("image container",     "HTML comment leaked into title"),
+    ("more info",           "link label leaked into title"),
+)
+_TITLE_MAX = 140
+
+
+def check_shape(shows):
+    """Warn about rows that are VALID but WRONG. Never fatal.
+
+    Every guard before this one counts things: total shows, venues at zero,
+    venues that spiked. None of them can see a bad row, because a bad row is
+    still a row. 30 of 41 Roseland titles shipped as "CupcakKe (w/ Father
+    Fannie with Father Fannie end event sub header)" and 0 of 41 had a show
+    time, for weeks, and every count-based check called the build healthy.
+    The feed had no way to know it was embarrassing itself.
+
+    This looks at what the rows SAY. It reports, it does not block: a junk
+    title is worse than a clean one but still better than no feed, and a
+    blocked feed goes stale (see the festival incident in guard_build)."""
+    from collections import defaultdict
+    problems = []
+
+    # 1. Titles carrying markup leakage, doubled support acts, or absurd length.
+    by_venue = defaultdict(list)
+    for sh in shows:
+        t = (sh.get("title") or "").strip()
+        v = sh.get("venue") or "?"
+        low = t.lower()
+        why = None
+        if not t:
+            why = "empty title"
+        else:
+            for needle, label in _TITLE_JUNK:
+                if needle in low:
+                    why = label
+                    break
+            if not why and low.count(" with ") >= 2:
+                why = "support act listed twice"
+            if not why and len(t) > _TITLE_MAX:
+                why = f"title over {_TITLE_MAX} chars"
+        if why:
+            by_venue[v].append((why, t))
+    for v, hits in sorted(by_venue.items(), key=lambda kv: -len(kv[1])):
+        why, sample = hits[0]
+        problems.append(f"{v}: {len(hits)} bad title(s) -- {why} -- e.g. {sample[:70]!r}")
+
+    # 2. Venues where NO show has a time. One missing time is normal; a venue
+    #    at 0% means the parser's time extraction is broken for that source.
+    per_venue = defaultdict(lambda: [0, 0])
+    for sh in shows:
+        c = per_venue[sh.get("venue") or "?"]
+        c[0] += 1
+        if (sh.get("time") or "").strip():
+            c[1] += 1
+    for v, (n, timed) in sorted(per_venue.items()):
+        if n >= 5 and timed == 0:
+            problems.append(f"{v}: 0 of {n} shows have a time -- time extraction likely broken")
+
+    if problems:
+        print(f"SHAPE WARNING: {len(problems)} issue(s) in rows that are valid but wrong:")
+        for pr in problems:
+            print(f"  SHAPE: {pr}")
+        print("  ^ not fatal; the feed still ships. These are parser bugs the "
+              "count-based guards cannot see.")
+    return problems
+
+
 def guard_build(new_shows, out_path):
     """Return a list of fatal problems with the freshly built feed. Empty = OK."""
     from collections import Counter as _C
@@ -474,6 +546,7 @@ def main():
 
     # Layer 1: refuse to publish a catastrophically degraded feed. Checked
     # BEFORE the write so the last good shows.json survives a bad build.
+    check_shape(deduped)
     _fatal = guard_build(deduped, OUT)
     if _fatal:
         print("::error::BUILD GUARD FAILED - shows.json NOT written, last good feed left in place")
