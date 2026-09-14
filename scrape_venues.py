@@ -474,8 +474,17 @@ def parse_mammoth(html, today):
         # "with", a "Show:", or a comment fragment, the capture ran on and
         # appended junk to titles -- and titles feed slugs, so that would have
         # orphaned every attendance row and comment on those shows.
+        # Search for a support act only OUTSIDE the title. Some venues write
+        # the support into the headline itself ("... ft. AmpLive with Special
+        # Guest Brother Ali") and leave the sub-header empty; the "with" in
+        # that headline then read as a support line and the title came out
+        # doubled: "X with Y (w/ Y X)" -- 197 characters. Removing every copy
+        # of the title from the window first means a "with" that belongs to
+        # the title cannot start a capture. If the support lives only in the
+        # title, the title already says it, and nothing is appended.
+        seg_support = seg.replace(title, " ") if title else seg
         wm = re.search(r'\bwith\s+(.+?)(?:\s+All Ages|\s+\d+\+|\s+Doors:|\s+Show:'
-                       r'|\s+with\s|\s+end\s|\s+Ages\s|\s+\d+\s*&\s*Over|$)', seg)
+                       r'|\s+with\s|\s+end\s|\s+Ages\s|\s+\d+\s*&\s*Over|$)', seg_support)
         if wm:
             support = clean(wm.group(1))
 
