@@ -317,14 +317,36 @@ def guard_build(new_shows, out_path):
         old_c = _C(s.get("venue", "") for s in prev)
         new_c = _C(s.get("venue", "") for s in new_shows)
         newly_zero = sorted(v for v in old_c if v and old_c[v] > 0 and new_c.get(v, 0) == 0)
+
+        # A venue at zero because its dates moved into the past has not
+        # "dropped" -- time passed, which is the one thing this feed does every
+        # day. Only a venue that still had UPCOMING shows in the last build and
+        # has none now is evidence of something breaking.
+        #
+        # Without this split the guard fails whenever a multi-venue festival
+        # ends: St. Johns Music Fest ran 2026-09-11..12 across four hand-added
+        # venues (Beer Porch Food Carts, Fixin' To, Lombard House, St Johns
+        # Square), all four went to zero on the same build, and the nightly
+        # refresh failed for two days over a completely expected event. A
+        # blocked feed is not a safe default -- it went stale, and stale
+        # attendance rows kept showing finished shows as upcoming on profiles.
+        _pac_today = datetime.datetime.now(
+            datetime.timezone(datetime.timedelta(hours=-8))).date().isoformat()
+        prev_upcoming = _C(s.get("venue", "") for s in prev
+                           if (s.get("date") or "") >= _pac_today)
+        expired = [v for v in newly_zero if prev_upcoming.get(v, 0) == 0]
+        vanished = [v for v in newly_zero if prev_upcoming.get(v, 0) > 0]
+        if expired:
+            print(f"  guard: {len(expired)} venue(s) aged out (all dates now past, not counted): "
+                  f"{', '.join(expired)}")
         # MAX_NEW_ZERO_VENUES is the largest count still ALLOWED, so the build
         # fails only when strictly more than that many venues go to zero.
-        if len(newly_zero) > MAX_NEW_ZERO_VENUES:
+        if len(vanished) > MAX_NEW_ZERO_VENUES:
             fatal.append(
-                f"{len(newly_zero)} venues with shows dropped to zero in one build "
-                f"(limit {MAX_NEW_ZERO_VENUES}): {', '.join(newly_zero)}")
-        elif newly_zero:
-            print(f"  guard: {len(newly_zero)} venue(s) newly zero (under limit): {', '.join(newly_zero)}")
+                f"{len(vanished)} venues with UPCOMING shows dropped to zero in one build "
+                f"(limit {MAX_NEW_ZERO_VENUES}): {', '.join(vanished)}")
+        elif vanished:
+            print(f"  guard: {len(vanished)} venue(s) newly zero (under limit): {', '.join(vanished)}")
     return fatal
 
 
