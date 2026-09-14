@@ -2037,9 +2037,12 @@ def _wix_all_events(page_url, prefetched_html):
     except Exception as e:
         print(f"  WARN: Wix events API failed ({origin}): {type(e).__name__}: {e}; "
               f"using the {len(initial)} warmup events")
+        _DEGRADED_ORIGINS.add(origin)
         return initial
 
 def _wix_rows(raw, venue, origin, today):
+    if origin in _DEGRADED_ORIGINS:
+        DEGRADED_VENUES.add(venue)
     """Wix event objects (warmup or API shape -- they differ only in status
     encoding and startDate millis) -> show dicts."""
     nb, addr = VENUE_INFO.get(venue, ("", ""))
@@ -3241,6 +3244,21 @@ _DECLINE_MIN_STEPS = 3    # separate declining steps, so one dip cannot trip it
 _DECLINE_CUM_PCT = 0.20   # cumulative loss vs the start of the window
 
 
+# Venues whose count THIS RUN is a known fallback, not a real reading. A parser
+# adds itself here when it serves degraded data (e.g. Wix: the API failed and
+# the 20-event warmup page was used instead of the full calendar).
+#
+# check_baselines still compares such a count to history and fires whatever
+# alert applies -- but it does NOT append it to the history. Learning from a
+# fallback is how Tomorrow's Verse went unnoticed: weeks at 20 (API broken)
+# taught the baseline that ~43 was normal, so the recovery to 76 fired as a
+# "spike" and the relapse to 20 -- a 74% loss of real data -- looked ordinary.
+# The detector was measuring against the broken state. A fallback should be
+# judged against health, not become the definition of it.
+DEGRADED_VENUES = set()
+_DEGRADED_ORIGINS = set()
+
+
 def check_baselines(scraped):
     # S1: per-venue count baseline + zero-drop/anomaly alert. Compares each
     # venue's count this run to its trailing history; loudly flags venues that
@@ -3271,7 +3289,15 @@ def check_baselines(scraped):
     for v in venues:
         if not v:
             continue
+        if v in DEGRADED_VENUES:
+            # Carry history forward unchanged: this count is a fallback, not
+            # a reading of the venue. Compared above, not learned here.
+            new_hist[v] = hist.get(v, [])[-_BASELINE_HISTORY:]
+            continue
         new_hist[v] = (hist.get(v, []) + [counts.get(v, 0)])[-_BASELINE_HISTORY:]
+    if DEGRADED_VENUES:
+        print(f"  baseline: {len(DEGRADED_VENUES)} venue(s) served fallback data this run; "
+              f"history NOT updated for: {', '.join(sorted(DEGRADED_VENUES))}")
 
     # Layer 2: slope-aware sustained-decline detector. The checks above only
     # trip on drop-to-zero or a single-run swing beyond +/-60%, so a slow
