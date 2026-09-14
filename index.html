@@ -2050,10 +2050,19 @@ async function renderShowRoute(slug){
   var show = state.shows.find(function(s){ return s._slug === slug; });
   var kind = 'upcoming';
   if(!show){
-    kind = 'past';
     var archive = await loadArchive();
     show = (archive.shows||[]).find(function(s){ return (s.slug || makeSlug(s)) === slug; });
   }
+  // Past vs upcoming is decided by the show's DATE, not by whether it is still
+  // in the feed. Feed membership was the old test, and it made a finished show
+  // render as upcoming whenever shows.json still listed it -- a stale browser
+  // cache, or the window between the show ending and the next nightly build.
+  // The result was a Sep 13 show offering "I'm not going anymore" on Sep 14,
+  // and a show that could be a claimed stub and an upcoming show at once.
+  // The date is on the row and is never wrong.
+  // The date check requires a date: an empty one sorts before every real
+  // date, so a dateless row would be called past without this guard.
+  if(show && show.date && show.date < stubToday()) kind = 'past';
   // The hash may have changed again while archive.json was in flight (fast
   // back/forward navigation) — bail rather than render a stale route.
   if(parseRoute().slug !== slug) return;
