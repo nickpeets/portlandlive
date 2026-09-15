@@ -67,6 +67,7 @@ VENUE_INFO = {
     "Hawthorne Lounge": ("Mt Tabor/Hawthorne", "1507 SE 39th Ave"),
     "Kenton Club": ("Kenton", "2025 N Kilpatrick St"),
     "Spare Room": ("Cully", "4830 NE 42nd Ave"),
+    "Switchback Saloon": ("Richmond", "4847 SE Division St"),
     "Aladdin Theater": ("Brooklyn", "3017 SE Milwaukie Ave"),
     "Crystal Ballroom": ("Downtown", "1332 W Burnside St"),
     "McMenamins Edgefield": ("Troutdale", "2126 SW Halsey St, Troutdale"),
@@ -1481,6 +1482,72 @@ def parse_spareroom(html, today):
                       "venueUrl": "https://www.spareroomrestaurantandlounge.com/events.htm",
                       "imageUrl": ""})
     return shows
+
+
+# ---- Switchback Saloon (switchbacksaloon.com) -- the former Landmark
+# Saloon, reopened July 2026. The site embeds two public Google Calendars,
+# which Google also serves as iCal feeds: real timestamps, no HTML. The
+# "Music Calendar" only holds the July grand-opening shows; the live
+# schedule is in "Special Events", where music is prefixed "Live Music:".
+# Everything else there (Trivia, Birthday Party, Halloween Party) is not a
+# listing. Both feeds are fetched; the title filter does the sorting.
+_SB_KEEP = re.compile(r"^\s*(?:live\s*music|dj|\U0001F3B5)\s*:?|concert|record release", re.I)
+_SB_STRIP = re.compile(r"^\s*(?:live\s*music|\U0001F3B5)\s*:?\s*", re.I)
+
+
+def _ics_events(text):
+    """Minimal iCal reader: unfold continuation lines, yield (dtstart, summary,
+    has_rrule) per VEVENT. Only the fields this parser needs."""
+    text = re.sub(r"\r?\n[ \t]", "", text)
+    for blk in re.findall(r"BEGIN:VEVENT(.*?)END:VEVENT", text, re.S):
+        ds = re.search(r"^DTSTART(?:;[^:\n]*)?:(\S+)", blk, re.M)
+        sm = re.search(r"^SUMMARY:(.*)$", blk, re.M)
+        if not (ds and sm):
+            continue
+        yield ds.group(1).strip(), clean(sm.group(1)), ("RRULE:" in blk)
+
+
+def parse_switchback(html, today):
+    from zoneinfo import ZoneInfo
+    import datetime as _dt
+    venue = "Switchback Saloon"
+    nb, addr = VENUE_INFO.get(venue, ("Richmond", "4847 SE Division St"))
+    pt = ZoneInfo("America/Los_Angeles")
+    shows, seen = [], set()
+    for dstart, summary, recurs in _ics_events(html or ""):
+        if recurs:
+            continue  # Trivia / Country Co Op: weekly recurrences, not shows
+        if not _SB_KEEP.search(summary):
+            continue
+        title = _SB_STRIP.sub("", summary).strip(" -:")
+        if not title:
+            continue
+        # 20260919T010000Z (UTC) or 20260922 (all-day)
+        m = re.match(r"^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})(Z?))?$", dstart)
+        if not m:
+            continue
+        y, mo, d = int(m.group(1)), int(m.group(2)), int(m.group(3))
+        if m.group(4):
+            dt = _dt.datetime(y, mo, d, int(m.group(4)), int(m.group(5)), int(m.group(6)),
+                              tzinfo=_dt.timezone.utc if m.group(7) else pt).astimezone(pt)
+            date, showtime = dt.strftime("%Y-%m-%d"), f"{dt.hour % 12 or 12}:{dt.minute:02d} {'AM' if dt.hour < 12 else 'PM'}"
+        else:
+            date, showtime = f"{y}-{mo:02d}-{d:02d}", ""
+        key = (date, title.lower())
+        if key in seen:
+            continue
+        seen.add(key)
+        shows.append({"title": title, "venue": venue, "neighborhood": nb,
+                      "address": addr, "date": date, "time": showtime,
+                      "venueUrl": "https://switchbacksaloon.com/schedule.html",
+                      "imageUrl": ""})
+    return shows
+
+
+_SB_ICS = [
+    "https://calendar.google.com/calendar/ical/c_2bc82bc83b4a485f7823307cce3239807076c71caf773e8aeceff57c24b2fcb0%40group.calendar.google.com/public/basic.ics",
+    "https://calendar.google.com/calendar/ical/c_d49aa8944037b6a8484718e3aa01e21e83f9761c2a8696ba940d82244ac37bde%40group.calendar.google.com/public/basic.ics",
+]
 
 
 # ---- Star Theater (startheaterportland.com) -- single venue, TicketWeb tw-*
@@ -3458,6 +3525,8 @@ SOURCES = [
      "urls": ["https://www.kentonclub.com/"]},
     {"name": "Spare Room (spareroomrestaurantandlounge.com)", "parser": parse_spareroom,
      "urls": _spare_room_urls()},
+    {"name": "Switchback Saloon (switchbacksaloon.com)", "parser": parse_switchback,
+     "urls": _SB_ICS},
     {"name": "The Goodfoot", "parser": parse_goodfoot, "walled": True,
      "urls": ["https://www.thegoodfoot.com/"]},
     {"name": "Music Millennium", "parser": parse_musicmillennium, "walled": True,
