@@ -1370,7 +1370,14 @@ function showStalenessBanner(generatedDate){
 
 async function load(){
   try{
-    const res = await fetch('/shows.json',{cache:'no-store'});
+    // cache:'no-store' asks the browser not to cache, but a tab that loaded
+    // the feed before the nightly build can still hand back the old copy on
+    // a plain refresh -- seen live 2026-09-15: a fresh build in shows.json,
+    // stale data on screen until a hard refresh. A timestamp on the URL
+    // makes every load a new resource, which no cache can satisfy from an
+    // older one. The value is coarse on purpose (one per minute) so the CDN
+    // still coalesces bursts.
+    const res = await fetch('/shows.json?v=' + Math.floor(Date.now()/60000),{cache:'no-store'});
     const data = await res.json();
     state.shows = data.shows || [];
     // Every known venue, not just the ones with a show this week. Used by the
@@ -1992,7 +1999,7 @@ function makeSlug(show){
 let _archivePromise = null;
 function loadArchive(){
   if(!_archivePromise){
-    _archivePromise = fetch('/archive.json',{cache:'no-store'}).then(function(r){ return r.json(); })
+    _archivePromise = fetch('/archive.json?v=' + Math.floor(Date.now()/60000),{cache:'no-store'}).then(function(r){ return r.json(); })
       .catch(function(){ return {shows:[]}; });
   }
   return _archivePromise;
