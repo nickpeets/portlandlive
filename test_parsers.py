@@ -79,6 +79,7 @@ CASES = [
     ("alberta-rose.html",      sv.parse_albertarose,    51, {"imageUrl": 51},              "RHP; poster via URL map"),
     ("holocene.html",          sv.parse_holocene,       60, {"imageUrl": 60},              "RHP (Elementor); poster via URL map"),
     ("mississippi-studios.html", sv.parse_msstudios,    30, {"imageUrl": 30},              "etix; poster is cdn.etix.com img in .event__inner, two above the h2"),
+    ("showdown.html",          sv.parse_showdown,       10, {"time": 10, "age": 10, "imageUrl": 10, "ticketUrl": 10}, "TicketWeb; page one of seven (network stubbed, so no pagination here)"),
 ]
 
 # Pages that were captured and examined but publish NO listing data the

@@ -1856,11 +1856,10 @@ def _sd_date(txt, today):
     return f"{infer_year(mon, today)}-{mon:02d}-{int(m.group(2)):02d}"
 
 
-def parse_showdown(html, today):
-    soup = BeautifulSoup(html, "html.parser")
-    shows = []
-    seen = set()
+def _showdown_page(soup, today, shows, seen):
+    """One listing page of showdownpdx.com into `shows`. Returns rows added."""
     venue = "Showdown Saloon"
+    added = 0
     for sec in soup.select(".tw-section"):
         nm = sec.select_one(".tw-name")
         title = clean(nm.get_text(" ")) if nm else ""
@@ -1882,8 +1881,40 @@ def parse_showdown(html, today):
             continue
         seen.add(key)
         nb, addr = VENUE_INFO.get(venue, ("Central Eastside", ""))
+        # Same TicketWeb widget as Dante's and Star: poster on i.ticketweb.com,
+        # ticket link on ticketweb.com/event, and the age as plain text
+        # ("21 and up") with no class of its own -- read from the section's
+        # text through the same conservative _age_in_text as everywhere else.
+        tl = sec.find("a", href=re.compile(r"ticketweb\.com/event"))
         shows.append({"title": title, "venue": venue, "neighborhood": nb,
-                      "address": addr, "date": date, "time": showtime, "venueUrl": url, "imageUrl": ""})
+                      "address": addr, "date": date, "time": showtime, "venueUrl": url,
+                      "ticketUrl": tl["href"] if tl else "",
+                      "imageUrl": _img_from(sec, "i.ticketweb.com"),
+                      "age": _age_from(sec) or _age_in_text(sec.get_text(" "))})
+        added += 1
+    return added
+
+
+def parse_showdown(html, today):
+    """showdownpdx.com paginates ten to a page and runs seven pages deep;
+    the parser read page one only, so the feed showed 10 shows ending eight
+    days out. Follow rel=next until it runs out, capped at 10 pages, with
+    the same tolerance as Portland'5: a failed page ends the walk."""
+    shows, seen = [], set()
+    soup = BeautifulSoup(html, "html.parser")
+    _showdown_page(soup, today, shows, seen)
+    for _ in range(9):
+        nxt = soup.select_one("a[rel=next], a.next")
+        href = nxt.get("href") if nxt else None
+        if not href or "/page/" not in href:
+            break
+        try:
+            soup = BeautifulSoup(fetch(href), "html.parser")
+        except Exception:
+            break
+        if _showdown_page(soup, today, shows, seen) == 0:
+            break
+        time.sleep(0.5)
     return shows
 
 
