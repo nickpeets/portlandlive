@@ -1280,6 +1280,64 @@ def _p5_cards(html, today, out, seen):
 _P5_TIME = re.compile(r"\b(\d{1,2}:\d{2}\s*[AP]\.?M\.?)", re.I)
 
 
+def _p5_detail(html):
+    """age, time, image from one portland5.com event page.
+
+    The page is a <dl>: <dt class="event-details__detail-key">Age Restriction
+    or Recommendation</dt><dd class="event-details__detail-value">All ages
+    welcome</dd>, same shape for Doors Open. The poster is the og:image
+    (their facebook_share rendition; the venue's own upload). Anything
+    unrecognised stays blank."""
+    soup = BeautifulSoup(html, "html.parser")
+    age, doors, img = "", "", ""
+    for dt in soup.select("dt.event-details__detail-key"):
+        key = clean(dt.get_text(" ")).lower()
+        dd = dt.find_next_sibling("dd")
+        val = clean(dd.get_text(" ")) if dd else ""
+        if "age" in key and val:
+            age = _norm_age(val) or _age_in_text(val)
+        elif "doors" in key and val:
+            doors = to_time(val)
+    og = soup.find("meta", property="og:image")
+    if og and og.get("content", "").startswith("http"):
+        img = og["content"]
+    return age, doors, img
+
+
+def _p5_enrich(rows):
+    """Fetch each event's own page for age, doors and poster.
+
+    The listing carries only title/date and sometimes a time; the detail
+    page carries the rest, and it is portland5.com's own page -- not a
+    ticketing company's -- so one fetch per event a night is ordinary.
+    Any failure leaves that row as the listing had it. Never raises."""
+    n_ok = 0
+    for r in rows:
+        u = r.get("venueUrl") or ""
+        if "portland5.com/event/" not in u:
+            continue
+        try:
+            h = fetch(u)
+        except Exception:
+            continue
+        try:
+            age, doors, img = _p5_detail(h)
+        except Exception:
+            continue
+        if age and not r.get("age"):
+            r["age"] = age
+        if img and not r.get("imageUrl"):
+            r["imageUrl"] = img
+        # The listing's time is the SHOW time when present; doors is the
+        # fallback only, so a row is never left blank when the page knows.
+        if doors and not r.get("time"):
+            r["time"] = doors
+        n_ok += 1
+        time.sleep(0.3)
+    if n_ok:
+        print(f"  Portland5: enriched {n_ok} row(s) from event pages")
+
+
 def parse_portland5(html, today):
     out = []
     seen = set()
@@ -1295,6 +1353,7 @@ def parse_portland5(html, today):
             break
         page += 1
         time.sleep(0.5)
+    _p5_enrich(out)
     return out
 
 

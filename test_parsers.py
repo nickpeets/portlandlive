@@ -90,6 +90,7 @@ NEGATIVE = [
     ("aladdin.html",  "no age on the listing; every card links only to etix.com"),
     ("laurelthirst.html", "EventON renders the calendar by AJAX; this HTML is the shell, 1 <img>, no per-event data"),
     ("tomorrows-verse.html", "Wix; events come from the JSON API, not this HTML -- the warmup blob has mainImage, the API tier fieldset did not"),
+    ("portland5-detail.html", "one portland5.com event page: dt/dd pairs for age and doors, og:image poster; _p5_detail() reads it, exercised in the enrichment path"),
 ]
 
 
