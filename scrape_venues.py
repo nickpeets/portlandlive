@@ -1124,6 +1124,9 @@ def _rq_date(txt, today):
     return f"{year}-{mon:02d}-{day:02d}"
 
 
+_RQ_TIME = re.compile(r"^\s*\d{1,2}(?::\d{2})?\s*[ap]\.?m\.?\s*$", re.I)
+
+
 def parse_rosequarter(html, today):
     soup = BeautifulSoup(html, "html.parser")
     shows = []
@@ -1168,8 +1171,25 @@ def parse_rosequarter(html, today):
             continue
         seen.add(key)
         nb, addr = VENUE_INFO.get(venue, ("Lloyd/Rose Quarter", ""))
+        # time was hardcoded "" -- every Rose Quarter show shipped without one.
+        # The card carries it: .card-date-time appears twice, once holding the
+        # sortable date (.date-sort) and once the door time, plus Webflow
+        # placeholders marked w-condition-invisible that hold stale values
+        # ("11:30 am") and must be skipped. Take the first that is neither and
+        # actually looks like a time; a genuinely unannounced show renders
+        # "Time: TBD" and correctly stays blank.
+        showtime = ""
+        for e in card.select(".card-date-time"):
+            ecls = " ".join(e.get("class", []))
+            if "w-condition-invisible" in ecls or "date-sort" in ecls:
+                continue
+            etxt = clean(e.get_text(" "))
+            if _RQ_TIME.match(etxt):
+                showtime = to_time(etxt)
+                break
         shows.append({"title": title, "venue": venue, "neighborhood": nb,
-                      "address": addr, "date": date, "time": "", "venueUrl": url, "imageUrl": ""})
+                      "address": addr, "date": date, "time": showtime,
+                      "venueUrl": url, "imageUrl": ""})
     return shows
 
 
@@ -1215,7 +1235,14 @@ def _p5_cards(html, today, out, seen):
         if href and not href.startswith("http"):
             href = "https://www.portland5.com" + href
         b = c.select_one(".teaser__body")
-        date = _p5_date(clean(b.get_text(" ")) if b else "", today)
+        btxt = clean(b.get_text(" ")) if b else ""
+        date = _p5_date(btxt, today)
+        # The time was hardcoded "" while sitting in the SAME element the date
+        # is read from: "Tuesday, September 15, 2026 7:30 PM". Only some events
+        # publish one on the listing -- 7 of 10 on the captured page -- so the
+        # rest stay honestly blank rather than being guessed at.
+        tm = _P5_TIME.search(btxt)
+        showtime = to_time(tm.group(1)) if tm else ""
         if not (venue and title and date):
             continue
         key = (venue, date, title.lower())
@@ -1224,8 +1251,12 @@ def _p5_cards(html, today, out, seen):
         seen.add(key)
         nb, addr = VENUE_INFO.get(venue, ("Downtown", ""))
         out.append({"title": title, "venue": venue, "neighborhood": nb,
-                    "address": addr, "date": date, "time": "", "venueUrl": href, "imageUrl": ""})
+                    "address": addr, "date": date, "time": showtime,
+                    "venueUrl": href, "imageUrl": ""})
     return len(cards)
+
+
+_P5_TIME = re.compile(r"\b(\d{1,2}:\d{2}\s*[AP]\.?M\.?)", re.I)
 
 
 def parse_portland5(html, today):
@@ -1346,8 +1377,14 @@ def parse_startheater(html, today):
         seen.add(key)
         nb, addr = VENUE_INFO.get(venue, ("Old Town/Chinatown", ""))
         img = _img_from(sec, "i.ticketweb.com")
+        # Every .tw-section carries its own TicketWeb link; venueUrl keeps the
+        # venue's page and ticketUrl holds the platform link, same split as
+        # Dante's and Jack London.
+        tl = sec.find("a", href=re.compile(r'ticketweb\.com'))
         shows.append({"title": title, "venue": venue, "neighborhood": nb,
-                      "address": addr, "date": date, "time": showtime, "venueUrl": url, "imageUrl": img})
+                      "address": addr, "date": date, "time": showtime,
+                      "venueUrl": url, "ticketUrl": tl["href"] if tl else "",
+                      "imageUrl": img})
     return shows
 
 
