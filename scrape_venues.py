@@ -3524,7 +3524,9 @@ SOURCES = [
     {"name": "Kenton Club (kentonclub.com)", "parser": parse_kentonclub,
      "urls": ["https://www.kentonclub.com/"]},
     {"name": "Spare Room (spareroomrestaurantandlounge.com)", "parser": parse_spareroom,
-     "urls": _spare_room_urls()},
+     "urls": _spare_room_urls(),
+     # next month's page is expected to 404 until they post it
+     "optional_urls": _spare_room_urls()[1:]},
     {"name": "Switchback Saloon (switchbacksaloon.com)", "parser": parse_switchback,
      "urls": _SB_ICS},
     {"name": "The Goodfoot", "parser": parse_goodfoot, "walled": True,
@@ -3590,7 +3592,15 @@ def scrape():
                 raw_count += len(rows)
                 got.extend(rows)
             except Exception as e:
-                print(f"  WARN: {src['name']} parser failed: {type(e).__name__}: {e} ({url})")
+                # A source can mark URLs it EXPECTS to 404 -- Spare Room posts
+                # one page per month and next month's does not exist until
+                # they write it. That is the normal state for weeks at a
+                # time, and a WARN every night for it teaches the eye to
+                # skip the WARN block. Say it once, quietly, and move on.
+                if url in src.get("optional_urls", ()) and "404" in str(e):
+                    print(f"  note: {src['name']}: {url.rsplit('/', 1)[-1]} not posted yet (404, expected)")
+                else:
+                    print(f"  WARN: {src['name']} parser failed: {type(e).__name__}: {e} ({url})")
         got = [s for s in got if lower <= s["date"] <= horizon]
         print(f"  {src['name']}: {len(got)} shows")
         if not got and fetched_ok and not src.get("may_be_empty"):
