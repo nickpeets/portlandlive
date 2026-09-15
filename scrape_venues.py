@@ -2123,6 +2123,18 @@ def parse_laurelthirst(html, today):
                 img = ""
                 if img_el is not None:
                     img = (img_el.get("content") or img_el.get("src") or "").strip()
+                if not img:
+                    # Laurelthirst does not set a featured image; the poster is
+                    # pasted into the event description as an ordinary <img>
+                    # from wp-content/uploads. 22 of 28 events carried one in
+                    # the captured September month. Anything not their own
+                    # upload (an emoji, a tracking pixel) is left alone.
+                    desc = el.select_one(".eventon_full_description, .evo_metarow_details")
+                    for cand in (desc.find_all("img") if desc else []):
+                        src = (cand.get("src") or cand.get("data-src") or "").strip()
+                        if "wp-content/uploads" in src:
+                            img = src
+                            break
 
                 hh, mn = local.hour, local.minute
                 tm = "%d:%02d %s" % (hh % 12 or 12, mn, "AM" if hh < 12 else "PM")

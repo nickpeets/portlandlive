@@ -90,7 +90,7 @@ NEGATIVE = [
     ("twilight.html", "no times on the listing (title + flyer + link only)"),
     ("nova.html",     "no times on the listing"),
     ("aladdin.html",  "no age on the listing; every card links only to etix.com"),
-    ("laurelthirst.html", "EventON renders the calendar by AJAX; this HTML is the shell, 1 <img>, no per-event data"),
+    ("laurelthirst.html", "EventON renders the calendar by AJAX; this HTML is the shell. The real case is laurelthirst-sept2026.html below, fed through a stubbed _laurel_month"),
     ("tomorrows-verse.html", "Wix; events come from the JSON API, not this HTML -- the warmup blob has mainImage, the API tier fieldset did not"),
     ("portland5-detail.html", "one portland5.com event page: dt/dd pairs for age and doors, og:image poster; _p5_detail() reads it, exercised in the enrichment path"),
 ]
@@ -130,6 +130,21 @@ def main():
     for fname, why in NEGATIVE:
         present = os.path.exists(os.path.join(FIX, fname))
         print(f"  {'ref ' if present else 'MISSING'} {fname:28s} negative fixture: {why}")
+    print()
+    # Laurelthirst walks months by POSTing to EventON itself, so it cannot be
+    # driven from one HTML file the way the others are. Feed it the captured
+    # September month through a stubbed _laurel_month and check the poster
+    # fallback: 22 of 28 events carry one pasted into the description.
+    month = load("laurelthirst-sept2026.html")
+    sv._laurel_nonces = lambda h: ("n", "x")
+    sv._laurel_month = lambda m, y, n, x: month if (m, y) == (10, 2026) else ""
+    rows = sv.parse_laurelthirst("<html></html>", TODAY)
+    imgs = sum(1 for r in rows if (r.get("imageUrl") or "").strip())
+    if len(rows) == 28 and imgs == 22:
+        print(f"  ok   laurelthirst-sept2026.html   {len(rows):3d} rows  -- EventON month via stubbed _laurel_month; poster from description img")
+    else:
+        fails += 1
+        print(f"  FAIL laurelthirst-sept2026.html   rows {len(rows)} != 28 or imageUrl {imgs} != 22")
     print()
     if fails:
         print(f"{fails} FAILURE(S)")
