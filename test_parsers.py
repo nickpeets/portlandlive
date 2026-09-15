@@ -147,6 +147,23 @@ def main():
         fails += 1
         print(f"  FAIL laurelthirst-sept2026.html   rows {len(rows)} != 28 or imageUrl {imgs} != 22")
     print()
+    # McMenamins: the parser drives its own session (postback per venue, then
+    # the getScrollEvents.aspx fragment for the full list). Stub those three
+    # calls with the captured White Eagle pages and check the card loop reads
+    # the scroll fragment -- times on every card, ages from the card text.
+    p1 = load("mcmenamins-whiteeagle.html"); frag = load("mcmenamins-scroll-10.html")
+    sv._mcmenamins_session_get = lambda s, u: "<html></html>"
+    sv._mcmenamins_filter_html = lambda s, t, vid: p1
+    sv._mcmenamins_scroll_html = lambda s, vid, page_size=100: frag
+    sv.MCMENAMINS_VENUES = {"55": "White Eagle Saloon"}
+    rows = sv.parse_mcmenamins("<html></html>", TODAY)
+    n_t = sum(1 for r in rows if (r.get("time") or "").strip()); n_a = sum(1 for r in rows if (r.get("age") or "").strip())
+    if len(rows) == 10 and n_t == 10 and n_a == 8:
+        print(f"  ok   mcmenamins-scroll-10.html    {len(rows):3d} rows  -- getScrollEvents fragment via stubbed session; age from card text")
+    else:
+        fails += 1
+        print(f"  FAIL mcmenamins-scroll-10.html    rows {len(rows)} != 10 or time {n_t} != 10 or age {n_a} != 8")
+    print()
     # Ticketmaster enrichment/gap-fill (build_shows.tm_apply) against the
     # captured Discovery API pull. The feed it matches against changes
     # nightly, so the assertions are invariants, not counts: every TM venue

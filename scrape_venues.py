@@ -3068,6 +3068,24 @@ def _mcmenamins_filter_html(session, token_html, vid):
     return r.text
 
 
+def _mcmenamins_scroll_html(session, vid, page_size=100):
+    """The full list for one venue. The filter postback renders page one of
+    ten and a pagination widget that reads `items:N`; each further page is a
+    POST to getScrollEvents.aspx -- the same endpoint the widget's
+    getPageData() calls. It honours pageSize: asked for 100 with start=1 it
+    returned all 61 of White Eagle's events in one fragment (2026-09-15).
+    Same card markup as the postback page. Session must be the one that
+    just posted the location filter."""
+    url = MCMENAMINS_BASE.rsplit("/", 1)[0] + "/getScrollEvents.aspx"
+    r = session.post(url, data={"start": 1, "t": "0", "s": "2", "pageSize": page_size,
+                                "location": vid, "startDate": ""},
+                     headers={"User-Agent": "Mozilla/5.0 (compatible; PortlandLive/1.0; listings aggregator)",
+                              "X-Requested-With": "XMLHttpRequest", "Referer": MCMENAMINS_BASE},
+                     timeout=30)
+    r.raise_for_status()
+    return r.text
+
+
 def parse_havalina(html, today):
     # Havalina (havalinapdx.com), St. Johns - Squarespace events collection.
     # /events?format=json gives an "upcoming" list with epoch-ms startDate
@@ -3275,6 +3293,16 @@ def parse_mcmenamins(html, today):
         except Exception as e:
             print(f"  WARN: McMenamins postback failed for {vname} ({vid}): {e}")
             continue
+        # The postback is page one of ten. Every McMenamins room in the feed
+        # stopped ~10 shows / two weeks out for that reason (White Eagle 10
+        # of 61, found 2026-09-15 via the Ticketmaster comparison). Ask the
+        # scroll endpoint for the whole list; keep page one if that fails.
+        try:
+            full = _mcmenamins_scroll_html(session, vid)
+            if full.count("tm-panel-card") >= page.count("tm-panel-card"):
+                page = full
+        except Exception as e:
+            print(f"  WARN: McMenamins scroll failed for {vname} ({vid}); using page one: {e}")
         soup = BeautifulSoup(page, "html.parser")
         nb, addr = VENUE_INFO.get(vname, ("", ""))
         for card in soup.select("div.tm-panel-card.event"):
@@ -3324,7 +3352,11 @@ def parse_mcmenamins(html, today):
                 continue
             out.append({"title": title, "venue": vname, "neighborhood": nb,
                         "address": addr, "date": date, "time": tm_str,
-                        "venueUrl": url, "imageUrl": img})
+                        "venueUrl": url, "imageUrl": img,
+                        # The card says it in words: "21 and over at White
+                        # Eagle", "Minors welcome until 8pm; 21 and over after".
+                        # The conservative reader, same as everywhere else.
+                        "age": _age_in_text(card.get_text(" "))})
     return out
 
 
