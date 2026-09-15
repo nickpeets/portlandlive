@@ -1589,6 +1589,31 @@ function auditPanelHtml(){
       renderDidYouMakeIt(wrap);
       renderStubShelf(wrap);
     }
+    // The private half of "you": upcoming hearts, follows, and the
+    // "Did you make it?" prompts. Rendered on your own profile page; kept
+    // callable from the old Saved view as a fallback when the handle is
+    // unknown. Stubs are NOT here -- they are the public record, on the
+    // profile proper, so they appear once.
+    function renderPrivateSections(wrap){
+      const bandNames = [...state.favorites].filter(k=>k.indexOf('band::')===0).map(k=>k.slice(6));
+      const venueNames = [...state.favorites].filter(k=>k.indexOf('venue::')===0).map(k=>k.slice(7));
+      const favShows = sortShows(state.shows.filter(s => state.favorites.has(favKey(s))));
+      if(favShows.length){
+        const sec=document.createElement('section'); sec.className='pf-section';
+        sec.innerHTML = `<h3 class="pf-section-head">Saved <span class="count">${favShows.length}</span></h3>`;
+        sec.appendChild(listOf(favShows, true));
+        wrap.appendChild(sec);
+      }
+      if(bandNames.length || venueNames.length){
+        const sec=document.createElement('section'); sec.className='pf-section';
+        sec.innerHTML = `<h3 class="pf-section-head">Following <span class="count">${bandNames.length+venueNames.length}</span></h3>`;
+        const row=document.createElement('div'); row.className='fav-chips';
+        bandNames.sort().forEach(n=>{ const c=document.createElement('span'); c.className='vc-chip'; c.innerHTML=`<span class="vc-name">${esc(n)}</span>`; row.appendChild(c); });
+        venueNames.sort().forEach(n=>{ const c=document.createElement('span'); c.className='vc-chip'; c.innerHTML=`<button type="button" class="vc-btn" data-venue="${esc(n)}"><span class="vc-name">${esc(n)}</span></button>`; row.appendChild(c); });
+        sec.appendChild(row); wrap.appendChild(sec);
+      }
+      renderDidYouMakeIt(wrap);
+    }
     function renderFavorites(){
       const wrap = $('#results');
       wrap.innerHTML = "";
@@ -2396,6 +2421,15 @@ async function renderProfileRoute(handle){
       }catch(e){ console.warn('[profile] ' + action + ' threw:', e); followBtn.disabled = false; return; }
       if(parseRoute().handle === handle) renderProfileRoute(handle);
     });
+  }
+
+  // Your own page is also your private workspace. Saved and Profile had
+  // grown to overlap -- both showed stubs and upcoming shows -- so the Saved
+  // view now lands here, and the sections it alone had (upcoming hearts,
+  // followed bands and venues, "Did you make it?") render first, only for
+  // you. Everyone else sees the public record below, unchanged.
+  if(isMe && typeof renderPrivateSections === 'function'){
+    try{ renderPrivateSections(wrap); }catch(e){ console.warn('[profile] private sections:', e); }
   }
 
   // Upcoming shows, per D1: attendance_for_user returns nothing unless the
@@ -5486,7 +5520,20 @@ $('#byHoodToggle').addEventListener('click',()=>{state.byHood=!state.byHood;$('#
           else if(on){ location.hash = target; }
           else { state.view='shows'; state.selectedVenue=null; history.replaceState(null,'',location.pathname); render(); }
         });
-      $('#myShowsToggle').addEventListener('click',e=>{state.myShows=!state.myShows;if(state.myShows){state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');state.comedy=false;$('#comedyToggle').classList.remove('on');state.tonight=false;$('#tonightToggle').classList.remove('on');state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');state.byHood=false;$('#byHoodToggle').classList.remove('on');state.picks=false;$('#picksToggle').classList.remove('on');state.following=false;$('#followingToggle').classList.remove('on');}e.currentTarget.classList.toggle('on',state.myShows);render();});
+      $('#myShowsToggle').addEventListener('click',async e=>{
+        // Saved lives on your profile now. Signed in with a handle: go there.
+        // Otherwise fall through to the old inline view (which itself asks
+        // for sign-in).
+        if(state._signedIn){
+          try{
+            const sb = txClient();
+            const r = sb ? await sb.rpc('my_handle') : null;
+            const d = r && !r.error ? r.data : null;
+            const h = Array.isArray(d) ? ((d[0] || {}).handle || '') : (d && d.handle) || '';
+            if(h){ location.hash = '#/u/' + encodeURIComponent(h); return; }
+          }catch(_){}
+        }
+        state.myShows=!state.myShows;if(state.myShows){state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');state.comedy=false;$('#comedyToggle').classList.remove('on');state.tonight=false;$('#tonightToggle').classList.remove('on');state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');state.byHood=false;$('#byHoodToggle').classList.remove('on');state.picks=false;$('#picksToggle').classList.remove('on');state.following=false;$('#followingToggle').classList.remove('on');}e.currentTarget.classList.toggle('on',state.myShows);render();});
         // Picks of the Week: dominant filter. Turning it on switches to the curated, vertical showcase
         // and clears the Tonight / This Week / My Shows / Venues filters so only picks are shown.
         $('#picksToggle').addEventListener('click',e=>{
@@ -6069,6 +6116,7 @@ load();
 .pf-name{font-family:'Alfa Slab One',serif;font-weight:400;font-size:26px;margin:0;line-height:1.1;overflow-wrap:anywhere}
 .pf-handle{font-family:'Oswald',sans-serif;font-size:15px;letter-spacing:.03em;color:var(--cream);opacity:.9;margin-top:3px}
 .pf-you{color:var(--cream);opacity:.6;font-size:12px;letter-spacing:0}
+.pf-section-head .count{font-family:'Bitter',Georgia,serif;font-size:12px;opacity:.6;margin-left:6px}
 .pf-meta,.pf-counts{font-size:13px;opacity:.8;margin-top:3px}
 .pf-follow{border:1px solid var(--cream);background:none;color:var(--cream);border-radius:999px;padding:6px 14px;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;flex:0 0 auto}
 .pf-follow:hover{background:rgba(243,234,215,.12)}
