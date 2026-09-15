@@ -1,0 +1,9 @@
+# GitHub Pages (Jekyll) build config. The site itself is a static index.html
+# with no Jekyll features; this file exists only to keep non-site files out
+# of the published bundle.
+exclude:
+  - fixtures/
+  - test_parsers.py
+  - "*.py"
+  - supabase/
+  - README.md
