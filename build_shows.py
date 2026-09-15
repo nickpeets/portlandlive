@@ -509,6 +509,27 @@ def fetch_approved_submissions():
     return out
 
 
+def _venue_directory(shows):
+    """Sorted list of {name, neighborhood, address}: VENUE_INFO from the
+    scraper plus any venue present in the feed but not in VENUE_INFO."""
+    seen = {}
+    try:
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("sv", os.path.join(HERE, "scrape_venues.py"))
+        sv = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(sv)
+        for name, (nb, addr) in sv.VENUE_INFO.items():
+            seen[name] = {"name": name, "neighborhood": nb or "", "address": addr or ""}
+    except Exception as e:
+        print(f"  WARN: venue directory: could not read VENUE_INFO ({type(e).__name__}); using feed venues only")
+    for sh in shows:
+        v = sh.get("venue") or ""
+        if v and v not in seen:
+            seen[v] = {"name": v, "neighborhood": sh.get("neighborhood") or "",
+                       "address": sh.get("address") or ""}
+    return sorted(seen.values(), key=lambda d: d["name"].lower())
+
+
 def main():
     shows = []
     if os.path.exists(MANUAL):
@@ -645,6 +666,13 @@ def main():
         "generated": datetime.datetime.now().astimezone().isoformat(timespec="seconds"),
         "source": "Scraped from venue calendars + hand-added listings",
         "shows": deduped,
+        # Every venue the site knows -- name, neighborhood, address -- whether
+        # or not it has a show this week. The submit form suggests from this
+        # list (a room that has gone quiet is exactly one someone might send a
+        # show for) and fills neighborhood/address when the name matches.
+        # Feed venues are unioned in so a submitted venue with no VENUE_INFO
+        # row still appears once it has a show.
+        "venues": _venue_directory(deduped),
     }
     # Strip internal-only keys (leading underscore, e.g. the scraper's _hand
     # retention flag) so they never reach the public feed.

@@ -1372,6 +1372,10 @@ async function load(){
     const res = await fetch('/shows.json',{cache:'no-store'});
     const data = await res.json();
     state.shows = data.shows || [];
+    // Every known venue, not just the ones with a show this week. Used by the
+    // submit form's suggestions. Older feeds lack it; the form falls back to
+    // the venues in the feed.
+    state.venues = Array.isArray(data.venues) ? data.venues : [];
     state.shows.forEach(s => { s._slug = makeSlug(s); }); // permanent per-show page identity
     classifyAll(); // tag each show with s.contentType
     state.stamp = data.generated || "";
@@ -2107,7 +2111,13 @@ function renderSubmitRoute(){
   var wrap = $('#results');
   $('#resultCount').textContent = '';
   clearTogglePills();
-  var venues = Array.from(new Set(state.shows.map(function(s){ return s.venue; }))).sort();
+  // Suggestions come from the venue directory the build publishes -- every
+  // room the site has an address for, whether or not it has a show this
+  // week -- with feed venues as the fallback for an older shows.json.
+  var dir = (state.venues && state.venues.length) ? state.venues
+          : Array.from(new Set(state.shows.map(function(s){ return s.venue; }))).map(function(v){ return {name:v}; });
+  var venues = dir.map(function(v){ return v.name; }).sort(function(a,b){ return a.toLowerCase() < b.toLowerCase() ? -1 : 1; });
+  var byName = {}; dir.forEach(function(v){ byName[v.name.toLowerCase()] = v; });
   var today = stubToday();
   wrap.innerHTML =
     '<div class="sub-page">'
@@ -2155,7 +2165,9 @@ function renderSubmitRoute(){
         p_title: f.title.value.trim(), p_venue: f.venue.value.trim(), p_date: f.date.value,
         p_time: f.time.value.trim() || null, p_url: f.url.value.trim() || null,
         p_age: f.age.value || null, p_notes: f.notes.value.trim() || null,
-        p_email: f.email.value.trim()
+        p_email: f.email.value.trim(),
+        p_neighborhood: (byName[f.venue.value.trim().toLowerCase()] || {}).neighborhood || null,
+        p_address: (byName[f.venue.value.trim().toLowerCase()] || {}).address || null
       });
       if(res.error) throw res.error;
       wrap.innerHTML = '<div class="sub-page"><h1 class="sub-title">Got it</h1>'
