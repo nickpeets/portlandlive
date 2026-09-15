@@ -530,6 +530,167 @@ def _venue_directory(shows):
     return sorted(seen.values(), key=lambda d: d["name"].lower())
 
 
+# ---------------------------------------------------------------------------
+# Ticketmaster Discovery API: enrichment and gap-fill.
+#
+# Explored 2026-09-15: Portland / OR / music / next 90 days is 487 events at
+# 21 venues in three calls (quota 5,000 a day). Every event carries a start
+# time, a poster, and a ticket URL -- and for TicketWeb venues that URL is
+# ticketweb.com's, the one that becomes the affiliate link. The structured
+# age field is empty, but 180 of 487 state the age in pleaseNote, which
+# _age_in_text reads conservatively like everywhere else.
+#
+# Two jobs, in this order:
+#   1. ENRICH: match each TM event to a feed row by date + venue + title-word
+#      overlap, and fill only what is blank -- time, poster, age, ticketUrl.
+#      The scraper's own values win; TM backfills.
+#   2. ADD: a TM event at a venue the site already covers, with no matching
+#      row, is a show the scraper missed. Crystal Ballroom had 11 in the feed
+#      and 39 on TM the day this was explored. Added rows are marked
+#      _tm=True (stripped before publish) and go through the same dedupe.
+# Events at venues the site does not cover are counted and named, not added.
+#
+# Key: TM_API_KEY in the environment (a GitHub secret in CI). Without it the
+# pass is skipped with a note; a failed fetch is a WARN. Never fatal.
+# ---------------------------------------------------------------------------
+TM_VENUE_MAP = {
+    "Revolution Hall - Portland": "Revolution Hall",
+    "McMenamins Crystal Ballroom": "Crystal Ballroom",
+    "McMenamins Mission Theater": "Mission Theater",
+    "The Den - Portland": "Al's Den",
+    "The Get Down Music Venue": "The Get Down",
+}
+# Names that are add-ons to a show, not shows: never added as rows, and not
+# used to enrich (their pleaseNote is about the package, not the gig).
+_TM_ADDON = re.compile(r"\b(VIP|Platinum|Package|Parking|Meet\s*&\s*Greet|Upgrade|Pre-?Show|Soundcheck)\b", re.I)
+_TM_STOP = {"the", "and", "w", "with", "tour", "live", "of", "a", "at", "in", "presents", "an", "evening", "night"}
+
+
+def _tm_words(title):
+    return set(re.findall(r"[a-z0-9]+", (title or "").lower())) - _TM_STOP
+
+
+def _tm_normalize(ev, venue_info):
+    """One Discovery API event -> feed-shaped dict, or None if it is an add-on
+    or at a venue the site does not know."""
+    name = ev.get("name") or ""
+    if _TM_ADDON.search(name):
+        return None
+    vraw = ((ev.get("_embedded") or {}).get("venues") or [{}])[0].get("name") or ""
+    venue = TM_VENUE_MAP.get(vraw, vraw)
+    if venue not in venue_info:
+        return {"_uncovered": vraw}
+    st = (ev.get("dates") or {}).get("start") or {}
+    date = st.get("localDate") or ""
+    tm = ""
+    lt = st.get("localTime") or ""
+    if lt and not st.get("timeTBA") and not st.get("noSpecificTime"):
+        try:
+            h, m = int(lt[:2]), int(lt[3:5])
+            tm = f"{h % 12 or 12}:{m:02d} {'AM' if h < 12 else 'PM'}"
+        except Exception:
+            tm = ""
+    imgs = ev.get("images") or []
+    # Prefer a wide poster at a sane size; TM ships six renditions per event.
+    pick = ""
+    for ratio in ("16_9", "3_2", "4_3"):
+        c = sorted((i for i in imgs if i.get("ratio") == ratio and (i.get("width") or 0) >= 600),
+                   key=lambda i: i.get("width") or 0)
+        if c:
+            pick = c[0].get("url") or ""
+            break
+    if not pick and imgs:
+        pick = imgs[0].get("url") or ""
+    note = " ".join(x for x in ((ev.get("pleaseNote") or ""), (ev.get("info") or "")) if x)
+    nb, addr = venue_info[venue]
+    return {"title": name.strip(), "venue": venue, "neighborhood": nb, "address": addr,
+            "date": date, "time": tm, "venueUrl": ev.get("url") or "",
+            "ticketUrl": ev.get("url") or "", "imageUrl": pick,
+            "age": _sv().__dict__["_age_in_text"](note) if note else "", "_tm": True}
+
+
+def _sv():
+    """scrape_venues as a module, loaded once (for _age_in_text and VENUE_INFO)."""
+    if not hasattr(_sv, "mod"):
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("sv", os.path.join(HERE, "scrape_venues.py"))
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        _sv.mod = mod
+    return _sv.mod
+
+
+def tm_fetch(today, days=90):
+    key = os.environ.get("TM_API_KEY", "").strip()
+    if not key:
+        print("  note: Ticketmaster: TM_API_KEY not set; pass skipped")
+        return []
+    import urllib.request, urllib.parse
+    end = today + datetime.timedelta(days=days)
+    out, page = [], 0
+    while page < 10:
+        q = urllib.parse.urlencode({
+            "apikey": key, "city": "Portland", "stateCode": "OR", "classificationName": "music",
+            "size": 200, "page": page, "sort": "date,asc",
+            "startDateTime": today.isoformat() + "T00:00:00Z",
+            "endDateTime": end.isoformat() + "T23:59:59Z"})
+        try:
+            with urllib.request.urlopen("https://app.ticketmaster.com/discovery/v2/events.json?" + q, timeout=30) as r:
+                d = json.load(r)
+        except Exception as e:
+            print(f"  WARN: Ticketmaster: fetch failed on page {page}: {type(e).__name__}: {e}")
+            break
+        ev = ((d.get("_embedded") or {}).get("events")) or []
+        out += ev
+        if not ev or page >= (d.get("page") or {}).get("totalPages", 1) - 1:
+            break
+        page += 1
+    return out
+
+
+def tm_apply(shows, events, today):
+    """Enrich matched rows in place; append missed shows at covered venues.
+    Returns (matched, added, uncovered_counter). Pure: no network."""
+    from collections import Counter
+    venue_info = _sv().VENUE_INFO
+    by = {}
+    for r in shows:
+        by.setdefault((r.get("date"), r.get("venue")), []).append(r)
+    matched = added = 0
+    uncovered = Counter()
+    seen_add = set()
+    for ev in events:
+        n = _tm_normalize(ev, venue_info)
+        if not n:
+            continue
+        if "_uncovered" in n:
+            uncovered[n["_uncovered"]] += 1
+            continue
+        if not n["date"] or n["date"] < today.isoformat():
+            continue
+        tw = _tm_words(n["title"])
+        best = None
+        for r in by.get((n["date"], n["venue"]), []):
+            ov = len(tw & _tm_words(r.get("title")))
+            if ov and (ov >= 2 or ov >= len(tw) * 0.6):
+                best = r
+                break
+        if best is not None:
+            matched += 1
+            for k in ("time", "imageUrl", "age", "ticketUrl"):
+                if not (best.get(k) or "").strip() and n.get(k):
+                    best[k] = n[k]
+            continue
+        key = (n["date"], n["venue"], frozenset(tw))
+        if key in seen_add:
+            continue
+        seen_add.add(key)
+        shows.append(n)
+        by.setdefault((n["date"], n["venue"]), []).append(n)
+        added += 1
+    return matched, added, uncovered
+
+
 def main():
     shows = []
     if os.path.exists(MANUAL):
@@ -541,6 +702,17 @@ def main():
     # approved. They join the scrape here and go through the same dedupe,
     # so a submitted show that the scraper also found collapses to one row.
     shows.extend(fetch_approved_submissions())
+
+    # Ticketmaster: backfill what the scrape left blank, and add what it
+    # missed at venues the site covers. See the block above.
+    _pac = datetime.timezone(datetime.timedelta(hours=-8))
+    _today = datetime.datetime.now(_pac).date()
+    _tm_events = tm_fetch(_today)
+    if _tm_events:
+        _m, _a, _unc = tm_apply(shows, _tm_events, _today)
+        _u = ", ".join(f"{v} ({c})" for v, c in _unc.most_common(6))
+        print(f"  Ticketmaster: {len(_tm_events)} events -> {_m} matched, {_a} added"
+              + (f"; {sum(_unc.values())} at venues not covered: {_u}" if _unc else ""))
 
     # drop past shows
     # Drop past shows using US Pacific time (venues' local zone), not the

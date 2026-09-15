@@ -147,6 +147,38 @@ def main():
         fails += 1
         print(f"  FAIL laurelthirst-sept2026.html   rows {len(rows)} != 28 or imageUrl {imgs} != 22")
     print()
+    # Ticketmaster enrichment/gap-fill (build_shows.tm_apply) against the
+    # captured Discovery API pull. The feed it matches against changes
+    # nightly, so the assertions are invariants, not counts: every TM venue
+    # maps to a known venue, add-on packages are never added, added rows
+    # never duplicate, and the normalizer reads the fields it should.
+    bspec = importlib.util.spec_from_file_location("bs", os.path.join(HERE, "build_shows.py"))
+    bs = importlib.util.module_from_spec(bspec)
+    bspec.loader.exec_module(bs)
+    import json as _json
+    tm = _json.load(open(os.path.join(FIX, "ticketmaster-portland.json")))
+    probs = []
+    n0 = bs._tm_normalize(tm[0], sv.VENUE_INFO)
+    if not (n0 and n0.get("time") == "7:00 PM" and n0.get("imageUrl", "").startswith("http")
+            and "ticketweb.com" in n0.get("ticketUrl", "") and n0.get("age") == "21+"):
+        probs.append(f"normalizer on event 0: {n0}")
+    rows = []
+    m, a, unc = bs.tm_apply(rows, tm, datetime.date(2026, 9, 15))
+    if unc:
+        probs.append(f"uncovered venues: {dict(unc)}")
+    if any(bs._TM_ADDON.search(r["title"]) for r in rows):
+        probs.append("an add-on package was added as a show")
+    keys = [(r["date"], r["venue"], frozenset(bs._tm_words(r["title"]))) for r in rows]
+    if len(keys) != len(set(keys)):
+        probs.append("duplicate rows added")
+    if not (400 <= a <= 487):
+        probs.append(f"against an empty feed, added {a}; expected the whole pull minus add-ons")
+    if probs:
+        fails += 1
+        print("  FAIL ticketmaster-portland.json  " + "; ".join(probs))
+    else:
+        print(f"  ok   ticketmaster-portland.json  {a:3d} rows  -- Discovery API pull; tm_apply invariants (no uncovered venues, no add-ons, no dupes)")
+    print()
     if fails:
         print(f"{fails} FAILURE(S)")
         sys.exit(1)

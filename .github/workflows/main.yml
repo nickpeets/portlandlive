@@ -25,6 +25,8 @@ jobs:
         continue-on-error: true
         run: python3 scrape_venues.py
       - name: Build shows.json
+        env:
+          TM_API_KEY: ${{ secrets.TM_API_KEY }}
         run: python3 build_shows.py
       - name: Commit if changed
         run: |
