@@ -1304,7 +1304,7 @@ def _p5_detail(html):
     return age, doors, img
 
 
-def _p5_enrich(rows):
+def _p5_enrich(rows, today=None):
     """Fetch each event's own page for age, doors and poster.
 
     The listing carries only title/date and sometimes a time; the detail
@@ -1312,9 +1312,17 @@ def _p5_enrich(rows):
     ticketing company's -- so one fetch per event a night is ordinary.
     Any failure leaves that row as the listing had it. Never raises."""
     n_ok = 0
+    floor = today.isoformat() if today else ""
+    ceil = (today + datetime.timedelta(days=HORIZON_DAYS)).isoformat() if today else ""
     for r in rows:
         u = r.get("venueUrl") or ""
         if "portland5.com/event/" not in u:
+            continue
+        # The paginated listing runs months ahead; scrape() clips to
+        # HORIZON_DAYS afterwards. 144 fetched on the first live run for 82
+        # that survived -- fetch only what the feed will keep.
+        d = r.get("date") or ""
+        if (floor and d < floor) or (ceil and d > ceil):
             continue
         try:
             h = fetch(u)
@@ -1353,7 +1361,7 @@ def parse_portland5(html, today):
             break
         page += 1
         time.sleep(0.5)
-    _p5_enrich(out)
+    _p5_enrich(out, today)
     return out
 
 
