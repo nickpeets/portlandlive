@@ -457,6 +457,58 @@ def guard_build(new_shows, out_path):
     return fatal
 
 
+_SUBMISSIONS_RPC = "/rest/v1/rpc/approved_submissions"
+
+
+def _supabase_public_config():
+    """(url, anon_key) from auth.js -- the one place they are written down.
+    Both are public by design (they ship to every browser)."""
+    try:
+        src = open(os.path.join(HERE, "auth.js")).read()
+        url = re.search(r'SUPABASE_URL\s*=\s*"([^"]+)"', src).group(1)
+        key = re.search(r'SUPABASE_ANON_KEY\s*=\s*"([^"]+)"', src).group(1)
+        return url, key
+    except Exception:
+        return None, None
+
+
+def fetch_approved_submissions():
+    """Approved rows from the submissions line, in the feed's 8-field shape.
+
+    Served by a public SECURITY DEFINER RPC (supabase/schema-submissions.sql)
+    that exposes nothing private -- no email, no notes, no reviewer -- so the
+    build pulls it with the anon key and needs no secret in CI. A failure here
+    is a WARN, never fatal: the feed is the scrape plus whatever submissions
+    could be read, and a Supabase blip must not block the nightly build."""
+    url, key = _supabase_public_config()
+    if not url or not key:
+        print("  WARN: submissions: could not read Supabase config from auth.js; skipping")
+        return []
+    try:
+        import urllib.request
+        req = urllib.request.Request(
+            url + _SUBMISSIONS_RPC, data=b"{}", method="POST",
+            headers={"apikey": key, "Authorization": "Bearer " + key,
+                     "Content-Type": "application/json"})
+        with urllib.request.urlopen(req, timeout=20) as r:
+            rows = json.load(r)
+    except Exception as e:
+        print(f"  WARN: submissions: fetch failed: {type(e).__name__}: {e}; skipping")
+        return []
+    out = []
+    for r in rows or []:
+        if not (r.get("title") and r.get("venue") and r.get("date")):
+            continue
+        out.append({"title": r["title"], "venue": r["venue"],
+                    "neighborhood": r.get("neighborhood") or "",
+                    "address": r.get("address") or "",
+                    "date": r["date"], "time": r.get("time") or "",
+                    "venueUrl": r.get("venueUrl") or "", "imageUrl": "",
+                    "age": r.get("age") or "", "_submitted": True})
+    print(f"  submissions: {len(out)} approved show(s) merged from the submissions line")
+    return out
+
+
 def main():
     shows = []
     if os.path.exists(MANUAL):
@@ -464,6 +516,10 @@ def main():
             shows = json.load(open(MANUAL)).get("shows", [])
         except Exception as e:
             print(f"manual_shows.json unreadable: {e}")
+    # The submissions line: shows venues and people sent in, reviewed and
+    # approved. They join the scrape here and go through the same dedupe,
+    # so a submitted show that the scraper also found collapses to one row.
+    shows.extend(fetch_approved_submissions())
 
     # drop past shows
     # Drop past shows using US Pacific time (venues' local zone), not the
