@@ -65,9 +65,9 @@ def load(name):
 # of rows with that field non-empty; they pin the extraction quality that was
 # verified by hand, not just that "something" parsed.
 CASES = [
-    ("roseland.html",          sv.parse_mammoth,        47, {"time": 47, "age": 46},        "RHP; age via URL map; time past the old 60-elem cap"),
-    ("hawthorne-events.html",  sv.parse_mammoth,        61, {"time": 61, "age": 61},        "RHP; Hawthorne Lounge label; titles must not double"),
-    ("dantes.html",            sv.parse_dantes,         48, {"time": 48, "ticketUrl": 48},  "TicketWeb; time sits one level above .tw-name"),
+    ("roseland.html",          sv.parse_mammoth,        47, {"time": 47, "age": 46, "imageUrl": 47},  "RHP; age + poster via URL map; time past the old 60-elem cap"),
+    ("hawthorne-events.html",  sv.parse_mammoth,        61, {"time": 61, "age": 61, "imageUrl": 61},  "RHP; Hawthorne Lounge label; titles must not double"),
+    ("dantes.html",            sv.parse_dantes,         48, {"time": 48, "ticketUrl": 48, "imageUrl": 48}, "TicketWeb; time and poster one level above .tw-name"),
     ("jlr.html",               sv.parse_jacklondonrevue, 56, {"age": 32, "ticketUrl": 56},  "two-fragment merge; age in .tw-description"),
     ("star-theater.html",      sv.parse_startheater,    50, {"time": 50, "ticketUrl": 50},  "TicketWeb .tw-section"),
     ("rose-quarter.html",      sv.parse_rosequarter,    25, {"time": 23},                   "time from .card-date-time, skipping w-condition-invisible"),

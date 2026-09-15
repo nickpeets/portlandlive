@@ -304,6 +304,38 @@ def _age_map_by_event_url(soup, max_up=6):
     return out
 
 
+_RHP_IMG_SEL = "img.rhp-event__image--list, .rhp-events-event-image img, img.eventListImage"
+
+
+def _img_map_by_event_url(soup, max_up=6):
+    """Map each event URL on an RHP listing to its poster, or {}.
+
+    Same shape as _age_map_by_event_url: the poster <img> is not inside the
+    thumb the parser iterates, so search UP from each image to the card that
+    owns exactly one event URL. Roseland and Hawthorne carry a poster on
+    every card (47/47, 61/61 on captured pages) and the parsers never read
+    them -- 42% of the feed had an image, and the misses were exactly the
+    template venues that always have one."""
+    out = {}
+    for im in soup.select(_RHP_IMG_SEL):
+        src = (im.get("src") or im.get("data-src") or "").strip()
+        if not src or src.startswith("data:"):
+            continue
+        anc = im
+        for _ in range(max_up):
+            anc = anc.parent
+            if anc is None or getattr(anc, "name", None) is None:
+                break
+            hrefs = {a["href"].split("?")[0]
+                     for a in anc.select('a[href*="/event/"]') if a.get("href")}
+            if len(hrefs) == 1:
+                out.setdefault(hrefs.pop(), src)
+                break
+            if len(hrefs) > 1:
+                break
+    return out
+
+
 def _age_positional(soup, n_events):
     """Ages for a listing whose parser has no per-event container at all.
 
@@ -414,6 +446,7 @@ def parse_mammoth(html, today):
     # window this parser builds -- which is why scanning seg found nothing.
     # Resolve it by event URL instead.
     age_by_url = _age_map_by_event_url(soup)
+    img_by_url = _img_map_by_event_url(soup)
     shows = []
     seen = set()
 
@@ -495,7 +528,7 @@ def parse_mammoth(html, today):
         full = f"{title} (w/ {support})" if support else title
         shows.append({"title": full, "venue": venue, "neighborhood": nb,
                       "address": addr, "date": date, "time": showtime, "venueUrl": tix,
-                      "imageUrl": "",
+                      "imageUrl": img_by_url.get(url.split("?")[0], ""),
                       # Keyed on the /event/ page URL (`url`), not `tix`: tix is
                       # overwritten with the etix.com ticket link, which is not
                       # what the age map is keyed by. Verified against the real
@@ -582,12 +615,15 @@ def parse_dantes(html, today):
             scope = up
         tlink = scope.find("a", href=re.compile(r'ticketweb\.com'))
         tixurl = tlink["href"] if tlink else ""
+        # The poster (img.event-img on i.ticketweb.com) sits in the same
+        # scope as the ticket link. Same helper Star Theater and JLR use.
+        img = _img_from(scope, "i.ticketweb.com")
         tix = url
         nb, addr = VENUE_INFO["Dante's"]
         shows.append({"title": title, "venue": "Dante's", "neighborhood": nb,
                       "address": addr, "date": date, "time": showtime, "venueUrl": tix,
                       "ticketUrl": tixurl,
-                      "imageUrl": "", "age": _age_from(block) or _age_in_text(btext)})
+                      "imageUrl": img, "age": _age_from(block) or _age_in_text(btext)})
     return shows
 
 
@@ -787,6 +823,7 @@ def parse_wonder(html, today):
     # Ages come from the card that owns each event link, not from the thumb --
     # a live probe found 0 of 50 thumbs contain an age element.
     age_by_url = _age_map_by_event_url(soup)
+    img_by_url = _img_map_by_event_url(soup)
     shows = []
     ti = 0
     for slug, e in events.items():
@@ -801,7 +838,8 @@ def parse_wonder(html, today):
         ti += 1
         shows.append({"title": e["title"], "venue": "Wonder Ballroom",
                       "neighborhood": "Eliot/Boise", "address": "128 NE Russell St",
-                      "date": e["date"], "time": showtime, "venueUrl": tix, "imageUrl": "",
+                      "date": e["date"], "time": showtime, "venueUrl": tix,
+                      "imageUrl": img_by_url.get(slug.split("?")[0], ""),
                       "age": age_by_url.get(slug.split("?")[0], "")})
     return shows
 # ---- Holocene (holocene.org/events/) -----------------------------------------
