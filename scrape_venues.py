@@ -2180,6 +2180,7 @@ def parse_mississippipizza(html, today):
     # events plugin. The /calendar/ page server-renders all events as
     # .rhpSingleEvent blocks (no AJAX pagination needed, unlike Revolution Hall).
     soup = BeautifulSoup(html, "html.parser")
+    img_by_url = _img_map_by_event_url(soup)  # 34/34 on the captured page
     nb, addr = VENUE_INFO["Mississippi Pizza"]
     shows = []
     for e in soup.select(".rhpSingleEvent"):
@@ -2203,7 +2204,8 @@ def parse_mississippipizza(html, today):
         shows.append({"title": title, "venue": "Mississippi Pizza",
                       "neighborhood": nb, "address": addr,
                       "date": date, "time": tm,
-                      "venueUrl": a.get("href", ""), "imageUrl": "",
+                      "venueUrl": a.get("href", ""),
+                      "imageUrl": img_by_url.get((a.get("href", "") or "").split("?")[0], ""),
                       "age": _age_from(e)})
     return shows
 
