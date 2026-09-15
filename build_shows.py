@@ -320,6 +320,13 @@ _TITLE_MAX = 140
 _NO_LISTING_TIME = {
     "Twilight Cafe & Bar",   # twilightcafeandbar.com/calendar_list: title, flyer, link
     "NOVA PDX",              # novapdxevents.com/event-calendar: same shape
+    # musicmillennium.com/InStore, captured through the headless tier (a plain
+    # fetch returns a challenge page). No time in any format. The only "Show:"
+    # strings on the page are carousel config -- "Show: 6," and "Show: 3," --
+    # i.e. slides per view, not a door time. In-store performances are also
+    # the one case where a missing time matters least: they happen during
+    # shop hours.
+    "Music Millennium",
 }
 
 
