@@ -1292,7 +1292,19 @@ def _p5_detail(html):
     (their facebook_share rendition; the venue's own upload). Anything
     unrecognised stays blank."""
     soup = BeautifulSoup(html, "html.parser")
-    age, doors, img = "", "", ""
+    age, doors, img, date = "", "", "", ""
+    # The event page's own date: <div class="event-hero__date">Saturday,
+    # September 19, 2026 8:00 PM</div>. The LISTING card for Beck said
+    # Tuesday, November 10 while this page, Live Nation, Ticketmaster and
+    # the tour's own site all said September 19 (2026-09-15). The event
+    # page is the canonical record; when the two disagree it wins.
+    hero = soup.select_one(".event-hero__date")
+    if hero:
+        m = re.search(r"([A-Z][a-z]+) (\d{1,2}), (\d{4})", hero.get_text(" ", strip=True))
+        if m:
+            mon = MONTHS.get(m.group(1)[:3].title())
+            if mon:
+                date = f"{int(m.group(3)):04d}-{mon:02d}-{int(m.group(2)):02d}"
     for dt in soup.select("dt.event-details__detail-key"):
         key = clean(dt.get_text(" ")).lower()
         dd = dt.find_next_sibling("dd")
@@ -1304,7 +1316,7 @@ def _p5_detail(html):
     og = soup.find("meta", property="og:image")
     if og and og.get("content", "").startswith("http"):
         img = og["content"]
-    return age, doors, img
+    return age, doors, img, date
 
 
 def _p5_enrich(rows, today=None):
@@ -1332,9 +1344,12 @@ def _p5_enrich(rows, today=None):
         except Exception:
             continue
         try:
-            age, doors, img = _p5_detail(h)
+            age, doors, img, ddate = _p5_detail(h)
         except Exception:
             continue
+        if ddate and ddate != r.get("date"):
+            print(f"  note: Portland5: listing said {r.get('date')} but the event page says {ddate} -- {r.get('title','')[:40]!r}; using the event page")
+            r["date"] = ddate
         if age and not r.get("age"):
             r["age"] = age
         if img and not r.get("imageUrl"):
