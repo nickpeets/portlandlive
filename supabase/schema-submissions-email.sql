@@ -123,7 +123,10 @@ begin
                  'Content-Type', 'application/json'),
     body    := jsonb_build_object(
                  'from', 'Rain Or Shows <noreply@rainorshows.com>',
-                 'to',   jsonb_build_array('nick@rainorshows.com'),
+                 -- Straight to Gmail, not via the nick@rainorshows.com forwarder:
+                 -- Porkbun's forward held the second-ever notification for
+                 -- 7+ minutes while Resend showed "Sent" with no delivery.
+                 'to',   jsonb_build_array('nickpeets@gmail.com'),
                  'reply_to', new.submitter_email,
                  'subject', v_subj,
                  'html', v_html)
