@@ -36,6 +36,22 @@ sv = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(sv)
 
 
+# A regression suite must never touch the network, or it is testing the
+# venue's website rather than the parser. Some parsers paginate on their
+# own (parse_portland5 fetches ?page=1..20 and stops on the first error),
+# so with network available they return the whole live calendar and the
+# count is different every day. Stub the fetchers: anything that reaches
+# for the network gets an error, which paginating parsers treat as
+# "last page" and fall back to the fixture alone.
+def _no_network(url, *a, **k):
+    raise RuntimeError(f"test_parsers: network disabled ({url})")
+
+
+sv.fetch = _no_network
+if hasattr(sv, "fetch_headless"):
+    sv.fetch_headless = _no_network
+
+
 def load(name):
     with open(os.path.join(FIX, name), encoding="utf-8", errors="replace") as f:
         return f.read()
