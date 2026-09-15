@@ -565,6 +565,10 @@ body{
   .audit-bucket li{margin:1px 0;word-break:break-word}
   /* ===== STUB SHELF START (authentic Ticketmaster-era stub; self-contained) ===== */
   .vc-count.vc-quiet{opacity:.55;font-style:italic}
+  .resale{margin:6px 0 2px}
+  .resale-link{font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:rgba(243,234,215,.85);text-decoration:underline;text-underline-offset:3px}
+  .resale-link:hover{color:var(--cream)}
+  .aff-note{font-family:'Bitter',Georgia,serif;font-size:12px;color:rgba(243,234,215,.55);margin-top:3px}
   .sub-page{max-width:560px;margin:0 auto;padding:8px 0 32px}
   .sub-title{font-family:'Alfa Slab One',serif;font-weight:400;font-size:30px;color:var(--cream);margin:0 0 10px}
   .sub-lead{font-family:'Bitter',Georgia,serif;font-size:15.5px;line-height:1.55;color:rgba(243,234,215,.82);margin:0 0 18px}
@@ -2483,6 +2487,40 @@ function mapsHref(address, venue){
   return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(q);
 }
 
+// ===== RESALE LINK (Vivid Seats, via Impact) =====
+// Approved 2026-09-14: 6% on sale, 30-day cookie. This is a SECOND, smaller
+// line under the Tickets button on the show page -- never the Tickets
+// button itself (that stays the venue's link), never on cards, and never
+// near Miracles. Only at rooms where a resale market plausibly exists; a
+// Vivid search for a Tuesday at a bar returns nothing and reads as spam.
+// The disclosure line is the decided wording; it is what keeps this honest
+// and it is what the FTC asks for.
+const VIVID_LINK = 'https://vivid-seats.pxf.io/9VZZQj';
+const RESALE_VENUES = new Set([
+  'Moda Center', 'Veterans Memorial Coliseum', 'Theater of the Clouds',
+  'Arlene Schnitzer Concert Hall', 'Keller Auditorium', 'Newmark Theatre',
+  'Roseland Theater', 'Crystal Ballroom', 'Wonder Ballroom', 'Revolution Hall',
+  'Hawthorne Theatre', 'Aladdin Theater', 'McMenamins Edgefield',
+  'Cascades Amphitheater', 'Hops Ballpark', 'Alberta Rose Theatre', 'Mission Theater'
+]);
+function resaleUrl(show){
+  if(!show || !RESALE_VENUES.has(show.venue)) return '';
+  // Impact deep link: ?u=<landing>. Land on a Vivid search for the headliner
+  // so the click arrives at the show, not the homepage.
+  const head = (show.title || '').split(/\s+(?:w\/|with)\s+|\s+\(w\/|\s+-\s+/i)[0].trim();
+  if(!head) return '';
+  const landing = 'https://www.vividseats.com/search?searchTerm=' + encodeURIComponent(head + ' Portland');
+  return VIVID_LINK + '?u=' + encodeURIComponent(landing);
+}
+function resaleLine(show){
+  const u = resaleUrl(show);
+  if(!u) return '';
+  return '<div class="resale">'
+    + '<a class="resale-link" href="' + esc(u) + '" target="_blank" rel="noopener sponsored">Resale tickets on Vivid Seats</a>'
+    + '<div class="aff-note">Tickets through this link support Rain Or Shows.</div>'
+    + '</div>';
+}
+
 function renderShowDetail(wrap, show, kind){
   $('#resultCount').textContent = kind === 'past' ? 'Past show' : 'Upcoming show';
   // Three lines instead of one run-on: when, where, then the address as a
@@ -2517,7 +2555,8 @@ function renderShowDetail(wrap, show, kind){
       + (show.venueUrl ? '<a class="tix" href="'+esc(show.venueUrl)+'" target="_blank" rel="noopener">Tickets</a>' : '')
       + heartBtn(show)
       + planBtn(show)
-      + '</div>';
+      + '</div>'
+      + resaleLine(show);
   } else {
     const claimed = claimedStubIds().has(stubIdOf(show));
     actions = '<div class="show-actions">'
