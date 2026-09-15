@@ -2406,7 +2406,12 @@ def _wix_all_events(page_url, prefetched_html):
     raw, offset = [], 0
     try:
         while True:
-            body = json.dumps({"limit": 100, "offset": offset, "fieldset": ["FULL"],
+            # DETAILS is the fieldset that carries mainImage; FULL alone does
+            # not. Probed live 2026-09-15: FULL -> 20 keys, no image; DETAILS
+            # -> 22 keys, image present. The warmup blob always had it, which
+            # is why the parser already read mainImage while the feed showed
+            # 0/76 -- the API tier serves nearly every row.
+            body = json.dumps({"limit": 100, "offset": offset, "fieldset": ["FULL", "DETAILS"],
                                "filter": {"status": ["SCHEDULED", "STARTED"]}})
             resp = sess.post(api, headers=h, data=body, timeout=30)
             if resp.status_code != 200:
