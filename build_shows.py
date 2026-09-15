@@ -327,6 +327,13 @@ _NO_LISTING_TIME = {
     # the one case where a missing time matters least: they happen during
     # shop hours.
     "Music Millennium",
+    # kentonclub.com: a plain-text Squarespace list, date line + band names,
+    # no time on any entry. "Open Everyday Noon to 2AM" is the only clock on
+    # the page.
+    "Kenton Club",
+    # spareroomrestaurantandlounge.com: hand-written monthly <li> list, no
+    # times on the live-music entries (one karaoke line says "7pm").
+    "Spare Room",
 }
 
 

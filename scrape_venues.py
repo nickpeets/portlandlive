@@ -65,6 +65,8 @@ VENUE_INFO = {
     # this entry its five shows fell through to the parser's "Roseland
     # Theater" default.
     "Hawthorne Lounge": ("Mt Tabor/Hawthorne", "1507 SE 39th Ave"),
+    "Kenton Club": ("Kenton", "2025 N Kilpatrick St"),
+    "Spare Room": ("Cully", "4830 NE 42nd Ave"),
     "Aladdin Theater": ("Brooklyn", "3017 SE Milwaukie Ave"),
     "Crystal Ballroom": ("Downtown", "1332 W Burnside St"),
     "McMenamins Edgefield": ("Troutdale", "2126 SW Halsey St, Troutdale"),
@@ -1333,6 +1335,152 @@ def parse_albertarose(html, today):
                       "address": addr, "date": date, "time": showtime, "venueUrl": url, "imageUrl": ""})
     return shows
 
+
+
+# ---- World Famous Kenton Club (kentonclub.com) -- single venue, plain text.
+# The homepage is a Squarespace text block: one <p> per line, a date line
+# ("Friday September 25 ($20 cover)") followed by one or two lines of band
+# names, then an empty <p> as the separator. No links, no times, no year --
+# the kind of calendar a bartender types in. Year is inferred from the month;
+# time is honestly blank (see _NO_LISTING_TIME in build_shows.py).
+_KC_DATE = re.compile(
+    r"^(?:Mon|Tues|Wednes|Thurs|Fri|Satur|Sun)day\s+"
+    r"(January|February|March|April|May|June|July|August|September|October|November|December)"
+    r"\s+(\d{1,2})\b(.*)$", re.I | re.M)
+# Lines that are a date slot with nothing on it, not a show.
+_KC_NOSHOW = re.compile(r"^\s*(no music|no show|closed|private event)\b", re.I)
+
+
+def parse_kentonclub(html, today):
+    soup = BeautifulSoup(html, "html.parser")
+    block = None
+    for div in soup.select(".sqs-html-content"):
+        if len(_KC_DATE.findall(div.get_text("\n"))) >= 5:
+            block = div
+            break
+    if block is None:
+        return []
+    venue = "Kenton Club"
+    nb, addr = VENUE_INFO.get(venue, ("Kenton", "2025 N Kilpatrick St"))
+    shows, seen = [], set()
+    date, note, lines = "", "", []
+
+    def flush():
+        if not date or not lines:
+            return
+        title = clean(" / ".join(lines))
+        if _KC_NOSHOW.match(title):
+            return
+        key = (date, title.lower())
+        if key in seen:
+            return
+        seen.add(key)
+        shows.append({"title": title, "venue": venue, "neighborhood": nb,
+                      "address": addr, "date": date, "time": "",
+                      "venueUrl": "https://www.kentonclub.com/", "imageUrl": ""})
+
+    for ptag in block.find_all("p"):
+        txt = clean(ptag.get_text(" "))
+        if not txt:
+            flush()
+            date, note, lines = "", "", []
+            continue
+        m = _KC_DATE.match(txt)
+        if m:
+            flush()
+            mon = _ST_MON.get(m.group(1).capitalize(), 0)
+            day = int(m.group(2))
+            # Not infer_year(): that treats any earlier month as NEXT year,
+            # which is right for venues that only post ahead. Kenton leaves
+            # last month's shows on the page, so August seen in September is
+            # a stale August listing, not August of next year. Only wrap to
+            # next year when the month is far enough back that it cannot be
+            # a recent leftover (Jan seen in Nov, say).
+            year = today.year
+            if mon and mon < today.month - 3:
+                year += 1
+            date = f"{year}-{mon:02d}-{day:02d}" if mon else ""
+            note = clean(m.group(3))
+            lines = []
+            continue
+        if date:
+            lines.append(txt)
+    flush()
+    return shows
+
+
+# ---- Spare Room (spareroomrestaurantandlounge.com) -- single venue, one
+# hand-written page per month: /sept2026.htm, /oct2026.htm. Each is a <ul>
+# of <li>"Sept. 4th &nbsp; Federale + Black Shelton ... $10 cover."</li>.
+# Month comes from the page heading ("September at the Spare Room"); ranges
+# like "Sept. 1 - 2" are the recurring karaoke and are skipped. The site
+# posts one month at a time, so the source lists this month and next and a
+# 404 on next month is normal, not a failure.
+_SR_MONTH = re.compile(r"\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+at the Spare Room", re.I)
+_SR_LI = re.compile(r"^\s*[A-Z][a-z]{2,4}\.?\s+(\d{1,2})(?:st|nd|rd|th)?(\s*-\s*\d{1,2})?\s+(.*)$", re.S)
+_SR_SKIP = re.compile(r"\b(karaoke|bingo)\b", re.I)
+_SR_COVER = re.compile(r"\s*\$\d+\s*cover\.?", re.I)
+
+
+def _spare_room_urls():
+    """This month's and next month's page. The site's own filename style is
+    the lowercase month abbreviation it uses in links -- 'sept' for
+    September. A 404 on next month is the normal state until they post it."""
+    import datetime as _dt
+    ab = {1: "jan", 2: "feb", 3: "mar", 4: "apr", 5: "may", 6: "june",
+          7: "july", 8: "aug", 9: "sept", 10: "oct", 11: "nov", 12: "dec"}
+    t = _dt.datetime.now(_dt.timezone(_dt.timedelta(hours=-8))).date()
+    out = []
+    for k in (0, 1):
+        m = (t.month - 1 + k) % 12 + 1
+        y = t.year + ((t.month - 1 + k) // 12)
+        out.append(f"https://www.spareroomrestaurantandlounge.com/{ab[m]}{y}.htm")
+    return out
+
+
+def parse_spareroom(html, today):
+    soup = BeautifulSoup(html, "html.parser")
+    mm = _SR_MONTH.search(soup.get_text(" "))
+    if not mm:
+        return []
+    mon = _ST_MON.get(mm.group(1).capitalize(), 0)
+    if not mon:
+        return []
+    year = today.year
+    if mon < today.month - 3:
+        year += 1
+    venue = "Spare Room"
+    nb, addr = VENUE_INFO.get(venue, ("Cully", "4830 NE 42nd Ave"))
+    shows, seen = [], set()
+    for li in soup.select("li"):
+        for sp in li.select("span"):
+            sp.decompose()  # the red "$10 cover" span
+        txt = clean(li.get_text(" "))
+        m = _SR_LI.match(txt)
+        if not m:
+            continue
+        day, rng, rest = int(m.group(1)), m.group(2), clean(m.group(3))
+        if rng:
+            continue  # "Sept. 1 - 2": the karaoke block, not a show
+        title = _SR_COVER.sub("", rest).strip(" .")
+        # Link text joins leave "Party Witch , Tai" and "Luchini : a dance".
+        title = re.sub(r"\s+([,.:;!?])", r"\1", title)
+        if not title or _SR_SKIP.search(title):
+            continue
+        date = f"{year}-{mon:02d}-{day:02d}"
+        key = (date, title.lower())
+        if key in seen:
+            continue
+        seen.add(key)
+        tm = re.search(r"\b(\d{1,2}(?::\d{2})?\s*[ap]m)\b", title, re.I)
+        showtime = to_time(tm.group(1)) if tm else ""
+        if tm:
+            title = clean(title[:tm.start()] + title[tm.end():]).strip(" .-")
+        shows.append({"title": title, "venue": venue, "neighborhood": nb,
+                      "address": addr, "date": date, "time": showtime,
+                      "venueUrl": "https://www.spareroomrestaurantandlounge.com/events.htm",
+                      "imageUrl": ""})
+    return shows
 
 
 # ---- Star Theater (startheaterportland.com) -- single venue, TicketWeb tw-*
@@ -3306,6 +3454,10 @@ SOURCES = [
     # roselandpdx.com went Roseland-only, so Hawthorne needs its own URL.
     {"name": "Hawthorne Theatre (hawthornetheatre.com)", "parser": parse_mammoth,
      "urls": ["https://hawthornetheatre.com/events/"]},
+    {"name": "Kenton Club (kentonclub.com)", "parser": parse_kentonclub,
+     "urls": ["https://www.kentonclub.com/"]},
+    {"name": "Spare Room (spareroomrestaurantandlounge.com)", "parser": parse_spareroom,
+     "urls": _spare_room_urls()},
     {"name": "The Goodfoot", "parser": parse_goodfoot, "walled": True,
      "urls": ["https://www.thegoodfoot.com/"]},
     {"name": "Music Millennium", "parser": parse_musicmillennium, "walled": True,
