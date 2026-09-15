@@ -1210,7 +1210,10 @@ def parse_rosequarter(html, today):
                 break
         shows.append({"title": title, "venue": venue, "neighborhood": nb,
                       "address": addr, "date": date, "time": showtime,
-                      "venueUrl": url, "imageUrl": ""})
+                      "venueUrl": url,
+                      # Every Webflow card carries its poster as <img class="image">;
+                      # 32/32 on the captured page.
+                      "imageUrl": (card.find("img", src=re.compile(r"^https?://")) or {}).get("src", "")})
     return shows
 
 
