@@ -639,50 +639,6 @@ def _venue_from_etix(url):
             return name
     return None
 
-def parse_msstudios(html, today):
-    soup = BeautifulSoup(html, "html.parser")
-    shows = []
-    seen = set()
-    cur_date = None
-    # Walk headings and content in document order.
-    for el in soup.find_all(["h5", "h2", "h4", "p", "div"]):
-        t = clean(el.get_text())
-        if el.name == "h5":
-            m = MS_DATE_HDR.search(t)
-            if m and m.group(1) in MONTHS_FULL:
-                cur_date = f"{int(m.group(3))}-{MONTHS_FULL[m.group(1)]:02d}-{int(m.group(2)):02d}"
-            continue
-        if el.name == "h2":
-            a = el.find("a", href=True)
-            if not a or "etix.com" not in (a.get("href") or ""):
-                continue
-            url = a["href"]
-            venue = _venue_from_etix(url)
-            if not venue or not cur_date:
-                continue
-            key = (url, cur_date)
-            if key in seen:
-                continue
-            seen.add(key)
-            title = re.sub(r'^SOLD OUT:\s*', '', clean(a.get_text()))
-            # show time + support from following siblings until next h2/h5
-            support, showtime = "", ""
-            for sib in el.find_all_next(["h2", "h5", "h4", "div", "p"], limit=8):
-                if sib.name in ("h2", "h5"):
-                    break
-                st = clean(sib.get_text())
-                if sib.name == "h4" and not support:
-                    support = st
-                sm = re.search(r'Show:\s*([\d:]+\s*[AP]M)', st, re.I)
-                if sm and not showtime:
-                    showtime = to_time(sm.group(1))
-            nb, addr = VENUE_INFO.get(venue, ("Portland", ""))
-            full = f"{title} (w/ {support})" if support else title
-            shows.append({"title": full, "venue": venue, "neighborhood": nb,
-                          "address": addr, "date": cur_date, "time": showtime, "venueUrl": url, "imageUrl": ""})
-    return shows
-
-
 # ---- Wonder Ballroom (wonderballroom.com/events/) ----------------------------
 # In document order each event is: a dated /event/ link ("Sat, Jun 06, 2026")
 # (sometimes duplicated), then the title /event/ link, then optional <h4> support,
@@ -754,6 +710,10 @@ def _venue_from_etix(url):
             return name
     return None
 
+_ETIX_HREF = re.compile("etix[.]com")
+_ETIX_CDN = re.compile("cdn[.]etix[.]com")
+
+
 def parse_msstudios(html, today):
     soup = BeautifulSoup(html, "html.parser")
     shows = []
@@ -793,8 +753,25 @@ def parse_msstudios(html, today):
                     showtime = to_time(sm.group(1))
             nb, addr = VENUE_INFO.get(venue, ("Portland", ""))
             full = f"{title} (w/ {support})" if support else title
+            # The poster is a cdn.etix.com image in .event__inner, two levels
+            # above the h2. Climb only while the ancestor holds exactly one
+            # event heading, so a neighbour's poster is never attached. 30 of
+            # 60 events carried one on the captured page; the rest are blank.
+            img = ""
+            box = el
+            for _ in range(4):
+                box = box.parent
+                if box is None or getattr(box, "name", None) is None:
+                    break
+                if len([h for h in box.find_all("h2") if h.find("a", href=_ETIX_HREF)]) != 1:
+                    break
+                cand = box.find("img", src=_ETIX_CDN)
+                if cand:
+                    img = cand["src"]
+                    break
             shows.append({"title": full, "venue": venue, "neighborhood": nb,
-                          "address": addr, "date": cur_date, "time": showtime, "venueUrl": url, "imageUrl": ""})
+                          "address": addr, "date": cur_date, "time": showtime, "venueUrl": url,
+                          "imageUrl": img})
     return shows
 
 
@@ -850,6 +827,7 @@ HOLO_DATE = re.compile(r'\b(Mon|Tue|Wed|Thu|Fri|Sat|Sun),\s+(Jan|Feb|Mar|Apr|May
 
 def parse_holocene(html, today):
     soup = BeautifulSoup(html, "html.parser")
+    img_by_url = _img_map_by_event_url(soup)  # 60/60 on the captured page
     text = clean(soup.get_text(" "))
     events = {}
     order = []
@@ -888,7 +866,9 @@ def parse_holocene(html, today):
             continue
         shows.append({"title": e["title"], "venue": "Holocene",
                       "neighborhood": "Central Eastside", "address": "1001 SE Morrison St",
-                      "date": date_iso, "time": showtime, "venueUrl": e["tix"] or slug, "imageUrl": ""})
+                      "date": date_iso, "time": showtime, "venueUrl": e["tix"] or slug,
+                      "imageUrl": img_by_url.get((e["tix"] or slug or "").split("?")[0], "")
+                                  or img_by_url.get((slug or "").split("?")[0], "")})
     return shows
 # ---- Revolution Hall (revolutionhall.com) ------------------------------------
 # The events are NOT in the static page and the site does NOT use the
@@ -1341,6 +1321,7 @@ def _ar_date(txt, today):
 
 def parse_albertarose(html, today):
     soup = BeautifulSoup(html, "html.parser")
+    img_by_url = _img_map_by_event_url(soup)  # 51/51 on the captured page
     shows = []
     seen = set()
     for info in soup.select(".rhp-event__info--list"):
@@ -1371,7 +1352,8 @@ def parse_albertarose(html, today):
         seen.add(key)
         nb, addr = VENUE_INFO.get(venue, ("NE/Alberta", ""))
         shows.append({"title": title, "venue": venue, "neighborhood": nb,
-                      "address": addr, "date": date, "time": showtime, "venueUrl": url, "imageUrl": ""})
+                      "address": addr, "date": date, "time": showtime, "venueUrl": url,
+                      "imageUrl": img_by_url.get((url or "").split("?")[0], "")})
     return shows
 
 

@@ -76,6 +76,9 @@ CASES = [
     ("spare-room-sept2026.html", sv.parse_spareroom,    11, {"time": 0},                    "monthly <li> list; karaoke lines skipped"),
     ("switchback-events.ics",  sv.parse_switchback,     30, {"time": 30},                   "iCal; 'Live Music:' filter; UTC -> Pacific"),
     ("switchback-music.ics",   sv.parse_switchback,      5, {"time": 5},                    "iCal; 🎵 marker; World Cup excluded"),
+    ("alberta-rose.html",      sv.parse_albertarose,    51, {"imageUrl": 51},              "RHP; poster via URL map"),
+    ("holocene.html",          sv.parse_holocene,       60, {"imageUrl": 60},              "RHP (Elementor); poster via URL map"),
+    ("mississippi-studios.html", sv.parse_msstudios,    30, {"imageUrl": 30},              "etix; poster is cdn.etix.com img in .event__inner, two above the h2"),
 ]
 
 # Pages that were captured and examined but publish NO listing data the
@@ -85,6 +88,8 @@ NEGATIVE = [
     ("twilight.html", "no times on the listing (title + flyer + link only)"),
     ("nova.html",     "no times on the listing"),
     ("aladdin.html",  "no age on the listing; every card links only to etix.com"),
+    ("laurelthirst.html", "EventON renders the calendar by AJAX; this HTML is the shell, 1 <img>, no per-event data"),
+    ("tomorrows-verse.html", "Wix; events come from the JSON API, not this HTML -- the warmup blob has mainImage, the API tier fieldset did not"),
 ]
 
 
