@@ -1564,6 +1564,16 @@ function auditPanelHtml(){
     // Renders the two attendance sections: "Did you make it?" then the stub shelf.
     // Called from both empty and populated Saved states so the shelf always shows.
     function renderShelfSection(wrap){
+      // Attendance is personal. The prompts and the shelf come from this
+      // browser's local history, so they used to show whether or not anyone
+      // was signed in -- which reads as the site knowing who you are when
+      // you haven't said. Signed out, show one line and nothing else.
+      if(!state._signedIn){
+        const p = document.createElement('div'); p.className='empty';
+        p.innerHTML = '<p>Sign in to see your saved shows and stubs.</p>';
+        wrap.appendChild(p);
+        return;
+      }
       renderDidYouMakeIt(wrap);
       renderStubShelf(wrap);
     }
