@@ -671,8 +671,14 @@ def tm_apply(shows, events, today):
         tw = _tm_words(n["title"])
         best = None
         for r in by.get((n["date"], n["venue"]), []):
-            ov = len(tw & _tm_words(r.get("title")))
-            if ov and (ov >= 2 or ov >= len(tw) * 0.6):
+            rw = _tm_words(r.get("title"))
+            ov = len(tw & rw)
+            # Same date, same venue, and the SHORTER title is mostly inside the
+            # longer one. Either side can be the short one: the scraper had
+            # "Hovvdy" where Ticketmaster had "Hovvdy w/ Emma Ogier", and
+            # measuring against the TM title alone (1 of 3 words) missed it
+            # and added a duplicate row -- seven of them, live, 2026-09-15.
+            if ov and (ov >= 2 or ov >= max(1, min(len(tw), len(rw))) * 0.6):
                 best = r
                 break
         if best is not None:
