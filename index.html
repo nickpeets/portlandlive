@@ -622,6 +622,8 @@ body{
     .dym-group{margin:0 0 18px}
     .dym-row{display:flex;flex-direction:column;gap:8px;padding:8px 0;border-bottom:1px solid rgba(243,234,215,.14)}
     .dym-row:last-child{border-bottom:0}
+    .iwt-btn.dym-no{align-self:center;font-size:11px;color:rgba(243,234,215,.6);opacity:1;padding:2px 8px;text-decoration:underline;text-underline-offset:3px}
+    .iwt-btn.dym-no:hover{color:var(--cream)}
     .iwt-btn.iwt-primary{align-self:stretch;justify-content:center;gap:8px;border:0;cursor:pointer;font-family:'Alfa Slab One',serif;text-transform:uppercase;letter-spacing:.04em;font-size:15px;padding:12px 16px;border-radius:4px;background:var(--rust);color:var(--cream);opacity:1;text-decoration:none}
     .iwt-btn.iwt-primary:hover{filter:brightness(1.08);text-decoration:none}
     .iwt-btn.iwt-primary .iwt-tik{font-size:16px}
@@ -1557,6 +1559,16 @@ function auditPanelHtml(){
         btn.setAttribute('data-iwt-time', ps.time||'');
         btn.innerHTML = '<span class="iwt-tik">\uD83C\uDF9F\uFE0F</span> I was there';
         row.appendChild(btn);
+        // The other answer. A show is here because you saved it or said you
+        // were going and the date passed; "didn't make it" withdraws that --
+        // un-hearts it, clears an "I'm going" mark -- and the prompt is gone.
+        // Nothing new is stored; the question just stops being asked.
+        const no = document.createElement('button');
+        no.type='button'; no.className='iwt-btn dym-no';
+        no.setAttribute('data-dym-key', favKey(ps));
+        no.setAttribute('data-dym-slug', ps.slug || '');
+        no.textContent = 'Didn\u2019t make it';
+        row.appendChild(no);
         sec.appendChild(row);
       });
       wrap.appendChild(sec);
@@ -5267,7 +5279,7 @@ function favKey(s){ return (s.venue||'') + '|' + (s.date||'') + '|' + (s.title||
           // a row with a slug where the title should be.
           if(!a || !a.date || a.date >= today) return;
           out.push({ title:a.title, venue:a.venue, neighborhood:a.neighborhood || '',
-                     address:a.address || '', date:a.date, time:a.time || '' });
+                     address:a.address || '', date:a.date, time:a.time || '', slug: sl });
         });
         ATTENDED_CACHE = out;
       }catch(e){ console.warn('[attended] load threw:', e); }
@@ -5498,7 +5510,7 @@ $('#byHoodToggle').addEventListener('click',()=>{state.byHood=!state.byHood;$('#
         if(location.hash === target){ router(); }
         else { location.hash = target; }
         document.querySelector('.controls').scrollIntoView({block:'start',behavior:'instant'}); }
-      $('#results').addEventListener('click',e=>{const _del=e.target.closest('.stub-del'); if(_del){ e.preventDefault(); e.stopPropagation(); const id=_del.getAttribute('data-stubdel'); const kept=loadStubs().filter(s=>stubIdOf(s)!==id); saveStubs(kept); flashStub('Removed from your shelf'); reRenderCurrentView(); return; } const _iwt=e.target.closest('.iwt-btn'); if(_iwt){ e.preventDefault(); e.stopPropagation(); if(!_iwt.disabled){ const g=n=>_iwt.getAttribute('data-iwt-'+n)||''; const snap={title:g('title'),venue:g('venue'),neighborhood:g('neighborhood'),address:g('address'),date:g('date'),time:g('time')}; const r=mintStub(snap); if(r.ok){ flashStub('Stub added to your shelf \u2014 '+(snap.title||'show')); } else { flashStub('Already on your shelf'); } reRenderCurrentView(); } return; } const vlink=e.target.closest('[data-venue]');if(vlink){e.preventDefault();e.stopPropagation();openVenue(vlink.getAttribute('data-venue'));return;}const h=e.target.closest('.heart');if(h){e.preventDefault();e.stopPropagation();toggleFavKey(h.getAttribute('data-fav'));reRenderCurrentView();return;} const _interactive=e.target.closest('a, button'); if(_interactive) return; const _card=e.target.closest('.scard'); if(_card && _card.dataset.slug){ location.hash = '#/show/' + encodeURIComponent(_card.dataset.slug); }});
+      $('#results').addEventListener('click',e=>{const _del=e.target.closest('.stub-del'); if(_del){ e.preventDefault(); e.stopPropagation(); const id=_del.getAttribute('data-stubdel'); const kept=loadStubs().filter(s=>stubIdOf(s)!==id); saveStubs(kept); flashStub('Removed from your shelf'); reRenderCurrentView(); return; } const _no=e.target.closest('.dym-no'); if(_no){ e.preventDefault(); e.stopPropagation(); const k=_no.getAttribute('data-dym-key')||''; const sl=_no.getAttribute('data-dym-slug')||''; if(k && state.favorites.has(k)){ state.favorites.delete(k); saveFavorites(); } if(sl){ const sb=txClient(); if(sb){ sb.from('show_attendees').delete().eq('show_slug', sl).then(function(){}, function(){}); } ATTENDED_CACHE = ATTENDED_CACHE.filter(function(a){ return a.slug !== sl; }); } flashStub('Okay \u2014 next time'); reRenderCurrentView(); return; } const _iwt=e.target.closest('.iwt-btn'); if(_iwt){ e.preventDefault(); e.stopPropagation(); if(!_iwt.disabled){ const g=n=>_iwt.getAttribute('data-iwt-'+n)||''; const snap={title:g('title'),venue:g('venue'),neighborhood:g('neighborhood'),address:g('address'),date:g('date'),time:g('time')}; const r=mintStub(snap); if(r.ok){ flashStub('Stub added to your shelf \u2014 '+(snap.title||'show')); } else { flashStub('Already on your shelf'); } reRenderCurrentView(); } return; } const vlink=e.target.closest('[data-venue]');if(vlink){e.preventDefault();e.stopPropagation();openVenue(vlink.getAttribute('data-venue'));return;}const h=e.target.closest('.heart');if(h){e.preventDefault();e.stopPropagation();toggleFavKey(h.getAttribute('data-fav'));reRenderCurrentView();return;} const _interactive=e.target.closest('a, button'); if(_interactive) return; const _card=e.target.closest('.scard'); if(_card && _card.dataset.slug){ location.hash = '#/show/' + encodeURIComponent(_card.dataset.slug); }});
 $('#tonightToggle').addEventListener('click',()=>{state.picks=false;$('#picksToggle').classList.remove('on');state.tonight=!state.tonight;if(state.tonight){state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');}$('#tonightToggle').classList.toggle('on',state.tonight);render();});
 $('#thisWeekToggle').addEventListener('click',()=>{state.picks=false;$('#picksToggle').classList.remove('on');state.thisWeek=!state.thisWeek;if(state.thisWeek){state.tonight=false;$('#tonightToggle').classList.remove('on');state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');}$('#thisWeekToggle').classList.toggle('on',state.thisWeek);render();});
 /* Audit (dev) toggle retired from the UI; audit view still reachable via ?audit=1 for dev. */
