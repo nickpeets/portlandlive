@@ -2263,9 +2263,22 @@ def parse_bunkbar(html, today):
         url = a.get("href") if a and a.get("href") else "https://shows.bunksandwiches.com/"
         if url.startswith("/"):
             url = "https://shows.bunksandwiches.com" + url
+        # Poster: every card carries one, served through Next.js's
+        # /_next/image?url=<cdn>&w=... wrapper. Unwrap to the CDN URL so the
+        # feed does not depend on their image route or its width parameter.
+        img = ""
+        im = c.find("img")
+        if im is not None:
+            src = (im.get("src") or "").strip()
+            if "/_next/image" in src and "url=" in src:
+                from urllib.parse import urlparse, parse_qs
+                src = (parse_qs(urlparse(src).query).get("url") or [""])[0]
+            if src.startswith("http"):
+                img = src
         shows.append({"title": title, "venue": "Bunk Bar",
                       "neighborhood": nb, "address": addr,
-                      "date": date, "time": tm, "venueUrl": url, "imageUrl": ""})
+                      "date": date, "time": tm, "venueUrl": url, "imageUrl": img,
+                      "age": _age_in_text(c.get_text(" "))})
     return shows
 
 
