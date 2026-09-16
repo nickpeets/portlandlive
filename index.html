@@ -4514,7 +4514,11 @@ async function inboxLoad(){
     const seen = txSeenMap();
     // Reports and mentions are complete as pushed; only threads go through
     // the latest-message join.
-    const direct = items.filter(function(i){ return i.kind === 'report' || i.kind === 'mention' || i.kind === 'follow'; });
+    // 'dm' joins the direct kinds (Sep 2026): a DM item already carries its
+    // own unread flag from dm_threads_mine, and the ticket/show pass below
+    // does not know about it -- without this line DMs were dropped here, so
+    // the badge never counted them.
+    const direct = items.filter(function(i){ return i.kind === 'report' || i.kind === 'mention' || i.kind === 'follow' || i.kind === 'dm'; });
     INBOX.items = items.filter(function(i){ return i.kind === 'ticket' || i.kind === 'show'; }).map(function(i){
       const m = latest[(i.kind === 'ticket' ? 't:' : 's:') + i.threadId];
       const unread = !!(m && m.sender_id !== uid
