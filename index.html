@@ -967,7 +967,6 @@ body{
             <div id="handleEditor" hidden></div>
             <div id="visibilityEditor" hidden></div>
             <button class="quick-menu-pill quick-menu-authitem" id="myShowsToggle" type="button" title="Your profile: saved shows, following, stubs">My profile</button>
-            <button class="quick-menu-pill quick-menu-authitem" id="dmMenuBtn" type="button" title="Your conversations">Messages</button>
             <label class="pill quick-menu-pill following-pill" title="Filter the feed to shows by the bands, venues and people you follow">
               <span class="toggle" id="followingToggle"></span>
               <span>&#9733; Following</span>
@@ -4529,11 +4528,15 @@ function inboxRenderList(){
   const list = document.getElementById('inboxList');
   if(!list) return;
   INBOX.viewing = null;
+  // Conversations live under the mail pill, not the profile menu (Nick,
+  // Sep 2026). One row at the top opens the full list; the items below are
+  // the latest per conversation, mention, follow and thread.
+  const allLink = '<a class="inbox-all" href="#/messages">All messages &rarr;</a>';
   if(!INBOX.items.length){
-    list.innerHTML = '<div class="inbox-state">No messages yet.</div>';
+    list.innerHTML = allLink + '<div class="inbox-state">No messages yet.</div>';
     return;
   }
-  list.innerHTML = INBOX.items.map(function(i, idx){
+  list.innerHTML = allLink + INBOX.items.map(function(i, idx){
     return '<button type="button" class="inbox-item' + (i.kind === 'report' ? ' inbox-item-report' : '') + '" data-inbox-open="'+idx+'">'
       + '<span class="inbox-item-top">'
         + (i.kind === 'report'
@@ -4781,6 +4784,12 @@ function inboxWire(){
     // like dismissing the menu. The thread did render; it was hidden a
     // millisecond later. Stop the click here.
     e.stopPropagation();
+    if(e.target.closest('.inbox-all')){
+      // Let the link navigate; just close the panel behind it.
+      INBOX.open = false; list.hidden = true;
+      btn.setAttribute('aria-expanded', 'false');
+      return;
+    }
     const openRow = e.target.closest('[data-inbox-open]');
     if(openRow){
       inboxOpenThread(parseInt(openRow.getAttribute('data-inbox-open'), 10));
@@ -5992,7 +6001,6 @@ $('#byHoodToggle').addEventListener('click',()=>{const on=!state.byHood;leaveSec
           else if(on){ location.hash = target; }
           else { state.view='shows'; state.selectedVenue=null; history.replaceState(null,'',location.pathname); render(); }
         });
-      $('#dmMenuBtn') && $('#dmMenuBtn').addEventListener('click',()=>{ location.hash = '#/messages'; });
       $('#myShowsToggle').addEventListener('click',async e=>{
         // Saved lives on your profile now. Signed in with a handle: go there.
         // Otherwise fall through to the old inline view (which itself asks
@@ -6549,6 +6557,8 @@ load();
 .inbox-list{position:absolute;top:calc(100% + 8px);right:0;background:var(--cream);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.25);overflow:hidden;width:290px;max-height:60vh;overflow-y:auto;padding:6px;display:flex;flex-direction:column;gap:2px;z-index:60}
 .inbox-list[hidden]{display:none}
 .inbox-state{font-family:'Bitter',Georgia,serif;font-size:12.5px;color:var(--ink);opacity:.75;padding:10px}
+.inbox-all{display:block;padding:8px 10px 10px;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--rust);text-decoration:none;border-bottom:1px solid rgba(0,0,0,.08);margin-bottom:4px}
+.inbox-all:hover{text-decoration:underline}
 .inbox-item{display:block;width:100%;text-align:left;border:0;background:transparent;cursor:pointer;border-radius:8px;padding:9px 10px;font-family:inherit}
 .inbox-item:hover{background:rgba(61,87,74,.1)}
 .inbox-item-top{display:flex;align-items:center;gap:7px}
