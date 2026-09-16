@@ -570,6 +570,15 @@ def _tm_words(title):
     return set(re.findall(r"[a-z0-9]+", (title or "").lower())) - _TM_STOP
 
 
+def _tm_headliner(title):
+    """The act, as a word set: the title up to the first support/suffix
+    marker (":" / "w/" / "with" / "(" / " - "). "Beck: Ride Lonesome Tour"
+    and "Beck" agree; "Oregon Symphony presents Holst" and "Gregory Alan
+    Isakov with the Oregon Symphony" do not."""
+    head = re.split(r"\s*[:(]|\s+(?:w/|with|feat\.?|featuring)\s+|\s+-\s+", title or "", maxsplit=1)[0]
+    return frozenset(_tm_words(head))
+
+
 def _tm_normalize(ev, venue_info):
     """One Discovery API event -> feed-shaped dict, or None if it is an add-on
     or at a venue the site does not know."""
@@ -654,19 +663,37 @@ def tm_apply(shows, events, today):
     from collections import Counter
     venue_info = _sv().VENUE_INFO
     by = {}
+    by_venue_head = {}          # (venue, headliner) -> [rows] from the feed
     for r in shows:
         by.setdefault((r.get("date"), r.get("venue")), []).append(r)
-    matched = added = 0
-    uncovered = Counter()
-    seen_add = set()
+        by_venue_head.setdefault((r.get("venue"), _tm_headliner(r.get("title"))), []).append(r)
+    # Every date Ticketmaster lists per (venue, headliner). A real two-night
+    # stand (Spafford at Al's Den, Sep 19 and 20) shows both dates here; a
+    # reschedule the API has not caught up with shows only the old one.
+    tm_dates = {}
+    norm = []
     for ev in events:
         n = _tm_normalize(ev, venue_info)
+        norm.append(n)
+        if n and "_uncovered" not in n and n.get("date"):
+            tm_dates.setdefault((n["venue"], _tm_headliner(n["title"])), set()).add(n["date"])
+    matched = added = rescheduled = dead = 0
+    uncovered = Counter()
+    seen_add = set()
+    for ev, n in zip(events, norm):
         if not n:
             continue
         if "_uncovered" in n:
             uncovered[n["_uncovered"]] += 1
             continue
         if not n["date"] or n["date"] < today.isoformat():
+            continue
+        # Ticketmaster's own verdict first: cancelled / offsale / postponed
+        # events are not shows to add (9 offsale and 1 cancelled in the
+        # captured pull).
+        code = (((ev.get("dates") or {}).get("status") or {}).get("code") or "").lower()
+        if code in ("cancelled", "canceled", "offsale", "postponed", "rescheduled"):
+            dead += 1
             continue
         tw = _tm_words(n["title"])
         best = None
@@ -687,13 +714,30 @@ def tm_apply(shows, events, today):
                 if not (best.get(k) or "").strip() and n.get(k):
                     best[k] = n[k]
             continue
+        # No row on that date. Reschedule check: the venue lists the same
+        # headliner on another date that Ticketmaster does NOT list. Beck
+        # moved Sep 19 -> Nov 10 (announced 2026-09-14); Portland'5 updated
+        # that day, the API still said Sep 19, and the pass added a second
+        # Beck. The venue wins. A two-night stand is safe: the API lists
+        # both nights, so the other date is in tm_dates and nothing fires.
+        hk = _tm_headliner(n["title"])
+        others = [r for r in by_venue_head.get((n["venue"], hk), []) if r.get("date") != n["date"]]
+        listed = tm_dates.get((n["venue"], hk), set())
+        moved = next((r for r in others if r.get("date") not in listed), None)
+        if hk and moved is not None:
+            print(f"  note: Ticketmaster says {n['date']} but {n['venue']} lists {moved.get('date')} -- {n['title'][:40]!r}; keeping the venue's date")
+            rescheduled += 1
+            continue
         key = (n["date"], n["venue"], frozenset(tw))
         if key in seen_add:
             continue
         seen_add.add(key)
         shows.append(n)
         by.setdefault((n["date"], n["venue"]), []).append(n)
+        by_venue_head.setdefault((n["venue"], hk), []).append(n)
         added += 1
+    if rescheduled or dead:
+        print(f"  Ticketmaster: {rescheduled} skipped as rescheduled (venue date kept), {dead} skipped as cancelled/offsale")
     return matched, added, uncovered
 
 
