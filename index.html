@@ -967,6 +967,7 @@ body{
             <div id="handleEditor" hidden></div>
             <div id="visibilityEditor" hidden></div>
             <button class="quick-menu-pill quick-menu-authitem" id="myShowsToggle" type="button" title="Your profile: saved shows, following, stubs">My profile</button>
+            <button class="quick-menu-pill quick-menu-authitem" id="dmMenuBtn" type="button" title="Your conversations">Messages</button>
             <label class="pill quick-menu-pill following-pill" title="Filter the feed to shows by the bands, venues and people you follow">
               <span class="toggle" id="followingToggle"></span>
               <span>&#9733; Following</span>
@@ -2268,6 +2269,9 @@ function parseRoute(){
   // email point at -- the token is the credential, no sign-in needed.
   if(/^#\/submit\/?$/.test(h)) return {type:'submit'};
   if(/^#\/about\/?$/.test(h)) return {type:'about'};
+  m = /^#\/messages\/([^?#]+)/.exec(h);
+  if(m) return {type:'dm', handle: decodeURIComponent(m[1])};
+  if(/^#\/messages\/?$/.test(h)) return {type:'dms'};
   if(/^#\/privacy\/?$/.test(h)) return {type:'privacy'};
   m = /^#\/review\/([0-9a-f-]{36})\/([0-9a-f-]{36})\/(approved|rejected)\/?$/.exec(h);
   if(m) return {type:'review', id:m[1], token:m[2], action:m[3]};
@@ -2306,6 +2310,8 @@ async function router(){
   if(route.type === 'profile'){ await renderProfileRoute(route.handle); return; }
   if(route.type === 'submit'){ renderSubmitRoute(); return; }
   if(route.type === 'about'){ renderStaticPage('about'); return; }
+  if(route.type === 'dms'){ await renderMessagesRoute(); return; }
+  if(route.type === 'dm'){ await renderThreadRoute(route.handle); return; }
   if(route.type === 'privacy'){ renderStaticPage('privacy'); return; }
   if(route.type === 'festival'){ await renderFestivalRoute(route.slug); return; }
   if(route.type === 'festivals'){
@@ -2547,6 +2553,96 @@ function stubTileCanvas(o){
   return cv;
 }
 
+// ===== DIRECT MESSAGES (Sep 2026) =====
+// #/messages: your conversations. #/messages/<handle>: one thread. Two
+// people, one thread. Load on open, refresh on send -- same posture as the
+// Miracle threads (schema-messages.sql).
+function dmSafe(pr){ return Promise.resolve(pr).catch(function(e){ return { error: e }; }); }
+function dmWhen(iso){
+  const d = new Date(iso); const now = new Date();
+  const sameDay = d.toDateString() === now.toDateString();
+  return sameDay ? d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}) : d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+}
+function dmClearPills(){
+  ['venuesToggle','myShowsToggle','comedyToggle','followingToggle','byHoodToggle','festivalsToggle','allAgesToggle','tonightToggle','thisWeekToggle','picksToggle']
+    .forEach(id => { const el = document.getElementById(id); if(el) el.classList.remove('on'); });
+}
+async function renderMessagesRoute(){
+  const wrap = $('#results'); wrap.innerHTML = ''; dmClearPills();
+  $('#resultCount').textContent = 'Messages';
+  try{ if(typeof trackView === 'function') trackView('/#/messages'); }catch(_){}
+  const sb = profileClient();
+  if(!state._signedIn || !sb){ wrap.innerHTML = '<div class="empty">Sign in to see your messages.</div>'; return; }
+  wrap.innerHTML = '<div class="empty">Loading\u2026</div>';
+  const r = await dmSafe(sb.rpc('dm_threads_mine', { p_limit: 100 }));
+  if(r && r.error){ wrap.innerHTML = '<div class="empty">Couldn\u2019t load messages. Reload to try again.</div>'; console.warn('[dm] list:', r.error.message || r.error); return; }
+  const rows = r.data || [];
+  rows.forEach(function(u){ AV_CACHE[u.other_id] = { id: u.other_id, display_name: u.display_name, avatar_url: u.avatar_url }; });
+  const me = (await sb.auth.getSession()).data.session; const myId = me && me.user ? me.user.id : null;
+  if(!rows.length){ wrap.innerHTML = '<div class="empty">No conversations yet. Open someone\u2019s profile and tap Message.</div>'; return; }
+  wrap.innerHTML = '<div class="dm-list">' + rows.map(function(t){
+    const mine = t.last_sender === myId;
+    return '<a class="dm-row' + (t.unread ? ' dm-unread' : '') + '" href="#/messages/' + encodeURIComponent(t.handle) + '">'
+      + avImg(t.other_id, t.display_name, 'av-sm')
+      + '<span class="dm-main"><span class="dm-who">' + esc(t.display_name || t.handle) + ' <span class="dm-handle">@' + esc(t.handle) + '</span></span>'
+      + '<span class="dm-snippet">' + (mine ? 'You: ' : '') + esc((t.last_body || '').slice(0, 90)) + '</span></span>'
+      + '<span class="dm-when">' + esc(dmWhen(t.last_at)) + '</span>'
+      + '</a>';
+  }).join('') + '</div>';
+}
+async function renderThreadRoute(handle){
+  const wrap = $('#results'); wrap.innerHTML = ''; dmClearPills();
+  $('#resultCount').textContent = 'Messages';
+  try{ if(typeof trackView === 'function') trackView('/#/messages/thread'); }catch(_){}
+  const sb = profileClient();
+  if(!state._signedIn || !sb){ wrap.innerHTML = '<div class="empty">Sign in to send messages.</div>'; return; }
+  wrap.innerHTML = '<div class="empty">Loading\u2026</div>';
+  const pr = await dmSafe(sb.rpc('profile_by_handle', { p_handle: handle }));
+  const p = pr && pr.data && pr.data[0];
+  if(!p){ wrap.innerHTML = '<div class="empty">No one by that handle. <a href="#/messages">Back to messages</a></div>'; return; }
+  AV_CACHE[p.id] = { id: p.id, display_name: p.display_name, avatar_url: p.avatar_url };
+  const me = (await sb.auth.getSession()).data.session; const myId = me && me.user ? me.user.id : null;
+  if(p.id === myId){ wrap.innerHTML = '<div class="empty">That\u2019s you. <a href="#/messages">Back to messages</a></div>'; return; }
+  const o = await dmSafe(sb.rpc('dm_open', { p_other: p.id }));
+  if(o && o.error){
+    const msg = String(o.error.message || o.error);
+    wrap.innerHTML = '<div class="empty">' + (/not_allowed/.test(msg) ? 'You can message ' + esc(p.display_name || p.handle) + ' once one of you follows the other. <a href="#/u/' + encodeURIComponent(p.handle) + '">Their profile</a>' : 'Couldn\u2019t open this conversation. Reload to try again.') + '</div>';
+    return;
+  }
+  const threadId = o.data;
+  const page = document.createElement('div'); page.className = 'dm-thread';
+  page.innerHTML = '<div class="dm-head"><a class="dm-back" href="#/messages" aria-label="Back to messages">&#8592;</a>'
+    + avImg(p.id, p.display_name, 'av-sm') + '<a class="dm-head-name" href="#/u/' + encodeURIComponent(p.handle) + '">' + esc(p.display_name || p.handle) + ' <span class="dm-handle">@' + esc(p.handle) + '</span></a></div>'
+    + '<div class="dm-msgs" id="dmMsgs"><div class="empty">Loading\u2026</div></div>'
+    + '<form class="dm-compose" id="dmCompose"><textarea id="dmBody" rows="2" maxlength="2000" placeholder="Write a message\u2026"></textarea><button type="submit" class="tx-send">Send</button></form>';
+  wrap.appendChild(page);
+  async function load(){
+    const r = await dmSafe(sb.rpc('dm_messages', { p_thread: threadId, p_limit: 200 }));
+    const box = document.getElementById('dmMsgs'); if(!box) return;
+    if(r && r.error){ box.innerHTML = '<div class="empty">Couldn\u2019t load messages.</div>'; return; }
+    const msgs = (r.data || []).slice().reverse();
+    box.innerHTML = msgs.length ? msgs.map(function(m){
+      const mine = m.sender_id === myId;
+      return '<div class="dm-msg' + (mine ? ' dm-mine' : '') + '"><div class="dm-body">' + esc(m.body) + '</div><div class="dm-time">' + esc(dmWhen(m.created_at)) + '</div></div>';
+    }).join('') : '<div class="empty">Say hello.</div>';
+    box.scrollTop = box.scrollHeight;
+    if(typeof inboxLoad === 'function'){ try{ inboxLoad(); }catch(_){} }
+  }
+  await load();
+  const form = document.getElementById('dmCompose'); const ta = document.getElementById('dmBody');
+  form.addEventListener('submit', async function(e){
+    e.preventDefault();
+    const body = (ta.value || '').trim(); if(!body) return;
+    const btn = form.querySelector('button'); btn.disabled = true;
+    const r = await dmSafe(sb.rpc('dm_send', { p_thread: threadId, p_body: body }));
+    btn.disabled = false;
+    if(r && r.error){ console.warn('[dm] send:', r.error.message || r.error); return; }
+    ta.value = ''; await load(); ta.focus();
+  });
+  ta.addEventListener('keydown', function(e){ if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); form.requestSubmit(); } });
+  ta.focus();
+}
+
 function peopleRow(u, removable){
   // removable: an "x" that removes this person as a follower. Only shown on
   // your own followers list (Sep 2026; Nick chose remove over block).
@@ -2679,14 +2775,23 @@ async function renderProfileRoute(handle){
       + '</div>'
     + '</div>'
     + ((myId && !isMe)
-        ? '<button type="button" class="pf-follow' + (iFollow ? ' is-following' : '') + '" data-pf-follow="' + (iFollow ? 'unfollow' : 'follow') + '"'
-          + (iFollow ? ' title="Unfollow"' : '') + '>' + followLabel + '</button>'
+        ? '<div class="pf-actions">'
+          + '<button type="button" class="pf-follow' + (iFollow ? ' is-following' : '') + '" data-pf-follow="' + (iFollow ? 'unfollow' : 'follow') + '"'
+            + (iFollow ? ' title="Unfollow"' : '') + '>' + followLabel + '</button>'
+          // Message (Sep 2026). Nick's rule: either of you follows the other.
+          // Not allowed yet: the button says so and does nothing.
+          + ((iFollow || followsMe)
+              ? '<button type="button" class="pf-follow pf-message" data-pf-message="' + esc(p.handle) + '">Message</button>'
+              : '<button type="button" class="pf-follow pf-message is-off" disabled title="Follow to message">Message</button>')
+          + '</div>'
         : '')
     + '</div>';
 
   // Follow / unfollow, then re-render from the server: counts, the button
   // state and -- for a followers-only profile -- the upcoming list all
   // change together, and the page should say what the database says.
+  var msgBtn = page.querySelector('[data-pf-message]');
+  if(msgBtn){ msgBtn.addEventListener('click', function(){ location.hash = '#/messages/' + encodeURIComponent(p.handle); }); }
   var followBtn = page.querySelector('[data-pf-follow]');
   if(followBtn){
     followBtn.addEventListener('click', async function(){
@@ -4312,6 +4417,23 @@ async function inboxLoad(){
       }
     }catch(e){ console.warn('[inbox] followers threw:', e); }
 
+    // ---- Direct messages (Sep 2026) ---------------------------------
+    try{
+      const q = await sb.rpc('dm_threads_mine', { p_limit: 50 });
+      if(!q.error){
+        (q.data || []).forEach(function(t){
+          if(!t.last_body) return;                       // an opened-but-empty thread is not news
+          items.push({
+            kind: 'dm', seenKey: 'dm:' + t.thread_id, otherId: t.other_id,
+            who: t.display_name || 'Someone', handle: t.handle || '', slug: '',
+            kindLabel: t.handle ? '@' + t.handle : 'Message',
+            snippet: (t.last_sender === uid ? 'You: ' : '') + (t.last_body || '').slice(0, 90),
+            at: t.last_at, unread: !!t.unread, empty: false
+          });
+        });
+      } else { console.warn('[inbox] dms failed:', q.error.message); }
+    }catch(e){ console.warn('[inbox] dms threw:', e); }
+
     if(!items.length){ INBOX.items = []; inboxRenderBadge(); return; }
 
     // ---- Latest message per thread, per table ------------------------
@@ -4442,6 +4564,12 @@ async function inboxOpenThread(idx){
   if(item.kind === 'report'){ inboxRenderReport(idx); return; }
   if(item.kind === 'mention'){ inboxOpenMention(idx); return; }
   if(item.kind === 'follow'){ inboxOpenFollow(idx); return; }
+  if(item.kind === 'dm'){
+    INBOX.open = false; list.hidden = true;
+    const b = document.getElementById('inboxBtn'); if(b) b.setAttribute('aria-expanded', 'false');
+    location.hash = '#/messages/' + encodeURIComponent(item.handle);
+    return;
+  }
 
   const sb = inboxClient();
   const table = item.kind === 'ticket' ? 'ticket_messages' : 'show_messages';
@@ -5864,6 +5992,7 @@ $('#byHoodToggle').addEventListener('click',()=>{const on=!state.byHood;leaveSec
           else if(on){ location.hash = target; }
           else { state.view='shows'; state.selectedVenue=null; history.replaceState(null,'',location.pathname); render(); }
         });
+      $('#dmMenuBtn') && $('#dmMenuBtn').addEventListener('click',()=>{ location.hash = '#/messages'; });
       $('#myShowsToggle').addEventListener('click',async e=>{
         // Saved lives on your profile now. Signed in with a handle: go there.
         // Otherwise fall through to the old inline view (which itself asks
@@ -6480,6 +6609,30 @@ load();
 .pf-name{font-family:'Alfa Slab One',serif;font-weight:400;font-size:26px;margin:0;line-height:1.1;overflow-wrap:anywhere}
 .pf-handle{font-family:'Oswald',sans-serif;font-size:15px;letter-spacing:.03em;color:var(--cream);opacity:.9;margin-top:3px}
 .pf-you{color:var(--cream);opacity:.6;font-size:12px;letter-spacing:0}
+.pf-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pf-message.is-off{opacity:.45;cursor:not-allowed}
+.dm-list{display:flex;flex-direction:column;gap:2px;max-width:640px}
+.dm-row{display:flex;align-items:center;gap:10px;padding:10px 8px;border-radius:10px;color:var(--cream);text-decoration:none}
+.dm-row:hover{background:rgba(243,234,215,.08)}
+.dm-row .av-sm,.dm-head .av-sm{width:36px;height:36px;border-radius:50%;flex:0 0 36px;display:inline-flex;align-items:center;justify-content:center;font-family:'Oswald',sans-serif;font-weight:600;color:#1f3a30;object-fit:cover}
+.dm-main{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1 1 auto}
+.dm-who{font-family:'Bitter',Georgia,serif;font-weight:600;font-size:15px}
+.dm-handle{font-family:'Oswald',sans-serif;font-weight:400;font-size:12px;opacity:.6;letter-spacing:.04em}
+.dm-snippet{font-size:13.5px;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dm-unread .dm-snippet{opacity:1;font-weight:600}
+.dm-unread .dm-who::before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--rust);margin-right:6px;vertical-align:middle}
+.dm-when{font-family:'Oswald',sans-serif;font-size:12px;opacity:.55;flex:0 0 auto}
+.dm-thread{max-width:640px}
+.dm-head{display:flex;align-items:center;gap:10px;margin:4px 0 12px}
+.dm-back{color:var(--cream);text-decoration:none;font-size:20px;padding:4px 8px}
+.dm-head-name{color:var(--cream);text-decoration:none;font-family:'Bitter',Georgia,serif;font-weight:600;font-size:16px}
+.dm-msgs{display:flex;flex-direction:column;gap:6px;max-height:60vh;overflow-y:auto;padding:4px 2px}
+.dm-msg{max-width:78%;align-self:flex-start;background:rgba(243,234,215,.12);border-radius:12px 12px 12px 4px;padding:8px 12px}
+.dm-msg.dm-mine{align-self:flex-end;background:var(--rust);color:var(--cream);border-radius:12px 12px 4px 12px}
+.dm-body{font-family:'Bitter',Georgia,serif;font-size:15px;line-height:1.45;white-space:pre-wrap;word-break:break-word}
+.dm-time{font-family:'Oswald',sans-serif;font-size:11px;opacity:.6;margin-top:3px}
+.dm-compose{display:flex;gap:8px;align-items:flex-end;margin-top:12px}
+.dm-compose textarea{flex:1 1 auto;resize:none;border-radius:10px;border:1px solid rgba(243,234,215,.3);background:rgba(243,234,215,.08);color:var(--cream);padding:10px 12px;font-family:'Bitter',Georgia,serif;font-size:15px}
 .pf-count{background:none;border:0;padding:0;color:inherit;font:inherit;cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(243,234,215,.35)}
 .pf-count:hover{text-decoration-color:var(--cream)}
 .pf-people{margin:4px 0 16px;background:rgba(243,234,215,.06);border-radius:10px;padding:10px 12px}
