@@ -12,7 +12,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install deps
-        run: pip install requests beautifulsoup4 python-dateutil playwright
+        run: pip install requests beautifulsoup4 python-dateutil playwright curl_cffi
       # Headless-browser tier for the two bot-walled venues (Goodfoot, Music
       # Millennium). Chromium + its system libs; ~1 min. Only sources flagged
       # walled use it -- the other 34 stay on plain requests. If this step

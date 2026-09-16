@@ -83,6 +83,7 @@ CASES = [
     ("mississippi-pizza.html",  sv.parse_mississippipizza, 34, {"imageUrl": 34, "age": 34},   "RHP; poster via URL map; age from eventAgeRestriction"),
     ("bunkbar.html",           sv.parse_bunkbar,        10, {"imageUrl": 10, "time": 10, "age": 3}, "Next.js cards; poster unwrapped from /_next/image?url=; age only where the card says it"),
     ("nofun-events.html",      sv.parse_nofun,          45, {"time": 45, "age": 45, "imageUrl": 24}, "Squarespace event list (HTML; the JSON endpoint serves an error page); karaoke/trivia/closed skipped; trailing TBA stripped"),
+    ("kellys-tribe.json",       sv.parse_kellys_olympian, 17, {"time": 17, "imageUrl": 17},  "Tribe REST JSON via the TLS tier (curl_cffi); JSON-LD HTML path kept as fallback"),
 ]
 
 # Pages that were captured and examined but publish NO listing data the

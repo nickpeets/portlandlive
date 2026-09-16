@@ -3439,6 +3439,25 @@ def parse_mcmenamins(html, today):
 
 
 
+def fetch_tls(url, timeout=30):
+    """Fetch with Chrome's TLS fingerprint, no browser.
+
+    Some firewalls block on the TLS handshake, not the headers: Python's
+    requests looks nothing like Chrome at the connection level, so every
+    request gets the block page no matter what User-Agent it sends, while
+    a real Chrome passes. curl_cffi speaks Chrome's handshake. Kelly's
+    Olympian (2026-09-16): plain requests 403 on every URL, curl_cffi 200
+    on all of them -- including the Tribe REST API, so the site moved from
+    the headless tier to this one and got its structured source back.
+
+    Sits between browser-headers and Playwright in the bot-wall order."""
+    from curl_cffi import requests as cr
+    r = cr.get(url, impersonate="chrome", timeout=timeout,
+               headers={"Accept-Language": "en-US,en;q=0.9"})
+    r.raise_for_status()
+    return r.text
+
+
 def parse_kellys_olympian(html_text, today):
     # Kelly's Olympian (kellysolympian.com), Downtown - WordPress + The Events Calendar.
     # Events live in JSON-LD <script type="application/ld+json"> Event objects (Pacific offset dates).
@@ -3447,6 +3466,43 @@ def parse_kellys_olympian(html_text, today):
     horizon = today + datetime.timedelta(days=HORIZON_DAYS)
     lower = today
     nb, addr = VENUE_INFO.get("Kelly's Olympian", ("Downtown", ""))
+    # The Events Calendar's REST API (/wp-json/tribe/events/v1/events):
+    # one page of structured events -- start_date, title, url, image. The
+    # site's firewall blocked it for plain requests; fetch_tls gets in.
+    # If what we were handed is HTML instead, fall through to the JSON-LD
+    # reader below, which is what the headless path returned.
+    if html_text and html_text.lstrip().startswith("{"):
+        try:
+            data = json.loads(html_text)
+        except Exception:
+            data = {}
+        for e in data.get("events", []) or []:
+            title = clean(_html.unescape(e.get("title") or ""))
+            title = re.sub(r"\s+", " ", title).strip()
+            sd = (e.get("start_date") or "")[:16]
+            if not title or len(sd) < 16:
+                continue
+            try:
+                dt = datetime.datetime.strptime(sd, "%Y-%m-%d %H:%M")
+            except Exception:
+                continue
+            d = dt.date()
+            if not (lower <= d <= horizon):
+                continue
+            tm = "" if e.get("all_day") else "%d:%02d %s" % (dt.hour % 12 or 12, dt.minute, "AM" if dt.hour < 12 else "PM")
+            img = e.get("image") or ""
+            if isinstance(img, dict):
+                img = img.get("url", "") or ""
+            key = (d.isoformat(), title.lower())
+            if key in seen:
+                continue
+            seen.add(key)
+            out.append({"title": title, "venue": "Kelly's Olympian", "neighborhood": nb,
+                        "address": addr, "date": d.isoformat(), "time": tm,
+                        "venueUrl": e.get("url") or "https://kellysolympian.com/events/",
+                        "imageUrl": img if str(img).startswith("http") else "",
+                        "age": _age_in_text(_html.unescape(e.get("description") or ""))})
+        return out
     blocks = _LD_JSON.findall(html_text)
     for b in blocks:
         try:
@@ -3739,7 +3795,8 @@ SOURCES = [
     # Intermittent bot challenge (6 of 10 runs zero by Sep 2026, then fully
     # zero). Plain requests with a browser UA doesn't reliably pass; Chromium
     # does. Parser unchanged -- it just gets its HTML through the headless tier.
-    {"name": "Kelly's Olympian (kellysolympian.com)", "parser": parse_kellys_olympian, "headless": True, "urls": ["https://kellysolympian.com/events/"]},
+    {"name": "Kelly's Olympian (kellysolympian.com)", "parser": parse_kellys_olympian, "tls": True,
+     "urls": ["https://kellysolympian.com/wp-json/tribe/events/v1/events?per_page=100"]},
     {"name": "Barrel Room (barrelroompdx.com)", "parser": parse_barrelroom, "may_be_empty": True, "urls": ["https://www.barrelroompdx.com/events"]},
     {"name": "Arbor Beer Lodge (arborbeerlodge.com)", "parser": parse_arbor, "urls": ["https://www.arborbeerlodge.com/events?format=json"]},
     {"name": "Artichoke Music (artichokemusic.org)", "parser": parse_artichoke, "urls": ["https://www.eventbrite.com/cc/live-music-artichoke-4657563"]},
@@ -3838,11 +3895,17 @@ def scrape():
                     # navigation (e.g. Goodfoot clears the challenge on the
                     # homepage, then reads the site's JSON API in-session).
                     rows = src["parser"](None, today)
+                elif src.get("tls"):
+                    # TLS-fingerprint tier: Chrome's handshake without a
+                    # browser. For firewalls that block on the connection,
+                    # not the headers. Cheaper and steadier than headless.
+                    rows = src["parser"](fetch_tls(url), today)
                 elif src.get("headless"):
                     # Headless tier, loop-owned fetch: Chromium clears the
                     # challenge and the parser gets ordinary rendered HTML, so
                     # an existing HTML parser needs no changes to move behind a
-                    # wall. This is how Kelly's Olympian came back (Sep 2026).
+                    # wall. Kelly's Olympian lived here Sep 2026 until the
+                    # TLS tier above got it back onto its JSON API.
                     from fetch_headless import fetch_headless
                     rows = src["parser"](fetch_headless(url), today)
                 else:
