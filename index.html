@@ -962,6 +962,15 @@ body{
             <div class="inbox-state">Loading…</div>
           </div>
         </div>
+        <div class="inbox" id="notif" hidden>
+          <button class="auth-pill inbox-btn" id="notifBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Notifications">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+            <span class="inbox-badge" id="notifBadge" hidden>0</span>
+          </button>
+          <div class="inbox-list" id="notifList" hidden>
+            <div class="inbox-state">Loading…</div>
+          </div>
+        </div>
         <div class="quick-menu" id="quickMenu">
           <button class="auth-pill quick-menu-btn" id="quickMenuBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Menu">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
@@ -4300,13 +4309,33 @@ async function mountModPanel(wrap){
 // and vice versa. Keys: a bare thread id for ticket threads, 'wg:'+id for show
 // threads -- the namespacing that keeps two different tables' uuids from
 // colliding in one map.
-const INBOX = { items: [], open: false, viewing: null };
+// Two panels, one item store (Sep 2026, Nick: "show mail and notifications
+// as two separate things ... the way FB does it"). Mail = direct messages
+// (kind 'dm'); Notifications = mentions, follows, Miracle/Who's Going
+// threads, reports. Each panel has All / Unread tabs and "See previous",
+// which extends the list in place. `open` is which panel is showing.
+const INBOX = { items: [], open: null, viewing: null, tab: { mail: 'all', notif: 'all' }, shown: { mail: 8, notif: 8 } };
+const INBOX_PAGE = 8;
+function inboxIsMail(i){ return i.kind === 'dm'; }
+function inboxPanelOf(i){ return inboxIsMail(i) ? 'mail' : 'notif'; }
+function inboxPanelEl(which){
+  return document.getElementById((which || INBOX.open) === 'notif' ? 'notifList' : 'inboxList');
+}
+function inboxBtnEl(which){
+  return document.getElementById((which || INBOX.open) === 'notif' ? 'notifBtn' : 'inboxBtn');
+}
+function inboxClose(){
+  ['inboxList','notifList'].forEach(function(id){ const el = document.getElementById(id); if(el) el.hidden = true; });
+  ['inboxBtn','notifBtn'].forEach(function(id){ const el = document.getElementById(id); if(el) el.setAttribute('aria-expanded', 'false'); });
+  INBOX.open = null; INBOX.viewing = null;
+}
 
 function inboxClient(){ return window.__plAuth || null; }
 
 async function inboxLoad(){
   const sb = inboxClient();
   const wrap = document.getElementById('inbox');
+  const nwrap = document.getElementById('notif');
   if(!sb || !wrap) return;
 
   let uid = null;
@@ -4316,12 +4345,12 @@ async function inboxLoad(){
   }catch(e){ uid = null; }
 
   if(!uid){
-    wrap.hidden = true;
+    wrap.hidden = true; if(nwrap) nwrap.hidden = true;
     INBOX.items = [];
     inboxRenderBadge();
     return;
   }
-  wrap.hidden = false;
+  wrap.hidden = false; if(nwrap) nwrap.hidden = false;
 
   const items = [];
   try{
@@ -4564,27 +4593,39 @@ function inboxShowLabel(item){
 }
 
 function inboxRenderBadge(){
-  const badge = document.getElementById('inboxBadge');
-  if(!badge) return;
-  const n = INBOX.items.filter(function(i){ return i.unread; }).length;
-  badge.textContent = n > 9 ? '9+' : String(n);
-  badge.hidden = n === 0;
+  const mail = INBOX.items.filter(function(i){ return i.unread && inboxIsMail(i); }).length;
+  const notif = INBOX.items.filter(function(i){ return i.unread && !inboxIsMail(i); }).length;
+  [['inboxBadge', mail], ['notifBadge', notif]].forEach(function(pair){
+    const badge = document.getElementById(pair[0]); if(!badge) return;
+    badge.textContent = pair[1] > 9 ? '9+' : String(pair[1]);
+    badge.hidden = pair[1] === 0;
+  });
 }
 
 function inboxRenderList(){
-  const list = document.getElementById('inboxList');
+  const which = INBOX.open || 'mail';
+  const list = inboxPanelEl(which);
   if(!list) return;
   INBOX.viewing = null;
-  // Conversations live under the mail pill, not the profile menu (Nick,
-  // Sep 2026). One row at the top opens the full list; the items below are
-  // the latest per conversation, mention, follow and thread.
-  const allLink = '<a class="inbox-all" href="#/messages">All messages &rarr;</a>';
-  if(!INBOX.items.length){
-    list.innerHTML = allLink + '<div class="inbox-state">No messages yet.</div>';
+  const tab = INBOX.tab[which] || 'all';
+  const all = INBOX.items.map(function(i, idx){ return { i: i, idx: idx }; })
+    .filter(function(x){ return inboxPanelOf(x.i) === which; });
+  const pool = tab === 'unread' ? all.filter(function(x){ return x.i.unread; }) : all;
+  const shown = pool.slice(0, INBOX.shown[which]);
+  const head = '<div class="inbox-head">'
+    + '<span class="inbox-title">' + (which === 'mail' ? 'Messages' : 'Notifications') + '</span>'
+    + '<span class="inbox-tabs">'
+    +   '<button type="button" class="inbox-tab' + (tab === 'all' ? ' on' : '') + '" data-inbox-tab="all">All</button>'
+    +   '<button type="button" class="inbox-tab' + (tab === 'unread' ? ' on' : '') + '" data-inbox-tab="unread">Unread</button>'
+    + '</span></div>'
+    + (which === 'mail' ? '<a class="inbox-all" href="#/messages">All messages &rarr;</a>' : '');
+  if(!pool.length){
+    list.innerHTML = head + '<div class="inbox-state">' + (tab === 'unread' ? 'Nothing unread.' : (which === 'mail' ? 'No messages yet.' : 'No notifications yet.')) + '</div>';
     return;
   }
-  list.innerHTML = allLink + INBOX.items.map(function(i, idx){
-    return '<button type="button" class="inbox-item' + (i.kind === 'report' ? ' inbox-item-report' : '') + '" data-inbox-open="'+idx+'">'
+  list.innerHTML = head + shown.map(function(x){
+    const i = x.i, idx = x.idx;
+    return '<button type="button" class="inbox-item' + (i.kind === 'report' ? ' inbox-item-report' : '') + (i.unread ? ' is-unread' : '') + '" data-inbox-open="'+idx+'">'
       + '<span class="inbox-item-top">'
         + (i.kind === 'report'
             ? '<span class="av inbox-report-flag" aria-hidden="true">!</span>'
@@ -4595,7 +4636,8 @@ function inboxRenderList(){
       + '<span class="inbox-item-show">' + esc(i.kindLabel || '') + '</span>'
       + '<span class="inbox-item-snip">' + esc(i.snippet || '') + '</span>'
       + '</button>';
-  }).join('');
+  }).join('')
+  + (pool.length > shown.length ? '<button type="button" class="inbox-more" data-inbox-more>See previous ' + (which === 'mail' ? 'messages' : 'notifications') + '</button>' : '');
 }
 
 // Open a conversation INSIDE the panel. Previously clicking a row just
@@ -4607,7 +4649,7 @@ function inboxRenderList(){
 // decides both where messages are read from and where a reply is written --
 // that's what item.kind carries.
 async function inboxOpenThread(idx){
-  const list = document.getElementById('inboxList');
+  const list = inboxPanelEl();
   const item = INBOX.items[idx];
   if(!list || !item) return;
   INBOX.viewing = idx;
@@ -4615,8 +4657,7 @@ async function inboxOpenThread(idx){
   if(item.kind === 'mention'){ inboxOpenMention(idx); return; }
   if(item.kind === 'follow'){ inboxOpenFollow(idx); return; }
   if(item.kind === 'dm'){
-    INBOX.open = false; list.hidden = true;
-    const b = document.getElementById('inboxBtn'); if(b) b.setAttribute('aria-expanded', 'false');
+    inboxClose();
     location.hash = '#/messages/' + encodeURIComponent(item.handle);
     return;
   }
@@ -4714,8 +4755,8 @@ function inboxOpenMention(idx){
   txMarkSeen(item.seenKey, item.at || new Date().toISOString());
   item.unread = false;
   inboxRenderBadge();
-  const list = document.getElementById('inboxList');
-  const btn = document.getElementById('inboxBtn');
+  const list = inboxPanelEl();
+  const btn = inboxBtnEl();
   INBOX.open = false; INBOX.viewing = null;
   if(list) list.hidden = true;
   if(btn) btn.setAttribute('aria-expanded', 'false');
@@ -4730,8 +4771,8 @@ function inboxOpenFollow(idx){
   txMarkSeen(item.seenKey, item.at || new Date().toISOString());
   item.unread = false;
   inboxRenderBadge();
-  const list = document.getElementById('inboxList');
-  const btn = document.getElementById('inboxBtn');
+  const list = inboxPanelEl();
+  const btn = inboxBtnEl();
   INBOX.open = false; INBOX.viewing = null;
   if(list) list.hidden = true;
   if(btn) btn.setAttribute('aria-expanded', 'false');
@@ -4766,7 +4807,7 @@ function inboxStartPoll(){
 // outcomes the show-page panel offered: uphold deletes the content and keeps
 // it hidden, dismiss clears the hide and puts it back.
 function inboxRenderReport(idx){
-  const list = document.getElementById('inboxList');
+  const list = inboxPanelEl();
   const item = INBOX.items[idx];
   if(!list || !item) return;
 
@@ -4809,59 +4850,45 @@ function inboxRenderReport(idx){
 }
 
 function inboxWire(){
-  const btn = document.getElementById('inboxBtn');
-  const list = document.getElementById('inboxList');
-  const wrap = document.getElementById('inbox');
-  if(!btn || !list || !wrap) return;
-
-  btn.addEventListener('click', function(e){
-    e.stopPropagation();
-    INBOX.open = !INBOX.open;
-    list.hidden = !INBOX.open;
-    btn.setAttribute('aria-expanded', INBOX.open ? 'true' : 'false');
-    if(INBOX.open){ INBOX.viewing = null; inboxRenderList(); inboxLoad(); }
-    else INBOX.viewing = null;
-  });
-
-  list.addEventListener('click', function(e){
-    // Everything below re-renders the panel synchronously, which DETACHES
-    // e.target. The document-level outside-click handler then asks
-    // wrap.contains(e.target) about a node no longer in the document, gets
-    // false, and closes the panel -- so opening a conversation looked exactly
-    // like dismissing the menu. The thread did render; it was hidden a
-    // millisecond later. Stop the click here.
-    e.stopPropagation();
-    if(e.target.closest('.inbox-all')){
-      // Let the link navigate; just close the panel behind it.
-      INBOX.open = false; list.hidden = true;
-      btn.setAttribute('aria-expanded', 'false');
-      return;
-    }
-    const openRow = e.target.closest('[data-inbox-open]');
-    if(openRow){
-      inboxOpenThread(parseInt(openRow.getAttribute('data-inbox-open'), 10));
-      return;
-    }
-    if(e.target.closest('[data-inbox-back]')){
-      inboxRenderList();
-      return;
-    }
-    // Still a way through to the show itself -- the conversation is about a
-    // specific show, and the exchange/attendee context lives there.
-    const go = e.target.closest('[data-inbox-slug]');
-    if(go){
-      const slug = go.getAttribute('data-inbox-slug');
-      INBOX.open = false; list.hidden = true;
-      btn.setAttribute('aria-expanded', 'false');
-      if(slug) location.hash = '#/show/' + encodeURIComponent(slug);
-    }
-  });
-
+  function wirePanel(which){
+    const btn = inboxBtnEl(which), list = inboxPanelEl(which);
+    const wrap = document.getElementById(which === 'notif' ? 'notif' : 'inbox');
+    if(!btn || !list || !wrap) return;
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      const wasOpen = INBOX.open === which;
+      inboxClose();
+      if(!wasOpen){
+        INBOX.open = which; list.hidden = false; btn.setAttribute('aria-expanded', 'true');
+        INBOX.shown[which] = INBOX_PAGE;
+        inboxRenderList(); inboxLoad();
+      }
+    });
+    list.addEventListener('click', function(e){
+      // Re-rendering the panel detaches e.target; the outside-click handler
+      // would then read it as a click outside and close us. Stop it here.
+      e.stopPropagation();
+      const tab = e.target.closest('[data-inbox-tab]');
+      if(tab){ INBOX.tab[which] = tab.getAttribute('data-inbox-tab'); INBOX.shown[which] = INBOX_PAGE; inboxRenderList(); return; }
+      if(e.target.closest('[data-inbox-more]')){ INBOX.shown[which] += INBOX_PAGE; inboxRenderList(); return; }
+      if(e.target.closest('.inbox-all')){ inboxClose(); return; }   // let the link navigate
+      const openRow = e.target.closest('[data-inbox-open]');
+      if(openRow){ inboxOpenThread(parseInt(openRow.getAttribute('data-inbox-open'), 10)); return; }
+      if(e.target.closest('[data-inbox-back]')){ inboxRenderList(); return; }
+      const go = e.target.closest('[data-inbox-slug]');
+      if(go){
+        const slug = go.getAttribute('data-inbox-slug');
+        inboxClose();
+        if(slug) location.hash = '#/show/' + encodeURIComponent(slug);
+      }
+    });
+  }
+  wirePanel('mail'); wirePanel('notif');
   document.addEventListener('click', function(e){
     if(!INBOX.open) return;
-    if(wrap.contains(e.target)) return;
-    INBOX.open = false; list.hidden = true;
-    btn.setAttribute('aria-expanded', 'false');
+    const wrap = document.getElementById(INBOX.open === 'notif' ? 'notif' : 'inbox');
+    if(wrap && wrap.contains(e.target)) return;
+    inboxClose();
   });
 }
 
@@ -6604,6 +6631,14 @@ load();
 .inbox-list{position:absolute;top:calc(100% + 8px);right:0;background:var(--cream);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.25);overflow:hidden;width:290px;max-height:60vh;overflow-y:auto;padding:6px;display:flex;flex-direction:column;gap:2px;z-index:60}
 .inbox-list[hidden]{display:none}
 .inbox-state{font-family:'Bitter',Georgia,serif;font-size:12.5px;color:var(--ink);opacity:.75;padding:10px}
+.inbox-head{display:flex;align-items:center;justify-content:space-between;padding:6px 10px 8px;border-bottom:1px solid rgba(0,0,0,.08);margin-bottom:4px}
+.inbox-title{font-family:'Oswald',sans-serif;font-weight:600;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink);opacity:.8}
+.inbox-tabs{display:inline-flex;gap:4px}
+.inbox-tab{border:0;background:transparent;color:var(--ink);opacity:.6;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.06em;text-transform:uppercase;padding:4px 10px;border-radius:999px;cursor:pointer}
+.inbox-tab.on{background:var(--rust);color:var(--cream);opacity:1}
+.inbox-more{display:block;width:100%;border:0;background:transparent;color:var(--rust);font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.08em;text-transform:uppercase;padding:10px;cursor:pointer;border-top:1px solid rgba(0,0,0,.08);margin-top:4px}
+.inbox-more:hover{text-decoration:underline}
+.inbox-item.is-unread{background:rgba(181,86,43,.08)}
 .inbox-all{display:block;padding:8px 10px 10px;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--rust);text-decoration:none;border-bottom:1px solid rgba(0,0,0,.08);margin-bottom:4px}
 .inbox-all:hover{text-decoration:underline}
 .inbox-item{display:block;width:100%;text-align:left;border:0;background:transparent;cursor:pointer;border-radius:8px;padding:9px 10px;font-family:inherit}
