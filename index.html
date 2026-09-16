@@ -1001,7 +1001,7 @@ body{
     <div class="ctl-row">
       <div class="search-pill pill">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-        <input id="searchInput" type="text" placeholder="search bands, venues…">
+        <input id="searchInput" type="text" placeholder="search bands, venues, @people…">
       </div>
       <!-- Sort dropdown + Reset button removed (search already matches
            title+venue+neighborhood, so a separate neighborhood control was
@@ -1767,6 +1767,7 @@ function render(){
   if(state.myShows){ renderFavorites(); return; }
   if(state.view === "venues"){ renderVenues(); return; }
   if(state.festivals){ renderFestivals(); return; }
+  if(/^\s*@/.test(state.q || '')){ renderPeopleSearch(state.q.trim()); return; }
   const list = filtered();
   if(state.following){
     const _fs = new Set([...state.favorites].map(function(k){ var i=k.indexOf('::'); return i<0 ? k : k.slice(0,i+2)+_normTitle(k.slice(i+2)); }));
@@ -2550,6 +2551,41 @@ function stubTileCanvas(o){
   return cv;
 }
 
+function peopleRow(u){
+  return '<a class="people-row" href="#/u/' + encodeURIComponent(u.handle) + '">'
+    + avImg(u.id, u.display_name, 'av-sm')
+    + '<span class="people-name">' + esc(u.display_name || u.handle) + '</span>'
+    + '<span class="people-handle">@' + esc(u.handle) + '</span>'
+    + '</a>';
+}
+// Search by handle (Sep 2026): a query starting with "@" searches people
+// instead of shows. Signed-in only, like the lists. Debounced; the results
+// replace the feed until the query changes.
+let _peopleSearchT = null, _peopleSearchQ = '';
+function renderPeopleSearch(q){
+  const wrap = $('#results'); wrap.innerHTML = '';
+  $('#resultCount').textContent = 'People';
+  const sb = profileClient();
+  if(!state._signedIn || !sb){
+    wrap.innerHTML = '<div class="empty">Sign in to search people by handle.</div>'; return;
+  }
+  const term = q.replace(/^@/, '').trim();
+  if(term.length < 2){ wrap.innerHTML = '<div class="empty">Type at least two letters of a handle or name.</div>'; return; }
+  wrap.innerHTML = '<div class="empty">Searching\u2026</div>';
+  _peopleSearchQ = q;
+  clearTimeout(_peopleSearchT);
+  _peopleSearchT = setTimeout(async function(){
+    if(_peopleSearchQ !== q) return;
+    const r = await safe(sb.rpc('search_profiles', { p_q: term, p_limit: 25 }));
+    if(_peopleSearchQ !== q) return;
+    const rows = (r && r.data) || [];
+    rows.forEach(function(u){ AV_CACHE[u.id] = { id: u.id, display_name: u.display_name, avatar_url: u.avatar_url }; });
+    $('#resultCount').textContent = rows.length ? (rows.length + (rows.length === 1 ? ' person' : ' people')) : 'People';
+    wrap.innerHTML = rows.length ? '<div class="people-list">' + rows.map(peopleRow).join('') + '</div>'
+                                 : '<div class="empty">No one matching \u201c@' + esc(term) + '\u201d yet.</div>';
+  }, 220);
+}
+
 async function renderProfileRoute(handle){
   try{ if(typeof trackView === 'function') trackView('/' + (location.hash||'')); }catch(_){}
   var wrap = $('#results');
@@ -2632,8 +2668,8 @@ async function renderProfileRoute(handle){
       + '<div class="pf-handle">@' + esc(p.handle) + (isMe ? ' <span class="pf-you">(you)</span>' : '') + '</div>'
       + '<div class="pf-meta">Member since ' + esc(memberSince(p.created_at)) + '</div>'
       + '<div class="pf-counts">'
-        + '<span data-pf-followers>' + followers + (followers === 1 ? ' follower' : ' followers') + '</span> \u00b7 '
-        + '<span data-pf-following>' + following + ' following</span> \u00b7 '
+        + '<button type="button" class="pf-count" data-pf-list="followers" data-pf-followers>' + followers + (followers === 1 ? ' follower' : ' followers') + '</button> \u00b7 '
+        + '<button type="button" class="pf-count" data-pf-list="following" data-pf-following>' + following + ' following</button> \u00b7 '
         + '<span data-pf-handoffs>' + handoffs + (handoffs === 1 ? ' handoff' : ' handoffs') + '</span>'
       + '</div>'
     + '</div>'
@@ -2662,6 +2698,30 @@ async function renderProfileRoute(handle){
       if(parseRoute().handle === handle) renderProfileRoute(handle);
     });
   }
+
+  // People lists (Sep 2026). Tap a count to open the list under the header;
+  // tap again to close. Signed-in only: the RPCs refuse anonymous callers,
+  // and the panel says so instead of showing nothing.
+  var peoplePanel = document.createElement('div'); peoplePanel.className = 'pf-people'; peoplePanel.hidden = true;
+  var pfHead = page.querySelector('.pf-head');
+  if(pfHead && pfHead.parentNode) pfHead.parentNode.insertBefore(peoplePanel, pfHead.nextSibling); else page.appendChild(peoplePanel);
+  var peopleOpen = '';
+  page.querySelectorAll('[data-pf-list]').forEach(function(btn){
+    btn.addEventListener('click', async function(){
+      var which = btn.getAttribute('data-pf-list');
+      var label = which === 'followers' ? 'Followers' : 'Following';
+      if(peopleOpen === which){ peopleOpen = ''; peoplePanel.hidden = true; return; }
+      peopleOpen = which; peoplePanel.hidden = false;
+      if(!myId){ peoplePanel.innerHTML = '<div class="pf-people-head">' + label + '</div><div class="pf-empty">Sign in to see who.</div>'; return; }
+      peoplePanel.innerHTML = '<div class="pf-people-head">' + label + '</div><div class="pf-empty">Loading\u2026</div>';
+      var r = await safe(sb.rpc(which === 'followers' ? 'followers_of' : 'following_of', { p_target: p.id, p_limit: 200 }));
+      var rows = (r && r.data) || [];
+      rows.forEach(function(u){ AV_CACHE[u.id] = { id: u.id, display_name: u.display_name, avatar_url: u.avatar_url }; });
+      peoplePanel.innerHTML = '<div class="pf-people-head">' + label + ' <span class="count">' + rows.length + '</span></div>'
+        + (rows.length ? '<div class="people-list">' + rows.map(peopleRow).join('') + '</div>'
+                       : '<div class="pf-empty">' + (which === 'followers' ? 'No followers yet.' : 'Not following anyone yet.') + '</div>');
+    });
+  });
 
   // Your own page is also your private workspace. Saved and Profile had
   // grown to overlap -- both showed stubs and upcoming shows -- so the Saved
@@ -6395,6 +6455,16 @@ load();
 .pf-name{font-family:'Alfa Slab One',serif;font-weight:400;font-size:26px;margin:0;line-height:1.1;overflow-wrap:anywhere}
 .pf-handle{font-family:'Oswald',sans-serif;font-size:15px;letter-spacing:.03em;color:var(--cream);opacity:.9;margin-top:3px}
 .pf-you{color:var(--cream);opacity:.6;font-size:12px;letter-spacing:0}
+.pf-count{background:none;border:0;padding:0;color:inherit;font:inherit;cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(243,234,215,.35)}
+.pf-count:hover{text-decoration-color:var(--cream)}
+.pf-people{margin:4px 0 16px;background:rgba(243,234,215,.06);border-radius:10px;padding:10px 12px}
+.pf-people-head{font-family:'Oswald',sans-serif;font-weight:600;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--cream);opacity:.85;margin:0 0 6px}
+.people-list{display:flex;flex-direction:column;gap:2px}
+.people-row{display:flex;align-items:center;gap:10px;padding:8px 6px;border-radius:8px;color:var(--cream);text-decoration:none}
+.people-row:hover{background:rgba(243,234,215,.08)}
+.people-row .av-sm{width:32px;height:32px;border-radius:50%;flex:0 0 32px;display:inline-flex;align-items:center;justify-content:center;font-family:'Oswald',sans-serif;font-weight:600;color:#1f3a30;object-fit:cover}
+.people-name{font-family:'Bitter',Georgia,serif;font-weight:600;font-size:15px}
+.people-handle{font-size:13px;opacity:.65}
 /* Festivals */
 .fest-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin:6px 0 18px}
 .fest-card{display:flex;flex-direction:column;background:var(--cream);color:var(--ink);border-radius:12px;overflow:hidden;text-decoration:none;box-shadow:0 1px 0 rgba(0,0,0,.08)}
