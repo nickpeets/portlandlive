@@ -573,6 +573,12 @@ body{
   .resale-link:hover{color:var(--ink)}
   .aff-note{font-family:'Bitter',Georgia,serif;font-size:12px;color:#7c6a55;margin-top:3px}
   .sub-page{max-width:560px;margin:0 auto;padding:8px 0 32px}
+  .static-body{font-family:'Bitter',Georgia,serif;font-size:16px;line-height:1.6;color:var(--cream)}
+  .static-body p{margin:0 0 14px}
+  .static-body a{color:var(--cream);text-decoration:underline;text-underline-offset:3px}
+  .foot-links{margin-top:12px;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.08em;text-transform:uppercase;opacity:.75}
+  .foot-links a{color:inherit;text-decoration:none}
+  .foot-links a:hover{text-decoration:underline}
   .sub-title{font-family:'Alfa Slab One',serif;font-weight:400;font-size:30px;color:var(--cream);margin:0 0 10px}
   .sub-lead{font-family:'Bitter',Georgia,serif;font-size:15.5px;line-height:1.55;color:rgba(243,234,215,.82);margin:0 0 18px}
   .sub-lead a{color:var(--cream);text-decoration:underline}
@@ -1103,10 +1109,21 @@ body{
     <span class="foot-mark" aria-hidden="true"></span>
     <span>Rain Or Shows</span>
   </div>
-  <div>A revived guide to live music in Portland, OR · Listings aggregated from public venue calendars</div>
+  <div>Every night of live music in Portland, OR · Made by one person, updated every morning from the venues&rsquo; own calendars</div>
   <div style="margin-top:8px;opacity:.7">Always confirm dates &amp; times with the venue before heading out.</div>
   <div class="foot-correct">Know a show we&rsquo;re missing? <a href="#/submit">Send it in</a>. Got a correction? <a id="footCorrectLink" href="mailto:corrections@rainorshows.com?subject=%5BROS%5D%20Correction">Let us know</a>.</div>
+  <div class="foot-links"><a href="#/about">About</a> &middot; <a href="#/privacy">Privacy</a> &middot; <a href="#/venues">Venues</a> &middot; <a href="#/submit">Submit a show</a></div>
 </footer>
+<!-- GoatCounter: visit counts, no cookies, no identification. The code is
+     Nick's site code from goatcounter.com. -->
+<script>
+  // The app routes on the hash, which GoatCounter ignores by default: count
+  // path + hash so #/show/... and #/venue/... are separate pages, and count
+  // again on every hash change.
+  window.goatcounter = { path: function(){ return location.pathname + location.hash; } };
+  window.addEventListener('hashchange', function(){ if(window.goatcounter && window.goatcounter.count) window.goatcounter.count(); });
+</script>
+<script data-goatcounter="https://rainorshows.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 
     <div class="auth-overlay" id="authOverlay" aria-hidden="true">
       <div class="auth-sheet" id="authSheet" role="dialog" aria-modal="true" aria-labelledby="authTitle">
@@ -2227,6 +2244,8 @@ function parseRoute(){
   // <token>/<action> is what the Approve / Reject links in the notification
   // email point at -- the token is the credential, no sign-in needed.
   if(/^#\/submit\/?$/.test(h)) return {type:'submit'};
+  if(/^#\/about\/?$/.test(h)) return {type:'about'};
+  if(/^#\/privacy\/?$/.test(h)) return {type:'privacy'};
   m = /^#\/review\/([0-9a-f-]{36})\/([0-9a-f-]{36})\/(approved|rejected)\/?$/.exec(h);
   if(m) return {type:'review', id:m[1], token:m[2], action:m[3]};
   return {type:'feed'};
@@ -2263,6 +2282,8 @@ async function router(){
   if(route.type === 'show'){ await renderShowRoute(route.slug); return; }
   if(route.type === 'profile'){ await renderProfileRoute(route.handle); return; }
   if(route.type === 'submit'){ renderSubmitRoute(); return; }
+  if(route.type === 'about'){ renderStaticPage('about'); return; }
+  if(route.type === 'privacy'){ renderStaticPage('privacy'); return; }
   if(route.type === 'festival'){ await renderFestivalRoute(route.slug); return; }
   if(route.type === 'festivals'){
     if(!state.festivals && $('#festivalsToggle')) $('#festivalsToggle').click(); else render();
@@ -2333,6 +2354,37 @@ function renderShowNotFound(wrap, slug){
 // (supabase/schema-submissions-email.sql); approved rows join the feed at
 // the next build via approved_submissions(). Nothing is published until a
 // human says so.
+// ===== ABOUT / PRIVACY (Sep 2026, pre-release) =====
+// Two short pages a real site has. Plain words, no legalese. The privacy
+// page is also what affiliate reviewers look for.
+const STATIC_PAGES = {
+  about: {title: 'About', html:
+    '<p>Rain Or Shows is a guide to live music in Portland, Oregon. Every night, every room we can find \u2014 arenas to dive bars \u2014 in one place, updated every morning from the venues\u2019 own calendars.</p>'
+  + '<p>It\u2019s made by one person in Portland who plays in bands and got tired of checking fifty websites to figure out where to go. There\u2019s no company behind it.</p>'
+  + '<p>Listings are pulled from public venue calendars and Ticketmaster, then checked for duplicates, rescheduled dates and cancellations. Times, ages and prices come from the venue. Always confirm with the venue before heading out \u2014 things change.</p>'
+  + '<p><strong>Miracles</strong> are extra tickets passed on at face value or free, never above. <strong>Picks</strong> are shows we think are worth your night. <strong>Stubs</strong> are your own record of where you\u2019ve been.</p>'
+  + '<p>Missing a show? <a href="#/submit">Send it in.</a> Something wrong? <a href="mailto:corrections@rainorshows.com?subject=%5BROS%5D%20Correction">Let us know.</a> Run a venue and want your calendar handled a certain way? Same address.</p>'
+  + '<p class="sub-lead" style="margin-top:18px"><a href="#/privacy">Privacy</a></p>'},
+  privacy: {title: 'Privacy', html:
+    '<p>Short version: we keep as little as possible, and we don\u2019t sell any of it.</p>'
+  + '<p><strong>Without an account</strong>, nothing about you is stored on our servers. Your saved shows and stubs live in your own browser. We use GoatCounter for visit counts \u2014 it sets no cookies and doesn\u2019t identify you.</p>'
+  + '<p><strong>With an account</strong>, we store your email address, your handle, and the things you choose to make public: shows you\u2019re going to, your stub shelf, miracles you post, comments. Email us and we\u2019ll delete your account and everything with it.</p>'
+  + '<p><strong>When you submit a show</strong>, we keep the submission and the email you gave so we can tell you whether it went up. We don\u2019t use that email for anything else.</p>'
+  + '<p><strong>Ticket links.</strong> The Tickets button goes to the venue or its ticket seller. Where a show page offers resale tickets, that link goes through an affiliate program and the site may earn a small commission if you buy \u2014 it costs you nothing extra, and it\u2019s marked where it appears. Miracles are never affiliated.</p>'
+  + '<p><strong>Third parties.</strong> Accounts run on Supabase, the site is hosted on GitHub Pages, email is sent through Resend. Each has its own privacy policy. We don\u2019t run ads.</p>'
+  + '<p>Questions: <a href="mailto:corrections@rainorshows.com?subject=%5BROS%5D%20Privacy">corrections@rainorshows.com</a>.</p>'
+  + '<p class="sub-lead" style="margin-top:18px">Last updated September 2026.</p>'}
+};
+function renderStaticPage(key){
+  const pg = STATIC_PAGES[key]; if(!pg) return;
+  const wrap = $('#results'); wrap.innerHTML = '';
+  $('#resultCount').textContent = pg.title;
+  ['venuesToggle','myShowsToggle','comedyToggle','followingToggle','byHoodToggle','festivalsToggle','allAgesToggle','tonightToggle','thisWeekToggle','picksToggle']
+    .forEach(id => { const el = document.getElementById(id); if(el) el.classList.remove('on'); });
+  wrap.innerHTML = '<div class="sub-page"><h1 class="sub-title">' + esc(pg.title) + '</h1><div class="static-body">' + pg.html + '</div></div>';
+  window.scrollTo(0,0);
+}
+
 function renderSubmitRoute(){
   var wrap = $('#results');
   $('#resultCount').textContent = '';

@@ -1282,6 +1282,19 @@ def write_clean_urls(shows, venues):
                             f"{SITE}/festival/{slug}/", f"#/festival/{slug}"))
         n_fest += 1
     print(f"Wrote {n_show} show pages, {n_venue} venue pages and {n_fest} festival pages (clean URLs)")
+    # sitemap.xml: every page that exists, so search engines index the show
+    # and venue pages. Upcoming shows only -- past pages exist for links
+    # already shared, not for discovery.
+    urls = [f"{SITE}/"]
+    urls += [f"{SITE}/venue/{_venue_slug(v.get('name') or '')}/" for v in venues if _venue_slug(v.get("name") or "")]
+    urls += [f"{SITE}/festival/{f['slug']}/" for f in load_festivals()]
+    urls += [f"{SITE}/show/{make_slug(s)}/" for s in shows if make_slug(s)]
+    with open(os.path.join(HERE, "sitemap.xml"), "w", encoding="utf-8") as f:
+        f.write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n')
+        for u in urls:
+            f.write(f"  <url><loc>{_esc(u)}</loc></url>\n")
+        f.write("</urlset>\n")
+    print(f"Wrote sitemap.xml ({len(urls)} urls)")
 
 
 if __name__ == "__main__":
