@@ -86,6 +86,7 @@ VENUE_INFO = {
     "Revolution Hall": ("Buckman", "1300 SE Stark St"),
     "Process": ("Sellwood-Moreland", "5040 SE Milwaukie Ave, Portland, OR 97202"),
     "Old Market Pub": ("Multnomah Village", "6959 SW Multnomah Blvd, Portland, OR 97223"),
+    "The Headliners Club": ("Lake Oswego", "17880 SW McEwan Rd, Lake Oswego, OR 97035"),
     "Realm": ("Central Eastside", "615 SE Alder St, Portland, OR 97214"),
     "The Den": ("Central Eastside", "116 SE Yamhill St, Portland, OR 97214"),
     "Polaris Hall": ("Overlook/N Portland", "635 N Killingsworth Ct"),
@@ -3664,6 +3665,78 @@ def parse_kellys_olympian(html_text, today):
 _BARREL_SKIP = re.compile(r"\b(email list|mailing list|newsletter|gift card|merch|donate|donation|rental|private event)\b", re.I)
 
 
+# Karaoke and cornhole nights carry the "weekly" category; the Matinee
+# category is a real (all-ages, 4pm) show and stays.
+_HEADLINERS_SKIP_CAT = {"weekly"}
+_HEADLINERS_SKIP = re.compile(r"\b(karaoke|cornhole|trivia|bingo|poker|open mic night)\b", re.I)
+
+
+def parse_headliners(html, today):
+    """The Headliners Club (Lake Oswego, 17880 SW McEwan) -- The Events
+    Calendar REST API, same plugin as Kelly's. 239 events on file; the
+    parser walks pages until one starts past the horizon. Karaoke and
+    cornhole are categorised "weekly" and skipped; the "Matinee" category
+    is a real 4pm all-ages show. Age comes from the title where the venue
+    says it."""
+    import html as _html
+    out, seen = [], set()
+    nb, addr = VENUE_INFO.get("The Headliners Club", ("Lake Oswego", ""))
+    horizon = today + datetime.timedelta(days=120)
+    try:
+        data = json.loads(html)
+    except Exception:
+        return out
+    pages = [data]
+    nxt = data.get("next_rest_url")
+    for _ in range(5):
+        if not nxt:
+            break
+        try:
+            more = json.loads(fetch(nxt))
+        except Exception as e:
+            print(f"  note: Headliners: page fetch stopped ({type(e).__name__})")
+            break
+        pages.append(more)
+        first = (more.get("events") or [{}])[0].get("start_date", "")[:10]
+        if first and first > horizon.isoformat():
+            break
+        nxt = more.get("next_rest_url")
+    for page in pages:
+        for e in page.get("events") or []:
+            cats = {(c.get("name") or "").lower() for c in (e.get("categories") or [])}
+            if cats & _HEADLINERS_SKIP_CAT:
+                continue
+            title = clean(_html.unescape(e.get("title") or ""))
+            title = re.sub(r"\s+", " ", title).strip()
+            if not title or _HEADLINERS_SKIP.search(title):
+                continue
+            sd = (e.get("start_date") or "")[:16]
+            if len(sd) < 16:
+                continue
+            try:
+                dt = datetime.datetime.strptime(sd, "%Y-%m-%d %H:%M")
+            except Exception:
+                continue
+            d = dt.date()
+            if not (today <= d <= horizon):
+                continue
+            tm = "" if e.get("all_day") else "%d:%02d %s" % (dt.hour % 12 or 12, dt.minute, "AM" if dt.hour < 12 else "PM")
+            img = e.get("image") or ""
+            if isinstance(img, dict):
+                img = img.get("url", "") or ""
+            blob = title + " " + re.sub(r"<[^>]+>", " ", _html.unescape(e.get("description") or ""))[:400]
+            key = (d.isoformat(), title.lower())
+            if key in seen:
+                continue
+            seen.add(key)
+            out.append({"title": title, "venue": "The Headliners Club", "neighborhood": nb, "address": addr,
+                        "date": d.isoformat(), "time": tm,
+                        "venueUrl": e.get("url") or "https://theheadlinersclub.com/",
+                        "imageUrl": img if str(img).startswith("http") else "",
+                        "age": _age_in_text(blob)})
+    return out
+
+
 def parse_barrelroom(html, today):
     """Barrel Room (120 NW Couch) -- their own site went away; the live
     calendar is their Eventbrite organizer page, which embeds the listing
@@ -3917,6 +3990,8 @@ SOURCES = [
     {"name": "Havalina (havalinapdx.com)", "parser": parse_havalina, "urls": ["https://havalinapdx.com/events?format=json"]},
     {"name": "Process (processpdx.club)", "parser": parse_process, "urls": ["https://www.processpdx.club/"]},
     {"name": "Realm (realmpdx.com)", "parser": parse_realm, "tls": True, "urls": ["https://realmpdx.com/events/"]},
+    {"name": "The Headliners Club (Lake Oswego)", "parser": parse_headliners,
+     "urls": ["https://theheadlinersclub.com/wp-json/tribe/events/v1/events?per_page=50"]},
     # Intermittent bot challenge (6 of 10 runs zero by Sep 2026, then fully
     # zero). Plain requests with a browser UA doesn't reliably pass; Chromium
     # does. Parser unchanged -- it just gets its HTML through the headless tier.

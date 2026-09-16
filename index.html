@@ -2313,8 +2313,13 @@ function venueSlug(name){
   return slugNormKey(name || '').replace(/\s+/g,'-').replace(/^-+|-+$/g,'').replace(/-{2,}/g,'-');
 }
 function venueFromSlug(slug){
+  // The directory as well as the feed: a venue with no upcoming shows has
+  // no row to match, so its page was unreachable from Venues -- the click
+  // set the hash, the slug resolved to nothing, and the router bounced
+  // straight back to the directory (Nick, Sep 2026).
   var names = {};
   state.shows.forEach(function(s){ if(s.venue) names[s.venue] = true; });
+  (state.venues || []).forEach(function(v){ if(v && v.name) names[v.name] = true; });
   return Object.keys(names).find(function(n){ return venueSlug(n) === slug; }) || null;
 }
 

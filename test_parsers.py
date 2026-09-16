@@ -87,6 +87,7 @@ CASES = [
     ("process.html",            sv.parse_process,        6, {"time": 4, "age": 6},       "Webflow schedule; event -- artists; RA ticket links; year inferred"),
     ("realm-events.html",       sv.parse_realm,         34, {"imageUrl": 34, "age": 34}, "Elementor event list via the TLS tier; multi-night runs split per night"),
     ("barrel-room.html",        sv.parse_barrelroom,     6, {"time": 6, "imageUrl": 6},  "Eventbrite organizer page: upcomingEvents JSON; mailing-list entries skipped"),
+    ("headliners-tribe.json",   sv.parse_headliners,    29, {"time": 29, "imageUrl": 29, "age": 28}, "Tribe REST page 1 (network stubbed, so no page 2); weekly karaoke/cornhole skipped"),
 ]
 
 # Pages that were captured and examined but publish NO listing data the
