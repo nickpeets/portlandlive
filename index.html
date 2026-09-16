@@ -2932,7 +2932,10 @@ async function renderProfileRoute(handle){
   // The stub grid -- the main body.
   var st = document.createElement('section');
   st.className = 'pf-section';
-  st.innerHTML = '<h3 class="pf-section-head">Stubs <span class="pf-count">' + stubs.length + '</span></h3>';
+  // Prize note, right of the count, on your own page (Nick, Sep 2026).
+  st.innerHTML = '<h3 class="pf-section-head">Stubs <span class="pf-count">' + stubs.length + '</span>'
+    + (isMe ? '<span class="pf-prize">Collect stubs to win prizes \u2014 concert tickets, merch and more.</span>' : '')
+    + '</h3>';
   if(stubs.length){
     var grid = document.createElement('div');
     grid.className = 'pf-stubs';
@@ -6735,6 +6738,8 @@ load();
 .dm-compose textarea:focus{outline:2px solid var(--rust);outline-offset:0;border-color:transparent}
 .dm-msgs .empty{color:var(--ink);opacity:.6}
 .dm-compose textarea{flex:1 1 auto;resize:none;border-radius:10px;border:1px solid rgba(243,234,215,.3);background:rgba(243,234,215,.08);color:var(--cream);padding:10px 12px;font-family:'Bitter',Georgia,serif;font-size:15px}
+.pf-prize{font-family:'Bitter',Georgia,serif;font-weight:400;font-size:13px;letter-spacing:0;text-transform:none;opacity:.8;margin-left:12px}
+@media(max-width:520px){.pf-prize{display:block;margin:4px 0 0}}
 .pf-count{background:none;border:0;padding:0;color:inherit;font:inherit;cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(243,234,215,.35)}
 .pf-count:hover{text-decoration-color:var(--cream)}
 .pf-people{margin:4px 0 16px;background:rgba(243,234,215,.06);border-radius:10px;padding:10px 12px}
