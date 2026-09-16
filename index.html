@@ -584,6 +584,8 @@ body{
   .resale-link{font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--rust);text-decoration:underline;text-underline-offset:3px}
   .resale-link:hover{color:var(--ink)}
   .aff-note{font-family:'Bitter',Georgia,serif;font-size:12px;color:#7c6a55;margin-top:3px}
+  .sub-newvenue{background:rgba(243,234,215,.08);border-radius:10px;padding:10px 12px 4px;margin:0 0 12px}
+  .sub-hint{font-family:'Bitter',Georgia,serif;font-size:13px;opacity:.8;margin:0 0 8px}
   .sub-page{max-width:560px;margin:0 auto;padding:8px 0 32px}
   .static-body{font-family:'Bitter',Georgia,serif;font-size:16px;line-height:1.6;color:var(--cream)}
   .static-body p{margin:0 0 14px}
@@ -2452,6 +2454,7 @@ function renderSubmitRoute(){
   var dir = (state.venues && state.venues.length) ? state.venues
           : Array.from(new Set(state.shows.map(function(s){ return s.venue; }))).map(function(v){ return {name:v}; });
   var venues = dir.map(function(v){ return v.name; }).sort(function(a,b){ return a.toLowerCase() < b.toLowerCase() ? -1 : 1; });
+  var hoods = Array.from(new Set(dir.map(function(v){ return v.neighborhood; }).filter(Boolean))).sort(function(a,b){ return a.localeCompare(b); });
   var byName = {}; dir.forEach(function(v){ byName[v.name.toLowerCase()] = v; });
   var today = stubToday();
   wrap.innerHTML =
@@ -2462,6 +2465,15 @@ function renderSubmitRoute(){
     + '<label>Show<input type="text" name="title" maxlength="160" placeholder="Band name, or the event name" required></label>'
     + '<label>Venue<input type="text" name="venue" list="subVenues" maxlength="80" placeholder="Where" required>'
     + '<datalist id="subVenues">' + venues.map(function(v){ return '<option value="' + esc(v) + '">'; }).join('') + '</datalist></label>'
+    // A venue we don't have yet needs its address and neighborhood, or its
+    // page shows nothing but a Directions link (Old Market Pub, Sep 2026).
+    // These appear the moment the typed venue isn't one on file.
+    + '<div class="sub-newvenue" id="subNewVenue" hidden>'
+    +   '<p class="sub-hint">New room for us. Where is it?</p>'
+    +   '<label>Address<input type="text" name="address" maxlength="160" placeholder="Street address, Portland, OR"></label>'
+    +   '<label>Neighborhood<input type="text" name="neighborhood" list="subHoods" maxlength="60" placeholder="e.g. Buckman, St. Johns, Multnomah Village">'
+    +   '<datalist id="subHoods">' + hoods.map(function(h){ return '<option value="' + esc(h) + '">'; }).join('') + '</datalist></label>'
+    + '</div>'
     + '<div class="sub-row">'
     + '<label>Date<input type="date" name="date" min="' + today + '" required></label>'
     + '<label>Time<input type="text" name="time" placeholder="8:00 PM" maxlength="10"></label>'
@@ -2483,6 +2495,15 @@ function renderSubmitRoute(){
       if(em && form.email && !form.email.value) form.email.value = em;
     }).catch(function(){});
   }
+  // New-venue block: shown when the venue typed isn't one we have; the
+  // address is required then, so a new room never lands with nothing.
+  var nv = document.getElementById('subNewVenue');
+  function checkVenue(){
+    var v = form.venue.value.trim(); var known = !!byName[v.toLowerCase()];
+    if(nv) nv.hidden = known || !v;
+    if(form.address) form.address.required = !known && !!v;
+  }
+  form.venue.addEventListener('input', checkVenue); form.venue.addEventListener('change', checkVenue);
   form.addEventListener('submit', async function(ev){
     ev.preventDefault();
     st.className = 'tx-state'; st.textContent = '';
@@ -2501,8 +2522,8 @@ function renderSubmitRoute(){
         p_time: f.time.value.trim() || null, p_url: f.url.value.trim() || null,
         p_age: f.age.value || null, p_notes: f.notes.value.trim() || null,
         p_email: f.email.value.trim(),
-        p_neighborhood: (byName[f.venue.value.trim().toLowerCase()] || {}).neighborhood || null,
-        p_address: (byName[f.venue.value.trim().toLowerCase()] || {}).address || null
+        p_neighborhood: (byName[f.venue.value.trim().toLowerCase()] || {}).neighborhood || (f.neighborhood && f.neighborhood.value.trim()) || null,
+        p_address: (byName[f.venue.value.trim().toLowerCase()] || {}).address || (f.address && f.address.value.trim()) || null
       });
       if(res.error) throw res.error;
       wrap.innerHTML = '<div class="sub-page"><h1 class="sub-title">Got it</h1>'

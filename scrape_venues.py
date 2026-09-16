@@ -84,6 +84,10 @@ VENUE_INFO = {
     "Ponderosa Lounge & Grill": ("North Portland", "10350 N Vancouver Way"),
     "Wonder Ballroom": ("Eliot/Boise", "128 NE Russell St"),
     "Revolution Hall": ("Buckman", "1300 SE Stark St"),
+    "Process": ("Sellwood-Moreland", "5040 SE Milwaukie Ave, Portland, OR 97202"),
+    "Old Market Pub": ("Multnomah Village", "6959 SW Multnomah Blvd, Portland, OR 97223"),
+    "Realm": ("Central Eastside", "615 SE Alder St, Portland, OR 97214"),
+    "The Den": ("Central Eastside", "116 SE Yamhill St, Portland, OR 97214"),
     "Polaris Hall": ("Overlook/N Portland", "635 N Killingsworth Ct"),
     "Mississippi Studios": ("Boise/Mississippi", "3939 N Mississippi Ave"),
     "Havalina": ("St. Johns", "8927 N Lombard St, Portland, OR 97203"),
@@ -3164,6 +3168,58 @@ def _mcmenamins_scroll_html(session, vid, page_size=100):
     return r.text
 
 
+_PROCESS_MON = {m: i for i, m in enumerate(["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"], 1)}
+
+
+def parse_process(html, today):
+    """Process (processpdx.club) -- electronic club, 5040 SE Milwaukie.
+    Webflow schedule: div.pricing-card-two per event with .showday /
+    .showdate ("Sep 19", no year) / .text-block-3 ("10pm - 4am", often
+    empty) / .showname / .showartists, and a Resident Advisor ticket link.
+    The title is the event name; the artists ride along after a dash so a
+    card reads "Acid Cult -- Octo Octa, Phreaker Fighter, ...". Year is
+    inferred from the month (they list a month or two out). Club nights:
+    21+ per RA listings, no time when the card has none."""
+    out, seen = [], set()
+    soup = BeautifulSoup(html, "html.parser")
+    nb, addr = VENUE_INFO.get("Process", ("Sellwood-Moreland", ""))
+    horizon = today + datetime.timedelta(days=120)
+    for card in soup.select("div.pricing-card-two"):
+        name = card.select_one(".showname"); dt = card.select_one(".showdate")
+        if not (name and dt):
+            continue
+        m = re.match(r"([A-Z][a-z]{2})\s+(\d{1,2})", dt.get_text(" ", strip=True))
+        if not m or m.group(1) not in _PROCESS_MON:
+            continue
+        mon, day = _PROCESS_MON[m.group(1)], int(m.group(2))
+        try:
+            d = datetime.date(infer_year(mon, today), mon, day)
+        except ValueError:
+            continue
+        if not (today <= d <= horizon):
+            continue
+        title = clean(name.get_text(" "))
+        artists = card.select_one(".showartists")
+        arts = clean(artists.get_text(" ")) if artists else ""
+        if arts and arts.lower() != title.lower():
+            title = f"{title} \u2014 {arts}"
+        tm = ""
+        tb = card.select_one(".text-block-3")
+        if tb:
+            mt = re.match(r"\s*(\d{1,2}(?::\d{2})?\s*[ap]m)", tb.get_text(" ", strip=True), re.I)
+            if mt:
+                tm = to_time(mt.group(1))
+        a = card.select_one("a[href]")
+        url = a["href"] if a and a.get("href", "").startswith("http") else "https://www.processpdx.club/"
+        key = (d.isoformat(), title.lower())
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append({"title": title, "venue": "Process", "neighborhood": nb, "address": addr,
+                    "date": d.isoformat(), "time": tm, "venueUrl": url, "imageUrl": "", "age": "21+"})
+    return out
+
+
 def parse_havalina(html, today):
     # Havalina (havalinapdx.com), St. Johns - Squarespace events collection.
     # /events?format=json gives an "upcoming" list with epoch-ms startDate
@@ -3792,6 +3848,7 @@ SOURCES = [
     {"name": "CitySpark (Ponderosa + Old Church)", "parser": parse_cityspark, "may_be_empty": True,
      "urls": ["https://portal.cityspark.com/PortalScripts/WillametteWeek"]},
     {"name": "Havalina (havalinapdx.com)", "parser": parse_havalina, "urls": ["https://havalinapdx.com/events?format=json"]},
+    {"name": "Process (processpdx.club)", "parser": parse_process, "urls": ["https://www.processpdx.club/"]},
     # Intermittent bot challenge (6 of 10 runs zero by Sep 2026, then fully
     # zero). Plain requests with a browser UA doesn't reliably pass; Chromium
     # does. Parser unchanged -- it just gets its HTML through the headless tier.

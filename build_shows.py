@@ -557,7 +557,7 @@ TM_VENUE_MAP = {
     "Revolution Hall - Portland": "Revolution Hall",
     "McMenamins Crystal Ballroom": "Crystal Ballroom",
     "McMenamins Mission Theater": "Mission Theater",
-    "The Den - Portland": "Al's Den",
+    "The Den - Portland": "The Den",   # 116 SE Yamhill -- NOT Al's Den (McMenamins, SW 12th). Was wrong until 2026-09-16.
     "The Get Down Music Venue": "The Get Down",
 }
 # Names that are add-ons to a show, not shows: never added as rows, and not
@@ -772,7 +772,7 @@ VIVID_VENUE_MAP = {
     "Veterans Memorial Coliseum - Portland": "Veterans Memorial Coliseum",
     "Star Theater Portland": "Star Theater",
     "Dantes": "Dante's",
-    "The Den - Portland": "Al's Den",
+    "The Den - Portland": "The Den",   # 116 SE Yamhill -- NOT Al's Den (McMenamins, SW 12th). Was wrong until 2026-09-16.
     "Hillsboro Ballpark": "Hops Ballpark",
     "The Melody Event Center - The Get Down Music Venue": "The Get Down",
     "Helium Comedy Club - Portland": "Helium Comedy Club",
@@ -979,6 +979,18 @@ def main():
     # so a submitted show that the scraper also found collapses to one row.
     shows.extend(fetch_approved_submissions())
     festival_apply(shows)
+    # Any row missing its neighborhood or address gets them from VENUE_INFO
+    # when the venue is on file -- a submission for a known room, or a room
+    # added to the file after the show came in (Old Market Pub, Sep 2026).
+    try:
+        _vi = _sv().VENUE_INFO
+        for r in shows:
+            info = _vi.get(r.get("venue") or "")
+            if info:
+                if not (r.get("neighborhood") or "").strip(): r["neighborhood"] = info[0]
+                if not (r.get("address") or "").strip(): r["address"] = info[1]
+    except Exception as e:
+        print(f"  WARN: venue fill skipped: {type(e).__name__}: {e}")
 
     # Ticketmaster: backfill what the scrape left blank, and add what it
     # missed at venues the site covers. See the block above.
