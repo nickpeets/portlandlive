@@ -1907,7 +1907,15 @@ async function renderFestivalRoute(slug){
   wrap.appendChild(head);
   // Lineup by day. A set still ahead links to its show page (the feed row the
   // build made for it); every set links to its venue.
-  const bySlug = {}; state.shows.forEach(s => { if(s._slug) bySlug[s._slug] = s; });
+  // A set's feed row: same festival, date and venue, artist in the title.
+  // Not rebuilt from the slug -- a row the build TAGGED (already in the
+  // feed from the venue's calendar) keeps its own, longer title.
+  const festRows = state.shows.filter(s => s.festival === f.slug);
+  const rowFor = l => {
+    const a = _normTitle(l.artist);
+    return festRows.find(s => s.date === l.date && s.venue === l.venue && _normTitle(s.title).includes(a))
+        || festRows.find(s => s.date === l.date && s.venue === l.venue && _normTitle(s.title).includes(a.split(' ').slice(0,2).join(' ')));
+  };
   const lineup = (f.lineup || []).slice().sort((a,b) => (a.date+timeKey(a.time)).localeCompare(b.date+timeKey(b.time)));
   const days = {}; lineup.forEach(l => { (days[l.date] = days[l.date] || []).push(l); });
   Object.keys(days).sort().forEach(date => {
@@ -1917,9 +1925,8 @@ async function renderFestivalRoute(slug){
     const ul = document.createElement('div'); ul.className = 'fest-lineup';
     days[date].forEach(l => {
       const row = document.createElement('div'); row.className = 'fest-set';
-      const showSlug = makeSlug({title: `${l.artist} \u2014 ${f.name}`, venue: l.venue, date: l.date, time: l.time});
-      const live = date >= today && bySlug[showSlug];
-      const name = live ? `<a class="fest-artist" href="#/show/${encodeURIComponent(showSlug)}">${esc(l.artist)}</a>` : `<span class="fest-artist">${esc(l.artist)}</span>`;
+      const live = date >= today ? rowFor(l) : null;
+      const name = live && live._slug ? `<a class="fest-artist" href="#/show/${encodeURIComponent(live._slug)}">${esc(l.artist)}</a>` : `<span class="fest-artist">${esc(l.artist)}</span>`;
       row.innerHTML = `<span class="fest-time">${esc(l.time || '')}</span>${name}<a class="fest-venue" href="#/venue/${encodeURIComponent(venueSlug(l.venue))}">${esc(l.venue)}</a>`;
       ul.appendChild(row);
     });

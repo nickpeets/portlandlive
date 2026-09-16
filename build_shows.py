@@ -894,19 +894,66 @@ def load_festivals():
 
 
 def festival_rows():
+    """Every lineup set as a fresh feed row (no matching against the feed).
+    Used by the suite; the build uses festival_apply, which matches first."""
     out = []
     for f in load_festivals():
         for l in f.get("lineup") or []:
             if not (l.get("date") and l.get("artist") and l.get("venue")):
                 continue
-            out.append({"title": f"{l['artist']} \u2014 {f['name']}", "venue": l["venue"],
-                        "neighborhood": l.get("neighborhood") or f.get("neighborhood") or "",
-                        "address": l.get("address") or "", "date": l["date"], "time": l.get("time") or "",
-                        "venueUrl": l.get("url") or f.get("url") or "", "imageUrl": l.get("imageUrl") or "",
-                        "age": l.get("age") or f.get("age") or "", "festival": f["slug"], "_hand": True})
-    if out:
-        print(f"  Festivals: {len(out)} sets from festivals.json")
+            out.append(_festival_row(f, l))
     return out
+
+
+def _festival_row(f, l):
+    return {"title": f"{l['artist']} \u2014 {f['name']}", "venue": l["venue"],
+            "neighborhood": l.get("neighborhood") or f.get("neighborhood") or "",
+            "address": l.get("address") or "", "date": l["date"], "time": l.get("time") or "",
+            "venueUrl": l.get("url") or f.get("url") or "", "imageUrl": l.get("imageUrl") or "",
+            "age": l.get("age") or f.get("age") or "", "festival": f["slug"], "_hand": True}
+
+
+def festival_apply(shows):
+    """Fold the lineups into the feed. A set at a venue the site scrapes is
+    usually already there -- Portland'5 lists the Schnitz, McMenamins lists
+    Crystal -- so adding it blind would double it (St. Johns did not hit
+    this only because its rooms are not scraped). For each set: if a row
+    exists at that venue on that date whose title shares the artist (same
+    overlap rule as the Ticketmaster pass), TAG that row -- festival slug
+    and the "-- Festival" suffix -- keeping its poster and ticket link.
+    Otherwise add the set as a new row."""
+    by = {}
+    for r in shows:
+        by.setdefault((r.get("date"), r.get("venue")), []).append(r)
+    tagged = added = 0
+    for f in load_festivals():
+        for l in f.get("lineup") or []:
+            if not (l.get("date") and l.get("artist") and l.get("venue")):
+                continue
+            aw = _tm_words(l["artist"])
+            hit = None
+            for r in by.get((l["date"], l["venue"]), []):
+                if r.get("festival"):
+                    continue
+                rw = _tm_words(r.get("title"))
+                ov = len(aw & rw)
+                if ov and (ov >= 2 or ov >= max(1, min(len(aw), len(rw))) * 0.6):
+                    hit = r
+                    break
+            if hit is not None:
+                hit["festival"] = f["slug"]
+                if f["name"].lower() not in (hit.get("title") or "").lower():
+                    hit["title"] = f"{hit['title']} \u2014 {f['name']}"
+                if not hit.get("time") and l.get("time"):
+                    hit["time"] = l["time"]
+                tagged += 1
+            else:
+                row = _festival_row(f, l)
+                shows.append(row)
+                by.setdefault((row["date"], row["venue"]), []).append(row)
+                added += 1
+    if tagged or added:
+        print(f"  Festivals: {tagged} feed row(s) tagged, {added} set(s) added from festivals.json")
 
 
 def festival_summaries(shows):
@@ -931,7 +978,7 @@ def main():
     # approved. They join the scrape here and go through the same dedupe,
     # so a submitted show that the scraper also found collapses to one row.
     shows.extend(fetch_approved_submissions())
-    shows.extend(festival_rows())
+    festival_apply(shows)
 
     # Ticketmaster: backfill what the scrape left blank, and add what it
     # missed at venues the site covers. See the block above.
