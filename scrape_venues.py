@@ -2297,14 +2297,71 @@ def parse_bunkbar(html, today):
     return shows
 
 
+_NOFUN_SKIP = re.compile(r"^\s*(NO FUN KARAOKE|Bridgetown Trivia|CLOSED|Poser Tom'?s Roadshow Arcade)\b", re.I)
+
+
+def _nofun_html(html, today):
+    """No Fun's events page as rendered HTML. Squarespace's ?format=json for
+    this site started returning its own "Please Stand By" error page
+    (HTTP 200, 3.9 KB) on 2026-09-13 and stayed that way; the HTML page
+    kept working. Standard Squarespace event list: .eventlist-event with a
+    <time class="event-date" datetime="YYYY-MM-DD">, a start time in
+    .event-time-localized-start, the title, a poster, and an excerpt that
+    always says "21+". Karaoke, trivia, the arcade night and CLOSED days
+    are on the calendar too and are skipped."""
+    out, seen = [], set()
+    soup = BeautifulSoup(html, "html.parser")
+    nb, addr = VENUE_INFO.get("No Fun", ("Buckman", "1709 SE Hawthorne Blvd"))
+    horizon = today + datetime.timedelta(days=120)
+    for e in soup.select(".eventlist-event"):
+        t = e.select_one(".eventlist-title")
+        title = clean(t.get_text(" ")) if t else ""
+        title = re.sub(r"\s+", " ", re.sub(r"[\u2010-\u2015]", "-", title)).strip()
+        # Unannounced openers are listed as "• TBA • TBA"; drop the
+        # placeholders so the card names the acts that are booked.
+        title = re.sub(r"(\s*[•·]\s*TBA)+\s*$", "", title, flags=re.I).strip()
+        if not title or _NOFUN_SKIP.search(title):
+            continue
+        d = e.select_one("time.event-date")
+        date = (d.get("datetime") or "").strip()[:10] if d else ""
+        if not re.match(r"^\d{4}-\d{2}-\d{2}$", date):
+            continue
+        dd = datetime.date.fromisoformat(date)
+        if not (today <= dd <= horizon):
+            continue
+        st = e.select_one("time.event-time-localized-start")
+        tm = to_time(st.get_text(" ", strip=True)) if st else ""
+        a = e.select_one(".eventlist-title a, a.eventlist-title-link")
+        href = (a.get("href") or "") if a else ""
+        url = ("https://www.nofunportland.com" + href) if href.startswith("/") else (href or "https://www.nofunportland.com/events")
+        im = e.select_one("img")
+        img = ((im.get("data-src") or im.get("src") or "").strip()) if im else ""
+        ex = e.select_one(".eventlist-excerpt, .eventlist-description")
+        age = _age_in_text(ex.get_text(" ")) if ex else ""
+        key = (date, title.lower())
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append({"title": title, "venue": "No Fun", "neighborhood": nb, "address": addr,
+                    "date": date, "time": tm, "venueUrl": url, "imageUrl": img, "age": age})
+    return out
+
+
 def parse_nofun(html, today):
     # No Fun (nofunportland.com) - Squarespace events collection. The
     # /events?format=json endpoint returns an "upcoming" list with startDate
     # epoch ms in UTC; convert to Pacific (PDT) like Alberta Street Pub. Same
     # business as Devil's Dill; address verified at 1709 SE Hawthorne Blvd.
+    #
+    # 2026-09-15: the JSON endpoint has been serving Squarespace's own error
+    # page for three nights (YIELD-ZERO caught it). The rendered HTML page
+    # is fine, so that is the source now; this JSON path is kept as the
+    # fallback for the day Squarespace fixes theirs.
     out, seen = [], {}
     horizon = today + datetime.timedelta(days=120)
     lower = today
+    if html.lstrip().startswith("<"):
+        return _nofun_html(html, today)
     try:
         data = json.loads(html)
     except Exception:
@@ -3686,7 +3743,7 @@ SOURCES = [
     {"name": "NOVA PDX", "parser": parse_novapdx, "urls": ["https://novapdxevents.com/event-calendar"]},
     {"name": "Pioneer Courthouse Square / PDX Live (pdx-live.com)", "parser": parse_pdxlive, "may_be_empty": True, "urls": ["https://pdx-live.com/wp-json/wlcr/v1/events/raw"]},
     {"name": "Twilight Cafe & Bar (twilightcafeandbar.com)", "parser": parse_twilight, "urls": ["https://twilightcafeandbar.com/calendar_list"]},
-    {"name": "No Fun (nofunportland.com)", "parser": parse_nofun, "urls": ["https://www.nofunportland.com/events?format=json"]},
+    {"name": "No Fun (nofunportland.com)", "parser": parse_nofun, "urls": ["https://www.nofunportland.com/events"]},
     {"name": "Bunk Bar (shows.bunksandwiches.com)", "parser": parse_bunkbar, "urls": ["https://shows.bunksandwiches.com/"]},
     {"name": "Mississippi Pizza (mississippipizza.com)", "parser": parse_mississippipizza, "urls": ["https://mississippipizza.com/calendar/"]},
     {"name": "Alberta Street Pub (albertastreetpub.com)", "parser": parse_albertastreetpub, "urls": ["https://www.albertastreetpub.com/music?format=json"]},
