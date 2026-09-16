@@ -218,6 +218,17 @@ def main():
     else:
         print(f"  ok   vivid-feed-sample.txt        {len(idx):3d} events -- Impact catalog: venue/date index with tracked links; venue map applied")
     print()
+    # festivals.json: every lineup entry becomes a feed row titled
+    # "Artist -- Festival" at its real venue, tagged with the festival slug.
+    frows = bs.festival_rows()
+    fsum = bs.festival_summaries(frows)
+    bad = [r for r in frows if not (r.get("festival") and " \u2014 " in r.get("title","") and r.get("venue") and r.get("date"))]
+    if frows and not bad and fsum and all(f.get("slug") and f.get("name") and f.get("start") for f in fsum):
+        print(f"  ok   festivals.json               {len(frows):3d} sets  -- {len(fsum)} festival(s); rows titled 'Artist \u2014 Festival', tagged by slug")
+    else:
+        fails += 1
+        print(f"  FAIL festivals.json               {len(frows)} rows, {len(bad)} malformed, summaries {fsum}")
+    print()
     if fails:
         print(f"{fails} FAILURE(S)")
         sys.exit(1)

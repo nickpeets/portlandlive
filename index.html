@@ -1033,11 +1033,8 @@ body{
             <span class="toggle" id="venuesToggle"></span>
             <span>Venues</span>
             </label>
-      <!-- Festivals: placeholder tab only. No festival object exists in the data yet
-           (multi-day shows are individually-titled entries, e.g. "... Festival — Day 1"),
-           so this is deliberately not wired to any click handler or state variable.
-           Deliberately kept disabled even though the Aug 23 mockup shows it active —
-           there's still no festival data object backing it. -->
+      <!-- Festivals (Sep 2026): cards from festivals.json, each opening
+           #/festival/<slug>. The pill appears once any festival is on file. -->
       <label class="pill pill-narrow" id="festivalsPill" title="Show only festival sets" hidden>
         <span class="toggle" id="festivalsToggle"></span>
         <span>Festivals</span>
@@ -1286,6 +1283,10 @@ const FESTIVALS = [
 ];
 
 function festivalFor(s){
+  if(s && s.festival && state.festivalsMeta){
+    const f = state.festivalsMeta.find(x => x.slug === s.festival);
+    if(f) return f;
+  }
   const nt = _normTitle(s && s.title);
   for(const f of FESTIVALS){ if(nt.includes(f.match)) return f; }
   return null;
@@ -1295,6 +1296,8 @@ function isFestivalShow(s){ return festivalFor(s) !== null; }
 // is offered at all -- an empty Festivals view is worse than no pill.
 function liveFestivals(){
   const today = new Intl.DateTimeFormat('en-CA',{timeZone:'America/Los_Angeles',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+  const meta = state.festivalsMeta || [];
+  if(meta.length) return meta; // the view shows upcoming AND recent, so any entry earns the pill
   return FESTIVALS.filter(f => f.end >= today);
 }
 
@@ -1393,6 +1396,10 @@ async function load(){
     // submit form's suggestions. Older feeds lack it; the form falls back to
     // the venues in the feed.
     state.venues = Array.isArray(data.venues) ? data.venues : [];
+    // Festival summaries (name, dates, poster, counts) from festivals.json
+    // via the build. The lineup itself is fetched when a festival page opens.
+    state.festivalsMeta = Array.isArray(data.festivals) ? data.festivals : [];
+    if(typeof revealFestivalsPill === 'function') revealFestivalsPill();
     state.shows.forEach(s => { s._slug = makeSlug(s); }); // permanent per-show page identity
     classifyAll(); // tag each show with s.contentType
     state.stamp = data.generated || "";
@@ -1712,6 +1719,7 @@ function render(){
   }
   if(state.myShows){ renderFavorites(); return; }
   if(state.view === "venues"){ renderVenues(); return; }
+  if(state.festivals){ renderFestivals(); return; }
   const list = filtered();
   if(state.following){
     const _fs = new Set([...state.favorites].map(function(k){ var i=k.indexOf('::'); return i<0 ? k : k.slice(0,i+2)+_normTitle(k.slice(i+2)); }));
@@ -1806,6 +1814,117 @@ function render(){
   } else {
     wrap.appendChild(listOf(list, true));
   }
+}
+
+// ===== FESTIVALS (Sep 2026) =====
+// The Festivals pill shows cards, one per festival in festivals.json:
+// poster, name, dates, where, how many rooms and sets. Upcoming first, then
+// the past year under "Past". Tapping opens #/festival/<slug>: the lineup
+// grouped by day, each set linking to its venue -- and to its show page when
+// the set is still ahead. In the feed itself the sets are ordinary rows,
+// "Artist -- Festival", which is the convention Nick liked from St. Johns.
+function festDates(f){
+  if(!f.start) return '';
+  if(!f.end || f.end === f.start) return fmtShort(f.start);
+  const a = new Date(f.start+"T12:00:00"), b = new Date(f.end+"T12:00:00");
+  const sameMonth = a.getMonth() === b.getMonth();
+  const mo = d => d.toLocaleDateString('en-US',{month:'short'});
+  return sameMonth ? `${mo(a)} ${a.getDate()}\u2013${b.getDate()}` : `${mo(a)} ${a.getDate()} \u2013 ${mo(b)} ${b.getDate()}`;
+}
+function festCard(f, past){
+  const c = document.createElement('a');
+  c.className = 'fest-card' + (past ? ' past' : '');
+  c.href = '#/festival/' + encodeURIComponent(f.slug);
+  const where = [f.neighborhood, f.venues ? `${f.venues} room${f.venues===1?'':'s'}` : '', f.sets ? `${f.sets} sets` : ''].filter(Boolean).join(' \u00b7 ');
+  c.innerHTML = (f.imageUrl ? `<div class="fest-media"><img src="${esc(f.imageUrl)}" alt="" loading="lazy"></div>` : '')
+    + `<div class="fest-body">`
+    +   `<div class="fest-when">${esc(festDates(f))}${f.free ? ' <span class="chip chip-age">Free</span>' : ''}</div>`
+    +   `<div class="fest-name">${esc(f.name)}${f.edition ? ` <span class="fest-ed">${esc(f.edition)}</span>` : ''}</div>`
+    +   `<div class="fest-where">${esc(where)}</div>`
+    + `</div>`;
+  return c;
+}
+function renderFestivals(){
+  const wrap = $('#results');
+  wrap.innerHTML = '';
+  const today = new Intl.DateTimeFormat('en-CA',{timeZone:'America/Los_Angeles',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+  const meta = (state.festivalsMeta || []).slice().sort((a,b) => (a.start||'').localeCompare(b.start||''));
+  const up = meta.filter(f => (f.end || f.start || '') >= today);
+  const past = meta.filter(f => (f.end || f.start || '') < today).reverse();
+  $('#resultCount').textContent = up.length ? `${up.length} festival${up.length>1?'s':''} coming up` : 'Festivals';
+  if(!up.length){
+    const em = document.createElement('div'); em.className = 'empty';
+    em.innerHTML = 'Nothing announced yet. Know one coming up? <a href="#/submit">Send it in</a>.';
+    wrap.appendChild(em);
+  } else {
+    const grid = document.createElement('div'); grid.className = 'fest-grid';
+    up.forEach(f => grid.appendChild(festCard(f, false)));
+    wrap.appendChild(grid);
+  }
+  if(past.length){
+    const h = document.createElement('div'); h.className = 'dayhead'; h.innerHTML = `Past <span class="count">${past.length}</span>`;
+    wrap.appendChild(h);
+    const grid = document.createElement('div'); grid.className = 'fest-grid';
+    past.forEach(f => grid.appendChild(festCard(f, true)));
+    wrap.appendChild(grid);
+  }
+}
+let _festivalsFull = null;
+async function loadFestivalsFull(){
+  if(_festivalsFull) return _festivalsFull;
+  const r = await fetch(`festivals.json?v=${Math.floor(Date.now()/60000)}`, {cache:'no-store'});
+  const d = await r.json();
+  _festivalsFull = Array.isArray(d.festivals) ? d.festivals : [];
+  return _festivalsFull;
+}
+async function renderFestivalRoute(slug){
+  const wrap = $('#results');
+  wrap.innerHTML = '';
+  $('#resultCount').textContent = 'Festival';
+  ['venuesToggle','myShowsToggle','comedyToggle','followingToggle','byHoodToggle','festivalsToggle','allAgesToggle','tonightToggle','thisWeekToggle','picksToggle']
+    .forEach(id => { const el = document.getElementById(id); if(el) el.classList.remove('on'); });
+  let f = null;
+  try{ f = (await loadFestivalsFull()).find(x => x.slug === slug) || null; }catch(_){}
+  if(!f){
+    const em = document.createElement('div'); em.className = 'empty';
+    em.innerHTML = 'That festival isn\u2019t on file. <a href="#/festivals">See festivals</a>';
+    wrap.appendChild(em); return;
+  }
+  $('#resultCount').textContent = f.name;
+  const today = new Intl.DateTimeFormat('en-CA',{timeZone:'America/Los_Angeles',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+  const head = document.createElement('div'); head.className = 'fest-head';
+  head.innerHTML = (f.imageUrl ? `<div class="fest-hero"><img src="${esc(f.imageUrl)}" alt=""></div>` : '')
+    + `<h2 class="venue-name">${esc(f.name)}${f.edition ? ` <span class="fest-ed">${esc(f.edition)}</span>` : ''}</h2>`
+    + `<div class="venue-info">${esc(festDates(f))}${f.neighborhood ? ' \u00b7 ' + esc(f.neighborhood) : ''}${f.free ? ' <span class="chip chip-age">Free</span>' : ''}</div>`
+    + (f.blurb ? `<p class="fest-blurb">${esc(f.blurb)}</p>` : '')
+    + (f.url ? `<div class="venue-info"><a class="venue-dir" href="${esc(f.url)}" target="_blank" rel="noopener">Festival site</a></div>` : '');
+  wrap.appendChild(head);
+  // Lineup by day. A set still ahead links to its show page (the feed row the
+  // build made for it); every set links to its venue.
+  const bySlug = {}; state.shows.forEach(s => { if(s._slug) bySlug[s._slug] = s; });
+  const lineup = (f.lineup || []).slice().sort((a,b) => (a.date+timeKey(a.time)).localeCompare(b.date+timeKey(b.time)));
+  const days = {}; lineup.forEach(l => { (days[l.date] = days[l.date] || []).push(l); });
+  Object.keys(days).sort().forEach(date => {
+    const h = document.createElement('div'); h.className = 'dayhead';
+    h.innerHTML = `${esc(fmtDay(date))} <span class="count">${days[date].length}</span>${date < today ? ' <span class="fest-past">past</span>' : ''}`;
+    wrap.appendChild(h);
+    const ul = document.createElement('div'); ul.className = 'fest-lineup';
+    days[date].forEach(l => {
+      const row = document.createElement('div'); row.className = 'fest-set';
+      const showSlug = makeSlug({title: `${l.artist} \u2014 ${f.name}`, venue: l.venue, date: l.date, time: l.time});
+      const live = date >= today && bySlug[showSlug];
+      const name = live ? `<a class="fest-artist" href="#/show/${encodeURIComponent(showSlug)}">${esc(l.artist)}</a>` : `<span class="fest-artist">${esc(l.artist)}</span>`;
+      row.innerHTML = `<span class="fest-time">${esc(l.time || '')}</span>${name}<a class="fest-venue" href="#/venue/${encodeURIComponent(venueSlug(l.venue))}">${esc(l.venue)}</a>`;
+      ul.appendChild(row);
+    });
+    wrap.appendChild(ul);
+  });
+}
+function timeKey(t){
+  const m = /^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)$/i.exec((t||'').trim());
+  if(!m) return '99:99';
+  let h = parseInt(m[1],10) % 12; if(/pm/i.test(m[3])) h += 12;
+  return `${String(h).padStart(2,'0')}:${m[2]||'00'}`;
 }
 
 function renderVenues(){
@@ -2074,6 +2193,11 @@ function parseRoute(){
   // just landed on the feed.
   m = /^#\/venue\/([^?#]+)/.exec(h);
   if(m) return {type:'venue', slug: decodeURIComponent(m[1])};
+  // Festival pages (Sep 2026): #/festival/<slug> is the lineup by day;
+  // #/festivals is the card list (same as the pill).
+  m = /^#\/festival\/([^?#]+)/.exec(h);
+  if(m) return {type:'festival', slug: decodeURIComponent(m[1])};
+  if(/^#\/festivals\/?$/.test(h)) return {type:'festivals'};
   if(/^#\/venues\/?$/.test(h)) return {type:'venues'};
   // Profile pages (Stage 10 Part 2): #/u/<handle>. The handle charset is
   // [A-Za-z0-9_]{3,20}; anything else falls through to the lookup, which
@@ -2120,6 +2244,11 @@ async function router(){
   if(route.type === 'show'){ await renderShowRoute(route.slug); return; }
   if(route.type === 'profile'){ await renderProfileRoute(route.handle); return; }
   if(route.type === 'submit'){ renderSubmitRoute(); return; }
+  if(route.type === 'festival'){ await renderFestivalRoute(route.slug); return; }
+  if(route.type === 'festivals'){
+    if(!state.festivals && $('#festivalsToggle')) $('#festivalsToggle').click(); else render();
+    return;
+  }
   if(route.type === 'review'){ await renderReviewRoute(route); return; }
   if(route.type === 'venue'){
     var name = venueFromSlug(route.slug);
@@ -5623,13 +5752,14 @@ $('#allAgesToggle') && $('#allAgesToggle').addEventListener('click',()=>{
 });
 // Reveal the pill only while a registered festival still has dates ahead. An
 // empty Festivals view is worse than no pill at all.
-(function(){
+function revealFestivalsPill(){
   if(!liveFestivals().length) return;
   const pill = document.getElementById('festivalsPill');
   const opt  = document.getElementById('browseFestivals');
   if(pill) pill.hidden = false;
   if(opt)  opt.hidden  = false;
-})();
+}
+revealFestivalsPill();
 $('#comedyToggle').addEventListener('click',()=>{state.comedy=!state.comedy;if(state.comedy){state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');state.myShows=false;$('#myShowsToggle').classList.remove('on');state.following=false;$('#followingToggle').classList.remove('on');}$('#comedyToggle').classList.toggle('on',state.comedy);render();});
 // FOLLOWING FILTER toggle: hide-style filter that collapses the feed to hearted
 // bands/venues. Turning it on clears the alternate views/modes; the other view
@@ -6153,6 +6283,30 @@ load();
 .pf-name{font-family:'Alfa Slab One',serif;font-weight:400;font-size:26px;margin:0;line-height:1.1;overflow-wrap:anywhere}
 .pf-handle{font-family:'Oswald',sans-serif;font-size:15px;letter-spacing:.03em;color:var(--cream);opacity:.9;margin-top:3px}
 .pf-you{color:var(--cream);opacity:.6;font-size:12px;letter-spacing:0}
+/* Festivals */
+.fest-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin:6px 0 18px}
+.fest-card{display:flex;flex-direction:column;background:var(--cream);color:var(--ink);border-radius:12px;overflow:hidden;text-decoration:none;box-shadow:0 1px 0 rgba(0,0,0,.08)}
+.fest-card.past{opacity:.78}
+.fest-media{aspect-ratio:16/9;overflow:hidden;background:#d9d0bb}
+.fest-media img{width:100%;height:100%;object-fit:cover;display:block}
+.fest-body{padding:12px 14px 14px;display:flex;flex-direction:column;gap:4px}
+.fest-when{font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--rust)}
+.fest-name{font-family:'Bitter',Georgia,serif;font-weight:700;font-size:19px;line-height:1.15}
+.fest-ed{font-family:'Oswald',sans-serif;font-weight:400;font-size:12px;letter-spacing:.06em;text-transform:uppercase;opacity:.65;margin-left:6px}
+.fest-where{font-size:13px;opacity:.7}
+.fest-head{margin:6px 0 10px}
+.fest-hero{border-radius:12px;overflow:hidden;margin:0 0 12px;max-height:340px}
+.fest-hero img{width:100%;display:block;object-fit:cover}
+.fest-blurb{font-family:'Bitter',Georgia,serif;font-size:15px;line-height:1.5;color:var(--cream);opacity:.9;margin:8px 0 6px;max-width:620px}
+.fest-past{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:.08em;text-transform:uppercase;opacity:.5;margin-left:8px}
+.fest-lineup{display:flex;flex-direction:column;gap:1px;margin:0 0 14px}
+.fest-set{display:grid;grid-template-columns:76px 1fr auto;gap:10px;align-items:baseline;padding:8px 12px;background:rgba(243,234,215,.06);border-radius:6px}
+.fest-time{font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:.04em;opacity:.75;white-space:nowrap}
+.fest-artist{font-family:'Bitter',Georgia,serif;font-weight:600;font-size:15px;color:var(--cream);text-decoration:none}
+a.fest-artist:hover{text-decoration:underline}
+.fest-venue{font-size:13px;color:var(--cream);opacity:.7;text-decoration:none;white-space:nowrap}
+.fest-venue:hover{opacity:1;text-decoration:underline}
+@media(max-width:520px){.fest-set{grid-template-columns:64px 1fr;} .fest-venue{grid-column:2}}
 .pf-section-head .count{font-family:'Bitter',Georgia,serif;font-size:12px;opacity:.6;margin-left:6px}
 .pf-meta,.pf-counts{font-size:13px;opacity:.8;margin-top:3px}
 .pf-follow{border:1px solid var(--cream);background:none;color:var(--cream);border-radius:999px;padding:6px 14px;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;flex:0 0 auto}

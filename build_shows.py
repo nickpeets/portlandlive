@@ -867,6 +867,59 @@ def vivid_apply(shows, index):
     return n
 
 
+# ---------------------------------------------------------------------------
+# Festivals. festivals.json is Nick's file: one object per festival with the
+# poster, dates, link, a line about it, and a day-by-day lineup of sets
+# (date, time, artist, venue). Two things come out of it:
+#
+#   1. Every set becomes an ordinary feed row at its real venue, titled
+#      "Artist -- Festival Name" -- the convention that worked for St. Johns
+#      Music Fest, where the suffix made it obvious in the feed which shows
+#      were the festival. The row carries festival: <slug> so the app can
+#      group them. Past sets are dropped like any other past row.
+#   2. shows.json carries a "festivals" array (everything but the lineup) so
+#      the Festivals view can draw cards without another fetch; the festival
+#      page itself loads festivals.json for the full lineup.
+# ---------------------------------------------------------------------------
+FESTIVALS_FILE = os.path.join(HERE, "festivals.json")
+
+
+def load_festivals():
+    try:
+        with open(FESTIVALS_FILE) as f:
+            return [x for x in (json.load(f).get("festivals") or []) if x.get("slug") and x.get("name")]
+    except Exception as e:
+        print(f"  WARN: festivals.json unreadable: {e}")
+        return []
+
+
+def festival_rows():
+    out = []
+    for f in load_festivals():
+        for l in f.get("lineup") or []:
+            if not (l.get("date") and l.get("artist") and l.get("venue")):
+                continue
+            out.append({"title": f"{l['artist']} \u2014 {f['name']}", "venue": l["venue"],
+                        "neighborhood": l.get("neighborhood") or f.get("neighborhood") or "",
+                        "address": l.get("address") or "", "date": l["date"], "time": l.get("time") or "",
+                        "venueUrl": l.get("url") or f.get("url") or "", "imageUrl": l.get("imageUrl") or "",
+                        "age": l.get("age") or f.get("age") or "", "festival": f["slug"], "_hand": True})
+    if out:
+        print(f"  Festivals: {len(out)} sets from festivals.json")
+    return out
+
+
+def festival_summaries(shows):
+    """The festivals array for shows.json: metadata plus counts, no lineup."""
+    out = []
+    for f in load_festivals():
+        lineup = f.get("lineup") or []
+        out.append({k: f.get(k, "") for k in ("slug", "name", "edition", "start", "end", "neighborhood", "url", "imageUrl", "blurb", "free")}
+                   | {"sets": len(lineup), "venues": len({l.get("venue") for l in lineup if l.get("venue")}),
+                      "upcoming": sum(1 for r in shows if r.get("festival") == f["slug"])})
+    return out
+
+
 def main():
     shows = []
     if os.path.exists(MANUAL):
@@ -878,6 +931,7 @@ def main():
     # approved. They join the scrape here and go through the same dedupe,
     # so a submitted show that the scraper also found collapses to one row.
     shows.extend(fetch_approved_submissions())
+    shows.extend(festival_rows())
 
     # Ticketmaster: backfill what the scrape left blank, and add what it
     # missed at venues the site covers. See the block above.
@@ -1035,6 +1089,7 @@ def main():
     if isinstance(out, dict) and "shows" in out:
         out["shows"] = [{k: v for k, v in s.items() if not k.startswith("_")}
                         for s in out["shows"]]
+        out["festivals"] = festival_summaries(out["shows"])
     with open(OUT, "w") as f:
         json.dump(out, f, indent=2, ensure_ascii=False)
     venues = len(set(s.get("venue","") for s in deduped))
@@ -1163,7 +1218,23 @@ def write_clean_urls(shows, venues):
         with open(os.path.join(VENUE_PAGES, vs, "index.html"), "w", encoding="utf-8") as f:
             f.write(_shell(f"{name} \u2014 Rain Or Shows", desc, img, f"{SITE}/venue/{vs}/", f"#/venue/{vs}"))
         n_venue += 1
-    print(f"Wrote {n_show} show pages and {n_venue} venue pages (clean URLs)")
+    n_fest = 0
+    fest_dir = os.path.join(HERE, "festival")
+    shutil.rmtree(fest_dir, ignore_errors=True)
+    for f in load_festivals():
+        slug = f["slug"]
+        os.makedirs(os.path.join(fest_dir, slug), exist_ok=True)
+        lineup = f.get("lineup") or []
+        desc = f"{f.get('start','')} to {f.get('end','')}"
+        if f.get("neighborhood"):
+            desc += f" \u00b7 {f['neighborhood']}"
+        desc += f" \u00b7 {len(lineup)} sets"
+        img = (f.get("imageUrl") or "").strip()
+        with open(os.path.join(fest_dir, slug, "index.html"), "w", encoding="utf-8") as fh:
+            fh.write(_shell(f"{f['name']} \u2014 Rain Or Shows", desc, img if img.startswith("http") else DEFAULT_OG_IMAGE,
+                            f"{SITE}/festival/{slug}/", f"#/festival/{slug}"))
+        n_fest += 1
+    print(f"Wrote {n_show} show pages, {n_venue} venue pages and {n_fest} festival pages (clean URLs)")
 
 
 if __name__ == "__main__":
