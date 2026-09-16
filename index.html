@@ -2550,12 +2550,17 @@ function stubTileCanvas(o){
   return cv;
 }
 
-function peopleRow(u){
-  return '<a class="people-row" href="#/u/' + encodeURIComponent(u.handle) + '">'
-    + avImg(u.id, u.display_name, 'av-sm')
-    + '<span class="people-name">' + esc(u.display_name || u.handle) + '</span>'
-    + '<span class="people-handle">@' + esc(u.handle) + '</span>'
-    + '</a>';
+function peopleRow(u, removable){
+  // removable: an "x" that removes this person as a follower. Only shown on
+  // your own followers list (Sep 2026; Nick chose remove over block).
+  return '<div class="people-row-wrap">'
+    + '<a class="people-row" href="#/u/' + encodeURIComponent(u.handle) + '">'
+    +   avImg(u.id, u.display_name, 'av-sm')
+    +   '<span class="people-name">' + esc(u.display_name || u.handle) + '</span>'
+    +   '<span class="people-handle">@' + esc(u.handle) + '</span>'
+    + '</a>'
+    + (removable ? '<button type="button" class="people-remove" data-remove-follower="' + esc(u.id) + '" title="Remove follower" aria-label="Remove ' + esc(u.display_name || u.handle) + ' as a follower">&times;</button>' : '')
+    + '</div>';
 }
 // Search by handle (Sep 2026): a query starting with "@" searches people
 // instead of shows. Signed-in only, like the lists. Debounced; the results
@@ -2720,10 +2725,26 @@ async function renderProfileRoute(handle){
       var r = await safe(sb.rpc(which === 'followers' ? 'followers_of' : 'following_of', { p_target: p.id, p_limit: 200 }));
       var rows = (r && r.data) || [];
       rows.forEach(function(u){ AV_CACHE[u.id] = { id: u.id, display_name: u.display_name, avatar_url: u.avatar_url }; });
+      var removable = isMe && which === 'followers';
       peoplePanel.innerHTML = '<div class="pf-people-head">' + label + ' <span class="count">' + rows.length + '</span></div>'
-        + (rows.length ? '<div class="people-list">' + rows.map(peopleRow).join('') + '</div>'
+        + (rows.length ? '<div class="people-list">' + rows.map(function(u){ return peopleRow(u, removable); }).join('') + '</div>'
                        : '<div class="pf-empty">' + (which === 'followers' ? 'No followers yet.' : 'Not following anyone yet.') + '</div>');
     });
+  });
+  // Remove a follower: one tap, no confirm (they can follow again, and the
+  // row disappears right there). The count in the header ticks down.
+  peoplePanel.addEventListener('click', async function(e){
+    var btn = e.target.closest('[data-remove-follower]');
+    if(!btn) return;
+    e.preventDefault(); e.stopPropagation();
+    btn.disabled = true;
+    var r = await safe(sb.rpc('remove_follower', { p_follower: btn.getAttribute('data-remove-follower') }));
+    if(r && r.error){ console.warn('[profile] remove follower failed:', r.error.message || r.error); btn.disabled = false; return; }
+    var wrapRow = btn.closest('.people-row-wrap'); if(wrapRow) wrapRow.remove();
+    var cnt = page.querySelector('[data-pf-followers]');
+    if(cnt){ var n = Math.max(0, (parseInt(cnt.textContent, 10) || 1) - 1); cnt.textContent = n + (n === 1 ? ' follower' : ' followers'); }
+    var pc = peoplePanel.querySelector('.pf-people-head .count'); if(pc) pc.textContent = String(Math.max(0, (parseInt(pc.textContent,10)||1) - 1));
+    if(!peoplePanel.querySelector('.people-row-wrap')){ var l = peoplePanel.querySelector('.people-list'); if(l) l.outerHTML = '<div class="pf-empty">No followers yet.</div>'; }
   });
 
   // Your own page is also your private workspace. Saved and Profile had
@@ -6466,6 +6487,10 @@ load();
 .people-row{display:flex;align-items:center;gap:10px;padding:8px 6px;border-radius:8px;color:var(--cream);text-decoration:none}
 .people-row:hover{background:rgba(243,234,215,.08)}
 .people-row .av-sm{width:32px;height:32px;border-radius:50%;flex:0 0 32px;display:inline-flex;align-items:center;justify-content:center;font-family:'Oswald',sans-serif;font-weight:600;color:#1f3a30;object-fit:cover}
+.people-row-wrap{display:flex;align-items:center;gap:6px}
+.people-row-wrap .people-row{flex:1 1 auto;min-width:0}
+.people-remove{flex:0 0 auto;background:none;border:1px solid rgba(243,234,215,.25);color:var(--cream);opacity:.55;border-radius:50%;width:28px;height:28px;line-height:1;font-size:16px;cursor:pointer}
+.people-remove:hover{opacity:1;border-color:var(--cream)}
 .people-name{font-family:'Bitter',Georgia,serif;font-weight:600;font-size:15px}
 .people-handle{font-size:13px;opacity:.65}
 /* Festivals */

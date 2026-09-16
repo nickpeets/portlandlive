@@ -80,3 +80,25 @@ end;
 $$;
 revoke all on function public.search_profiles(text, integer) from public;
 grant execute on function public.search_profiles(text, integer) to authenticated;
+
+-- Remove a follower (Sep 2026, Nick's pick over blocking for now). Deletes
+-- the row where the CALLER is the followee. Only the followee can do this
+-- for their own followers; the follower can follow again -- this is
+-- "remove", not "block". Silent: nothing is sent to the removed person.
+create or replace function public.remove_follower(p_follower uuid)
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare n integer;
+begin
+  if auth.uid() is null then raise exception 'sign_in_required' using errcode = 'P0001'; end if;
+  if not public.rate_limit_take('remove_follower', 60) then raise exception 'rate_limited' using errcode = 'P0001'; end if;
+  delete from public.follows where followee_id = auth.uid() and follower_id = p_follower;
+  get diagnostics n = row_count;
+  return n > 0;
+end;
+$$;
+revoke all on function public.remove_follower(uuid) from public;
+grant execute on function public.remove_follower(uuid) to authenticated;
