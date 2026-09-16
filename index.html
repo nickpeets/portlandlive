@@ -70,6 +70,12 @@ body{
    under every overlay (50/60/80/9999). */
 .site-header{position:sticky;top:0;z-index:40}
 
+.ticker{background:var(--rust);color:var(--cream)}
+.ticker-inner{max-width:920px;margin:0 auto;padding:0 28px;min-height:30px;display:flex;align-items:center;overflow:hidden}
+.ticker-item{color:var(--cream);text-decoration:none;font-family:'Oswald',sans-serif;font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;line-height:1.3;padding:7px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;transition:opacity .35s}
+.ticker-item.fade{opacity:0}
+.ticker-item:hover{text-decoration:underline}
+@media(max-width:600px){.ticker-inner{padding:0 16px}.ticker-item{white-space:normal;font-size:12px}}
 .masthead{
   position:relative;
   background:var(--water-dd);
@@ -922,6 +928,13 @@ body{
      The site must tell on itself rather than present a frozen feed as current. -->
 <div id="staleBanner" class="stale-banner" hidden role="status" aria-live="polite"></div>
 
+<!-- News ticker (Sep 2026): items from news.json, Nick's file. Each item
+     has text, an optional url, and from/until dates; the bar shows the ones
+     in window, rotating every 7s, and hides when there are none. Sits ABOVE
+     the sticky header so it scrolls away with the page. -->
+<div class="ticker" id="ticker" hidden>
+  <div class="ticker-inner"><a class="ticker-item" id="tickerItem" href="#"></a></div>
+</div>
 <header class="site-header" id="siteHeader">
   <div class="masthead" id="masthead">
     <div class="masthead-inner">
@@ -6163,6 +6176,30 @@ $('#allAgesToggle') && $('#allAgesToggle').addEventListener('click',()=>{
 });
 // Reveal the pill only while a registered festival still has dates ahead. An
 // empty Festivals view is worse than no pill at all.
+// ===== NEWS TICKER =====
+(async function tickerInit(){
+  const bar = document.getElementById('ticker'), el = document.getElementById('tickerItem');
+  if(!bar || !el) return;
+  let items = [];
+  try{
+    const r = await fetch(`news.json?v=${Math.floor(Date.now()/60000)}`, {cache:'no-store'});
+    const d = await r.json();
+    const today = new Intl.DateTimeFormat('en-CA',{timeZone:'America/Los_Angeles',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+    items = (d.items || []).filter(i => i && i.text && (!i.from || i.from <= today) && (!i.until || i.until >= today));
+  }catch(_){ return; }
+  if(!items.length) return;
+  let k = 0;
+  function show(){
+    const i = items[k % items.length];
+    el.textContent = i.text;
+    el.href = i.url || '#';
+    el.classList.remove('fade');
+  }
+  show(); bar.hidden = false;
+  if(items.length > 1){
+    setInterval(function(){ el.classList.add('fade'); setTimeout(function(){ k++; show(); }, 350); }, 7000);
+  }
+})();
 function revealFestivalsPill(){
   if(!liveFestivals().length) return;
   const pill = document.getElementById('festivalsPill');
