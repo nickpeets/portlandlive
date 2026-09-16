@@ -2496,35 +2496,23 @@ function mapsHref(address, venue){
 }
 
 // ===== RESALE LINK (Vivid Seats, via Impact) =====
-// Approved 2026-09-14: 6% on sale, 30-day cookie. This is a SECOND, smaller
-// line under the Tickets button on the show page -- never the Tickets
-// button itself (that stays the venue's link), never on cards, and never
-// near Miracles. Only at rooms where a resale market plausibly exists; a
-// Vivid search for a Tuesday at a bar returns nothing and reads as spam.
-// The disclosure line is the decided wording; it is what keeps this honest
-// and it is what the FTC asks for.
-const VIVID_LINK = 'https://vivid-seats.pxf.io/9VZZQj';
-const RESALE_VENUES = new Set([
-  'Moda Center', 'Veterans Memorial Coliseum', 'Theater of the Clouds',
-  'Arlene Schnitzer Concert Hall', 'Keller Auditorium', 'Newmark Theatre',
-  'Roseland Theater', 'Crystal Ballroom', 'Wonder Ballroom', 'Revolution Hall',
-  'Hawthorne Theatre', 'Aladdin Theater', 'McMenamins Edgefield',
-  'Cascades Amphitheater', 'Hops Ballpark', 'Alberta Rose Theatre', 'Mission Theater'
-]);
-function resaleUrl(show){
-  if(!show || !RESALE_VENUES.has(show.venue)) return '';
-  // Impact deep link: ?u=<landing>. Land on a Vivid search for the headliner
-  // so the click arrives at the show, not the homepage.
-  const head = (show.title || '').split(/\s+(?:w\/|with)\s+|\s+\(w\/|\s+-\s+/i)[0].trim();
-  if(!head) return '';
-  const landing = 'https://www.vividseats.com/search?searchTerm=' + encodeURIComponent(head + ' Portland');
-  return VIVID_LINK + '?u=' + encodeURIComponent(landing);
-}
+// The build matches each show to Vivid's Impact product catalog by venue
+// and date and stores the EXACT event's tracked link as resaleUrl, with
+// the lowest listing as resaleFrom (build_shows.py: vivid_index /
+// vivid_apply). This is the whole check Nick asked for: no catalog row, no
+// link. The first version guessed -- a Vivid search for the headliner --
+// and landed Riley Green on an empty page while Vivid had tickets from
+// $35 at Cascades. Nothing is guessed now.
+//
+// A second, smaller line under the Tickets button on the show page --
+// never the button itself, never on cards, never near Miracles -- with the
+// decided disclosure beneath it.
 function resaleLine(show){
-  const u = resaleUrl(show);
-  if(!u) return '';
+  const u = (show && show.resaleUrl) || '';
+  if(!/^https:\/\/vivid-seats\.pxf\.io\//.test(u)) return '';
+  const from = show.resaleFrom ? ' \u2014 from $' + esc(String(Math.round(parseFloat(show.resaleFrom)))) : '';
   return '<div class="resale">'
-    + '<a class="resale-link" href="' + esc(u) + '" target="_blank" rel="noopener sponsored">Resale tickets on Vivid Seats</a>'
+    + '<a class="resale-link" href="' + esc(u) + '" target="_blank" rel="noopener sponsored">Resale tickets on Vivid Seats' + from + '</a>'
     + '<div class="aff-note">Tickets through this link support Rain Or Shows.</div>'
     + '</div>';
 }
@@ -5885,7 +5873,9 @@ function wiShowLink(show){
   // show leaves shows.json — over the old ephemeral #show-{id} in-page deep
   // link. Old links already shared in the wild keep working via wiDeepLink.
   var slug = show && (show._slug || show.slug || makeSlug(show));
-  if(slug) return WI_SHOW_BASE + "#/show/" + encodeURIComponent(slug);
+  // The clean URL: a real page the build writes per show, so the link
+  // unfurls with the show's title and poster. It opens the app at #/show.
+  if(slug) return WI_SHOW_BASE + "show/" + encodeURIComponent(slug) + "/";
   if(show.id != null) return WI_SHOW_BASE + "#show-" + encodeURIComponent(show.id);
   if(show.venueUrl) return show.venueUrl;
   return WI_SHOW_BASE;

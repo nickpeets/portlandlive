@@ -741,6 +741,127 @@ def tm_apply(shows, events, today):
     return matched, added, uncovered
 
 
+# ---------------------------------------------------------------------------
+# Vivid Seats resale links, from the Impact product catalog.
+#
+# Vivid publishes its whole event catalog through Impact (Content -> Product
+# Catalogs -> "Ticket Feed", ~180,000 rows, refreshed daily), and every row's
+# Product URL is a tracked deep link to THAT event with Nick's affiliate ID
+# already in it. That is the answer to "make sure we point at the right
+# place": match each show at a resale venue to its catalog row by venue and
+# date, and store the exact link. No row, no link.
+#
+# Feed shape (tab-separated, 70 columns, most empty): Product Name (event),
+# Product URL (tracked link; the Vivid URL inside carries the date as
+# -M-D-YYYY), Text1 = venue, Text2 = city, Text3 = address, Money2 = lowest
+# listing price. Fetched over FTP from products.impact.com with
+# IMPACT_FTP_USER / IMPACT_FTP_PASS (GitHub secrets). Gzipped, ~10 MB.
+#
+# Without credentials the pass is skipped with a note; a failed fetch is a
+# WARN. Rows keep whatever resaleUrl they had -- nothing is invented.
+# ---------------------------------------------------------------------------
+VIVID_VENUE_MAP = {
+    "Revolution Hall Portland": "Revolution Hall",
+    "McMenamins Crystal Ballroom": "Crystal Ballroom",
+    "McMenamins Mission Theater": "Mission Theater",
+    "Veterans Memorial Coliseum - Portland": "Veterans Memorial Coliseum",
+    "Star Theater Portland": "Star Theater",
+    "Dantes": "Dante's",
+    "The Den - Portland": "Al's Den",
+    "Hillsboro Ballpark": "Hops Ballpark",
+    "The Melody Event Center - The Get Down Music Venue": "The Get Down",
+    "Helium Comedy Club - Portland": "Helium Comedy Club",
+}
+_VIVID_DATE = re.compile(r"-(\d{1,2})-(\d{1,2})-(\d{4})(?=--|/|$)")
+_VIVID_AREA = re.compile(r", (OR|WA) \d{5}")
+
+
+def vivid_fetch_feed():
+    """The catalog as text, or '' -- never raises."""
+    user = os.environ.get("IMPACT_FTP_USER", "").strip()
+    pw = os.environ.get("IMPACT_FTP_PASS", "").strip()
+    if not (user and pw):
+        print("  note: Vivid: IMPACT_FTP_USER/PASS not set; resale pass skipped")
+        return ""
+    import ftplib, gzip, io
+    try:
+        ftp = ftplib.FTP("products.impact.com", timeout=60)
+        ftp.login(user, pw)
+        # The file lives under a brand folder that the root listing does not
+        # show (root lists as empty; found 2026-09-15 by trying the name).
+        ftp.cwd("/Vivid-Seats")
+        names = ftp.nlst()
+        cand = [n for n in names if n.endswith("_IR.txt.gz")] or [n for n in names if "Ticket-Feed" in n]
+        if not cand:
+            print(f"  WARN: Vivid: no Ticket-Feed file in /Vivid-Seats; saw {names[:8]}")
+            ftp.quit()
+            return ""
+        buf = io.BytesIO()
+        ftp.retrbinary("RETR " + cand[0], buf.write)
+        ftp.quit()
+        raw = buf.getvalue()
+        if cand[0].endswith(".gz"):
+            raw = gzip.decompress(raw)
+        return raw.decode("utf-8", "replace")
+    except Exception as e:
+        print(f"  WARN: Vivid: FTP fetch failed: {type(e).__name__}: {e}")
+        return ""
+
+
+def vivid_index(feed_text, venue_names):
+    """{(venue, date): (tracked_url, lowest_price)} for Portland-area rows at
+    venues the site knows. Pure; used by the suite against a saved sample."""
+    lines = feed_text.splitlines()
+    if not lines:
+        return {}
+    hdr = lines[0].split("\t")
+    ix = {h: i for i, h in enumerate(hdr)}
+    need = ("Product URL", "Text1", "Text3", "Money2")
+    if any(k not in ix for k in need):
+        print(f"  WARN: Vivid: feed columns changed; missing {[k for k in need if k not in ix]}")
+        return {}
+    known = set(venue_names)
+    out = {}
+    for line in lines[1:]:
+        cols = line.split("\t")
+        if len(cols) <= max(ix[k] for k in need):
+            continue
+        addr = cols[ix["Text3"]]
+        if not _VIVID_AREA.search(addr):
+            continue
+        venue = VIVID_VENUE_MAP.get(cols[ix["Text1"]], cols[ix["Text1"]])
+        if venue not in known:
+            continue
+        url = cols[ix["Product URL"]]
+        try:
+            import urllib.parse
+            inner = urllib.parse.unquote(urllib.parse.parse_qs(urllib.parse.urlparse(url).query).get("u", [""])[0])
+        except Exception:
+            inner = ""
+        m = _VIVID_DATE.search(inner)
+        if not m:
+            continue
+        date = f"{m.group(3)}-{int(m.group(1)):02d}-{int(m.group(2)):02d}"
+        price = cols[ix["Money2"]].strip()
+        key = (venue, date)
+        # Several rows can share a venue+date (packages, parking, a second
+        # listing); keep the cheapest real one.
+        if key not in out or (price and (not out[key][1] or float(price) < float(out[key][1] or 1e9))):
+            out[key] = (url, price)
+    return out
+
+
+def vivid_apply(shows, index):
+    """Attach resaleUrl / resaleFrom to matched rows. Returns count."""
+    n = 0
+    for r in shows:
+        hit = index.get((r.get("venue"), r.get("date")))
+        if hit:
+            r["resaleUrl"], r["resaleFrom"] = hit[0], hit[1]
+            n += 1
+    return n
+
+
 def main():
     shows = []
     if os.path.exists(MANUAL):
@@ -763,6 +884,14 @@ def main():
         _u = ", ".join(f"{v} ({c})" for v, c in _unc.most_common(6))
         print(f"  Ticketmaster: {len(_tm_events)} events -> {_m} matched, {_a} added"
               + (f"; {sum(_unc.values())} at venues not covered: {_u}" if _unc else ""))
+
+    # Vivid Seats: exact resale links from the Impact catalog. See the block
+    # above. Runs after Ticketmaster so TM-added rows can match too.
+    _vf = vivid_fetch_feed()
+    if _vf:
+        _vi = vivid_index(_vf, {r.get("venue") for r in shows})
+        _vn = vivid_apply(shows, _vi)
+        print(f"  Vivid: {len(_vi)} Portland-area events in the catalog -> {_vn} rows linked")
 
     # drop past shows
     # Drop past shows using US Pacific time (venues' local zone), not the
@@ -905,6 +1034,132 @@ def main():
         json.dump(out, f, indent=2, ensure_ascii=False)
     venues = len(set(s.get("venue","") for s in deduped))
     print(f"Wrote {len(deduped)} shows across {venues} venues to shows.json")
+    write_clean_urls(out["shows"], out.get("venues") or [])
+
+
+# ---------------------------------------------------------------------------
+# Clean URLs: a real page per show and per venue, so links unfurl.
+#
+# The app lives at /#/show/<slug>. Everything after the # never reaches a
+# server, so a pasted link previews as the homepage -- generic title, no
+# poster. /show/<slug>/index.html is a real 200: the show's title, the
+# poster as og:image, one line of description -- and a script that opens
+# the app at the show. Nobody sees the shell; link previews and search
+# engines do. Same for /venue/<slug>/.
+#
+# Regenerated every build from the feed plus the archive (permanent show
+# pages outlive the feed). The directories are cleared first so a show that
+# is gone from both stops having a page. ~1.2 KB each; git stores a new blob
+# only when a page's content changes, which is rarely.
+# ---------------------------------------------------------------------------
+SHOW_PAGES = os.path.join(HERE, "show")
+VENUE_PAGES = os.path.join(HERE, "venue")
+SITE = "https://rainorshows.com"
+DEFAULT_OG_IMAGE = SITE + "/og-default.png"
+
+
+def _venue_slug(name):
+    return re.sub(r"\s+", "-", _norm_key(name)).strip("-")
+
+
+def _esc(x):
+    return _html.escape(x or "", quote=True)
+
+
+def _shell(title, desc, image, canonical, app_hash):
+    """One clean-URL page. og:* for previews, a script for people."""
+    return ("<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\">"
+            f"<title>{_esc(title)}</title>"
+            f"<meta name=\"description\" content=\"{_esc(desc)}\">"
+            f"<link rel=\"canonical\" href=\"{_esc(canonical)}\">"
+            f"<meta property=\"og:type\" content=\"website\">"
+            f"<meta property=\"og:site_name\" content=\"Rain Or Shows\">"
+            f"<meta property=\"og:title\" content=\"{_esc(title)}\">"
+            f"<meta property=\"og:description\" content=\"{_esc(desc)}\">"
+            f"<meta property=\"og:image\" content=\"{_esc(image)}\">"
+            f"<meta property=\"og:url\" content=\"{_esc(canonical)}\">"
+            f"<meta name=\"twitter:card\" content=\"{'summary_large_image' if image != DEFAULT_OG_IMAGE else 'summary'}\">"
+            "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
+            f"<meta http-equiv=\"refresh\" content=\"0; url={_esc(SITE + '/' + app_hash)}\">"
+            f"<script>location.replace({json.dumps(SITE + '/' + app_hash)});</script>"
+            "</head><body style=\"font-family:Georgia,serif;background:#2f5a4a;color:#f3ead7;padding:24px\">"
+            f"<p>{_esc(title)}</p><p>{_esc(desc)}</p>"
+            f"<p><a style=\"color:#f3ead7\" href=\"{_esc(SITE + '/' + app_hash)}\">Open on Rain Or Shows</a></p>"
+            "</body></html>")
+
+
+def _show_desc(s):
+    bits = []
+    try:
+        d = datetime.date.fromisoformat(s.get("date", ""))
+        bits.append(d.strftime("%A, %B %-d"))
+    except Exception:
+        if s.get("date"):
+            bits.append(s["date"])
+    if s.get("time"):
+        bits.append(s["time"])
+    where = s.get("venue", "")
+    if s.get("neighborhood"):
+        where += f", {s['neighborhood']}"
+    if where:
+        bits.append(where)
+    if s.get("age") == "all-ages":
+        bits.append("All ages")
+    elif s.get("age"):
+        bits.append(s["age"])
+    return " \u00b7 ".join(bits)
+
+
+def write_clean_urls(shows, venues):
+    import shutil
+    rows = list(shows)
+    # Permanent pages: the archive too, so a link shared last month still
+    # unfurls after the show has left the feed.
+    # ... but only the last year of it: 4,412 pages on the first run, most
+    # for shows nobody will link to again. A year covers any stub or
+    # invite still in circulation without regenerating the whole history.
+    floor = (datetime.date.today() - datetime.timedelta(days=365)).isoformat()
+    try:
+        rows += [s for s in json.load(open(ARCHIVE)).get("shows", []) if (s.get("date") or "") >= floor]
+    except Exception:
+        pass
+    for d in (SHOW_PAGES, VENUE_PAGES):
+        shutil.rmtree(d, ignore_errors=True)
+        os.makedirs(d, exist_ok=True)
+    n_show = 0
+    seen = set()
+    for s in rows:
+        slug = make_slug(s)
+        if not slug or slug in seen:
+            continue
+        seen.add(slug)
+        title = f"{s.get('title','')} at {s.get('venue','')} \u2014 Rain Or Shows"
+        img = (s.get("imageUrl") or "").strip()
+        if not img.startswith("http"):
+            img = DEFAULT_OG_IMAGE
+        os.makedirs(os.path.join(SHOW_PAGES, slug), exist_ok=True)
+        with open(os.path.join(SHOW_PAGES, slug, "index.html"), "w", encoding="utf-8") as f:
+            f.write(_shell(title, _show_desc(s), img, f"{SITE}/show/{slug}/", f"#/show/{slug}"))
+        n_show += 1
+    n_venue = 0
+    for v in venues:
+        name = v.get("name") or ""
+        vs = _venue_slug(name)
+        if not name or not vs:
+            continue
+        upcoming = [s for s in shows if s.get("venue") == name]
+        desc = (f"{len(upcoming)} upcoming show{'s' if len(upcoming) != 1 else ''}" if upcoming else "Live music venue")
+        if v.get("neighborhood"):
+            desc += f" \u00b7 {v['neighborhood']}"
+        if v.get("address"):
+            desc += f" \u00b7 {v['address']}"
+        img = next((s.get("imageUrl") for s in upcoming if (s.get("imageUrl") or "").startswith("http")), DEFAULT_OG_IMAGE)
+        os.makedirs(os.path.join(VENUE_PAGES, vs), exist_ok=True)
+        with open(os.path.join(VENUE_PAGES, vs, "index.html"), "w", encoding="utf-8") as f:
+            f.write(_shell(f"{name} \u2014 Rain Or Shows", desc, img, f"{SITE}/venue/{vs}/", f"#/venue/{vs}"))
+        n_venue += 1
+    print(f"Wrote {n_show} show pages and {n_venue} venue pages (clean URLs)")
+
 
 if __name__ == "__main__":
     main()

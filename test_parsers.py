@@ -197,6 +197,26 @@ def main():
     else:
         print(f"  ok   ticketmaster-portland.json  {a:3d} rows  -- Discovery API pull; tm_apply invariants (no uncovered venues, no add-ons, no dupes)")
     print()
+    # Vivid Seats catalog matcher (build_shows.vivid_index) against a saved
+    # 400-row sample of the Impact feed (header + Portland-area rows). Pins
+    # the column mapping (Text1 venue, Text3 address, Money2 price, date
+    # inside the tracked URL) and the venue-name map.
+    feed = load("vivid-feed-sample.txt")
+    idx = bs.vivid_index(feed, {"Revolution Hall", "Keller Auditorium", "Crystal Ballroom", "Dante's", "Star Theater", "Hops Ballpark", "Al's Den", "Moda Center"})
+    hit = idx.get(("Keller Auditorium", "2026-09-17"))
+    probs = []
+    if len(idx) < 40:
+        probs.append(f"only {len(idx)} (venue,date) entries; expected 40+ from the sample")
+    if not hit or "vivid-seats.pxf.io/c/4969747/" not in hit[0]:
+        probs.append("Keller 2026-09-17 (Dan and Phil) not indexed with a tracked link")
+    if not any(k[0] == "Dante's" for k in idx) or not any(k[0] == "Hops Ballpark" for k in idx):
+        probs.append("venue-name map failed (Dantes -> Dante's, Hillsboro Ballpark -> Hops Ballpark)")
+    if probs:
+        fails += 1
+        print("  FAIL vivid-feed-sample.txt        " + "; ".join(probs))
+    else:
+        print(f"  ok   vivid-feed-sample.txt        {len(idx):3d} events -- Impact catalog: venue/date index with tracked links; venue map applied")
+    print()
     if fails:
         print(f"{fails} FAILURE(S)")
         sys.exit(1)
