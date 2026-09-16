@@ -3661,62 +3661,68 @@ def parse_kellys_olympian(html_text, today):
     return out
 
 
-def parse_barrelroom(html_text, today):
-    # Barrel Room (barrelroompdx.com), Old Town/Chinatown - Squarespace + Eventbrite.
-    # JSON-LD is a single Place object whose "Events" list holds Event @type objects (UTC startDate).
-    # High volume (weekly residencies); today->horizon window + (date,title) dedupe trims it.
+_BARREL_SKIP = re.compile(r"\b(email list|mailing list|newsletter|gift card|merch|donate|donation|rental|private event)\b", re.I)
+
+
+def parse_barrelroom(html, today):
+    """Barrel Room (120 NW Couch) -- their own site went away; the live
+    calendar is their Eventbrite organizer page, which embeds the listing
+    as an "upcomingEvents" JSON array (id, name, url, start_date,
+    start_time, image). Mailing-list and merch "events" that organizers
+    park on these pages are skipped by name. 21+ per the venue."""
     import html as _html
     out, seen = [], set()
-    horizon = today + datetime.timedelta(days=HORIZON_DAYS)
-    lower = today
     nb, addr = VENUE_INFO.get("Barrel Room", ("Old Town/Chinatown", ""))
-    blocks = _LD_JSON.findall(html_text)
-    evs = []
-    for b in blocks:
+    horizon = today + datetime.timedelta(days=120)
+    m = re.search(r'"upcomingEvents":\s*\[', html)
+    if not m:
+        return out
+    i, depth = m.end() - 1, 0
+    for j in range(i, len(html)):
+        if html[j] == "[":
+            depth += 1
+        elif html[j] == "]":
+            depth -= 1
+            if depth == 0:
+                raw = html[i:j + 1]
+                break
+    else:
+        return out
+    try:
+        events = json.loads(raw.encode().decode("unicode_escape"))
+    except Exception:
         try:
-            data = json.loads(b)
-        except Exception:
-            continue
-        if isinstance(data, dict) and isinstance(data.get("Events"), list):
-            evs.extend(data["Events"])
-        elif isinstance(data, list):
-            evs.extend([x for x in data if isinstance(x, dict) and x.get("@type") == "Event"])
-        elif isinstance(data, dict) and data.get("@type") == "Event":
-            evs.append(data)
-    for e in evs:
-        if not isinstance(e, dict) or e.get("@type") != "Event":
-            continue
-        sd = e.get("startDate")
-        if not sd:
-            continue
-        try:
-            dt = datetime.datetime.fromisoformat(sd.replace("Z", "+00:00"))
-        except Exception:
-            continue
-        if dt.tzinfo:
-            dt = dt.astimezone(_ASP_PDT)
-        d = dt.date()
-        if not (lower <= d <= horizon):
+            events = json.loads(raw)
+        except Exception as e:
+            print(f"  WARN: Barrel Room: upcomingEvents unparsable: {type(e).__name__}")
+            return out
+    for e in events:
+        if not isinstance(e, dict) or e.get("is_cancelled"):
             continue
         title = clean(_html.unescape(e.get("name") or ""))
-        title = re.sub(r"\s+", " ", title).strip()
-        if not title:
+        if not title or _BARREL_SKIP.search(title):
             continue
-        date = d.isoformat()
-        tm = "%d:%02d %s" % (dt.hour % 12 or 12, dt.minute, "AM" if dt.hour < 12 else "PM")
-        url = e.get("url") or "https://www.barrelroompdx.com/events"
-        img = e.get("image") or ""
-        if isinstance(img, dict):
-            img = img.get("url", "")
+        date = (e.get("start_date") or "")[:10]
+        if not re.match(r"^\d{4}-\d{2}-\d{2}$", date):
+            continue
+        d = datetime.date.fromisoformat(date)
+        if not (today <= d <= horizon):
+            continue
+        tm = ""
+        st = (e.get("start_time") or "")[:5]
+        if re.match(r"^\d{2}:\d{2}$", st) and st != "00:00":
+            hh, mm = int(st[:2]), st[3:]
+            tm = f"{hh % 12 or 12}:{mm} {'AM' if hh < 12 else 'PM'}"
+        img = ((e.get("image") or {}).get("url") or "").strip()
         key = (date, title.lower())
         if key in seen:
             continue
         seen.add(key)
-        out.append({"title": title, "venue": "Barrel Room", "neighborhood": nb,
-                    "address": addr, "date": date, "time": tm,
-                    "venueUrl": url, "imageUrl": img})
+        out.append({"title": title, "venue": "Barrel Room", "neighborhood": nb, "address": addr,
+                    "date": date, "time": tm,
+                    "venueUrl": e.get("url") or "https://www.eventbrite.com/o/barrel-room-80388668013",
+                    "imageUrl": img if img.startswith("http") else "", "age": "21+"})
     return out
-
 
 def parse_arbor(html, today):
     # Arbor Beer Lodge (arborbeerlodge.com), Arbor Lodge / N Interstate - native
@@ -3916,7 +3922,7 @@ SOURCES = [
     # does. Parser unchanged -- it just gets its HTML through the headless tier.
     {"name": "Kelly's Olympian (kellysolympian.com)", "parser": parse_kellys_olympian, "tls": True,
      "urls": ["https://kellysolympian.com/wp-json/tribe/events/v1/events?per_page=100"]},
-    {"name": "Barrel Room (barrelroompdx.com)", "parser": parse_barrelroom, "may_be_empty": True, "urls": ["https://www.barrelroompdx.com/events"]},
+        {"name": "Barrel Room (Eventbrite)", "parser": parse_barrelroom, "urls": ["https://www.eventbrite.com/o/barrel-room-80388668013"]},
     {"name": "Arbor Beer Lodge (arborbeerlodge.com)", "parser": parse_arbor, "urls": ["https://www.arborbeerlodge.com/events?format=json"]},
     {"name": "Artichoke Music (artichokemusic.org)", "parser": parse_artichoke, "urls": ["https://www.eventbrite.com/cc/live-music-artichoke-4657563"]},
     {"name": "Starday Tavern (stardaytavern.com / Genghis Records)", "parser": parse_starday, "urls": ["https://calendar.google.com/calendar/ical/m59vjhvcv0iflpv2iknoqlmuqo%40group.calendar.google.com/public/basic.ics"]},

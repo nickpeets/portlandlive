@@ -86,6 +86,7 @@ CASES = [
     ("kellys-tribe.json",       sv.parse_kellys_olympian, 17, {"time": 17, "imageUrl": 17},  "Tribe REST JSON via the TLS tier (curl_cffi); JSON-LD HTML path kept as fallback"),
     ("process.html",            sv.parse_process,        6, {"time": 4, "age": 6},       "Webflow schedule; event -- artists; RA ticket links; year inferred"),
     ("realm-events.html",       sv.parse_realm,         34, {"imageUrl": 34, "age": 34}, "Elementor event list via the TLS tier; multi-night runs split per night"),
+    ("barrel-room.html",        sv.parse_barrelroom,     6, {"time": 6, "imageUrl": 6},  "Eventbrite organizer page: upcomingEvents JSON; mailing-list entries skipped"),
 ]
 
 # Pages that were captured and examined but publish NO listing data the
