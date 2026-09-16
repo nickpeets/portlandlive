@@ -41,6 +41,12 @@
    height, so targets don't land underneath it. Notably .controls, which
    the venue/comedy toggles scrollIntoView to. */
 html{scroll-behavior:smooth;scroll-padding-top:66px}
+/* Mobile guard (Sep 2026): nothing may be wider than the screen. On a phone
+   one overflowing element zooms the whole page out until the user resizes
+   it -- Nick hit this. Clip at the root, and let long words wrap anywhere. */
+html,body{overflow-x:hidden;max-width:100%}
+img,video{max-width:100%}
+.fest-name,.s-title,.dm-body,.dm-snippet,.people-name,.cmt-body,.pf-name{overflow-wrap:anywhere}
 body{
   font-family:'Bitter',Georgia,serif;
   color:var(--ink);
@@ -6675,7 +6681,8 @@ load();
 .dm-time{font-family:'Oswald',sans-serif;font-size:11px;opacity:.6;margin-top:3px}
 .dm-day{align-self:center;font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase;opacity:.5;margin:8px 0 2px}
 .dm-seen{align-self:flex-end;font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:.06em;text-transform:uppercase;opacity:.55;margin:-2px 4px 2px 0}
-.dm-compose{display:flex;gap:8px;align-items:flex-end;margin-top:12px}
+.dm-compose{display:flex;gap:8px;align-items:flex-end;margin-top:12px;max-width:100%}
+.dm-compose textarea{min-width:0}
 .dm-compose textarea{flex:1 1 auto;resize:none;border-radius:10px;border:1px solid rgba(243,234,215,.3);background:rgba(243,234,215,.08);color:var(--cream);padding:10px 12px;font-family:'Bitter',Georgia,serif;font-size:15px}
 .pf-count{background:none;border:0;padding:0;color:inherit;font:inherit;cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(243,234,215,.35)}
 .pf-count:hover{text-decoration-color:var(--cream)}
@@ -6692,7 +6699,7 @@ load();
 .people-name{font-family:'Bitter',Georgia,serif;font-weight:600;font-size:15px}
 .people-handle{font-size:13px;opacity:.65}
 /* Festivals */
-.fest-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin:6px 0 18px}
+.fest-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(280px,100%),1fr));gap:14px;margin:6px 0 18px}
 .fest-card{display:flex;flex-direction:column;background:var(--cream);color:var(--ink);border-radius:12px;overflow:hidden;text-decoration:none;box-shadow:0 1px 0 rgba(0,0,0,.08)}
 .fest-card.past{opacity:.78}
 .fest-media{aspect-ratio:16/9;overflow:hidden;background:#d9d0bb}
