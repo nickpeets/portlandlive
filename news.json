@@ -17,11 +17,34 @@
    "url": "#/about",
    "from": "2026-09-16",
    "until": "2026-11-01"
+  },
+  {
+   "text": "New venue: The Haven — 2 shows on the calendar.",
+   "auto": true,
+   "key": "venue:The Haven",
+   "from": "2026-09-16",
+   "until": "2026-09-30"
+  },
+  {
+   "text": "New venue: Tomorrow Theater — 1 show on the calendar.",
+   "auto": true,
+   "key": "venue:Tomorrow Theater",
+   "from": "2026-09-16",
+   "until": "2026-09-30"
+  },
+  {
+   "text": "Miracle: 1 ticket at face value for Lucky Beaucoup at Mississippi Pizza.",
+   "auto": true,
+   "key": "miracle:2026-09-18-mississippi-pizza-lucky-beaucoup",
+   "from": "2026-09-16",
+   "until": "2026-09-18",
+   "url": "#/show/2026-09-18-mississippi-pizza-lucky-beaucoup"
   }
  ],
  "announced": [
   "fest:northwest-roots-fest-2026",
   "fest:st-johns-music-fest-2026",
+  "miracle:2026-09-18-mississippi-pizza-lucky-beaucoup",
   "venue:Al's Den",
   "venue:Aladdin Theater",
   "venue:Alberta Rose Theatre",
@@ -71,10 +94,12 @@
   "venue:The Den",
   "venue:The Get Down",
   "venue:The Goodfoot",
+  "venue:The Haven",
   "venue:The Headliners Club",
   "venue:The Old Church",
   "venue:The Ruins",
   "venue:Theater of the Clouds",
+  "venue:Tomorrow Theater",
   "venue:Tomorrow's Verse",
   "venue:Trout Lake Hall",
   "venue:Twilight Cafe & Bar",
