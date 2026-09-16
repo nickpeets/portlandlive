@@ -691,8 +691,13 @@ def tm_apply(shows, events, today):
         # Ticketmaster's own verdict first: cancelled / offsale / postponed
         # events are not shows to add (9 offsale and 1 cancelled in the
         # captured pull).
+        # "offsale" is NOT dead: Ticketmaster flips a show to offsale when the
+        # box office closes on show day, hours before doors. Thievery
+        # Corporation at Crystal vanished from the feed on the afternoon of
+        # its show (2026-09-15) for exactly that reason. Only cancelled and
+        # postponed mean the show is not happening.
         code = (((ev.get("dates") or {}).get("status") or {}).get("code") or "").lower()
-        if code in ("cancelled", "canceled", "offsale", "postponed", "rescheduled"):
+        if code in ("cancelled", "canceled", "postponed"):
             dead += 1
             continue
         tw = _tm_words(n["title"])
