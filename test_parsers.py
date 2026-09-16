@@ -233,6 +233,29 @@ def main():
         fails += 1
         print(f"  FAIL festivals.json               {len(frows)} rows, {len(bad)} malformed, summaries {fsum}")
     print()
+    # PAM watcher: nothing on a real capture (their calendar is films and
+    # lectures), but a concert must still be caught. Both halves are the
+    # test -- a filter that only ever returns nothing is not working, it is
+    # just quiet.
+    pam_raw = load("pam-tribe.json")
+    live = sv.parse_pam(pam_raw, TODAY)
+    import json as _json
+    _d = _json.loads(pam_raw)
+    _d["events"] = _d["events"][:4] + [
+        {"title": "Summer Tour w/ Garcia Birthday Band", "start_date": "2026-10-02 19:00:00", "all_day": False,
+         "description": "<p>The band performs live.</p>", "venue": {"venue": "PAM CUT&#8217;s Tomorrow Theater"}},
+        {"title": "The Mummy (4K Restoration)", "start_date": "2026-10-03 19:00:00", "all_day": False,
+         "description": "<p>A film screening with live score discussion.</p>", "venue": {"venue": "PAM CUT&#8217;s Tomorrow Theater"}},
+        {"title": "Here We Are: A PAM Highlights Tour", "start_date": "2026-10-04 14:00:00", "all_day": False,
+         "description": "<p>Explore highlights.</p>", "venue": {"venue": "Portland Art Museum"}}]
+    _d["next_rest_url"] = None
+    seeded = sv.parse_pam(_json.dumps(_d), TODAY)
+    if not live and len(seeded) == 1 and seeded[0]["venue"] == "Tomorrow Theater":
+        print("  ok   pam-tribe.json                 0 rows  -- watcher: nothing on the real calendar; a seeded concert is caught, a film and a tour are not")
+    else:
+        fails += 1
+        print(f"  FAIL pam-tribe.json               live {len(live)} (want 0), seeded {[r['title'] for r in seeded]} (want the concert only)")
+    print()
     if fails:
         print(f"{fails} FAILURE(S)")
         sys.exit(1)

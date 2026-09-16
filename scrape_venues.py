@@ -87,6 +87,8 @@ VENUE_INFO = {
     "Process": ("Sellwood-Moreland", "5040 SE Milwaukie Ave, Portland, OR 97202"),
     "Old Market Pub": ("Multnomah Village", "6959 SW Multnomah Blvd, Portland, OR 97223"),
     "The Headliners Club": ("Lake Oswego", "17880 SW McEwan Rd, Lake Oswego, OR 97035"),
+    "Portland Art Museum": ("Downtown", "1219 SW Park Ave, Portland, OR 97205"),
+    "Tomorrow Theater": ("Richmond", "3530 SE Division St, Portland, OR 97202"),
     "Realm": ("Central Eastside", "615 SE Alder St, Portland, OR 97214"),
     "The Den": ("Central Eastside", "116 SE Yamhill St, Portland, OR 97214"),
     "Polaris Hall": ("Overlook/N Portland", "635 N Killingsworth Ct"),
@@ -3671,6 +3673,89 @@ _HEADLINERS_SKIP_CAT = {"weekly"}
 _HEADLINERS_SKIP = re.compile(r"\b(karaoke|cornhole|trivia|bingo|poker|open mic night)\b", re.I)
 
 
+# PAM's calendar is films, lectures, tours and dinners; music is occasional
+# and carries no category of its own, so it is found by words. Deliberately
+# narrow: a phrase that means live performance, not "tour" (gallery tours)
+# or "sound" (sound design talks).
+_PAM_MUSIC = re.compile(r"\b(in concert|live in concert|concert\b|live music|live score|live soundtrack|"
+                        r"performs? live|band\b|quartet|quintet|sextet|trio\b|orchestra|symphony|ensemble|"
+                        r"choir|chorale|recital|jazz\b|blues\b|dj set|album release|record release|"
+                        r"singer.songwriter|songwriter)\b", re.I)
+_PAM_NOT_MUSIC = re.compile(r"\b(film|screening|movie|documentary|book|reading|lecture|talk|panel|"
+                            r"workshop|class|tour of|highlights tour|dinner|tasting|bingo|stand.?up)\b", re.I)
+
+
+def parse_pam(html, today):
+    """Portland Art Museum + PAM CUT's Tomorrow Theater -- a watcher.
+    Their Events Calendar API carries 80-odd events, almost all films,
+    lectures and dinners, with no music category to filter on (checked
+    2026-09-16: zero music in 50 events). So this runs nightly, keeps only
+    what reads as live music, and is marked may_be_empty -- nothing is the
+    normal answer, and a booked band appears by itself. The venue is the
+    room the event is in: the museum or Tomorrow Theater."""
+    import html as _html
+    out, seen = [], set()
+    horizon = today + datetime.timedelta(days=120)
+    try:
+        data = json.loads(html)
+    except Exception:
+        return out
+    pages = [data]
+    nxt = data.get("next_rest_url")
+    for _ in range(3):
+        if not nxt:
+            break
+        try:
+            more = json.loads(fetch(nxt))
+        except Exception:
+            break
+        pages.append(more)
+        nxt = more.get("next_rest_url")
+    for page in pages:
+        for e in page.get("events") or []:
+            title = clean(_html.unescape(e.get("title") or ""))
+            title = re.sub(r"\s+", " ", title).strip()
+            desc = re.sub(r"<[^>]+>", " ", _html.unescape(e.get("description") or ""))[:500]
+            blob = title + " " + desc
+            # Music words must be in the TITLE, or in the description of an
+            # event whose title does not announce a film, lecture or tour.
+            # "The Mummy (4K Restoration)" mentions a live score in its
+            # description; the title is what settles it.
+            if not title or _PAM_NOT_MUSIC.search(title):
+                continue
+            if not (_PAM_MUSIC.search(title) or (_PAM_MUSIC.search(desc) and not _PAM_NOT_MUSIC.search(desc[:200]))):
+                continue
+            sd = (e.get("start_date") or "")[:16]
+            if len(sd) < 16:
+                continue
+            try:
+                dt = datetime.datetime.strptime(sd, "%Y-%m-%d %H:%M")
+            except Exception:
+                continue
+            d = dt.date()
+            if not (today <= d <= horizon):
+                continue
+            vname = clean(_html.unescape(((e.get("venue") or {}).get("venue") or "")))
+            venue = "Tomorrow Theater" if "tomorrow" in vname.lower() else "Portland Art Museum"
+            nb, addr = VENUE_INFO.get(venue, ("Downtown", ""))
+            tm = "" if e.get("all_day") else "%d:%02d %s" % (dt.hour % 12 or 12, dt.minute, "AM" if dt.hour < 12 else "PM")
+            img = e.get("image") or ""
+            if isinstance(img, dict):
+                img = img.get("url", "") or ""
+            key = (d.isoformat(), title.lower())
+            if key in seen:
+                continue
+            seen.add(key)
+            out.append({"title": title, "venue": venue, "neighborhood": nb, "address": addr,
+                        "date": d.isoformat(), "time": tm,
+                        "venueUrl": e.get("url") or "https://portlandartmuseum.org/calendar/",
+                        "imageUrl": img if str(img).startswith("http") else "",
+                        "age": _age_in_text(blob)})
+    if out:
+        print(f"  note: PAM watcher found {len(out)} music event(s)")
+    return out
+
+
 def parse_headliners(html, today):
     """The Headliners Club (Lake Oswego, 17880 SW McEwan) -- The Events
     Calendar REST API, same plugin as Kelly's. 239 events on file; the
@@ -3990,6 +4075,10 @@ SOURCES = [
     {"name": "Havalina (havalinapdx.com)", "parser": parse_havalina, "urls": ["https://havalinapdx.com/events?format=json"]},
     {"name": "Process (processpdx.club)", "parser": parse_process, "urls": ["https://www.processpdx.club/"]},
     {"name": "Realm (realmpdx.com)", "parser": parse_realm, "tls": True, "urls": ["https://realmpdx.com/events/"]},
+    # A watcher: their calendar is films and lectures, so nothing is normal.
+    {"name": "Portland Art Museum / Tomorrow Theater (music only)", "parser": parse_pam,
+     "tls": True, "may_be_empty": True,
+     "urls": ["https://portlandartmuseum.org/wp-json/tribe/events/v1/events?per_page=100"]},
     {"name": "The Headliners Club (Lake Oswego)", "parser": parse_headliners,
      "urls": ["https://theheadlinersclub.com/wp-json/tribe/events/v1/events?per_page=50"]},
     # Intermittent bot challenge (6 of 10 runs zero by Sep 2026, then fully
