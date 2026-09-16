@@ -3220,6 +3220,67 @@ def parse_process(html, today):
     return out
 
 
+_REALM_DAY = re.compile(r"(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)?\s*([A-Z][a-z]{2})\s+(\d{1,2})\b")
+_REALM_MULTI = re.compile(r"\b([A-Z]{3})\s+(\d{1,2})\s*\+\s*([A-Z]{3})\s+(\d{1,2})\b", re.I)
+
+
+def parse_realm(html, today):
+    """Realm (realmpdx.com, 615 SE Alder) -- electronic club. Elementor
+    "ue-event-list-item" per event: .ue-event-list-item-details-title, then
+    an attributes line that is the genre plus the date ("HOUSE Sat  Sep 19").
+    No time on the listing; doors are late and vary, so time stays blank.
+    A run of nights reads "NOV 6 + NOV 7" or "DEC 31 + JAN 1" -- each night
+    becomes its own row. Ticket links go to the venue's own page or its
+    ticketer. 21+ per the venue. Behind the same TLS-handshake firewall as
+    Kelly's, so this source is on the "tls" tier."""
+    out, seen = [], set()
+    soup = BeautifulSoup(html, "html.parser")
+    nb, addr = VENUE_INFO.get("Realm", ("Central Eastside", ""))
+    horizon = today + datetime.timedelta(days=200)
+    for it in soup.select("div.ue-event-list-item"):
+        t = it.select_one(".ue-event-list-item-details-title")
+        at = it.select_one(".ue-event-list-item-details-attributes")
+        if not (t and at):
+            continue
+        title = clean(t.get_text(" "))
+        if not title:
+            continue
+        txt = at.get_text(" ", strip=True)
+        dates = []
+        mm = _REALM_MULTI.search(txt)
+        if mm:
+            for mon_s, day_s in ((mm.group(1), mm.group(2)), (mm.group(3), mm.group(4))):
+                mon = MONTHS.get(mon_s[:3].title())
+                if mon:
+                    dates.append((mon, int(day_s)))
+        else:
+            md = _REALM_DAY.search(txt)
+            if md and MONTHS.get(md.group(1)):
+                dates.append((MONTHS[md.group(1)], int(md.group(2))))
+        if not dates:
+            continue
+        a = it.select_one(".ue-event-list-item-details-cta a[href]")
+        url = a["href"] if a and a.get("href", "").startswith("http") else "https://realmpdx.com/events/"
+        im = it.select_one("img")
+        img = ((im.get("src") or im.get("data-src") or "").strip()) if im else ""
+        # A run can straddle New Year, so infer each night's year on its own.
+        for mon, day in dates:
+            try:
+                d = datetime.date(infer_year(mon, today), mon, day)
+            except ValueError:
+                continue
+            if not (today <= d <= horizon):
+                continue
+            key = (d.isoformat(), title.lower())
+            if key in seen:
+                continue
+            seen.add(key)
+            out.append({"title": title, "venue": "Realm", "neighborhood": nb, "address": addr,
+                        "date": d.isoformat(), "time": "", "venueUrl": url,
+                        "imageUrl": img if img.startswith("http") else "", "age": "21+"})
+    return out
+
+
 def parse_havalina(html, today):
     # Havalina (havalinapdx.com), St. Johns - Squarespace events collection.
     # /events?format=json gives an "upcoming" list with epoch-ms startDate
@@ -3849,6 +3910,7 @@ SOURCES = [
      "urls": ["https://portal.cityspark.com/PortalScripts/WillametteWeek"]},
     {"name": "Havalina (havalinapdx.com)", "parser": parse_havalina, "urls": ["https://havalinapdx.com/events?format=json"]},
     {"name": "Process (processpdx.club)", "parser": parse_process, "urls": ["https://www.processpdx.club/"]},
+    {"name": "Realm (realmpdx.com)", "parser": parse_realm, "tls": True, "urls": ["https://realmpdx.com/events/"]},
     # Intermittent bot challenge (6 of 10 runs zero by Sep 2026, then fully
     # zero). Plain requests with a browser UA doesn't reliably pass; Chromium
     # does. Parser unchanged -- it just gets its HTML through the headless tier.
