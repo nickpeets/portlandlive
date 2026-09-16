@@ -1973,6 +1973,12 @@ async function renderFestivalRoute(slug){
     + `<h2 class="venue-name">${esc(f.name)}${f.edition ? ` <span class="fest-ed">${esc(f.edition)}</span>` : ''}</h2>`
     + `<div class="venue-info">${esc(festDates(f))}${f.neighborhood ? ' \u00b7 ' + esc(f.neighborhood) : ''}${f.free ? ' <span class="chip chip-age">Free</span>' : ''}</div>`
     + (f.blurb ? `<p class="fest-blurb">${esc(f.blurb)}</p>` : '')
+    // The bill: every act on the poster, for a festival whose lineup is
+    // announced but not yet scheduled per act (Nick, Sep 2026).
+    + (Array.isArray(f.bill) && f.bill.length
+        ? `<div class="fest-bill"><div class="fest-bill-head">On the bill</div>`
+          + `<div class="fest-bill-acts">` + f.bill.map(a => `<span class="fest-act">${esc(a)}</span>`).join('') + `</div></div>`
+        : '')
     + (f.url ? `<div class="venue-info"><a class="venue-dir" href="${esc(f.url)}" target="_blank" rel="noopener">Festival site</a></div>` : '');
   wrap.appendChild(head);
   // Lineup by day. A set still ahead links to its show page (the feed row the
@@ -6911,6 +6917,10 @@ a.inbox-thread-who:hover{text-decoration:underline}
 .fest-hero{border-radius:12px;overflow:hidden;margin:0 0 12px;max-height:340px}
 .fest-hero img{width:100%;display:block;object-fit:cover}
 .fest-blurb{font-family:'Bitter',Georgia,serif;font-size:15px;line-height:1.5;color:var(--cream);opacity:.9;margin:8px 0 6px;max-width:620px}
+.fest-bill{margin:14px 0 6px;max-width:620px}
+.fest-bill-head{font-family:'Oswald',sans-serif;font-weight:600;font-size:12px;letter-spacing:.12em;text-transform:uppercase;opacity:.65;margin:0 0 8px}
+.fest-bill-acts{display:flex;flex-wrap:wrap;gap:6px}
+.fest-act{font-family:'Bitter',Georgia,serif;font-size:14px;background:rgba(243,234,215,.1);border-radius:999px;padding:5px 12px;line-height:1.3}
 .fest-past{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:.08em;text-transform:uppercase;opacity:.5;margin-left:8px}
 .fest-lineup{display:flex;flex-direction:column;gap:1px;margin:0 0 14px}
 .fest-set{display:grid;grid-template-columns:76px 1fr auto;gap:10px;align-items:baseline;padding:8px 12px;background:rgba(243,234,215,.06);border-radius:6px}
