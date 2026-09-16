@@ -967,6 +967,114 @@ def festival_summaries(shows):
     return out
 
 
+# ---------------------------------------------------------------------------
+# The ticker writes itself (Sep 2026). news.json has two kinds of line: the
+# ones Nick writes by hand, and the ones the build adds when something
+# actually changed -- a venue on the calendar for the first time, a festival
+# newly listed, a miracle posted. Auto lines carry "auto": true and a key,
+# so the build can add and expire its own without touching Nick's.
+#
+# The comparison is against news.json's own record of what it has announced,
+# not against yesterday's feed, so a venue that briefly drops to zero and
+# comes back is not announced twice.
+# ---------------------------------------------------------------------------
+NEWS_FILE = os.path.join(HERE, "news.json")
+NEWS_RUN_DAYS = 14          # how long a venue/festival line stays up
+
+
+def fetch_miracles():
+    """Open miracles. ticket_posts is readable by anyone (its select policy
+    is `to anon, authenticated using (true)`), so the build reads it with
+    the same anon key it uses for submissions. Never raises."""
+    url, key = _supabase_public_config()
+    if not url or not key:
+        return []
+    try:
+        import urllib.request, urllib.parse
+        q = urllib.parse.urlencode({"select": "show_slug,quantity,price_type,created_at",
+                                    "order": "created_at.desc", "limit": "50"})
+        req = urllib.request.Request(f"{url}/rest/v1/ticket_posts?{q}",
+                                     headers={"apikey": key, "Authorization": "Bearer " + key})
+        with urllib.request.urlopen(req, timeout=20) as r:
+            return json.loads(r.read().decode("utf-8")) or []
+    except Exception as e:
+        print(f"  note: miracles not fetched for the ticker ({type(e).__name__})")
+        return []
+
+
+def update_news(shows, venues, today):
+    try:
+        with open(NEWS_FILE) as f:
+            news = json.load(f)
+    except Exception:
+        news = {"items": []}
+    items = news.get("items") or []
+    hand = [i for i in items if not i.get("auto")]
+    auto = {i.get("key"): i for i in items if i.get("auto") and i.get("key")}
+    seen = set(news.get("announced") or []) | set(auto)
+
+    live = {}
+    for r in shows:
+        v = r.get("venue")
+        if v:
+            live[v] = live.get(v, 0) + 1
+    new_lines = {}
+    for v, n in sorted(live.items()):
+        key = "venue:" + v
+        if key not in seen:
+            new_lines[key] = f"New venue: {v} \u2014 {n} show{'s' if n != 1 else ''} on the calendar."
+    for f in load_festivals():
+        key = "fest:" + f["slug"]
+        if key in seen or (f.get("end") or f.get("start") or "") < today.isoformat():
+            continue
+        when = ""
+        try:
+            a = datetime.date.fromisoformat(f["start"])
+            when = " " + a.strftime("%b").lstrip() + " " + str(a.day)
+            if f.get("end") and f["end"] != f["start"]:
+                b = datetime.date.fromisoformat(f["end"])
+                when += f"-{b.day}" if b.month == a.month else f" \u2013 {b.strftime('%b')} {b.day}"
+        except Exception:
+            pass
+        new_lines[key] = f"Festival added: {f['name']}{when}."
+
+    # Miracles: a spare ticket is news only while the show is ahead, so these
+    # run until the show rather than a fortnight -- and they link to it. The
+    # only ticker lines that are clickable (Nick's call).
+    by_slug = {}
+    for r in shows:
+        sl = make_slug(r)
+        if sl:
+            by_slug[sl] = r
+    for m in fetch_miracles():
+        sl = (m.get("show_slug") or "").strip()
+        row = by_slug.get(sl)
+        key = "miracle:" + sl
+        if not row or key in seen or (row.get("date") or "") < today.isoformat():
+            continue
+        n = int(m.get("quantity") or 1)
+        how = "free" if m.get("price_type") == "free" else "at face value"
+        new_lines[key] = {"text": f"Miracle: {n} ticket{'s' if n != 1 else ''} {how} for {row.get('title','a show')} at {row.get('venue','')}.",
+                          "url": f"#/show/{sl}", "until": row["date"]}
+
+    until = (today + datetime.timedelta(days=NEWS_RUN_DAYS)).isoformat()
+    for key, val in new_lines.items():
+        line = {"text": val} if isinstance(val, str) else dict(val)
+        auto[key] = {"text": line["text"], "auto": True, "key": key,
+                     "from": today.isoformat(), "until": line.get("until") or until}
+        if line.get("url"):
+            auto[key]["url"] = line["url"]
+    kept = [i for i in auto.values() if (i.get("until") or "9999") >= today.isoformat()]
+    news["items"] = hand + sorted(kept, key=lambda i: i.get("from", ""), reverse=True)
+    news["announced"] = sorted(seen | set(auto))
+    with open(NEWS_FILE, "w") as f:
+        json.dump(news, f, indent=1, ensure_ascii=False)
+    if new_lines:
+        _s = [v if isinstance(v, str) else v["text"] for v in list(new_lines.values())[:3]]
+        print(f"  News: {len(new_lines)} new line(s): " + "; ".join(_s))
+    return len(new_lines)
+
+
 def main():
     shows = []
     if os.path.exists(MANUAL):
@@ -1149,6 +1257,7 @@ def main():
         out["shows"] = [{k: v for k, v in s.items() if not k.startswith("_")}
                         for s in out["shows"]]
         out["festivals"] = festival_summaries(out["shows"])
+        update_news(out["shows"], out.get("venues") or [], datetime.date.today())
     with open(OUT, "w") as f:
         json.dump(out, f, indent=2, ensure_ascii=False)
     venues = len(set(s.get("venue","") for s in deduped))

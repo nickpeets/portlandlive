@@ -72,6 +72,7 @@ body{
 
 .ticker{background:var(--rust);color:var(--cream)}
 .ticker-inner{max-width:920px;margin:0 auto;padding:0 28px;min-height:30px;display:flex;align-items:center;justify-content:center;text-align:center;overflow:hidden}
+.ticker-link{color:var(--cream);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .ticker-item{color:var(--cream);text-decoration:none;cursor:default;font-family:'Oswald',sans-serif;font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;line-height:1.3;padding:7px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;transition:opacity .35s}
 .ticker-item.fade{opacity:0}
 @media(max-width:600px){.ticker-inner{padding:0 16px}.ticker-item{white-space:normal;font-size:12px}}
@@ -6284,10 +6285,18 @@ $('#allAgesToggle') && $('#allAgesToggle').addEventListener('click',()=>{
   if(!items.length) return;
   let k = 0;
   function show(){
-    // Text only. A url in news.json is ignored unless a link is asked for
-    // (Nick, Sep 2026: tapping "Messages" in the ticker navigated, which is
-    // not what a news line should do).
-    el.textContent = items[k % items.length].text;
+    // Text, unless the line carries a url -- only the build's miracle lines
+    // do, because a spare ticket is worth a tap. Nick's hand-written lines
+    // and the venue/festival lines stay text (Sep 2026).
+    const i = items[k % items.length];
+    el.innerHTML = '';
+    if(i.url){
+      const a = document.createElement('a');
+      a.className = 'ticker-link'; a.href = i.url; a.textContent = i.text;
+      el.appendChild(a);
+    } else {
+      el.textContent = i.text;
+    }
     el.classList.remove('fade');
   }
   show(); bar.hidden = false;
