@@ -966,10 +966,7 @@ body{
             <div id="avEditor" hidden></div>
             <div id="handleEditor" hidden></div>
             <div id="visibilityEditor" hidden></div>
-            <label class="pill quick-menu-pill my-shows" title="Show everything you have favorited — shows, bands, and venues">
-              <span class="toggle" id="myShowsToggle"></span>
-              <span>Saved</span>
-            </label>
+            <button class="quick-menu-pill quick-menu-authitem" id="myShowsToggle" type="button" title="Your profile: saved shows, following, stubs">My profile</button>
             <label class="pill quick-menu-pill following-pill" title="Filter the feed to shows by the bands, venues and people you follow">
               <span class="toggle" id="followingToggle"></span>
               <span>&#9733; Following</span>
@@ -5877,7 +5874,11 @@ $('#byHoodToggle').addEventListener('click',()=>{const on=!state.byHood;leaveSec
             const r = sb ? await sb.rpc('my_handle') : null;
             const d = r && !r.error ? r.data : null;
             const h = Array.isArray(d) ? ((d[0] || {}).handle || '') : (d && d.handle) || '';
-            if(h){ location.hash = '#/u/' + encodeURIComponent(h); return; }
+            if(h){
+              var target = '#/u/' + encodeURIComponent(h);
+              if(location.hash === target){ router(); } else { location.hash = target; }
+              return;
+            }
           }catch(_){}
         }
         state.myShows=!state.myShows;if(state.myShows){state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');state.comedy=false;$('#comedyToggle').classList.remove('on');state.tonight=false;$('#tonightToggle').classList.remove('on');state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');state.byHood=false;$('#byHoodToggle').classList.remove('on');state.picks=false;$('#picksToggle').classList.remove('on');state.following=false;$('#followingToggle').classList.remove('on');}e.currentTarget.classList.toggle('on',state.myShows);render();});
