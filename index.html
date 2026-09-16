@@ -1117,11 +1117,18 @@ body{
 <!-- GoatCounter: visit counts, no cookies, no identification. The code is
      Nick's site code from goatcounter.com. -->
 <script>
-  // The app routes on the hash, which GoatCounter ignores by default: count
-  // path + hash so #/show/... and #/venue/... are separate pages, and count
-  // again on every hash change.
-  window.goatcounter = { path: function(){ return location.pathname + location.hash; } };
-  window.addEventListener('hashchange', function(){ if(window.goatcounter && window.goatcounter.count) window.goatcounter.count(); });
+  // The app reports its own views. The pills -- Tonight, Comedy, Venues --
+  // change state, not the URL, so hash-based counting missed them (Nick:
+  // "I had to hard-refresh every time"). trackView(path) is called from
+  // render() and the routes with a virtual path, and counts once per change.
+  // no_onload: the first count comes from the app too, so nothing double-counts.
+  window.goatcounter = { no_onload: true };
+  var _gcLast = '';
+  function trackView(path){
+    if(!path || path === _gcLast) return;
+    _gcLast = path;
+    if(window.goatcounter && window.goatcounter.count) window.goatcounter.count({ path: path });
+  }
 </script>
 <script data-goatcounter="https://rainorshows.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 
@@ -1716,7 +1723,24 @@ function syncTogglePills(){
     if(el) el.classList.toggle('on', !!on[id]);
   });
 }
+function viewPath(){
+  const h = location.hash || '';
+  if(/^#\/(show|venue|festival|u|submit|review|about|privacy)\//.test(h) || /^#\/(submit|about|privacy|venues|festivals)\/?$/.test(h)) return '/' + h;
+  if(state.view === 'venues') return state.selectedVenue ? '/#/venue/' + venueSlug(state.selectedVenue) : '/#/venues';
+  if(state.festivals) return '/#/festivals';
+  if(state.comedy) return '/#/comedy';
+  if(state.allAges) return '/#/all-ages';
+  if(state.picks) return '/#/picks';
+  if(state.following) return '/#/following';
+  if(state.myShows) return '/#/saved';
+  if(state.tonight) return '/#/tonight';
+  if(state.thisWeek) return '/#/this-week';
+  if(state.byHood) return '/#/by-neighborhood';
+  if(state.q && state.q.trim()) return '/#/search';
+  return '/';
+}
 function render(){
+  try{ if(typeof trackView === 'function') trackView(viewPath()); }catch(_){}
   // A permanent show page owns #results while the URL points at one; route away
   // instead of racing it (e.g. a filter-pill click while viewing a show page).
   if(parseRoute().type === 'show'){ if(location.hash){ location.hash = ''; } return; }
@@ -1901,6 +1925,7 @@ async function loadFestivalsFull(){
   return _festivalsFull;
 }
 async function renderFestivalRoute(slug){
+  try{ if(typeof trackView === 'function') trackView('/' + (location.hash||'')); }catch(_){}
   const wrap = $('#results');
   wrap.innerHTML = '';
   $('#resultCount').textContent = 'Festival';
@@ -2312,6 +2337,7 @@ async function router(){
 }
 
 async function renderShowRoute(slug){
+  try{ if(typeof trackView === 'function') trackView('/' + (location.hash||'')); }catch(_){}
   var wrap = $('#results');
   wrap.innerHTML = '';
   $('#resultCount').textContent = '';
@@ -2376,6 +2402,7 @@ const STATIC_PAGES = {
   + '<p class="sub-lead" style="margin-top:18px">Last updated September 2026.</p>'}
 };
 function renderStaticPage(key){
+  try{ if(typeof trackView === 'function') trackView('/' + (location.hash||'')); }catch(_){}
   const pg = STATIC_PAGES[key]; if(!pg) return;
   const wrap = $('#results'); wrap.innerHTML = '';
   $('#resultCount').textContent = pg.title;
@@ -2524,6 +2551,7 @@ function stubTileCanvas(o){
 }
 
 async function renderProfileRoute(handle){
+  try{ if(typeof trackView === 'function') trackView('/' + (location.hash||'')); }catch(_){}
   var wrap = $('#results');
   wrap.innerHTML = '';
   $('#resultCount').textContent = 'Profile';
