@@ -906,10 +906,13 @@ def festival_rows():
 
 
 def _festival_row(f, l):
+    # The festival's poster is the row's poster unless the set has its own,
+    # so a festival day does not land on a blank show page (Nick, Sep 2026).
     return {"title": f"{l['artist']} \u2014 {f['name']}", "venue": l["venue"],
             "neighborhood": l.get("neighborhood") or f.get("neighborhood") or "",
             "address": l.get("address") or "", "date": l["date"], "time": l.get("time") or "",
-            "venueUrl": l.get("url") or f.get("url") or "", "imageUrl": l.get("imageUrl") or "",
+            "venueUrl": l.get("url") or f.get("url") or "",
+            "imageUrl": l.get("imageUrl") or f.get("imageUrl") or "",
             "age": l.get("age") or f.get("age") or "", "festival": f["slug"], "_hand": True}
 
 
