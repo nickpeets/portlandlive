@@ -142,3 +142,79 @@ drop trigger if exists show_submissions_notify on public.show_submissions;
 create trigger show_submissions_notify
   after insert on public.show_submissions
   for each row execute function public.notify_submission();
+
+
+-- ============================================================================
+-- Part 3 (2026-09-15): the submitter hears back.
+--
+-- Two emails to the address on the submission, same pg_net + Resend path:
+--   * on insert: "Got it" -- what was received, and that a verdict follows
+--   * on status -> approved/rejected, by any path (the email link, the
+--     moderator RPC, or the SQL Editor): "It's live" or "Not this time"
+-- Both run after the reviewer notification. A failed send never blocks the
+-- insert or the review. Verified live: all three emails arrived in order.
+-- ============================================================================
+
+create or replace function public._ros_send_email(p_to text, p_subject text, p_html text)
+returns void language plpgsql security definer set search_path = public as $$
+declare v_key text;
+begin
+  select decrypted_secret into v_key from vault.decrypted_secrets where name = 'resend_api_key' limit 1;
+  if v_key is null or p_to is null or p_to = '' then return; end if;
+  perform net.http_post(
+    url := 'https://api.resend.com/emails',
+    headers := jsonb_build_object('Authorization', 'Bearer ' || v_key, 'Content-Type', 'application/json'),
+    body := jsonb_build_object('from', 'Rain Or Shows <noreply@rainorshows.com>',
+                               'to', jsonb_build_array(p_to), 'subject', p_subject, 'html', p_html));
+exception when others then return;
+end; $$;
+
+create or replace function public.notify_submitter_received()
+returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  perform public._ros_send_email(
+    new.submitter_email,
+    'Got it: ' || new.title || ' @ ' || new.venue,
+    '<div style="font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;font-size:15px;line-height:1.5;color:#222;max-width:560px">'
+    || '<p>Thanks for sending this in.</p>'
+    || '<p style="font-size:18px;font-weight:600;margin:0 0 4px">' || replace(replace(new.title,'<','&lt;'),'>','&gt;') || '</p>'
+    || '<p style="margin:0 0 14px">' || replace(replace(new.venue,'<','&lt;'),'>','&gt;') || ' &middot; ' || to_char(new."date", 'FMDay, Month FMDD') || coalesce(' &middot; ' || new."time", '') || '</p>'
+    || '<p>We review everything by hand. If it checks out it will be on <a href="https://rainorshows.com">rainorshows.com</a> within a day, and you will get one more email either way.</p>'
+    || '<p style="font-size:12px;color:#999">Rain Or Shows &middot; a guide to live music in Portland</p></div>');
+  return new;
+exception when others then return new;
+end; $$;
+
+drop trigger if exists show_submissions_notify_submitter on public.show_submissions;
+create trigger show_submissions_notify_submitter
+  after insert on public.show_submissions
+  for each row execute function public.notify_submitter_received();
+
+create or replace function public.notify_submitter_decision()
+returns trigger language plpgsql security definer set search_path = public as $$
+declare v_subj text; v_body text;
+begin
+  if new.status = old.status or new.status not in ('approved','rejected') then return new; end if;
+  if new.status = 'approved' then
+    v_subj := 'It''s live: ' || new.title || ' @ ' || new.venue;
+    v_body := '<p>Your show is on the site. It appears in the listings at the next nightly build, by about 7am Pacific.</p>'
+           || '<p><a href="https://rainorshows.com/#/venue/' || replace(lower(new.venue),' ','-') || '">See the venue page</a></p>';
+  else
+    v_subj := 'About your submission: ' || new.title || ' @ ' || new.venue;
+    v_body := '<p>We could not confirm this one, so it is not going up. That is usually because we could not verify the date or venue. If you think we got it wrong, reply to this email.</p>';
+  end if;
+  perform public._ros_send_email(
+    new.submitter_email, v_subj,
+    '<div style="font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;font-size:15px;line-height:1.5;color:#222;max-width:560px">'
+    || '<p style="font-size:18px;font-weight:600;margin:0 0 4px">' || replace(replace(new.title,'<','&lt;'),'>','&gt;') || '</p>'
+    || '<p style="margin:0 0 14px">' || replace(replace(new.venue,'<','&lt;'),'>','&gt;') || ' &middot; ' || to_char(new."date", 'FMDay, Month FMDD') || '</p>'
+    || v_body
+    || '<p style="font-size:12px;color:#999">Rain Or Shows &middot; a guide to live music in Portland</p></div>');
+  return new;
+exception when others then return new;
+end; $$;
+
+drop trigger if exists show_submissions_notify_decision on public.show_submissions;
+create trigger show_submissions_notify_decision
+  after update of status on public.show_submissions
+  for each row execute function public.notify_submitter_decision();
