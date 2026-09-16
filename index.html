@@ -5687,8 +5687,8 @@ function favKey(s){ return (s.venue||'') + '|' + (s.date||'') + '|' + (s.title||
 
 /* events */
 $('#searchInput').addEventListener('input',e=>{state.q=e.target.value;if(state.q && state.selectedVenue){state.selectedVenue=null;state.view='shows';}render();});
-$('#byHoodToggle').addEventListener('click',()=>{state.byHood=!state.byHood;$('#byHoodToggle').classList.toggle('on',state.byHood);render();});
-        $('#venuesToggle').addEventListener('click',()=>{const onDirectory=state.view==='venues'&&!state.selectedVenue;const on=!onDirectory;
+$('#byHoodToggle').addEventListener('click',()=>{const on=!state.byHood;leaveSections('byHood');state.byHood=on;$('#byHoodToggle').classList.toggle('on',state.byHood);render();});
+        $('#venuesToggle').addEventListener('click',()=>{leaveSections('venues');const onDirectory=state.view==='venues'&&!state.selectedVenue;const on=!onDirectory;
           // Directory is addressable (#/venues); turning it off returns to the
           // bare feed URL. Either way hashchange -> router() sets the state.
           const target = on ? '#/venues' : '';
@@ -5712,7 +5712,7 @@ $('#byHoodToggle').addEventListener('click',()=>{state.byHood=!state.byHood;$('#
         state.myShows=!state.myShows;if(state.myShows){state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');state.comedy=false;$('#comedyToggle').classList.remove('on');state.tonight=false;$('#tonightToggle').classList.remove('on');state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');state.byHood=false;$('#byHoodToggle').classList.remove('on');state.picks=false;$('#picksToggle').classList.remove('on');state.following=false;$('#followingToggle').classList.remove('on');}e.currentTarget.classList.toggle('on',state.myShows);render();});
         // Picks of the Week: dominant filter. Turning it on switches to the curated, vertical showcase
         // and clears the Tonight / This Week / My Shows / Venues filters so only picks are shown.
-        $('#picksToggle').addEventListener('click',e=>{
+        $('#picksToggle').addEventListener('click',e=>{leaveSections('picks');
           state.picks=!state.picks;
           e.currentTarget.classList.toggle('on',state.picks);
           if(state.picks){
@@ -5734,11 +5734,28 @@ $('#byHoodToggle').addEventListener('click',()=>{state.byHood=!state.byHood;$('#
         else { location.hash = target; }
         document.querySelector('.controls').scrollIntoView({block:'start',behavior:'instant'}); }
       $('#results').addEventListener('click',e=>{const _del=e.target.closest('.stub-del'); if(_del){ e.preventDefault(); e.stopPropagation(); const id=_del.getAttribute('data-stubdel'); const kept=loadStubs().filter(s=>stubIdOf(s)!==id); saveStubs(kept); flashStub('Removed from your shelf'); reRenderCurrentView(); return; } const _no=e.target.closest('.dym-no'); if(_no){ e.preventDefault(); e.stopPropagation(); const k=_no.getAttribute('data-dym-key')||''; const sl=_no.getAttribute('data-dym-slug')||''; if(k && state.favorites.has(k)){ state.favorites.delete(k); saveFavorites(); } if(sl){ const sb=txClient(); if(sb){ sb.from('show_attendees').delete().eq('show_slug', sl).then(function(){}, function(){}); } ATTENDED_CACHE = ATTENDED_CACHE.filter(function(a){ return a.slug !== sl; }); } flashStub('Okay \u2014 next time'); reRenderCurrentView(); return; } const _iwt=e.target.closest('.iwt-btn'); if(_iwt){ e.preventDefault(); e.stopPropagation(); if(!_iwt.disabled){ const g=n=>_iwt.getAttribute('data-iwt-'+n)||''; const snap={title:g('title'),venue:g('venue'),neighborhood:g('neighborhood'),address:g('address'),date:g('date'),time:g('time')}; const r=mintStub(snap); if(r.ok){ flashStub('Stub added to your shelf \u2014 '+(snap.title||'show')); } else { flashStub('Already on your shelf'); } reRenderCurrentView(); } return; } const vlink=e.target.closest('[data-venue]');if(vlink){e.preventDefault();e.stopPropagation();openVenue(vlink.getAttribute('data-venue'));return;}const h=e.target.closest('.heart');if(h){e.preventDefault();e.stopPropagation();toggleFavKey(h.getAttribute('data-fav'));reRenderCurrentView();return;} const _interactive=e.target.closest('a, button'); if(_interactive) return; const _card=e.target.closest('.scard'); if(_card && _card.dataset.slug){ location.hash = '#/show/' + encodeURIComponent(_card.dataset.slug); }});
-$('#tonightToggle').addEventListener('click',()=>{state.picks=false;$('#picksToggle').classList.remove('on');state.tonight=!state.tonight;if(state.tonight){state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');}$('#tonightToggle').classList.toggle('on',state.tonight);render();});
-$('#thisWeekToggle').addEventListener('click',()=>{state.picks=false;$('#picksToggle').classList.remove('on');state.thisWeek=!state.thisWeek;if(state.thisWeek){state.tonight=false;$('#tonightToggle').classList.remove('on');state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');}$('#thisWeekToggle').classList.toggle('on',state.thisWeek);render();});
+// One section at a time. Comedy and All Ages used to stay lit while you
+// pressed Tonight, This Week or Venues -- reading like sort options layered
+// on top. Nick: "they should be stand alone." So every pill press first
+// leaves every other section, then enters its own. (Tonight/This Week keep
+// their own pairing rules inside their handlers.)
+function leaveSections(except){
+  const flags = {tonight:'tonightToggle', thisWeek:'thisWeekToggle', picks:'picksToggle', comedy:'comedyToggle',
+                 allAges:'allAgesToggle', festivals:'festivalsToggle', following:'followingToggle', myShows:'myShowsToggle', byHood:'byHoodToggle'};
+  for(const k in flags){
+    if(k === except) continue;
+    if(state[k]){ state[k] = false; const el = document.getElementById(flags[k]); if(el) el.classList.remove('on'); }
+  }
+  if(except !== 'venues' && state.view === 'venues'){
+    state.view = 'shows'; state.selectedVenue = null;
+    const v = document.getElementById('venuesToggle'); if(v) v.classList.remove('on');
+  }
+}
+$('#tonightToggle').addEventListener('click',()=>{leaveSections('tonight');state.picks=false;$('#picksToggle').classList.remove('on');state.tonight=!state.tonight;if(state.tonight){state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');}$('#tonightToggle').classList.toggle('on',state.tonight);render();});
+$('#thisWeekToggle').addEventListener('click',()=>{leaveSections('thisWeek');state.picks=false;$('#picksToggle').classList.remove('on');state.thisWeek=!state.thisWeek;if(state.thisWeek){state.tonight=false;$('#tonightToggle').classList.remove('on');state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');}$('#thisWeekToggle').classList.toggle('on',state.thisWeek);render();});
 /* Audit (dev) toggle retired from the UI; audit view still reachable via ?audit=1 for dev. */
 $('#festivalsToggle') && $('#festivalsToggle').addEventListener('click',()=>{
-  state.festivals=!state.festivals;
+  const on=!state.festivals; leaveSections('festivals'); state.festivals=on;
   if(state.festivals){
     state.view='shows'; state.selectedVenue=null;
     $('#venuesToggle').classList.remove('on');
@@ -5749,16 +5766,12 @@ $('#festivalsToggle') && $('#festivalsToggle').addEventListener('click',()=>{
   $('#festivalsToggle').classList.toggle('on',state.festivals);
   render();
 });
-// All Ages is an independent narrowing filter, so unlike Venues/Comedy/Festivals
-// it deliberately does NOT clear the other pills -- all-ages + tonight, or
-// all-ages + comedy, are both reasonable things to ask for. It only drops the
-// venue-directory view, which shows no show rows to filter.
+// All Ages is a section like the others now (Nick, 2026-09-16): pressing it
+// leaves Tonight/This Week/Venues/Comedy, and pressing those leaves it.
 $('#allAgesToggle') && $('#allAgesToggle').addEventListener('click',()=>{
-  state.allAges=!state.allAges;
-  if(state.allAges && state.view==='venues'){
-    state.view='shows'; state.selectedVenue=null;
-    $('#venuesToggle').classList.remove('on');
-  }
+  const on = !state.allAges;
+  leaveSections('allAges');
+  state.allAges = on;
   $('#allAgesToggle').classList.toggle('on',state.allAges);
   render();
 });
@@ -5772,12 +5785,12 @@ function revealFestivalsPill(){
   if(opt)  opt.hidden  = false;
 }
 revealFestivalsPill();
-$('#comedyToggle').addEventListener('click',()=>{state.comedy=!state.comedy;if(state.comedy){state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');state.myShows=false;$('#myShowsToggle').classList.remove('on');state.following=false;$('#followingToggle').classList.remove('on');}$('#comedyToggle').classList.toggle('on',state.comedy);render();});
+$('#comedyToggle').addEventListener('click',()=>{const on=!state.comedy;leaveSections('comedy');state.comedy=on;$('#comedyToggle').classList.toggle('on',state.comedy);render();});
 // FOLLOWING FILTER toggle: hide-style filter that collapses the feed to hearted
 // bands/venues. Turning it on clears the alternate views/modes; the other view
 // toggles + reset clear it back (see Edit 5 / reset). Self-contained; removable.
 $('#followingToggle').addEventListener('click',()=>{
-  state.following=!state.following;
+  const on=!state.following; leaveSections('following'); state.following=on;
   if(state.following){
     state.myShows=false;$('#myShowsToggle').classList.remove('on');
     state.picks=false;$('#picksToggle').classList.remove('on');
