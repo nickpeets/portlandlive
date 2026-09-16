@@ -135,3 +135,17 @@ language sql security definer set search_path = public stable as $$
 $$;
 revoke all on function public.dm_threads_mine(integer) from public;
 grant execute on function public.dm_threads_mine(integer) to authenticated;
+
+-- "Seen" (Sep 2026): when did the OTHER participant last open this thread.
+-- The page shows Seen under the caller's last message once that time passes
+-- it. Null if they never have.
+create or replace function public.dm_seen_at(p_thread uuid)
+returns timestamptz language sql security definer set search_path = public stable as $$
+  select r.last_read_at
+    from public.dm_threads t
+    join public.dm_reads r on r.thread_id = t.id and r.user_id <> auth.uid()
+   where t.id = p_thread and auth.uid() in (t.user_a, t.user_b)
+   limit 1;
+$$;
+revoke all on function public.dm_seen_at(uuid) from public;
+grant execute on function public.dm_seen_at(uuid) to authenticated;

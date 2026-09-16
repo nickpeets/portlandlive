@@ -2615,19 +2615,51 @@ async function renderThreadRoute(handle){
     + '<div class="dm-msgs" id="dmMsgs"><div class="empty">Loading\u2026</div></div>'
     + '<form class="dm-compose" id="dmCompose"><textarea id="dmBody" rows="2" maxlength="2000" placeholder="Write a message\u2026"></textarea><button type="submit" class="tx-send">Send</button></form>';
   wrap.appendChild(page);
-  async function load(){
-    const r = await dmSafe(sb.rpc('dm_messages', { p_thread: threadId, p_limit: 200 }));
-    const box = document.getElementById('dmMsgs'); if(!box) return;
-    if(r && r.error){ box.innerHTML = '<div class="empty">Couldn\u2019t load messages.</div>'; return; }
+  // Feels like texting (Nick, Sep 2026): new messages appear on their own
+  // while the thread is open (a poll every 4s, only repainting when
+  // something changed), day dividers, and "Seen" under your last message
+  // once they have opened the thread after it.
+  const myHash = location.hash;
+  let lastSig = '';
+  function dayLabel(iso){
+    const d = new Date(iso), now = new Date();
+    const y = new Date(now); y.setDate(now.getDate() - 1);
+    if(d.toDateString() === now.toDateString()) return 'Today';
+    if(d.toDateString() === y.toDateString()) return 'Yesterday';
+    return d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+  }
+  async function load(force){
+    if(location.hash !== myHash) return;                       // left the thread
+    const [r, seen] = await Promise.all([
+      dmSafe(sb.rpc('dm_messages', { p_thread: threadId, p_limit: 200 })),
+      dmSafe(sb.rpc('dm_seen_at', { p_thread: threadId }))
+    ]);
+    const box = document.getElementById('dmMsgs'); if(!box || location.hash !== myHash) return;
+    if(r && r.error){ if(!lastSig) box.innerHTML = '<div class="empty">Couldn\u2019t load messages.</div>'; return; }
     const msgs = (r.data || []).slice().reverse();
-    box.innerHTML = msgs.length ? msgs.map(function(m){
+    const seenAt = seen && !seen.error && seen.data ? new Date(seen.data).getTime() : 0;
+    const sig = msgs.map(function(m){ return m.id; }).join(',') + '|' + seenAt;
+    if(!force && sig === lastSig) return;                      // nothing new: leave the DOM alone
+    lastSig = sig;
+    let lastMineIdx = -1; msgs.forEach(function(m, i){ if(m.sender_id === myId) lastMineIdx = i; });
+    let html = '', lastDay = '';
+    msgs.forEach(function(m, i){
+      const day = dayLabel(m.created_at);
+      if(day !== lastDay){ html += '<div class="dm-day">' + esc(day) + '</div>'; lastDay = day; }
       const mine = m.sender_id === myId;
-      return '<div class="dm-msg' + (mine ? ' dm-mine' : '') + '"><div class="dm-body">' + esc(m.body) + '</div><div class="dm-time">' + esc(dmWhen(m.created_at)) + '</div></div>';
-    }).join('') : '<div class="empty">Say hello.</div>';
-    box.scrollTop = box.scrollHeight;
+      const seenTag = (mine && i === lastMineIdx && seenAt >= new Date(m.created_at).getTime()) ? '<div class="dm-seen">Seen</div>' : '';
+      html += '<div class="dm-msg' + (mine ? ' dm-mine' : '') + '"><div class="dm-body">' + esc(m.body) + '</div><div class="dm-time">' + esc(dmWhen(m.created_at)) + '</div></div>' + seenTag;
+    });
+    const atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 40;
+    box.innerHTML = html || '<div class="empty">Say hello.</div>';
+    if(force || atBottom) box.scrollTop = box.scrollHeight;
     if(typeof inboxLoad === 'function'){ try{ inboxLoad(); }catch(_){} }
   }
-  await load();
+  await load(true);
+  (function poll(){
+    if(location.hash !== myHash) return;
+    setTimeout(async function(){ if(location.hash !== myHash) return; if(document.visibilityState !== 'hidden'){ try{ await load(false); }catch(_){} } poll(); }, 4000);
+  })();
   const form = document.getElementById('dmCompose'); const ta = document.getElementById('dmBody');
   form.addEventListener('submit', async function(e){
     e.preventDefault();
@@ -2636,7 +2668,7 @@ async function renderThreadRoute(handle){
     const r = await dmSafe(sb.rpc('dm_send', { p_thread: threadId, p_body: body }));
     btn.disabled = false;
     if(r && r.error){ console.warn('[dm] send:', r.error.message || r.error); return; }
-    ta.value = ''; await load(); ta.focus();
+    ta.value = ''; await load(true); ta.focus();
   });
   ta.addEventListener('keydown', function(e){ if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); form.requestSubmit(); } });
   ta.focus();
@@ -4707,7 +4739,7 @@ function inboxStartPoll(){
     if(document.hidden) return;
     if(!state._signedIn) return;
     inboxLoad();
-  }, 30000);
+  }, 15000);
   // Coming back to the tab is exactly when a stale badge is most visible, so
   // refresh immediately rather than waiting out the rest of the interval.
   document.addEventListener('visibilitychange', function(){
@@ -6641,6 +6673,8 @@ load();
 .dm-msg.dm-mine{align-self:flex-end;background:var(--rust);color:var(--cream);border-radius:12px 12px 4px 12px}
 .dm-body{font-family:'Bitter',Georgia,serif;font-size:15px;line-height:1.45;white-space:pre-wrap;word-break:break-word}
 .dm-time{font-family:'Oswald',sans-serif;font-size:11px;opacity:.6;margin-top:3px}
+.dm-day{align-self:center;font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase;opacity:.5;margin:8px 0 2px}
+.dm-seen{align-self:flex-end;font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:.06em;text-transform:uppercase;opacity:.55;margin:-2px 4px 2px 0}
 .dm-compose{display:flex;gap:8px;align-items:flex-end;margin-top:12px}
 .dm-compose textarea{flex:1 1 auto;resize:none;border-radius:10px;border:1px solid rgba(243,234,215,.3);background:rgba(243,234,215,.08);color:var(--cream);padding:10px 12px;font-family:'Bitter',Georgia,serif;font-size:15px}
 .pf-count{background:none;border:0;padding:0;color:inherit;font:inherit;cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(243,234,215,.35)}
