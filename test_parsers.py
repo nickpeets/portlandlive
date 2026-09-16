@@ -73,7 +73,7 @@ CASES = [
     ("rose-quarter.html",      sv.parse_rosequarter,    25, {"time": 23, "imageUrl": 25},   "time from .card-date-time, skipping w-condition-invisible; poster is the card img"),
     ("portland5.html",         sv.parse_portland5,      10, {"time": 7},                    "time from .teaser__body next to the date"),
     ("kenton.html",            sv.parse_kentonclub,     16, {"time": 0},                    "plain-text <p> list; 'No Music' day skipped; no times published"),
-    ("spare-room-sept2026.html", sv.parse_spareroom,    11, {"time": 0},                    "monthly <li> list; karaoke lines skipped"),
+    ("spare-room-sept2026.html", sv.parse_spareroom,    15, {"time": 0},                    "monthly <li> list; karaoke/bingo skipped except Karaoke From Hell (live band; Nick's call)"),
     ("switchback-events.ics",  sv.parse_switchback,     30, {"time": 30},                   "iCal; 'Live Music:' filter; UTC -> Pacific"),
     ("switchback-music.ics",   sv.parse_switchback,      5, {"time": 5},                    "iCal; 🎵 marker; World Cup excluded"),
     ("alberta-rose.html",      sv.parse_albertarose,    51, {"imageUrl": 51},              "RHP; poster via URL map"),

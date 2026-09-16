@@ -1524,7 +1524,13 @@ def parse_kentonclub(html, today):
 # 404 on next month is normal, not a failure.
 _SR_MONTH = re.compile(r"\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+at the Spare Room", re.I)
 _SR_LI = re.compile(r"^\s*[A-Z][a-z]{2,4}\.?\s+(\d{1,2})(?:st|nd|rd|th)?(\s*-\s*\d{1,2})?\s+(.*)$", re.S)
+# Karaoke and bingo are not shows -- except Karaoke From Hell, which is a
+# live band on stage every Thursday with the crowd singing over it. Nick's
+# call (2026-09-15): that one stays in. Its line reads "Karaoke w/ a live
+# band featuring Karaoke from Hell"; _SR_KFH lets it through and every
+# other karaoke line is still dropped.
 _SR_SKIP = re.compile(r"\b(karaoke|bingo)\b", re.I)
+_SR_KFH = re.compile(r"karaoke from hell", re.I)
 _SR_COVER = re.compile(r"\s*\$\d+\s*cover\.?", re.I)
 
 
@@ -1571,7 +1577,7 @@ def parse_spareroom(html, today):
         title = _SR_COVER.sub("", rest).strip(" .")
         # Link text joins leave "Party Witch , Tai" and "Luchini : a dance".
         title = re.sub(r"\s+([,.:;!?])", r"\1", title)
-        if not title or _SR_SKIP.search(title):
+        if not title or (_SR_SKIP.search(title) and not _SR_KFH.search(title)):
             continue
         date = f"{year}-{mon:02d}-{day:02d}"
         key = (date, title.lower())
