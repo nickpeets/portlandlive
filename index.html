@@ -1248,6 +1248,8 @@ function ordinalDate(iso){
 // Force a show INTO music regardless of keywords (fixes real bands buried as non-music).
 // Add a lowercase name fragment, one per line, e.g.:  // "xmal deutschland",
 const FORCE_MUSIC = [
+  "cmg improv summit",          // Creative Music Guild -- improvised MUSIC, not comedy
+  "creative music guild",
   "greg holden & garrison starr",
   "anja huwe",
   "xmal",
@@ -1329,7 +1331,11 @@ function classifyByKeyword(s){
   if(/\btrivia\b|\bquiz(zo)?\b|geeks who drink|pub quiz|\bbingo\b|trivia[\s-]?(sippi|ssippi)|[a-z]+-issi\b|[a-z]+-sippi\b/i.test(title)) return 'trivia';
 
   // COMEDY / STANDUP / IMPROV (tagged specifically, not lumped into 'other')
-  if(/\bcomedy\b|stand[\s-]?up|standup|\bimprov\b|\bsketch\b|\broast\b|comedy showcase|comedy night|comedy tour/i.test(title)) return 'comedy';
+  // Nick, 2026-09-16: "any sniff of comedy needs to go in the appropriate
+  // bin." Beyond the obvious words: "funny" (DB Stewart: Love Is Funny
+  // Tour), "taping" (Lexis Sharde: Special Live Taping), comedian, comic,
+  // jokes, laugh. Music acts that trip these are pinned in FORCE_MUSIC.
+  if(/\bcomedy\b|stand[\s-]?up|standup|\bimprov\b|\bsketch\b|\broast\b|comedy showcase|comedy night|comedy tour|\bfunny\b|\bcomedian|\bcomics?\b(?!\s*book)|\btaping\b|\bjokes?\b|\blaugh/i.test(title)) return 'comedy';
 
   // OTHER non-music buckets
   if(/\bkaraoke\b/i.test(title)) return 'other';                                   // karaoke
@@ -1935,6 +1941,12 @@ function renderVenues(){
   const todayPacific = new Intl.DateTimeFormat('en-CA',{timeZone:'America/Los_Angeles',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
   let all = state.shows.filter(s => s.date >= todayPacific);
   all = applyTimeFilters(all);
+  // Same content gate as the feed: a venue page is music unless the Comedy
+  // section is on. Kelly's Sunday comedy open mic was showing on Kelly's
+  // page because this view skipped the gate (Nick, 2026-09-16).
+  if(!state.audit){
+    all = state.comedy ? all.filter(s => s.contentType === 'comedy') : all.filter(s => s.contentType === 'music');
+  }
     const q = state.q.trim().toLowerCase();
   if(state.selectedVenue){
     let vshows = all.filter(s => s.venue === state.selectedVenue);
