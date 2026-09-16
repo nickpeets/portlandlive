@@ -1001,7 +1001,7 @@ body{
     <div class="ctl-row">
       <div class="search-pill pill">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-        <input id="searchInput" type="text" placeholder="search bands, venues, @people…">
+        <input id="searchInput" type="text" autocomplete="off" placeholder="search bands, venues, @people…">
       </div>
       <!-- Sort dropdown + Reset button removed (search already matches
            title+venue+neighborhood, so a separate neighborhood control was
@@ -2562,6 +2562,9 @@ function peopleRow(u){
 // instead of shows. Signed-in only, like the lists. Debounced; the results
 // replace the feed until the query changes.
 let _peopleSearchT = null, _peopleSearchQ = '';
+// Same shape as renderProfileRoute's local safe(): the client's rpc thenable
+// has no .catch, so adopt it into a real promise and never throw.
+function safeRpc(pr){ return Promise.resolve(pr).catch(function(e){ return { error: e }; }); }
 function renderPeopleSearch(q){
   const wrap = $('#results'); wrap.innerHTML = '';
   $('#resultCount').textContent = 'People';
@@ -2576,7 +2579,8 @@ function renderPeopleSearch(q){
   clearTimeout(_peopleSearchT);
   _peopleSearchT = setTimeout(async function(){
     if(_peopleSearchQ !== q) return;
-    const r = await safe(sb.rpc('search_profiles', { p_q: term, p_limit: 25 }));
+    const r = await safeRpc(sb.rpc('search_profiles', { p_q: term, p_limit: 25 }));
+    if(r && r.error) console.warn('[people] search failed:', r.error.message || r.error);
     if(_peopleSearchQ !== q) return;
     const rows = (r && r.data) || [];
     rows.forEach(function(u){ AV_CACHE[u.id] = { id: u.id, display_name: u.display_name, avatar_url: u.avatar_url }; });
