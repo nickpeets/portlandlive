@@ -89,6 +89,7 @@ VENUE_INFO = {
     "The Headliners Club": ("Lake Oswego", "17880 SW McEwan Rd, Lake Oswego, OR 97035"),
     "Portland Art Museum": ("Downtown", "1219 SW Park Ave, Portland, OR 97205"),
     "The Haven": ("Kerns", "2505 NE Pacific St, Portland, OR 97232"),
+    "The Reser": ("Beaverton", "12625 SW Crescent St, Beaverton, OR 97005"),
     "Tomorrow Theater": ("Richmond", "3530 SE Division St, Portland, OR 97202"),
     "Realm": ("Central Eastside", "615 SE Alder St, Portland, OR 97214"),
     "The Den": ("Central Eastside", "116 SE Yamhill St, Portland, OR 97214"),
@@ -3757,6 +3758,77 @@ def parse_pam(html, today):
     return out
 
 
+# The Reser categorises its own calendar, so no keyword guessing: Concert is
+# music, Dance covers ballet and companies, and the rest is theater, film and
+# classes. Dance is in -- a symphony playing Swan Lake is a show people go to
+# for the music -- and everything uncategorised stays out.
+_RESER_KEEP = {"concert", "dance", "music"}
+
+
+def parse_reser(html, today):
+    """Patricia Reser Center for the Arts (Beaverton, 12625 SW Crescent).
+    The Events Calendar REST API, like Kelly's. Their calendar mixes
+    concerts with theater, film and classes, but categorises them, so the
+    filter is the venue's own label rather than a guess at the title.
+
+    Note (2026-09-16): the API exposed only 4 events while their site
+    showed more -- most of their season sits in the ticketing system at
+    secure.thereser.org, which this does not read. What the API gives is
+    right; it is just not everything, so the source is may_be_empty and
+    the baseline will not cry when it is thin."""
+    import html as _html
+    out, seen = [], set()
+    nb, addr = VENUE_INFO.get("The Reser", ("Beaverton", ""))
+    horizon = today + datetime.timedelta(days=120)
+    try:
+        data = json.loads(html)
+    except Exception:
+        return out
+    pages = [data]
+    nxt = data.get("next_rest_url")
+    for _ in range(4):
+        if not nxt:
+            break
+        try:
+            more = json.loads(fetch(nxt))
+        except Exception:
+            break
+        pages.append(more)
+        nxt = more.get("next_rest_url")
+    for page in pages:
+        for e in page.get("events") or []:
+            cats = {(c.get("name") or "").lower() for c in (e.get("categories") or [])}
+            if not (cats & _RESER_KEEP):
+                continue
+            title = clean(_html.unescape(e.get("title") or ""))
+            title = re.sub(r"\s+", " ", title).strip()
+            sd = (e.get("start_date") or "")[:16]
+            if not title or len(sd) < 16:
+                continue
+            try:
+                dt = datetime.datetime.strptime(sd, "%Y-%m-%d %H:%M")
+            except Exception:
+                continue
+            d = dt.date()
+            if not (today <= d <= horizon):
+                continue
+            tm = "" if e.get("all_day") else "%d:%02d %s" % (dt.hour % 12 or 12, dt.minute, "AM" if dt.hour < 12 else "PM")
+            img = e.get("image") or ""
+            if isinstance(img, dict):
+                img = img.get("url", "") or ""
+            blob = title + " " + re.sub(r"<[^>]+>", " ", _html.unescape(e.get("description") or ""))[:400]
+            key = (d.isoformat(), title.lower())
+            if key in seen:
+                continue
+            seen.add(key)
+            out.append({"title": title, "venue": "The Reser", "neighborhood": nb, "address": addr,
+                        "date": d.isoformat(), "time": tm,
+                        "venueUrl": e.get("url") or "https://thereser.org/shows-and-events/",
+                        "imageUrl": img if str(img).startswith("http") else "",
+                        "age": _age_in_text(blob)})
+    return out
+
+
 def parse_headliners(html, today):
     """The Headliners Club (Lake Oswego, 17880 SW McEwan) -- The Events
     Calendar REST API, same plugin as Kelly's. 239 events on file; the
@@ -4080,6 +4152,8 @@ SOURCES = [
     {"name": "Portland Art Museum / Tomorrow Theater (music only)", "parser": parse_pam,
      "tls": True, "may_be_empty": True,
      "urls": ["https://portlandartmuseum.org/wp-json/tribe/events/v1/events?per_page=100"]},
+    {"name": "The Reser (Beaverton)", "parser": parse_reser, "may_be_empty": True,
+     "urls": ["https://thereser.org/wp-json/tribe/events/v1/events?per_page=100"]},
     {"name": "The Headliners Club (Lake Oswego)", "parser": parse_headliners,
      "urls": ["https://theheadlinersclub.com/wp-json/tribe/events/v1/events?per_page=50"]},
     # Intermittent bot challenge (6 of 10 runs zero by Sep 2026, then fully

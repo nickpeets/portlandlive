@@ -88,6 +88,7 @@ CASES = [
     ("realm-events.html",       sv.parse_realm,         34, {"imageUrl": 34, "age": 34}, "Elementor event list via the TLS tier; multi-night runs split per night"),
     ("barrel-room.html",        sv.parse_barrelroom,     6, {"time": 6, "imageUrl": 6},  "Eventbrite organizer page: upcomingEvents JSON; mailing-list entries skipped"),
     ("headliners-tribe.json",   sv.parse_headliners,    29, {"time": 29, "imageUrl": 29, "age": 28}, "Tribe REST page 1 (network stubbed, so no page 2); weekly karaoke/cornhole skipped"),
+    ("reser-tribe.json",        sv.parse_reser,          3, {"time": 3, "imageUrl": 3},  "Tribe REST; kept by the venue's own Concert/Dance categories, not keywords"),
 ]
 
 # Pages that were captured and examined but publish NO listing data the
