@@ -4634,7 +4634,7 @@ function inboxRenderList(){
     +   '<button type="button" class="inbox-tab' + (tab === 'all' ? ' on' : '') + '" data-inbox-tab="all">All</button>'
     +   '<button type="button" class="inbox-tab' + (tab === 'unread' ? ' on' : '') + '" data-inbox-tab="unread">Unread</button>'
     + '</span></div>'
-    + (which === 'mail' ? '<a class="inbox-all" href="#/messages">All messages &rarr;</a>' : '');
+    ;
   if(!pool.length){
     list.innerHTML = head + '<div class="inbox-state">' + (tab === 'unread' ? 'Nothing unread.' : (which === 'mail' ? 'No messages yet.' : 'No notifications yet.')) + '</div>';
     return;
@@ -4672,11 +4672,7 @@ async function inboxOpenThread(idx){
   if(item.kind === 'report'){ inboxRenderReport(idx); return; }
   if(item.kind === 'mention'){ inboxOpenMention(idx); return; }
   if(item.kind === 'follow'){ inboxOpenFollow(idx); return; }
-  if(item.kind === 'dm'){
-    inboxClose();
-    location.hash = '#/messages/' + encodeURIComponent(item.handle);
-    return;
-  }
+  if(item.kind === 'dm'){ inboxOpenDm(idx); return; }
 
   const sb = inboxClient();
   const table = item.kind === 'ticket' ? 'ticket_messages' : 'show_messages';
@@ -4765,6 +4761,79 @@ async function inboxOpenThread(idx){
 // A mention is not a conversation: opening it counts as read, closes the
 // panel and goes to the show, where the comment is. Same seen-map as
 // everything else, keyed 'mn:' + mention id.
+// A direct message, read and answered INSIDE the panel (Nick, Sep 2026:
+// "there shouldn't be a new window"). Same bones as the Miracle thread
+// above; the store is the DM tables via their RPCs. Polls every 4s while
+// this thread is the one showing, so replies appear on their own.
+async function inboxOpenDm(idx){
+  const list = inboxPanelEl('mail');
+  const item = INBOX.items[idx];
+  const sb = inboxClient();
+  if(!list || !item || !sb) return;
+  INBOX.viewing = idx;
+  list.innerHTML = '<div class="inbox-thread-head">'
+      + '<button type="button" class="inbox-back" data-inbox-back aria-label="Back to messages">&#8592;</button>'
+      + avImg(item.otherId, item.who)
+      + '<a class="inbox-thread-who" href="#/u/' + encodeURIComponent(item.handle || '') + '" data-inbox-profile>' + esc(item.who) + '</a>'
+    + '</div>'
+    + '<div class="inbox-thread-about">@' + esc(item.handle || '') + '</div>'
+    + '<div class="inbox-state">Loading\u2026</div>';
+  let uid = null;
+  try{ const { data } = await sb.auth.getSession(); uid = data && data.session && data.session.user ? data.session.user.id : null; }catch(_){}
+  const o = await dmSafe(sb.rpc('dm_open', { p_other: item.otherId }));
+  if(o && o.error){
+    const st = list.querySelector('.inbox-state'); if(st) st.textContent = 'Couldn\u2019t open this conversation.';
+    return;
+  }
+  const threadId = o.data;
+  let lastSig = '';
+  async function load(force){
+    if(INBOX.viewing !== idx || INBOX.open !== 'mail') return;
+    const r = await dmSafe(sb.rpc('dm_messages', { p_thread: threadId, p_limit: 100 }));
+    if(INBOX.viewing !== idx || INBOX.open !== 'mail') return;
+    if(r && r.error){ const st = list.querySelector('.inbox-state'); if(st) st.textContent = 'Couldn\u2019t load messages.'; return; }
+    const msgs = (r.data || []).slice().reverse();
+    const sig = msgs.map(function(m){ return m.id; }).join(',');
+    if(!force && sig === lastSig) return;
+    lastSig = sig;
+    item.unread = false; inboxRenderBadge();
+    const rows = msgs.map(function(m){
+      const mine = m.sender_id === uid;
+      return '<li class="inbox-msg' + (mine ? ' inbox-msg-mine' : '') + '"><span class="inbox-msg-body">' + esc(m.body || '') + '</span></li>';
+    }).join('');
+    let body = list.querySelector('.inbox-msgs') || list.querySelector('.inbox-state');
+    const html = msgs.length ? '<ul class="inbox-msgs">' + rows + '</ul>' : '<div class="inbox-state">Say hello.</div>';
+    if(body && !list.querySelector('[data-inbox-reply]')){
+      body.outerHTML = html + '<form class="inbox-reply" data-inbox-reply>'
+        + '<input type="text" maxlength="2000" placeholder="Reply\u2026" aria-label="Reply">'
+        + '<button type="submit" disabled>Send</button></form>';
+      const form = list.querySelector('[data-inbox-reply]');
+      const input = form.querySelector('input'), send = form.querySelector('button');
+      input.addEventListener('input', function(){ send.disabled = !input.value.trim(); });
+      form.addEventListener('submit', async function(e){
+        e.preventDefault();
+        const text = input.value.trim(); if(!text) return;
+        send.disabled = true;
+        const rr = await dmSafe(sb.rpc('dm_send', { p_thread: threadId, p_body: text }));
+        if(rr && rr.error){ console.warn('[inbox] dm send failed:', rr.error.message || rr.error); send.disabled = false; return; }
+        input.value = ''; await load(true); input.focus();
+      });
+      input.focus();
+    } else if(body){
+      body.outerHTML = html;
+    }
+    const ul = list.querySelector('.inbox-msgs'); if(ul) ul.scrollTop = ul.scrollHeight;
+  }
+  await load(true);
+  (function poll(){
+    setTimeout(async function(){
+      if(INBOX.viewing !== idx || INBOX.open !== 'mail') return;
+      if(document.visibilityState !== 'hidden'){ try{ await load(false); }catch(_){} }
+      poll();
+    }, 4000);
+  })();
+}
+
 function inboxOpenMention(idx){
   const item = INBOX.items[idx];
   if(!item) return;
@@ -4887,7 +4956,7 @@ function inboxWire(){
       const tab = e.target.closest('[data-inbox-tab]');
       if(tab){ INBOX.tab[which] = tab.getAttribute('data-inbox-tab'); INBOX.shown[which] = INBOX_PAGE; inboxRenderList(); return; }
       if(e.target.closest('[data-inbox-more]')){ INBOX.shown[which] += INBOX_PAGE; inboxRenderList(); return; }
-      if(e.target.closest('.inbox-all')){ inboxClose(); return; }   // let the link navigate
+      if(e.target.closest('[data-inbox-profile]')){ inboxClose(); return; }   // name -> profile; let it navigate
       const openRow = e.target.closest('[data-inbox-open]');
       if(openRow){ inboxOpenThread(parseInt(openRow.getAttribute('data-inbox-open'), 10)); return; }
       if(e.target.closest('[data-inbox-back]')){ inboxRenderList(); return; }
@@ -6699,7 +6768,8 @@ load();
 .inbox-report-body{font-family:'Bitter',Georgia,serif;font-size:12.5px;color:var(--ink);background:rgba(124,106,85,.09);border-radius:8px;padding:10px;margin:0 4px 8px;overflow-wrap:anywhere}
 .inbox-report-acts{display:flex;gap:8px;padding:0 4px 4px}
 .inbox-thread-about{font-family:'Bitter',Georgia,serif;font-size:11px;color:#7c6a55;padding:0 8px 6px;overflow-wrap:anywhere}
-.inbox-thread-who{font-family:'Oswald',sans-serif;font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--forest)}
+.inbox-thread-who{font-family:'Oswald',sans-serif;font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--forest);text-decoration:none}
+a.inbox-thread-who:hover{text-decoration:underline}
 .inbox-msgs{list-style:none;margin:0;padding:0 4px;display:flex;flex-direction:column;gap:6px;max-height:38vh;overflow-y:auto}
 .inbox-msg{display:flex}
 .inbox-msg-mine{justify-content:flex-end}
