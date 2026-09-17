@@ -6813,6 +6813,12 @@ $('#followingToggle').addEventListener('click',()=>{
     state.comedy=false;$('#comedyToggle').classList.remove('on');
     state.festivals=false;$('#festivalsToggle')&&$('#festivalsToggle').classList.remove('on');
     state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');
+    // Following always lands on the full feed (Sep 17 2026, Nick): a search
+    // left in the box ("Moda") was narrowing it to nothing. Clear it, and
+    // leave any profile or show page for the feed.
+    state.q=''; $('#searchInput').value='';
+    if(typeof window.quickMenuClose === 'function') window.quickMenuClose();
+    if(location.hash){ history.replaceState(null, '', location.pathname); }
   }
   $('#followingToggle').classList.toggle('on',state.following);
   render();
