@@ -1050,6 +1050,58 @@ def fetch_miracles():
         return []
 
 
+def fetch_new_members(since):
+    """People who joined since `since`, oldest first, via the new_members RPC
+    (SECURITY DEFINER; display name only -- handles stay non-enumerable).
+    Never raises."""
+    url, key = _supabase_public_config()
+    if not url or not key:
+        return []
+    try:
+        import urllib.request
+        body = json.dumps({"p_since": since.isoformat()}).encode("utf-8")
+        req = urllib.request.Request(f"{url}/rest/v1/rpc/new_members", data=body,
+                                     headers={"apikey": key, "Authorization": "Bearer " + key,
+                                              "Content-Type": "application/json"})
+        with urllib.request.urlopen(req, timeout=20) as r:
+            return json.loads(r.read().decode("utf-8")) or []
+    except Exception as e:
+        print(f"  note: new members not fetched for the ticker ({type(e).__name__})")
+        return []
+
+
+def _venue_line(names):
+    """One line for a day's new venues: every name when there are a few,
+    otherwise the first three and a count."""
+    n = len(names)
+    if n <= 3:
+        listed = ", ".join(names[:-1]) + " and " + names[-1]
+    else:
+        listed = ", ".join(names[:3]) + f" and {n - 3} more"
+    return f"{n} new venues on the calendar: {listed}."
+
+
+def _group_running_venue_lines(auto):
+    """Fold the per-venue lines already running into one line per day, so a
+    ticker written before Sep 17 2026 reads the same as one written after."""
+    by_day, rest, names = {}, {}, {}
+    for key, item in auto.items():
+        if key.startswith("venue:"):
+            day = item.get("from") or ""
+            by_day.setdefault(day, []).append(item)
+            names.setdefault(day, []).append(key[len("venue:"):])
+        else:
+            rest[key] = item
+    for day, items in by_day.items():
+        if len(items) == 1:
+            rest[[k for k in auto if k.startswith("venue:") and (auto[k].get("from") or "") == day][0]] = items[0]
+            continue
+        rest["venues:" + day] = {"text": _venue_line(sorted(names[day])), "auto": True,
+                                 "key": "venues:" + day, "from": day,
+                                 "until": max((i.get("until") or "") for i in items)}
+    return rest, {"venue:" + v for day in names for v in names[day] if len(names[day]) > 1}
+
+
 def update_news(shows, venues, today):
     try:
         with open(NEWS_FILE) as f:
@@ -1059,7 +1111,8 @@ def update_news(shows, venues, today):
     items = news.get("items") or []
     hand = [i for i in items if not i.get("auto")]
     auto = {i.get("key"): i for i in items if i.get("auto") and i.get("key")}
-    seen = set(news.get("announced") or []) | set(auto)
+    auto, grouped_venues = _group_running_venue_lines(auto)
+    seen = set(news.get("announced") or []) | set(auto) | grouped_venues
 
     live = {}
     for r in shows:
@@ -1067,10 +1120,17 @@ def update_news(shows, venues, today):
         if v:
             live[v] = live.get(v, 0) + 1
     new_lines = {}
-    for v, n in sorted(live.items()):
-        key = "venue:" + v
-        if key not in seen:
-            new_lines[key] = f"New venue: {v} \u2014 {n} show{'s' if n != 1 else ''} on the calendar."
+    # New venues go up as ONE line per day (Sep 17 2026). A batch of twelve
+    # used to write twelve lines, which crowded everything else out for two
+    # weeks, and each line's show count froze on the day it was written.
+    fresh = [v for v in sorted(live) if "venue:" + v not in seen and "venue:" + v not in grouped_venues]
+    if len(fresh) == 1:
+        v = fresh[0]
+        n = live[v]
+        new_lines["venue:" + v] = f"New venue: {v} \u2014 {n} show{'s' if n != 1 else ''} on the calendar."
+    elif fresh:
+        new_lines["venues:" + today.isoformat()] = _venue_line(fresh)
+        seen |= {"venue:" + v for v in fresh}        # never announced singly later
     for f in load_festivals():
         key = "fest:" + f["slug"]
         if key in seen or (f.get("end") or f.get("start") or "") < today.isoformat():
@@ -1107,6 +1167,19 @@ def update_news(shows, venues, today):
         n = int(m.get("quantity") or 1)
         new_lines[key] = {"text": f"Miracle: {n} free ticket{'s' if n != 1 else ''} for {row.get('title','a show')} at {row.get('venue','')}.",
                           "url": f"#/show/{sl}", "until": row["date"]}
+
+    # Welcome lines: one per person who joined since the previous build. They
+    # run for the day they are written only (until = today), so the ticker
+    # never carries a stale welcome.
+    for m in fetch_new_members(datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=2)):
+        name = (m.get("display_name") or "").strip()
+        joined = (m.get("joined_at") or "")[:10]
+        if not name:
+            continue
+        key = "member:%s:%s" % (joined, name.lower())
+        if key in seen:
+            continue
+        new_lines[key] = {"text": f"Welcome {name} to Rain Or Shows.", "until": today.isoformat()}
 
     until = (today + datetime.timedelta(days=NEWS_RUN_DAYS)).isoformat()
     for key, val in new_lines.items():
