@@ -92,6 +92,7 @@ VENUE_INFO = {
     "The Reser": ("Beaverton", "12625 SW Crescent St, Beaverton, OR 97005"),
     "ilani": ("Ridgefield, WA", "1 Cowlitz Way, Ridgefield, WA 98642"),
     "Helium Comedy Club": ("Central Eastside", "1510 SE 9th Ave, Portland, OR 97214"),
+    "Haymaker": ("Overlook", "1223 N Killingsworth St, Portland, OR 97217"),
     "Tomorrow Theater": ("Richmond", "3530 SE Division St, Portland, OR 97202"),
     "Realm": ("Central Eastside", "615 SE Alder St, Portland, OR 97214"),
     "The Den": ("Central Eastside", "116 SE Yamhill St, Portland, OR 97214"),
@@ -2317,6 +2318,59 @@ def parse_bunkbar(html, today):
 _NOFUN_SKIP = re.compile(r"^\s*(NO FUN KARAOKE|Bridgetown Trivia|CLOSED|Poser Tom'?s Roadshow Arcade)\b", re.I)
 
 
+def _squarespace_events(html, today, venue, base, skip=None, default_age="",
+                        horizon_days=120):
+    """A Squarespace event list -- the shape No Fun and Haymaker both use:
+    .eventlist-event with <time class="event-date" datetime>, a localized
+    start time, the title, a poster, and sometimes an excerpt. Written once
+    because two venues now ship it and a third will."""
+    out, seen = [], set()
+    soup = BeautifulSoup(html, "html.parser")
+    nb, addr = VENUE_INFO.get(venue, ("", ""))
+    horizon = today + datetime.timedelta(days=horizon_days)
+    for e in soup.select(".eventlist-event"):
+        t = e.select_one(".eventlist-title")
+        title = clean(t.get_text(" ")) if t else ""
+        title = re.sub(r"\s+", " ", re.sub(r"[\u2010-\u2015]", "-", title)).strip()
+        title = re.sub(r"(\s*[\u2022\u00b7]\s*TBA)+\s*$", "", title, flags=re.I).strip()
+        if not title or (skip and skip.search(title)):
+            continue
+        d = e.select_one("time.event-date")
+        date = (d.get("datetime") or "").strip()[:10] if d else ""
+        if not re.match(r"^\d{4}-\d{2}-\d{2}$", date):
+            continue
+        dd = datetime.date.fromisoformat(date)
+        if not (today <= dd <= horizon):
+            continue
+        st = e.select_one("time.event-time-localized-start")
+        tm = to_time(st.get_text(" ", strip=True)) if st else ""
+        a = e.select_one(".eventlist-title a, a.eventlist-title-link")
+        href = (a.get("href") or "") if a else ""
+        url = (base + href) if href.startswith("/") else (href or base)
+        im = e.select_one("img")
+        img = ((im.get("data-src") or im.get("src") or "").strip()) if im else ""
+        ex = e.select_one(".eventlist-excerpt, .eventlist-description")
+        age = _age_in_text(ex.get_text(" ")) if ex else ""
+        key = (date, title.lower())
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append({"title": title, "venue": venue, "neighborhood": nb, "address": addr,
+                    "date": date, "time": tm, "venueUrl": url,
+                    "imageUrl": img if img.startswith("http") else "",
+                    "age": age or default_age})
+    return out
+
+
+def parse_haymaker(html, today):
+    """Haymaker (1223 N Killingsworth) -- bluegrass Wednesdays, the EasyFolk
+    open mic, weekend bands, and comedy on Mondays and the last Tuesday.
+    The comedy nights stay in: the app's classifier puts them in the comedy
+    bin by their titles, which is where Nick wants them."""
+    return _squarespace_events(html, today, "Haymaker", "https://www.haymakerportland.com",
+                               default_age="21+")
+
+
 def _nofun_html(html, today):
     """No Fun's events page as rendered HTML. Squarespace's ?format=json for
     this site started returning its own "Please Stand By" error page
@@ -4150,6 +4204,8 @@ SOURCES = [
     {"name": "Havalina (havalinapdx.com)", "parser": parse_havalina, "urls": ["https://havalinapdx.com/events?format=json"]},
     {"name": "Process (processpdx.club)", "parser": parse_process, "urls": ["https://www.processpdx.club/"]},
     {"name": "Realm (realmpdx.com)", "parser": parse_realm, "tls": True, "urls": ["https://realmpdx.com/events/"]},
+    {"name": "Haymaker (haymakerportland.com)", "parser": parse_haymaker,
+     "urls": ["https://www.haymakerportland.com/events"]},
     # A watcher: their calendar is films and lectures, so nothing is normal.
     {"name": "Portland Art Museum / Tomorrow Theater (music only)", "parser": parse_pam,
      "tls": True, "may_be_empty": True,
