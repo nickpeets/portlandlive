@@ -4917,7 +4917,7 @@ async function inboxLoad(){
         (q.data || []).forEach(function(t){
           if(!t.last_body) return;                       // an opened-but-empty thread is not news
           items.push({
-            kind: 'dm', seenKey: 'dm:' + t.thread_id, otherId: t.other_id,
+            kind: 'dm', seenKey: 'dm:' + t.thread_id, otherId: t.other_id, threadId: t.thread_id,
             who: t.display_name || 'Someone', handle: t.handle || '', slug: '',
             kindLabel: t.handle ? '@' + t.handle : 'Message',
             snippet: (t.last_sender === uid ? 'You: ' : '') + (t.last_body || '').slice(0, 90),
@@ -5050,7 +5050,12 @@ function inboxRenderList(){
   }
   list.innerHTML = head + shown.map(function(x){
     const i = x.i, idx = x.idx;
-    return '<button type="button" class="inbox-item' + (i.kind === 'report' ? ' inbox-item-report' : '') + (i.unread ? ' is-unread' : '') + '" data-inbox-open="'+idx+'">'
+    // A conversation row carries an x to delete it (Sep 17 2026), beside
+    // the row rather than inside it: a button cannot sit inside a button.
+    const del = i.kind === 'dm'
+      ? '<button type="button" class="inbox-item-del" data-inbox-del-thread="' + idx + '" title="Delete conversation" aria-label="Delete conversation with ' + esc(i.who) + '">&times;</button>'
+      : '';
+    return (del ? '<div class="inbox-item-wrap">' : '') + '<button type="button" class="inbox-item' + (i.kind === 'report' ? ' inbox-item-report' : '') + (i.unread ? ' is-unread' : '') + '" data-inbox-open="'+idx+'">'
       + '<span class="inbox-item-top">'
         + (i.kind === 'report'
             ? '<span class="av inbox-report-flag" aria-hidden="true">!</span>'
@@ -5060,7 +5065,7 @@ function inboxRenderList(){
       + '</span>'
       + '<span class="inbox-item-show">' + esc(i.kindLabel || '') + '</span>'
       + '<span class="inbox-item-snip">' + esc(i.snippet || '') + '</span>'
-      + '</button>';
+      + '</button>' + (del ? del + '</div>' : '');
   }).join('')
   + (pool.length > shown.length ? '<button type="button" class="inbox-more" data-inbox-more>See previous ' + (which === 'mail' ? 'messages' : 'notifications') + '</button>' : '');
 }
@@ -5435,6 +5440,21 @@ function inboxWire(){
       if(tab){ INBOX.tab[which] = tab.getAttribute('data-inbox-tab'); INBOX.shown[which] = INBOX_PAGE; inboxRenderList(); return; }
       if(e.target.closest('[data-inbox-more]')){ INBOX.shown[which] += INBOX_PAGE; inboxRenderList(); return; }
       if(e.target.closest('[data-inbox-clear]')){ notifClearNow(); return; }
+      const delBtn = e.target.closest('[data-inbox-del-thread]');
+      if(delBtn){
+        const item = INBOX.items[parseInt(delBtn.getAttribute('data-inbox-del-thread'), 10)];
+        if(!item || !item.threadId) return;
+        if(!confirm('Delete this conversation? It disappears from your inbox; ' + (item.who || 'they') + ' keeps their copy.')) return;
+        delBtn.disabled = true;
+        (async function(){
+          const sb = inboxClient();
+          const rr = await dmSafe(sb.rpc('dm_delete_thread', { p_thread: item.threadId }));
+          if(rr && rr.error){ console.warn('[inbox] delete thread failed:', rr.error.message || rr.error); delBtn.disabled = false; return; }
+          INBOX.items = INBOX.items.filter(function(x){ return x !== item; });
+          inboxRenderBadge(); inboxRenderList(); inboxLoad();
+        })();
+        return;
+      }
       if(e.target.closest('[data-inbox-profile]')){ inboxClose(); return; }   // name -> profile; let it navigate
       const openRow = e.target.closest('[data-inbox-open]');
       if(openRow){ inboxOpenThread(parseInt(openRow.getAttribute('data-inbox-open'), 10)); return; }
@@ -7281,6 +7301,10 @@ a.inbox-thread-who:hover{text-decoration:underline}
 .inbox-msg-mine:hover .inbox-msg-del,.inbox-msg-del:focus{opacity:.55}
 @media(hover:none){.inbox-msg-del{opacity:.45}}
 .inbox-clear{margin-left:6px;opacity:.75}
+.inbox-item-wrap{display:flex;align-items:center;gap:2px}
+.inbox-item-wrap .inbox-item{flex:1 1 auto;min-width:0}
+.inbox-item-del{flex:0 0 auto;background:none;border:0;color:var(--ink);opacity:.45;font-size:18px;line-height:1;cursor:pointer;padding:6px 8px;border-radius:6px}
+.inbox-item-del:hover{opacity:1;background:rgba(0,0,0,.06)}
 .inbox-thread-del{float:right;background:none;border:0;color:var(--ink);opacity:.6;font:inherit;font-size:12px;text-decoration:underline;cursor:pointer;padding:0}
 .inbox-thread-del:hover{opacity:1}
 .inbox-msg-body{font-family:'Bitter',Georgia,serif;font-size:12.5px;color:var(--ink);background:rgba(61,87,74,.1);border-radius:10px;padding:6px 10px;max-width:80%;overflow-wrap:anywhere}
