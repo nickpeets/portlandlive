@@ -84,6 +84,18 @@ CASES = [
     ("bunkbar.html",           sv.parse_bunkbar,        10, {"imageUrl": 10, "time": 10, "age": 3}, "Next.js cards; poster unwrapped from /_next/image?url=; age only where the card says it"),
     ("nofun-events.html",      sv.parse_nofun,          45, {"time": 45, "age": 45, "imageUrl": 24}, "Squarespace event list (HTML; the JSON endpoint serves an error page); karaoke/trivia/closed skipped; trailing TBA stripped"),
     ("strum.html",              sv.parse_strum,          4, {"time": 4, "age": 4},       "HTML table; year inferred, times are PM, workshops and package rows skipped"),
+    # Sep 17 2026 batch -- structured feeds captured from the Codespace on 2026-09-16 Pacific.
+    ("wilfs-tribe.json",        sv.parse_wilfs,          37, {"time": 37, "imageUrl": 37, "age": 7}, "Events Calendar REST; jazz nightly; Closed-for-holiday rows skipped"),
+    ("stoller-tribe.json",      sv.parse_stoller_newberg, 21, {"time": 21, "imageUrl": 21, "contentType": 1}, "Tribe REST (categories=newberg); wine club/karaoke/trivia/cornhole/bingo skipped; 'Live Music with' stripped; Comedy Night tagged"),
+    ("albertaabbey-sq.json",    sv.parse_albertaabbey,   25, {"time": 25, "imageUrl": 25, "contentType": 17}, "Squarespace JSON; wine classes and the jury game skipped; SAW parody tagged comedy"),
+    ("scout-sq.json",           sv.parse_scout,          14, {"time": 14, "imageUrl": 14},  "Squarespace JSON; 'Live Music:' rows only, prefix stripped; tastings out"),
+    ("ridgefieldcraft-sq.json", sv.parse_ridgefieldcraft, 12, {"time": 12, "contentType": 3}, "Squarespace JSON; 'Live Music /' stripped; comedy open mic tagged; trivia and cribbage out"),
+    ("oldliberty-sq.json",      sv.parse_oldliberty,      4, {"time": 4, "contentType": 3}, "Squarespace JSON; stand-up tagged comedy; burlesque left to the classifier"),
+    ("wildhare.ics",            sv.parse_wildhare,       21, {"time": 21, "age": 21},       "Google iCal; one-off bands only (trivia/bingo are RRULEs); '(OC)' stripped; UTC -> Pacific"),
+    ("tigardville-sh.json",     sv.parse_tigardville,    15, {"time": 15},                  "SpotHopper; food-holiday promos skipped; duplicate DJ Tony row collapsed"),
+    ("chehalemvalley-sh.json",  sv.parse_chehalemvalley,  5, {"time": 5},                   "SpotHopper; only 'Live Music' rows, act read from the text"),
+    ("curious-cw.json",         sv.parse_curious,        87, {"time": 87, "imageUrl": 87, "contentType": 87}, "Crowdwork; every date expanded; improv jams skipped; all tagged comedy"),
+    ("kickstand-cw.json",       sv.parse_kickstand,      85, {"time": 85, "imageUrl": 85, "contentType": 85}, "Crowdwork; per-date name/poster overrides; jams and the writers' meetup skipped"),
     ("haymaker.html",           sv.parse_haymaker,      20, {"time": 20, "imageUrl": 20}, "Squarespace event list (shared reader with No Fun); comedy nights kept for the comedy bin"),
     ("kellys-tribe.json",       sv.parse_kellys_olympian, 17, {"time": 17, "imageUrl": 17},  "Tribe REST JSON via the TLS tier (curl_cffi); JSON-LD HTML path kept as fallback"),
     ("process.html",            sv.parse_process,        6, {"time": 4, "age": 6},       "Webflow schedule; event -- artists; RA ticket links; year inferred"),
@@ -140,6 +152,25 @@ def main():
     for fname, why in NEGATIVE:
         present = os.path.exists(os.path.join(FIX, fname))
         print(f"  {'ref ' if present else 'MISSING'} {fname:28s} negative fixture: {why}")
+    print()
+    # The 1905: Turntable Tickets pages ten performances at a time, so the
+    # parser fetches page 2..N itself. Feed it the captured page 2 through a
+    # stubbed _turntable_page: 20 performances are 10 nights of two sets,
+    # one row a night at the first set, ALL AGES read from the description.
+    p2 = load("the1905-p2.json")
+    def _tt(n, today):
+        if n == 2:
+            return p2
+        raise RuntimeError("stub: no page %d" % n)
+    sv._turntable_page = _tt
+    rows = sv.parse_the1905(load("the1905-p1.json"), TODAY)
+    n_t = sum(1 for r in rows if r.get("time")); n_a = sum(1 for r in rows if r.get("age") == "all-ages")
+    two_sets = len({(r["date"], r["title"]) for r in rows}) == len(rows)
+    if len(rows) == 10 and n_t == 10 and n_a == 9 and two_sets:
+        print(f"  ok   the1905-p1+p2.json           {len(rows):3d} rows  -- Turntable API via stubbed _turntable_page; one row a night at the first set")
+    else:
+        fails += 1
+        print(f"  FAIL the1905-p1+p2.json           rows {len(rows)} != 10 or time {n_t} != 10 or all-ages {n_a} != 9 or a night doubled")
     print()
     # Laurelthirst walks months by POSTing to EventON itself, so it cannot be
     # driven from one HTML file the way the others are. Feed it the captured

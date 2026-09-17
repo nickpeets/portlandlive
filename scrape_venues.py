@@ -97,6 +97,18 @@ VENUE_INFO = {
     "Tomorrow Theater": ("Richmond", "3530 SE Division St, Portland, OR 97202"),
     "Realm": ("Central Eastside", "615 SE Alder St, Portland, OR 97214"),
     "The Den": ("Central Eastside", "116 SE Yamhill St, Portland, OR 97214"),
+    "Wilfs": ("Old Town", "800 NW 6th Ave, Portland, OR 97209"),
+    "Stoller Wine Bar Newberg": ("Newberg", "106 S Center St, Newberg, OR 97132"),
+    "Alberta Abbey": ("King", "126 NE Alberta St, Portland, OR 97211"),
+    "The Scout Wine Bar": ("Gresham", "25 NE 3rd St, Gresham, OR 97030"),
+    "Ridgefield Craft Brewing": ("Ridgefield, WA", "120 N 3rd Ave, Ridgefield, WA 98642"),
+    "Old Liberty Theater": ("Ridgefield, WA", "115 N Main Ave, Ridgefield, WA 98642"),
+    "The Wild Hare Saloon": ("Oregon City", "1656 S Beavercreek Rd, Oregon City, OR 97045"),
+    "The 1905": ("Boise", "830 N Shaver St, Portland, OR 97227"),
+    "Tigardville Station": ("Tigard", "12370 SW Main St, Tigard, OR 97223"),
+    "Chehalem Valley Brewing": ("Newberg", "2515 E Portland Rd Ste B, Newberg, OR 97132"),
+    "Curious Comedy Theater": ("King", "5225 NE Martin Luther King Jr Blvd, Portland, OR 97211"),
+    "Kickstand Comedy": ("Hosford-Abernethy", "1006 SE Hawthorne Blvd, Portland, OR 97214"),
     "Polaris Hall": ("Overlook/N Portland", "635 N Killingsworth Ct"),
     "Mississippi Studios": ("Boise/Mississippi", "3939 N Mississippi Ave"),
     "Havalina": ("St. Johns", "8927 N Lombard St, Portland, OR 97203"),
@@ -4254,6 +4266,365 @@ def parse_cityspark(_html, today):
                       "imageUrl": img if isinstance(img, str) else ""})
     return shows
 
+# ===========================================================================
+# Batch of Sep 17 2026: twelve venues from the browser agent's sweep, all
+# with a structured feed. Fixtures captured from the Codespace the same day.
+# Four shared readers (Events Calendar REST, Squarespace JSON, SpotHopper,
+# Crowdwork) plus Turntable Tickets for The 1905 and an iCal reader for Wild
+# Hare. Addresses checked against each venue's own feed or site, not the
+# agent's table.
+# ===========================================================================
+
+def _pt_clock(dt):
+    return "%d:%02d %s" % (dt.hour % 12 or 12, dt.minute, "AM" if dt.hour < 12 else "PM")
+
+
+def _unhtml(s):
+    import html as _html
+    s = _html.unescape(_html.unescape(s or ""))      # some feeds double-encode (&amp;#038;)
+    s = re.sub(r"<[^>]+>", " ", s)
+    return re.sub(r"\s+", " ", re.sub(r"[\u2010-\u2015]", "-", s)).strip()
+
+
+def _batch_row(venue, date, tm, title, url, img="", age="", comedy=False):
+    nb, addr = VENUE_INFO.get(venue, ("", ""))
+    row = {"title": title, "venue": venue, "neighborhood": nb, "address": addr,
+           "date": date, "time": tm, "venueUrl": url,
+           "imageUrl": img if str(img).startswith("http") else "", "age": age}
+    if comedy:
+        row["contentType"] = "comedy"
+    return row
+
+
+def _tribe_rows(text, today, venue, fallback_url, keep=None, skip=None,
+                strip=None, comedy=None, horizon_days=120):
+    """The Events Calendar REST API (/wp-json/tribe/events/v1/events), one
+    page. keep/skip/strip/comedy are regexes on the title. Times are the
+    site's own local wall-clock, so no timezone math."""
+    out, seen = [], set()
+    try:
+        data = json.loads(text)
+    except Exception:
+        return out
+    horizon = today + datetime.timedelta(days=horizon_days)
+    for e in data.get("events") or []:
+        title = _unhtml(e.get("title"))
+        if not title or (skip and skip.search(title)) or (keep and not keep.search(title)):
+            continue
+        sd = (e.get("start_date") or "")[:16]
+        try:
+            dt = datetime.datetime.strptime(sd, "%Y-%m-%d %H:%M")
+        except Exception:
+            continue
+        if not (today <= dt.date() <= horizon):
+            continue
+        is_comedy = bool(comedy and comedy.search(title))
+        if strip:
+            title = strip.sub("", title).strip(" -:/") or title
+        date = dt.date().isoformat()
+        key = (date, title.lower())
+        if key in seen:
+            continue
+        seen.add(key)
+        img = e.get("image") or ""
+        if isinstance(img, dict):
+            img = img.get("url") or ""
+        out.append(_batch_row(venue, date, "" if e.get("all_day") else _pt_clock(dt), title,
+                              e.get("url") or fallback_url, img,
+                              _age_in_text(_unhtml(e.get("description"))), is_comedy))
+    return out
+
+
+def _sqs_json_rows(text, today, venue, base, keep=None, skip=None, strip=None,
+                   comedy=None, default_age="", horizon_days=120):
+    """A Squarespace events collection as ?format=json: an "upcoming" list,
+    epoch-ms startDate in UTC, title, fullUrl, assetUrl. Same shape Arbor
+    and Alberta Street Pub read, written once for this batch."""
+    out, seen = [], set()
+    try:
+        data = json.loads(text)
+    except Exception:
+        return out
+    horizon = today + datetime.timedelta(days=horizon_days)
+    for e in data.get("upcoming") or []:
+        if not isinstance(e, dict) or not e.get("startDate"):
+            continue
+        title = _unhtml(e.get("title"))
+        if not title or (skip and skip.search(title)) or (keep and not keep.search(title)):
+            continue
+        dt = datetime.datetime.fromtimestamp(e["startDate"] / 1000, tz=datetime.timezone.utc).astimezone(_ASP_PDT)
+        if not (today <= dt.date() <= horizon):
+            continue
+        is_comedy = bool(comedy and comedy.search(title))
+        if strip:
+            title = strip.sub("", title).strip(" -:/") or title
+        date = dt.date().isoformat()
+        key = (date, dt.hour, dt.minute, title.lower())
+        if key in seen:
+            continue
+        seen.add(key)
+        fu = e.get("fullUrl") or ""
+        url = (base + fu) if fu.startswith("/") else (fu or base)
+        age = _age_in_text(_unhtml(e.get("excerpt"))) or default_age
+        out.append(_batch_row(venue, date, _pt_clock(dt), title, url, e.get("assetUrl") or "",
+                              age, is_comedy))
+    return out
+
+
+# ---- Wilfs Restaurant & Jazz Bar (Union Station, 800 NW 6th). Jazz nightly;
+# every event on their calendar is a set; only the "Closed for ..." holiday rows are skipped.
+def parse_wilfs(text, today):
+    return _tribe_rows(text, today, "Wilfs", "https://wilfsrestaurant.com/events/",
+                       skip=re.compile(r"^\s*closed\b", re.I))
+
+
+# ---- Stoller Wine Bar Newberg (106 S Center St). One site serves Newberg
+# and Bend, so the source asks for categories=newberg. The calendar is also
+# wine club, karaoke, trivia, cornhole, bingo and line dancing; music rows
+# read "Live Music with <act>" and the prefix is dropped. Comedy Night stays,
+# tagged for the comedy bin.
+_STOLLER_SKIP = re.compile(r"wine club|karaoke|trivia|cornhole|bingo|line danc|craft|\bsip\b|class|workshop|tasting|paint", re.I)
+_STOLLER_KEEP = re.compile(r"live music|comedy|concert|\bwith\b", re.I)
+_STOLLER_STRIP = re.compile(r"^\s*live music with\s+", re.I)
+
+
+def parse_stoller_newberg(text, today):
+    return _tribe_rows(text, today, "Stoller Wine Bar Newberg", "https://www.stollerwinebar.com/newberg/",
+                       keep=_STOLLER_KEEP, skip=_STOLLER_SKIP, strip=_STOLLER_STRIP,
+                       comedy=re.compile(r"comedy", re.I))
+
+
+# ---- Alberta Abbey (126 NE Alberta). Concerts, a variety showcase, an open
+# mic, plus wine classes and an interactive jury-trial game (skipped).
+# SAW The Musical is a comedy parody and goes to the comedy bin. Two same-day
+# sittings of one show are two rows (different times).
+_ABBEY_SKIP = re.compile(r"\bwine\b|jury experience|tasting|\bclass\b|workshop", re.I)
+_ABBEY_COMEDY = re.compile(r"parody|comedy|stand.?up|improv", re.I)
+
+
+def parse_albertaabbey(text, today):
+    return _sqs_json_rows(text, today, "Alberta Abbey", "https://www.albertaabbey.org",
+                          skip=_ABBEY_SKIP, comedy=_ABBEY_COMEDY)
+
+
+# ---- The Scout Wine Bar (25 NE 3rd St, Gresham). Music rows are
+# "Live Music: <act>"; Thursday Tastings are not shows.
+def parse_scout(text, today):
+    return _sqs_json_rows(text, today, "The Scout Wine Bar", "https://www.thescoutwinebar.com",
+                          keep=re.compile(r"^\s*live music\b", re.I),
+                          strip=re.compile(r"^\s*live music\s*[:/-]\s*", re.I))
+
+
+# ---- Ridgefield Craft Brewing Taphouse (120 N 3rd Ave, Ridgefield WA).
+# "Live Music / <act>" and the monthly Open Mic Comedy Night; trivia and
+# cribbage are skipped by the keep rule.
+def parse_ridgefieldcraft(text, today):
+    return _sqs_json_rows(text, today, "Ridgefield Craft Brewing", "https://www.ridgefieldcraftbrewing.com",
+                          keep=re.compile(r"live music|comedy", re.I),
+                          strip=re.compile(r"^\s*live music\s*[:/-]\s*", re.I),
+                          comedy=re.compile(r"comedy", re.I))
+
+
+# ---- Old Liberty Theater (115 N Main Ave, Ridgefield WA -- the theater's own
+# page says 115; business directories say 113). Mostly stand-up, tagged for
+# the comedy bin; anything else is left for the app's classifier.
+def parse_oldliberty(text, today):
+    return _sqs_json_rows(text, today, "Old Liberty Theater", "https://www.oldlibertytheater.com",
+                          comedy=re.compile(r"comedy|stand.?up|comedian", re.I))
+
+
+# ---- The Wild Hare Saloon (1656 S Beavercreek Rd, Oregon City). A public
+# Google Calendar. One-off events are the bands, each suffixed "(OC)";
+# trivia and music bingo are weekly RRULEs (skipped, as Switchback does).
+# Years of history sit in the same feed; the date window handles that.
+_WH_SKIP = re.compile(r"trivia|bingo|closed|no live music|st\.? patrick|game night", re.I)
+
+
+def parse_wildhare(text, today):
+    from zoneinfo import ZoneInfo
+    pt = ZoneInfo("America/Los_Angeles")
+    horizon = today + datetime.timedelta(days=120)
+    out, seen = [], set()
+    for dstart, summary, recurs in _ics_events(text or ""):
+        if recurs or _WH_SKIP.search(summary):
+            continue
+        m = re.match(r"^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})(Z?))?$", dstart)
+        if not m:
+            continue
+        y, mo, d = int(m.group(1)), int(m.group(2)), int(m.group(3))
+        if m.group(4):
+            dt = datetime.datetime(y, mo, d, int(m.group(4)), int(m.group(5)), int(m.group(6)),
+                                   tzinfo=datetime.timezone.utc if m.group(7) else pt).astimezone(pt)
+            day, tm = dt.date(), _pt_clock(dt)
+        else:
+            day, tm = datetime.date(y, mo, d), ""
+        if not (today <= day <= horizon):
+            continue
+        title = re.sub(r"\s*\(OC\)\s*$", "", _unhtml(summary)).strip()
+        key = (day.isoformat(), title.lower())
+        if not title or key in seen:
+            continue
+        seen.add(key)
+        out.append(_batch_row("The Wild Hare Saloon", day.isoformat(), tm, title,
+                              "https://thewildharesaloon.com/special-events/", "", "21+"))
+    return out
+
+
+# ---- The 1905 (830 N Shaver). Turntable Tickets API: ten performances per
+# page, not in date order, count on every page. Most nights are two sets of
+# the same bill (6:30 and 8:30); the feed dedupes on title+venue+date anyway,
+# so the parser emits one row per night at the first set. "ALL AGES" is in
+# every description the venue writes.
+def _turntable_page(page, today):
+    return fetch("https://the1905.turntabletickets.com/api/performance/?start_date=%s&page=%d"
+                 % (today.isoformat(), page))
+
+
+def parse_the1905(text, today):
+    try:
+        first = json.loads(text)
+    except Exception:
+        return []
+    results = list(first.get("results") or [])
+    size = first.get("pageSize") or 10
+    pages = -(-int(first.get("count") or 0) // size)
+    for n in range(2, min(pages, 20) + 1):
+        try:
+            results += json.loads(_turntable_page(n, today)).get("results") or []
+        except Exception as e:
+            print(f"  note: The 1905: page {n} stopped ({type(e).__name__})")
+            break
+    horizon = today + datetime.timedelta(days=120)
+    nights = {}
+    for r in results:
+        show = r.get("show") or {}
+        title = _unhtml(show.get("name"))
+        try:
+            dt = datetime.datetime.fromisoformat((r.get("datetime") or "").replace("Z", "+00:00")).astimezone(_ASP_PDT)
+        except Exception:
+            continue
+        if not title or not (today <= dt.date() <= horizon):
+            continue
+        key = (dt.date().isoformat(), title.lower())
+        if key in nights and nights[key][0] <= dt:
+            continue
+        nights[key] = (dt, title, show)
+    out = []
+    for (date, _), (dt, title, show) in sorted(nights.items()):
+        out.append(_batch_row("The 1905", date, _pt_clock(dt), title,
+                              "https://the1905.turntabletickets.com/", show.get("image") or "",
+                              _age_in_text(_unhtml(show.get("description")))))
+    return out
+
+
+# ---- SpotHopper (spothopperapp.com/api/spots/<id>/events): bars that run
+# their whole promo calendar through it. event_date is the local day at UTC
+# midnight; start_time is local "HH:MM".
+def _spothopper_rows(text, today, venue, url, pick):
+    """pick(event) returns the show title, or "" to skip."""
+    out, seen = [], set()
+    try:
+        data = json.loads(text)
+    except Exception:
+        return out
+    horizon = today + datetime.timedelta(days=120)
+    for e in data.get("events") or []:
+        if e.get("show_on_website") is False:
+            continue
+        try:
+            day = datetime.date.fromisoformat((e.get("event_date") or "")[:10])
+        except Exception:
+            continue
+        if not (today <= day <= horizon):
+            continue
+        title = pick(e)
+        if not title:
+            continue
+        tm = ""
+        mt = re.match(r"^(\d{1,2}):(\d{2})", e.get("start_time") or "")
+        if mt and not e.get("all_day"):
+            tm = _pt_clock(datetime.time(int(mt.group(1)), int(mt.group(2))))
+        key = (day.isoformat(), title.lower())
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(_batch_row(venue, day.isoformat(), tm, title, url))
+    return out
+
+
+# Tigardville Station (12370 SW Main, Tigard): bands and DJs are listed by
+# name alone; the house promos are food holidays and parties.
+_TV_SKIP = re.compile(r"^\s*national\b.*\bday\s*$|^\s*halloween\s*$|trivia|bingo|karaoke|special|happy hour|brunch", re.I)
+
+
+def parse_tigardville(text, today):
+    return _spothopper_rows(text, today, "Tigardville Station", "https://tigardvillestation.com/events",
+                            lambda e: "" if _TV_SKIP.search(e.get("name") or "") else _unhtml(e.get("name")))
+
+
+# Chehalem Valley Brewing (2515 E Portland Rd, Newberg): music rows are all
+# named "Live Music #live_music"; the act is in the text ("Enjoy free live
+# music with Gabriel Rodriguez!"). Everything else is a promo.
+def _cvb_pick(e):
+    if "live music" not in (e.get("name") or "").lower():
+        return ""
+    m = re.search(r"live music (?:with|by|from)\s+(.+?)\s*[!.]*\s*$", _unhtml(e.get("text")), re.I)
+    return m.group(1).strip() if m else "Live Music"
+
+
+def parse_chehalemvalley(text, today):
+    return _spothopper_rows(text, today, "Chehalem Valley Brewing", "https://chehalemvalleybrewery.com/live-music", _cvb_pick)
+
+
+# ---- Crowdwork (crowdwork.com/api/v2/<theatre>/shows): comedy theaters.
+# One record per show with every date listed; a date can override the name
+# or poster. Every row is tagged comedy. Improv jams (drop-in practice for
+# improvisers) and writers' meetups are not shows and are skipped.
+_CW_SKIP = re.compile(r"\bjam\b|meet.?up|workshop", re.I)
+
+
+def _crowdwork_rows(text, today, venue, horizon_days=120):
+    out, seen = [], set()
+    try:
+        data = json.loads(text).get("data") or []
+    except Exception:
+        return out
+    horizon = today + datetime.timedelta(days=horizon_days)
+    for s in data:
+        if (s.get("status") or "active") != "active":
+            continue
+        base = _unhtml(s.get("name"))
+        if not base or _CW_SKIP.search(base):
+            continue
+        overrides = s.get("date_overrides") or {}
+        base_img = (s.get("img") or {}).get("url") or ""
+        for iso in s.get("dates") or []:
+            try:
+                dt = datetime.datetime.fromisoformat(iso).astimezone(_ASP_PDT)
+            except Exception:
+                continue
+            if not (today <= dt.date() <= horizon):
+                continue
+            ov = overrides.get(iso) or {}
+            title = _unhtml(ov.get("name")) or base
+            img = (ov.get("img") or {}).get("url") or base_img
+            key = (dt.date().isoformat(), dt.hour, dt.minute, title.lower())
+            if key in seen:
+                continue
+            seen.add(key)
+            out.append(_batch_row(venue, dt.date().isoformat(), _pt_clock(dt), title,
+                                  s.get("url") or "", img, "", True))
+    return out
+
+
+def parse_curious(text, today):
+    return _crowdwork_rows(text, today, "Curious Comedy Theater")
+
+
+def parse_kickstand(text, today):
+    return _crowdwork_rows(text, today, "Kickstand Comedy")
+
+
 SOURCES = [
     # CitySpark JSON API (single feed -> 2 venues). The parser ignores the
     # GET body below and drives the POST API itself; the URL is only a cheap
@@ -4264,6 +4635,32 @@ SOURCES = [
     {"name": "Process (processpdx.club)", "parser": parse_process, "urls": ["https://www.processpdx.club/"]},
     {"name": "Realm (realmpdx.com)", "parser": parse_realm, "tls": True, "urls": ["https://realmpdx.com/events/"]},
     {"name": "Strum PDX (strumpdx.com)", "parser": parse_strum, "urls": ["https://strumpdx.com/shows/"]},
+    # Sep 17 2026 batch (browser agent's sweep; structured feeds only).
+    {"name": "Wilfs (wilfsrestaurant.com)", "parser": parse_wilfs,
+     "urls": ["https://wilfsrestaurant.com/wp-json/tribe/events/v1/events?per_page=50"]},
+    {"name": "Stoller Wine Bar Newberg (stollerwinebar.com)", "parser": parse_stoller_newberg,
+     "urls": ["https://www.stollerwinebar.com/wp-json/tribe/events/v1/events?per_page=100&categories=newberg"]},
+    {"name": "Alberta Abbey (albertaabbey.org)", "parser": parse_albertaabbey,
+     "urls": ["https://www.albertaabbey.org/eventcalendar?format=json"]},
+    {"name": "The Scout Wine Bar (thescoutwinebar.com)", "parser": parse_scout,
+     "urls": ["https://www.thescoutwinebar.com/events?format=json"]},
+    {"name": "Ridgefield Craft Brewing (ridgefieldcraftbrewing.com)", "parser": parse_ridgefieldcraft,
+     "urls": ["https://www.ridgefieldcraftbrewing.com/events?format=json"]},
+    {"name": "Old Liberty Theater (oldlibertytheater.com)", "parser": parse_oldliberty, "may_be_empty": True,
+     "urls": ["https://www.oldlibertytheater.com/events?format=json"]},
+    {"name": "The Wild Hare Saloon (Google Calendar)", "parser": parse_wildhare,
+     "urls": ["https://calendar.google.com/calendar/ical/erkiqqbq1tlbqh2jrlq6dkbj28%40group.calendar.google.com/public/basic.ics"]},
+    {"name": "The 1905 (Turntable Tickets)", "parser": parse_the1905,
+     "urls": ["https://the1905.turntabletickets.com/api/performance/?start_date=%s&page=1"
+              % datetime.datetime.now(_ASP_PDT).date().isoformat()]},
+    {"name": "Tigardville Station (SpotHopper)", "parser": parse_tigardville,
+     "urls": ["https://www.spothopperapp.com/api/spots/72272/events"]},
+    {"name": "Chehalem Valley Brewing (SpotHopper)", "parser": parse_chehalemvalley,
+     "urls": ["https://www.spothopperapp.com/api/spots/617826/events"]},
+    {"name": "Curious Comedy Theater (Crowdwork)", "parser": parse_curious,
+     "urls": ["https://crowdwork.com/api/v2/curiouscomedyproductions/shows"]},
+    {"name": "Kickstand Comedy (Crowdwork)", "parser": parse_kickstand,
+     "urls": ["https://crowdwork.com/api/v2/kickstandcomedy/shows"]},
     {"name": "Haymaker (haymakerportland.com)", "parser": parse_haymaker,
      "urls": ["https://www.haymakerportland.com/events"]},
     # A watcher: their calendar is films and lectures, so nothing is normal.
