@@ -93,7 +93,7 @@ CASES = [
     ("oldliberty-sq.json",      sv.parse_oldliberty,      4, {"time": 4, "contentType": 3}, "Squarespace JSON; stand-up tagged comedy; burlesque left to the classifier"),
     ("wildhare.ics",            sv.parse_wildhare,       21, {"time": 21, "age": 21},       "Google iCal; one-off bands only (trivia/bingo are RRULEs); '(OC)' stripped; UTC -> Pacific"),
     ("tigardville-sh.json",     sv.parse_tigardville,    15, {"time": 15},                  "SpotHopper; food-holiday promos skipped; duplicate DJ Tony row collapsed"),
-    ("chehalemvalley-sh.json",  sv.parse_chehalemvalley,  5, {"time": 5},                   "SpotHopper; only 'Live Music' rows, act read from the text"),
+    ("chehalemvalley-sh.json",  sv.parse_chehalemvalley,  5, {"time": 5, "imageUrl": 5},    "SpotHopper; only 'Live Music' rows, act read from the text; poster from linked.images"),
     ("curious-cw.json",         sv.parse_curious,        87, {"time": 87, "imageUrl": 87, "contentType": 87}, "Crowdwork; every date expanded; improv jams skipped; all tagged comedy"),
     ("kickstand-cw.json",       sv.parse_kickstand,      85, {"time": 85, "imageUrl": 85, "contentType": 85}, "Crowdwork; per-date name/poster overrides; jams and the writers' meetup skipped"),
     # Sep 17 2026 batch 3 -- HTML pages captured from the Codespace on 2026-09-16 Pacific.

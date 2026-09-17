@@ -4584,12 +4584,21 @@ def parse_the1905(text, today):
 # their whole promo calendar through it. event_date is the local day at UTC
 # midnight; start_time is local "HH:MM".
 def _spothopper_rows(text, today, venue, url, pick):
-    """pick(event) returns the show title, or "" to skip."""
+    """pick(event) returns the show title, or "" to skip. Each event links to
+    a poster in linked.images by id (Sep 17 2026 -- Nick: "venue has photos");
+    the urls are protocol-relative, so they get https."""
     out, seen = [], set()
     try:
         data = json.loads(text)
     except Exception:
         return out
+    pics = {}
+    for im in ((data.get("linked") or {}).get("images") or []):
+        u = (im.get("urls") or {}).get("full") or im.get("url") or ""
+        if u.startswith("//"):
+            u = "https:" + u
+        if im.get("id") is not None and u.startswith("http"):
+            pics[im["id"]] = u
     horizon = today + datetime.timedelta(days=120)
     for e in data.get("events") or []:
         if e.get("show_on_website") is False:
@@ -4611,7 +4620,9 @@ def _spothopper_rows(text, today, venue, url, pick):
         if key in seen:
             continue
         seen.add(key)
-        out.append(_batch_row(venue, day.isoformat(), tm, title, url))
+        ids = ((e.get("links") or {}).get("images") or [])
+        out.append(_batch_row(venue, day.isoformat(), tm, title, url,
+                              next((pics[i] for i in ids if i in pics), "")))
     return out
 
 
