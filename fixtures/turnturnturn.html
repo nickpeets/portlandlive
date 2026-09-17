@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width" />
+<title>LIVE! | Turn! Turn! Turn!</title>
+<link rel="profile" href="http://gmpg.org/xfn/11" />
+<link rel="pingback" href="https://turnturnturnpdx.com/xmlrpc.php" />
+<!--[if lt IE 9]>
+<script src="https://s2.wp.com/wp-content/themes/pub/untitled/js/html5.js?m=1367107614i" type="text/javascript"></script>
+<![endif]-->
+
+<script type="text/javascript">
+  WebFontConfig = {"google":{"families":["EB+Garamond:r:latin,latin-ext","EB+Garamond:r,i,b,bi:latin,latin-ext"]},"api_url":"https:\/\/fonts-api.wp.com\/css"};
+  (function() {
+    var wf = document.createElement('script');
+    wf.src = '/wp-content/plugins/custom-fonts/js/webfont.js';
+    wf.type = 'text/javascript';
+    wf.async = 'true';
+    var s = document.getElementsByTagName('script')[0];
+    s.parentNode.insertBefore(wf, s);
+	})();
+</script><style id="jetpack-custom-fonts-css">.wf-active body, .wf-active button, .wf-active input, .wf-active select, .wf-active textarea{font-family:"EB Garamond",serif}.wf-active pre{font-family:"EB Garamond",serif}.wf-active code, .wf-active kbd, .wf-active tt, .wf-active var{font-family:"EB Garamond",serif}.wf-active .main-navigation, .wf-active .main-small-navigation .menu, .wf-active .site-navigation h1.menu-toggle{font-family:"EB Garamond",serif}.wf-active .site-content .site-navigation{font-family:"EB Garamond",serif}.wf-active .sd-title{font-family:"EB Garamond",serif}.wf-active #reply-title, .wf-active .comments-title{font-family:"EB Garamond",serif}.wf-active h1{font-family:"EB Garamond",serif;font-style:normal;font-weight:400}.wf-active h2{font-family:"EB Garamond",serif;font-style:normal;font-weight:400}.wf-active h3{font-family:"EB Garamond",serif;font-style:normal;font-weight:400}.wf-active h4{font-family:"EB Garamond",serif;font-style:normal;font-weight:400}.wf-active h5{font-family:"EB Garamond",serif;font-style:normal;font-weight:400}.wf-active .site-title{font-family:"EB Garamond",serif;font-style:normal;font-weight:400}.wf-active #featured-content h2{font-family:"EB Garamond",serif;font-weight:400;font-style:normal}.wf-active .entry-title{font-family:"EB Garamond",serif;font-style:normal;font-weight:400}.wf-active .widget-title, .wf-active .widget-title a{font-family:"EB Garamond",serif;font-style:normal;font-weight:400}@media screen and (max-width: 1000px){.wf-active .main-navigation{font-family:"EB Garamond",serif;font-style:normal;font-weight:400}}@media screen and (max-width: 1000px){.wf-active .entry-title{font-family:"EB Garamond",serif;font-style:normal;font-weight:400}}</style>
+<meta name='robots' content='max-image-preview:large' />
+
+<!-- Async WordPress.com Remote Login -->
+<script id="wpcom_remote_login_js">
+var wpcom_remote_login_extra_auth = '';
+function wpcom_remote_login_remove_dom_node_id( element_id ) {
+	var dom_node = document.getElementById( element_id );
+	if ( dom_node ) { dom_node.parentNode.removeChild( dom_node ); }
+}
+function wpcom_remote_login_remove_dom_node_classes( class_name ) {
+	var dom_nodes = document.querySelectorAll( '.' + class_name );
+	for ( var i = 0; i < dom_nodes.length; i++ ) {
+		dom_nodes[ i ].parentNode.removeChild( dom_nodes[ i ] );
+	}
+}
+function wpcom_remote_login_final_cleanup() {
+	wpcom_remote_login_remove_dom_node_classes( "wpcom_remote_login_msg" );
+	wpcom_remote_login_remove_dom_node_id( "wpcom_remote_login_key" );
+	wpcom_remote_login_remove_dom_node_id( "wpcom_remote_login_validate" );
+	wpcom_remote_login_remove_dom_node_id( "wpcom_remote_login_js" );
+	wpcom_remote_login_remove_dom_node_id( "wpcom_request_access_iframe" );
+	wpcom_remote_login_remove_dom_node_id( "wpcom_request_access_styles" );
+}
+
+// Watch for messages back from the remote login
+window.addEventListener( "message", function( e ) {
+	if ( e.origin === "https://r-login.wordpress.com" ) {
+		var data = {};
+		try {
+			data = JSON.parse( e.data );
+		} catch( e ) {
+			wpcom_remote_login_final_cleanup();
+			return;
+		}
+
+		if ( data.msg === 'LOGIN' ) {
+			// Clean up the login check iframe
+			wpcom_remote_login_remove_dom_node_id( "wpcom_remote_login_key" );
+
+			var id_regex = new RegExp( /^[0-9]+$/ );
+			var token_regex = new RegExp( /^.*|.*|.*$/ );
+			if (
+				token_regex.test( data.token )
+				&& id_regex.test( data.wpcomid )
+			) {
+				// We have everything we need to ask for a login
+				var script = document.createElement( "script" );
+				script.setAttribute( "id", "wpcom_remote_login_validate" );
+				script.src = '/remote-login.php?wpcom_remote_login=validate'
+					+ '&wpcomid=' + data.wpcomid
+					+ '&token=' + encodeURIComponent( data.token )
+					+ '&host=' + window.location.protocol
+					+ '//' + window.location.hostname
+					+ '&postid=86'
+					+ '&is_singular=';
+				document.body.appendChild( script );
+			}
+
+			return;
+		}
+
+		// Safari ITP, not logged in, so redirect
+		if ( data.msg === 'LOGIN-REDIRECT' ) {
+			window.location = 'https://wordpress.com/log-in?redirect_to=' + window.location.href;
+			return;
+		}
+
+		// Safari ITP, storage access failed, remove the request
+		if ( data.msg === 'LOGIN-REMOVE' ) {
+			var css_zap = 'html { -webkit-transition: margin-top 1s; transition: margin-top 1s; } /* 9001 */ html { margin-top: 0 !important; } * html body { margin-top: 0 !important; } @media screen and ( max-width: 782px ) { html { margin-top: 0 !important; } * html body { margin-top: 0 !important; } }';
+			var style_zap = document.createElement( 'style' );
+			style_zap.type = 'text/css';
+			style_zap.appendChild( document.createTextNode( css_zap ) );
+			document.body.appendChild( style_zap );
+
+			var e = document.getElementById( 'wpcom_request_access_iframe' );
+			e.parentNode.removeChild( e );
+
+			document.cookie = 'wordpress_com_login_access=denied; path=/; max-age=31536000';
+
+			return;
+		}
+
+		// Safari ITP
+		if ( data.msg === 'REQUEST_ACCESS' ) {
+			console.log( 'request access: safari' );
+
+			// Check ITP iframe enable/disable knob
+			if ( wpcom_remote_login_extra_auth !== 'safari_itp_iframe' ) {
+				return;
+			}
+
+			// If we are in a "private window" there is no ITP.
+			var private_window = false;
+			try {
+				var opendb = window.openDatabase( null, null, null, null );
+			} catch( e ) {
+				private_window = true;
+			}
+
+			if ( private_window ) {
+				console.log( 'private window' );
+				return;
+			}
+
+			var iframe = document.createElement( 'iframe' );
+			iframe.id = 'wpcom_request_access_iframe';
+			iframe.setAttribute( 'scrolling', 'no' );
+			iframe.setAttribute( 'sandbox', 'allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-top-navigation-by-user-activation' );
+			iframe.src = 'https://r-login.wordpress.com/remote-login.php?wpcom_remote_login=request_access&origin=' + encodeURIComponent( data.origin ) + '&wpcomid=' + encodeURIComponent( data.wpcomid );
+
+			var css = 'html { -webkit-transition: margin-top 1s; transition: margin-top 1s; } /* 9001 */ html { margin-top: 46px !important; } * html body { margin-top: 46px !important; } @media screen and ( max-width: 660px ) { html { margin-top: 71px !important; } * html body { margin-top: 71px !important; } #wpcom_request_access_iframe { display: block; height: 71px !important; } } #wpcom_request_access_iframe { border: 0px; height: 46px; position: fixed; top: 0; left: 0; width: 100%; min-width: 100%; z-index: 99999; background: #23282d; } ';
+
+			var style = document.createElement( 'style' );
+			style.type = 'text/css';
+			style.id = 'wpcom_request_access_styles';
+			style.appendChild( document.createTextNode( css ) );
+			document.body.appendChild( style );
+
+			document.body.appendChild( iframe );
+		}
+
+		if ( data.msg === 'DONE' ) {
+			wpcom_remote_login_final_cleanup();
+		}
+	}
+}, false );
+
+// Inject the remote login iframe after the page has had a chance to load
+// more critical resources
+window.addEventListener( "DOMContentLoaded", function( e ) {
+	var iframe = document.createElement( "iframe" );
+	iframe.style.display = "none";
+	iframe.setAttribute( "scrolling", "no" );
+	iframe.setAttribute( "id", "wpcom_remote_login_key" );
+	iframe.src = "https://r-login.wordpress.com/remote-login.php"
+		+ "?wpcom_remote_login=key"
+		+ "&origin=aHR0cHM6Ly90dXJudHVybnR1cm5wZHguY29t"
+		+ "&wpcomid=64718911"
+		+ "&time=" + Math.floor( Date.now() / 1000 );
+	document.body.appendChild( iframe );
+}, false );
+</script>
+<link rel='dns-prefetch' href='//s2.wp.com' />
+<link rel='dns-prefetch' href='//widgets.wp.com' />
+<link rel='dns-prefetch' href='//fonts-api.wp.com' />
+<link rel='dns-prefetch' href='//s0.wp.com' />
+<link rel="alternate" type="application/rss+xml" title="Turn! Turn! Turn! &raquo; Feed" href="https://turnturnturnpdx.com/feed/" />
+<link rel="alternate" type="application/rss+xml" title="Turn! Turn! Turn! &raquo; Comments Feed" href="https://turnturnturnpdx.com/comments/feed/" />
+<link rel="alternate" type="application/rss+xml" title="Turn! Turn! Turn! &raquo; LIVE! Comments Feed" href="https://turnturnturnpdx.com/entertainment/feed/" />
+	<script type="text/javascript">
+		/* <![CDATA[ */
+		function addLoadEvent(func) {
+			var oldonload = window.onload;
+			if (typeof window.onload != 'function') {
+				window.onload = func;
+			} else {
+				window.onload = function () {
+					oldonload();
+					func();
+				}
+			}
+		}
+		/* ]]> */
+	</script>
+	<style id="wp-img-auto-sizes-contain-inline-css">
+img:is([sizes=auto i],[sizes^="auto," i]){contain-intrinsic-size:3000px 1500px}
+/*# sourceURL=wp-img-auto-sizes-contain-inline-css */
+</style>
+<style id="wp-emoji-styles-inline-css">
+
+	img.wp-smiley, img.emoji {
+		display: inline !important;
+		border: none !important;
+		box-shadow: none !important;
+		height: 1em !important;
+		width: 1em !important;
+		margin: 0 0.07em !important;
+		vertical-align: -0.1em !important;
+		background: none !important;
+		padding: 0 !important;
+	}
+/*# sourceURL=wp-emoji-styles-inline-css */
+</style>
+<style id="wp-block-library-inline-css">
+:root{--wp-block-synced-color:#7a00df;--wp-block-synced-color--rgb:122,0,223;--wp-bound-block-color:var(--wp-block-synced-color);--wp-editor-canvas-background:#ddd;--wp-admin-theme-color:#007cba;--wp-admin-theme-color--rgb:0,124,186;--wp-admin-theme-color-darker-10:#006ba1;--wp-admin-theme-color-darker-10--rgb:0,107,160.5;--wp-admin-theme-color-darker-20:#005a87;--wp-admin-theme-color-darker-20--rgb:0,90,135;--wp-admin-border-width-focus:2px}@media (min-resolution:192dpi){:root{--wp-admin-border-width-focus:1.5px}}.wp-element-button{cursor:pointer}:root .has-very-light-gray-background-color{background-color:#eee}:root .has-very-dark-gray-background-color{background-color:#313131}:root .has-very-light-gray-color{color:#eee}:root .has-very-dark-gray-color{color:#313131}:root .has-vivid-green-cyan-to-vivid-cyan-blue-gradient-background{background:linear-gradient(135deg,#00d084,#0693e3)}:root .has-purple-crush-gradient-background{background:linear-gradient(135deg,#34e2e4,#4721fb 50%,#ab1dfe)}:root .has-hazy-dawn-gradient-background{background:linear-gradient(135deg,#faaca8,#dad0ec)}:root .has-subdued-olive-gradient-background{background:linear-gradient(135deg,#fafae1,#67a671)}:root .has-atomic-cream-gradient-background{background:linear-gradient(135deg,#fdd79a,#004a59)}:root .has-nightshade-gradient-background{background:linear-gradient(135deg,#330968,#31cdcf)}:root .has-midnight-gradient-background{background:linear-gradient(135deg,#020381,#2874fc)}:root{--wp--preset--font-size--normal:16px;--wp--preset--font-size--huge:42px}.has-regular-font-size{font-size:1em}.has-larger-font-size{font-size:2.625em}.has-normal-font-size{font-size:var(--wp--preset--font-size--normal)}.has-huge-font-size{font-size:var(--wp--preset--font-size--huge)}:root .has-text-align-center{text-align:center}:root .has-text-align-left{text-align:left}:root .has-text-align-right{text-align:right}.has-fit-text{white-space:nowrap!important}#end-resizable-editor-section{display:none}.aligncenter{clear:both}.items-justified-left{justify-content:flex-start}.items-justified-center{justify-content:center}.items-justified-right{justify-content:flex-end}.items-justified-space-between{justify-content:space-between}.screen-reader-text{word-wrap:normal!important;border:0;clip-path:inset(50%);height:1px;margin:-1px;overflow:hidden;padding:0;position:absolute;width:1px;word-break:normal!important}.screen-reader-text:focus{background-color:#ddd;clip-path:none;color:#444;display:block;font-size:1em;height:auto;left:5px;line-height:normal;padding:15px 23px 14px;text-decoration:none;top:5px;width:auto;z-index:100000}html :where(.has-border-color){border-style:solid}html :where([style^=border-color],[style*=";border-color"],[style*="; border-color"]){border-style:solid}html :where([style^=border-top-color],[style*=";border-top-color"],[style*="; border-top-color"]){border-top-style:solid}html :where([style^=border-right-color],[style*=";border-right-color"],[style*="; border-right-color"]){border-right-style:solid}html :where([style^=border-bottom-color],[style*=";border-bottom-color"],[style*="; border-bottom-color"]){border-bottom-style:solid}html :where([style^=border-left-color],[style*=";border-left-color"],[style*="; border-left-color"]){border-left-style:solid}html :where([style^=border-width],[style*=";border-width"],[style*="; border-width"]){border-style:solid}html :where([style^=border-top-width],[style*=";border-top-width"],[style*="; border-top-width"]){border-top-style:solid}html :where([style^=border-right-width],[style*=";border-right-width"],[style*="; border-right-width"]){border-right-style:solid}html :where([style^=border-bottom-width],[style*=";border-bottom-width"],[style*="; border-bottom-width"]){border-bottom-style:solid}html :where([style^=border-left-width],[style*=";border-left-width"],[style*="; border-left-width"]){border-left-style:solid}html :where(img[class*=wp-image-]){height:auto;max-width:100%}:where(figure){margin:0 0 1em}html :where(.is-position-sticky){--wp-admin--admin-bar--position-offset:var(--wp-admin--admin-bar--height,0px)}@media screen and (max-width:600px){html :where(.is-position-sticky){--wp-admin--admin-bar--position-offset:0px}}
+
+/*# sourceURL=/wp-content/plugins/gutenberg-core/v23.9.1/build/styles/block-library/common.min.css */
+</style>
+<style id="wp-block-separator-inline-css">
+@charset "UTF-8";.wp-block-separator{border:none;border-top:2px solid}:root :where(.wp-block-separator.is-style-dots){height:auto;line-height:1;text-align:center}:root :where(.wp-block-separator.is-style-dots):before{color:currentColor;content:"···";font-family:serif;font-size:1.5em;letter-spacing:2em;padding-left:2em}.wp-block-separator.is-style-dots{background:none!important;border:none!important}
+/*# sourceURL=/wp-content/plugins/gutenberg-core/v23.9.1/build/styles/block-library/separator/style.min.css */
+</style>
+<style id="wp-block-spacer-inline-css">
+.wp-block-spacer{clear:both}
+/*# sourceURL=/wp-content/plugins/gutenberg-core/v23.9.1/build/styles/block-library/spacer/style.min.css */
+</style>
+<style id="wp-block-heading-inline-css">
+h1:where(.wp-block-heading).has-background,h2:where(.wp-block-heading).has-background,h3:where(.wp-block-heading).has-background,h4:where(.wp-block-heading).has-background,h5:where(.wp-block-heading).has-background,h6:where(.wp-block-heading).has-background{padding:1.25em 2.375em}h1.has-text-align-left[style*=writing-mode]:where([style*=vertical-lr]),h1.has-text-align-right[style*=writing-mode]:where([style*=vertical-rl]),h2.has-text-align-left[style*=writing-mode]:where([style*=vertical-lr]),h2.has-text-align-right[style*=writing-mode]:where([style*=vertical-rl]),h3.has-text-align-left[style*=writing-mode]:where([style*=vertical-lr]),h3.has-text-align-right[style*=writing-mode]:where([style*=vertical-rl]),h4.has-text-align-left[style*=writing-mode]:where([style*=vertical-lr]),h4.has-text-align-right[style*=writing-mode]:where([style*=vertical-rl]),h5.has-text-align-left[style*=writing-mode]:where([style*=vertical-lr]),h5.has-text-align-right[style*=writing-mode]:where([style*=vertical-rl]),h6.has-text-align-left[style*=writing-mode]:where([style*=vertical-lr]),h6.has-text-align-right[style*=writing-mode]:where([style*=vertical-rl]){rotate:180deg}
+/*# sourceURL=/wp-content/plugins/gutenberg-core/v23.9.1/build/styles/block-library/heading/style.min.css */
+</style>
+<style id="wp-block-image-inline-css">
+.wp-block-image>a,.wp-block-image>figure>a{display:inline-block}.wp-block-image img{box-sizing:border-box;height:auto;max-width:100%;vertical-align:bottom}@media not (prefers-reduced-motion){.wp-block-image img.hide{visibility:hidden}.wp-block-image img.show{animation:show-content-image .4s}}.wp-block-image[style*=border-radius] img,.wp-block-image[style*=border-radius]>a{border-radius:inherit}.wp-block-image.has-custom-border img{box-sizing:border-box}.wp-block-image.aligncenter{text-align:center}.wp-block-image.alignfull>a,.wp-block-image.alignwide>a{width:100%}.wp-block-image.alignfull img,.wp-block-image.alignwide img{height:auto;width:100%}.wp-block-image .aligncenter,.wp-block-image .alignleft,.wp-block-image .alignright,.wp-block-image.aligncenter,.wp-block-image.alignleft,.wp-block-image.alignright{display:table}.wp-block-image .aligncenter>figcaption,.wp-block-image .alignleft>figcaption,.wp-block-image .alignright>figcaption,.wp-block-image.aligncenter>figcaption,.wp-block-image.alignleft>figcaption,.wp-block-image.alignright>figcaption{caption-side:bottom;display:table-caption}.wp-block-image .alignleft{float:left;margin:.5em 1em .5em 0}.wp-block-image .alignright{float:right;margin:.5em 0 .5em 1em}.wp-block-image .aligncenter{margin-left:auto;margin-right:auto}.wp-block-image :where(figcaption){margin-bottom:1em;margin-top:.5em}.wp-block-image.is-style-circle-mask img{border-radius:9999px}@supports ((-webkit-mask-image:none) or (mask-image:none)) or (-webkit-mask-image:none){.wp-block-image.is-style-circle-mask img{border-radius:0;-webkit-mask-image:url('data:image/svg+xml;utf8,<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="50"/></svg>');mask-image:url('data:image/svg+xml;utf8,<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="50"/></svg>');mask-mode:alpha;-webkit-mask-position:center;mask-position:center;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-size:contain;mask-size:contain}}:root :where(.wp-block-image.is-style-rounded img,.wp-block-image .is-style-rounded img){border-radius:9999px}.wp-block-image figure{margin:0}.wp-lightbox-container{display:flex;flex-direction:column;position:relative}.wp-lightbox-container img{cursor:zoom-in}.wp-lightbox-container img:hover+button{opacity:1}.wp-lightbox-container button{align-items:center;backdrop-filter:blur(16px) saturate(180%);background-color:rgba(90,90,90,.25);border:none;border-radius:4px;cursor:zoom-in;display:flex;height:20px;justify-content:center;opacity:0;padding:0;position:absolute;right:16px;text-align:center;top:16px;width:20px;z-index:100}@media not (prefers-reduced-motion){.wp-lightbox-container button{transition:opacity .2s ease}}.wp-lightbox-container button:focus-visible{outline:3px auto rgba(90,90,90,.25);outline:3px auto -webkit-focus-ring-color;outline-offset:3px}.wp-lightbox-container button:hover{cursor:pointer;opacity:1}.wp-lightbox-container button:focus{opacity:1}.wp-lightbox-container button:focus,.wp-lightbox-container button:hover,.wp-lightbox-container button:not(:hover):not(:active):not(.has-background){background-color:rgba(90,90,90,.25);border:none}.wp-lightbox-overlay{box-sizing:border-box;cursor:zoom-out;height:100vh;left:0;overflow:hidden;position:fixed;top:0;visibility:hidden;width:100%;z-index:100000}.wp-lightbox-overlay .wp-lightbox-close-button{align-items:center;cursor:pointer;display:flex;font-family:inherit;gap:8px;justify-content:center;line-height:1;min-height:40px;min-width:40px;padding:0 4px;position:absolute;right:calc(env(safe-area-inset-right) + 16px);top:calc(env(safe-area-inset-top) + 16px);z-index:5000000}.wp-lightbox-overlay .wp-lightbox-close-button:focus,.wp-lightbox-overlay .wp-lightbox-close-button:hover,.wp-lightbox-overlay .wp-lightbox-close-button:not(:hover):not(:active):not(.has-background){background:none;border:none}.wp-lightbox-overlay .wp-lightbox-close-button:has(.wp-lightbox-close-text:not([hidden])) .wp-lightbox-close-icon svg{height:1em;width:1em}.wp-lightbox-overlay .wp-lightbox-close-icon svg{display:block}.wp-lightbox-overlay .wp-lightbox-navigation-button-next,.wp-lightbox-overlay .wp-lightbox-navigation-button-prev{align-items:center;bottom:16px;cursor:pointer;display:flex;font-family:inherit;gap:4px;justify-content:center;line-height:1;min-height:40px;min-width:40px;padding:0 8px;position:absolute;z-index:2000002}.wp-lightbox-overlay .wp-lightbox-navigation-button-next[hidden],.wp-lightbox-overlay .wp-lightbox-navigation-button-prev[hidden]{display:none}@media (min-width:960px){.wp-lightbox-overlay .wp-lightbox-navigation-button-next,.wp-lightbox-overlay .wp-lightbox-navigation-button-prev{bottom:50%;transform:translateY(-50%)}}.wp-lightbox-overlay .wp-lightbox-navigation-button-next:focus,.wp-lightbox-overlay .wp-lightbox-navigation-button-next:hover,.wp-lightbox-overlay .wp-lightbox-navigation-button-next:not(:hover):not(:active):not(.has-background),.wp-lightbox-overlay .wp-lightbox-navigation-button-prev:focus,.wp-lightbox-overlay .wp-lightbox-navigation-button-prev:hover,.wp-lightbox-overlay .wp-lightbox-navigation-button-prev:not(:hover):not(:active):not(.has-background){background:none;border:none;padding:0 8px}.wp-lightbox-overlay .wp-lightbox-navigation-button-next:has(.wp-lightbox-navigation-text:not([hidden])) .wp-lightbox-navigation-icon svg,.wp-lightbox-overlay .wp-lightbox-navigation-button-prev:has(.wp-lightbox-navigation-text:not([hidden])) .wp-lightbox-navigation-icon svg{display:block;height:1.5em;width:1.5em}.wp-lightbox-overlay .wp-lightbox-navigation-button-prev{left:calc(env(safe-area-inset-left) + 16px)}.wp-lightbox-overlay .wp-lightbox-navigation-button-next{right:calc(env(safe-area-inset-right) + 16px)}.wp-lightbox-overlay .wp-lightbox-navigation-icon svg{vertical-align:middle}.wp-lightbox-overlay .lightbox-image-container{height:var(--wp--lightbox-container-height);left:50%;overflow:hidden;position:absolute;top:50%;transform:translate(-50%,-50%);transform-origin:top left;width:var(--wp--lightbox-container-width);z-index:2000001}.wp-lightbox-overlay .wp-block-image{align-items:center;box-sizing:border-box;display:flex;height:100%;justify-content:center;margin:0;position:relative;transform-origin:0 0;width:100%;z-index:3000000}.wp-lightbox-overlay .wp-block-image img{height:var(--wp--lightbox-image-height);min-height:var(--wp--lightbox-image-height);min-width:var(--wp--lightbox-image-width);width:var(--wp--lightbox-image-width)}.wp-lightbox-overlay .wp-block-image figcaption{display:none}.wp-lightbox-overlay button{background:none;border:none}.wp-lightbox-overlay .scrim{background-color:#fff;height:100%;opacity:.9;position:absolute;width:100%;z-index:2000000}.wp-lightbox-overlay.active{visibility:visible}@media not (prefers-reduced-motion){.wp-lightbox-overlay.active{animation:turn-on-visibility .25s both}.wp-lightbox-overlay.active img{animation:turn-on-visibility .35s both}.wp-lightbox-overlay.show-closing-animation:not(.active){animation:turn-off-visibility .35s both}.wp-lightbox-overlay.show-closing-animation:not(.active) img{animation:turn-off-visibility .25s both}.wp-lightbox-overlay.zoom.active{animation:none;opacity:1;visibility:visible}.wp-lightbox-overlay.zoom.active .lightbox-image-container{animation:lightbox-zoom-in .4s}.wp-lightbox-overlay.zoom.active .lightbox-image-container img{animation:none}.wp-lightbox-overlay.zoom.active .scrim{animation:turn-on-visibility .4s forwards}.wp-lightbox-overlay.zoom.show-closing-animation:not(.active){animation:none}.wp-lightbox-overlay.zoom.show-closing-animation:not(.active) .lightbox-image-container{animation:lightbox-zoom-out .4s}.wp-lightbox-overlay.zoom.show-closing-animation:not(.active) .lightbox-image-container img{animation:none}.wp-lightbox-overlay.zoom.show-closing-animation:not(.active) .scrim{animation:turn-off-visibility .4s forwards}}@keyframes show-content-image{0%{visibility:hidden}99%{visibility:hidden}to{visibility:visible}}@keyframes turn-on-visibility{0%{opacity:0}to{opacity:1}}@keyframes turn-off-visibility{0%{opacity:1;visibility:visible}99%{opacity:0;visibility:visible}to{opacity:0;visibility:hidden}}@keyframes lightbox-zoom-in{0%{transform:translate(calc((-100vw + var(--wp--lightbox-scrollbar-width))/2 + var(--wp--lightbox-initial-left-position)),calc(-50vh + var(--wp--lightbox-initial-top-position))) scale(var(--wp--lightbox-scale))}to{transform:translate(-50%,-50%) scale(1)}}@keyframes lightbox-zoom-out{0%{transform:translate(-50%,-50%) scale(1);visibility:visible}99%{visibility:visible}to{transform:translate(calc((-100vw + var(--wp--lightbox-scrollbar-width))/2 + var(--wp--lightbox-initial-left-position)),calc(-50vh + var(--wp--lightbox-initial-top-position))) scale(var(--wp--lightbox-scale));visibility:hidden}}
+/*# sourceURL=/wp-content/plugins/gutenberg-core/v23.9.1/build/styles/block-library/image/style.min.css */
+</style>
+<style id="wp-block-media-text-inline-css">
+.wp-block-media-text{box-sizing:border-box;direction:ltr;display:grid;grid-template-columns:50% 1fr;grid-template-rows:auto}.wp-block-media-text.has-media-on-the-right{grid-template-columns:1fr 50%}.wp-block-media-text.is-vertically-aligned-top>.wp-block-media-text__content,.wp-block-media-text.is-vertically-aligned-top>.wp-block-media-text__media{align-self:start}.wp-block-media-text.is-vertically-aligned-center>.wp-block-media-text__content,.wp-block-media-text.is-vertically-aligned-center>.wp-block-media-text__media,.wp-block-media-text>.wp-block-media-text__content,.wp-block-media-text>.wp-block-media-text__media{align-self:center}.wp-block-media-text.is-vertically-aligned-bottom>.wp-block-media-text__content,.wp-block-media-text.is-vertically-aligned-bottom>.wp-block-media-text__media{align-self:end}.wp-block-media-text>.wp-block-media-text__media{grid-column:1;grid-row:1;margin:0}.wp-block-media-text>.wp-block-media-text__content{direction:ltr;grid-column:2;grid-row:1;padding:0 8%;word-break:break-word}.wp-block-media-text.has-media-on-the-right>.wp-block-media-text__media{grid-column:2;grid-row:1}.wp-block-media-text.has-media-on-the-right>.wp-block-media-text__content{grid-column:1;grid-row:1}.wp-block-media-text__media a{display:block}.wp-block-media-text__media img,.wp-block-media-text__media video{height:auto;max-width:unset;vertical-align:middle;width:100%}.wp-block-media-text.is-image-fill>.wp-block-media-text__media{background-size:cover;height:100%;min-height:250px}.wp-block-media-text.is-image-fill>.wp-block-media-text__media>a{display:block;height:100%}.wp-block-media-text.is-image-fill>.wp-block-media-text__media img{clip:rect(0,0,0,0);border:0;height:1px;margin:-1px;overflow:hidden;padding:0;position:absolute;width:1px}.wp-block-media-text.is-image-fill-element>.wp-block-media-text__media{height:100%;min-height:250px;position:relative}.wp-block-media-text.is-image-fill-element>.wp-block-media-text__media>a{display:block;height:100%}.wp-block-media-text.is-image-fill-element>.wp-block-media-text__media img{height:100%;-o-object-fit:cover;object-fit:cover;position:absolute;width:100%}@media (max-width:600px){.wp-block-media-text.is-stacked-on-mobile{grid-template-columns:100%!important}.wp-block-media-text.is-stacked-on-mobile>.wp-block-media-text__media{grid-column:1;grid-row:1}.wp-block-media-text.is-stacked-on-mobile>.wp-block-media-text__content{grid-column:1;grid-row:2}}
+/*# sourceURL=/wp-content/plugins/gutenberg-core/v23.9.1/build/styles/block-library/media-text/style.min.css */
+</style>
+<style id="wp-block-paragraph-inline-css">
+.is-small-text{font-size:.875em}.is-regular-text{font-size:1em}.is-large-text{font-size:2.25em}.is-larger-text{font-size:3em}.has-drop-cap:not(:focus):first-letter{float:left;font-size:8.4em;font-style:normal;font-weight:100;line-height:.68;margin:.05em .1em 0 0;text-transform:uppercase}body.rtl .has-drop-cap:not(:focus):first-letter{float:none;margin-left:.1em}p.has-drop-cap.has-background{overflow:hidden}:root :where(p.has-background){padding:1.25em 2.375em}:where(p.has-text-color:not(.has-link-color)) a{color:inherit}p.has-text-align-left[style*="writing-mode:vertical-lr"],p.has-text-align-right[style*="writing-mode:vertical-rl"]{rotate:180deg}
+/*# sourceURL=/wp-content/plugins/gutenberg-core/v23.9.1/build/styles/block-library/paragraph/style.min.css */
+</style>
+<style id="wp-block-library-inline-css-extra">
+.has-text-align-justify {
+	text-align:justify;
+}
+.has-text-align-justify{text-align:justify;}
+/*# sourceURL=wp-block-library-inline-css */
+</style>
+
+<style id="classic-theme-styles-inline-css">
+.wp-block-button__link{background-color:#32373c;border-radius:9999px;box-shadow:none;color:#fff;font-size:1.125em;padding:calc(.667em + 2px) calc(1.333em + 2px);text-decoration:none}.wp-block-file__button{background:#32373c;color:#fff}.wp-block-accordion-heading{margin:0}.wp-block-accordion-heading__toggle{background-color:inherit!important;color:inherit!important}.wp-block-accordion-heading__toggle:not(:focus-visible){outline:none}.wp-block-accordion-heading__toggle:focus,.wp-block-accordion-heading__toggle:hover{background-color:inherit!important;border:none;box-shadow:none;color:inherit;padding:var(--wp--preset--spacing--20,1em) 0;text-decoration:none}.wp-block-accordion-heading__toggle:focus-visible{outline:auto;outline-offset:0}.wp-block-tab:not(.has-text-color){color:inherit!important}.wp-block-tab:not(.has-background){background-color:inherit!important}.wp-block-tab:focus,.wp-block-tab:hover{text-decoration:none}.wp-block-tab:focus-visible{outline:auto;outline-offset:0}
+/*# sourceURL=/wp-content/plugins/gutenberg-core/v23.9.1/build/styles/block-library/classic.min.css */
+</style>
+
+<style id="coblocks-inline-format-inline-css">
+.uppercase{text-transform:uppercase}
+/*# sourceURL=coblocks-inline-format-inline-css */
+</style>
+<link crossorigin='anonymous' rel='stylesheet' id='all-css-12-1' href='/_static/??-eJx9jEEOAiEQBD/kQECjeDC+ZWEnijIwYWA3/l72op689KFTVXplCCU3zE1z6reYRYfiUwlP0VYZpwxIJE4IFRd10HOU9iFA2iuhCiI7/ROiDt9WxfETT20jCOc4YUIa2D9t5eGA91xRBMZS7ATtPkTZvCtdzNEZt7f2fHq8Afl7R7w=&cssminify=yes' type='text/css' media='all' />
+<style id="global-styles-inline-css">
+:root{--wp--preset--aspect-ratio--square: 1;--wp--preset--aspect-ratio--4-3: 4/3;--wp--preset--aspect-ratio--3-4: 3/4;--wp--preset--aspect-ratio--3-2: 3/2;--wp--preset--aspect-ratio--2-3: 2/3;--wp--preset--aspect-ratio--16-9: 16/9;--wp--preset--aspect-ratio--9-16: 9/16;--wp--preset--color--black: #000000;--wp--preset--color--cyan-bluish-gray: #abb8c3;--wp--preset--color--white: #ffffff;--wp--preset--color--pale-pink: #f78da7;--wp--preset--color--vivid-red: #cf2e2e;--wp--preset--color--luminous-vivid-orange: #ff6900;--wp--preset--color--luminous-vivid-amber: #fcb900;--wp--preset--color--light-green-cyan: #7bdcb5;--wp--preset--color--vivid-green-cyan: #00d084;--wp--preset--color--pale-cyan-blue: #8ed1fc;--wp--preset--color--vivid-cyan-blue: #0693e3;--wp--preset--color--vivid-purple: #9b51e0;--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple: linear-gradient(135deg,rgb(6,147,227) 0%,rgb(155,81,224) 100%);--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan: linear-gradient(135deg,rgb(122,220,180) 0%,rgb(0,208,130) 100%);--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange: linear-gradient(135deg,rgb(252,185,0) 0%,rgb(255,105,0) 100%);--wp--preset--gradient--luminous-vivid-orange-to-vivid-red: linear-gradient(135deg,rgb(255,105,0) 0%,rgb(207,46,46) 100%);--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray: linear-gradient(135deg,rgb(238,238,238) 0%,rgb(169,184,195) 100%);--wp--preset--gradient--cool-to-warm-spectrum: linear-gradient(135deg,rgb(74,234,220) 0%,rgb(151,120,209) 20%,rgb(207,42,186) 40%,rgb(238,44,130) 60%,rgb(251,105,98) 80%,rgb(254,248,76) 100%);--wp--preset--gradient--blush-light-purple: linear-gradient(135deg,rgb(255,206,236) 0%,rgb(152,150,240) 100%);--wp--preset--gradient--blush-bordeaux: linear-gradient(135deg,rgb(254,205,165) 0%,rgb(254,45,45) 50%,rgb(107,0,62) 100%);--wp--preset--gradient--luminous-dusk: linear-gradient(135deg,rgb(255,203,112) 0%,rgb(199,81,192) 50%,rgb(65,88,208) 100%);--wp--preset--gradient--pale-ocean: linear-gradient(135deg,rgb(255,245,203) 0%,rgb(182,227,212) 50%,rgb(51,167,181) 100%);--wp--preset--gradient--electric-grass: linear-gradient(135deg,rgb(202,248,128) 0%,rgb(113,206,126) 100%);--wp--preset--gradient--midnight: linear-gradient(135deg,rgb(2,3,129) 0%,rgb(40,116,252) 100%);--wp--preset--font-size--small: 13px;--wp--preset--font-size--medium: 20px;--wp--preset--font-size--large: 36px;--wp--preset--font-size--x-large: 42px;--wp--preset--font-family--albert-sans: 'Albert Sans', sans-serif;--wp--preset--font-family--alegreya: Alegreya, serif;--wp--preset--font-family--arvo: Arvo, serif;--wp--preset--font-family--bodoni-moda: 'Bodoni Moda', serif;--wp--preset--font-family--bricolage-grotesque: 'Bricolage Grotesque', sans-serif;--wp--preset--font-family--cabin: Cabin, sans-serif;--wp--preset--font-family--chivo: Chivo, sans-serif;--wp--preset--font-family--commissioner: Commissioner, sans-serif;--wp--preset--font-family--cormorant: Cormorant, serif;--wp--preset--font-family--courier-prime: 'Courier Prime', monospace;--wp--preset--font-family--crimson-pro: 'Crimson Pro', serif;--wp--preset--font-family--dm-mono: 'DM Mono', monospace;--wp--preset--font-family--dm-sans: 'DM Sans', sans-serif;--wp--preset--font-family--dm-serif-display: 'DM Serif Display', serif;--wp--preset--font-family--domine: Domine, serif;--wp--preset--font-family--eb-garamond: 'EB Garamond', serif;--wp--preset--font-family--epilogue: Epilogue, sans-serif;--wp--preset--font-family--fahkwang: Fahkwang, sans-serif;--wp--preset--font-family--figtree: Figtree, sans-serif;--wp--preset--font-family--fira-sans: 'Fira Sans', sans-serif;--wp--preset--font-family--fjalla-one: 'Fjalla One', sans-serif;--wp--preset--font-family--fraunces: Fraunces, serif;--wp--preset--font-family--gabarito: Gabarito, system-ui;--wp--preset--font-family--ibm-plex-mono: 'IBM Plex Mono', monospace;--wp--preset--font-family--ibm-plex-sans: 'IBM Plex Sans', sans-serif;--wp--preset--font-family--ibarra-real-nova: 'Ibarra Real Nova', serif;--wp--preset--font-family--instrument-serif: 'Instrument Serif', serif;--wp--preset--font-family--inter: Inter, sans-serif;--wp--preset--font-family--josefin-sans: 'Josefin Sans', sans-serif;--wp--preset--font-family--jost: Jost, sans-serif;--wp--preset--font-family--libre-baskerville: 'Libre Baskerville', serif;--wp--preset--font-family--libre-franklin: 'Libre Franklin', sans-serif;--wp--preset--font-family--literata: Literata, serif;--wp--preset--font-family--lora: Lora, serif;--wp--preset--font-family--merriweather: Merriweather, serif;--wp--preset--font-family--montserrat: Montserrat, sans-serif;--wp--preset--font-family--newsreader: Newsreader, serif;--wp--preset--font-family--noto-sans-mono: 'Noto Sans Mono', sans-serif;--wp--preset--font-family--nunito: Nunito, sans-serif;--wp--preset--font-family--open-sans: 'Open Sans', sans-serif;--wp--preset--font-family--overpass: Overpass, sans-serif;--wp--preset--font-family--pt-serif: 'PT Serif', serif;--wp--preset--font-family--petrona: Petrona, serif;--wp--preset--font-family--piazzolla: Piazzolla, serif;--wp--preset--font-family--playfair-display: 'Playfair Display', serif;--wp--preset--font-family--plus-jakarta-sans: 'Plus Jakarta Sans', sans-serif;--wp--preset--font-family--poppins: Poppins, sans-serif;--wp--preset--font-family--raleway: Raleway, sans-serif;--wp--preset--font-family--roboto: Roboto, sans-serif;--wp--preset--font-family--roboto-slab: 'Roboto Slab', serif;--wp--preset--font-family--rubik: Rubik, sans-serif;--wp--preset--font-family--rufina: Rufina, serif;--wp--preset--font-family--sora: Sora, sans-serif;--wp--preset--font-family--source-sans-3: 'Source Sans 3', sans-serif;--wp--preset--font-family--source-serif-4: 'Source Serif 4', serif;--wp--preset--font-family--space-mono: 'Space Mono', monospace;--wp--preset--font-family--syne: Syne, sans-serif;--wp--preset--font-family--texturina: Texturina, serif;--wp--preset--font-family--urbanist: Urbanist, sans-serif;--wp--preset--font-family--work-sans: 'Work Sans', sans-serif;--wp--preset--spacing--20: 0.44rem;--wp--preset--spacing--30: 0.67rem;--wp--preset--spacing--40: 1rem;--wp--preset--spacing--50: 1.5rem;--wp--preset--spacing--60: 2.25rem;--wp--preset--spacing--70: 3.38rem;--wp--preset--spacing--80: 5.06rem;--wp--preset--shadow--natural: 6px 6px 9px rgba(0, 0, 0, 0.2);--wp--preset--shadow--deep: 12px 12px 50px rgba(0, 0, 0, 0.4);--wp--preset--shadow--sharp: 6px 6px 0px rgba(0, 0, 0, 0.2);--wp--preset--shadow--outlined: 6px 6px 0px -3px rgb(255, 255, 255), 6px 6px rgb(0, 0, 0);--wp--preset--shadow--crisp: 6px 6px 0px rgb(0, 0, 0);}.wp-block-button{--wp--preset--dimension--25: 25%;--wp--preset--dimension--50: 50%;--wp--preset--dimension--75: 75%;--wp--preset--dimension--100: 100%;}:where(body) { margin: 0; }:where(.is-layout-flex){gap: 0.5em;}:where(.is-layout-grid){gap: 0.5em;}body .is-layout-flex{display: flex;}.is-layout-flex{flex-wrap: wrap;align-items: center;}.is-layout-flex > :is(*, div){margin: 0;}body .is-layout-grid{display: grid;}.is-layout-grid > :is(*, div){margin: 0;}body{padding-top: 0px;padding-right: 0px;padding-bottom: 0px;padding-left: 0px;}:root :where(.wp-element-button, .wp-block-button__link){background-color: #32373c;border-width: 0;color: #fff;font-family: inherit;font-size: inherit;font-style: inherit;font-weight: inherit;letter-spacing: inherit;line-height: inherit;padding-top: calc(0.667em + 2px);padding-right: calc(1.333em + 2px);padding-bottom: calc(0.667em + 2px);padding-left: calc(1.333em + 2px);text-decoration: none;text-transform: inherit;}.has-black-color{color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-color{color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-color{color: var(--wp--preset--color--white) !important;}.has-pale-pink-color{color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-color{color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-color{color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-color{color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-color{color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-color{color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-color{color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-color{color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-color{color: var(--wp--preset--color--vivid-purple) !important;}.has-black-background-color{background-color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-background-color{background-color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-background-color{background-color: var(--wp--preset--color--white) !important;}.has-pale-pink-background-color{background-color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-background-color{background-color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-background-color{background-color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-background-color{background-color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-background-color{background-color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-background-color{background-color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-background-color{background-color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-background-color{background-color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-background-color{background-color: var(--wp--preset--color--vivid-purple) !important;}.has-black-border-color{border-color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-border-color{border-color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-border-color{border-color: var(--wp--preset--color--white) !important;}.has-pale-pink-border-color{border-color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-border-color{border-color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-border-color{border-color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-border-color{border-color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-border-color{border-color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-border-color{border-color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-border-color{border-color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-border-color{border-color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-border-color{border-color: var(--wp--preset--color--vivid-purple) !important;}.has-vivid-cyan-blue-to-vivid-purple-gradient-background{background: var(--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple) !important;}.has-light-green-cyan-to-vivid-green-cyan-gradient-background{background: var(--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan) !important;}.has-luminous-vivid-amber-to-luminous-vivid-orange-gradient-background{background: var(--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange) !important;}.has-luminous-vivid-orange-to-vivid-red-gradient-background{background: var(--wp--preset--gradient--luminous-vivid-orange-to-vivid-red) !important;}.has-very-light-gray-to-cyan-bluish-gray-gradient-background{background: var(--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray) !important;}.has-cool-to-warm-spectrum-gradient-background{background: var(--wp--preset--gradient--cool-to-warm-spectrum) !important;}.has-blush-light-purple-gradient-background{background: var(--wp--preset--gradient--blush-light-purple) !important;}.has-blush-bordeaux-gradient-background{background: var(--wp--preset--gradient--blush-bordeaux) !important;}.has-luminous-dusk-gradient-background{background: var(--wp--preset--gradient--luminous-dusk) !important;}.has-pale-ocean-gradient-background{background: var(--wp--preset--gradient--pale-ocean) !important;}.has-electric-grass-gradient-background{background: var(--wp--preset--gradient--electric-grass) !important;}.has-midnight-gradient-background{background: var(--wp--preset--gradient--midnight) !important;}.has-small-font-size{font-size: var(--wp--preset--font-size--small) !important;}.has-medium-font-size{font-size: var(--wp--preset--font-size--medium) !important;}.has-large-font-size{font-size: var(--wp--preset--font-size--large) !important;}.has-x-large-font-size{font-size: var(--wp--preset--font-size--x-large) !important;}.has-albert-sans-font-family{font-family: var(--wp--preset--font-family--albert-sans) !important;}.has-alegreya-font-family{font-family: var(--wp--preset--font-family--alegreya) !important;}.has-arvo-font-family{font-family: var(--wp--preset--font-family--arvo) !important;}.has-bodoni-moda-font-family{font-family: var(--wp--preset--font-family--bodoni-moda) !important;}.has-bricolage-grotesque-font-family{font-family: var(--wp--preset--font-family--bricolage-grotesque) !important;}.has-cabin-font-family{font-family: var(--wp--preset--font-family--cabin) !important;}.has-chivo-font-family{font-family: var(--wp--preset--font-family--chivo) !important;}.has-commissioner-font-family{font-family: var(--wp--preset--font-family--commissioner) !important;}.has-cormorant-font-family{font-family: var(--wp--preset--font-family--cormorant) !important;}.has-courier-prime-font-family{font-family: var(--wp--preset--font-family--courier-prime) !important;}.has-crimson-pro-font-family{font-family: var(--wp--preset--font-family--crimson-pro) !important;}.has-dm-mono-font-family{font-family: var(--wp--preset--font-family--dm-mono) !important;}.has-dm-sans-font-family{font-family: var(--wp--preset--font-family--dm-sans) !important;}.has-dm-serif-display-font-family{font-family: var(--wp--preset--font-family--dm-serif-display) !important;}.has-domine-font-family{font-family: var(--wp--preset--font-family--domine) !important;}.has-eb-garamond-font-family{font-family: var(--wp--preset--font-family--eb-garamond) !important;}.has-epilogue-font-family{font-family: var(--wp--preset--font-family--epilogue) !important;}.has-fahkwang-font-family{font-family: var(--wp--preset--font-family--fahkwang) !important;}.has-figtree-font-family{font-family: var(--wp--preset--font-family--figtree) !important;}.has-fira-sans-font-family{font-family: var(--wp--preset--font-family--fira-sans) !important;}.has-fjalla-one-font-family{font-family: var(--wp--preset--font-family--fjalla-one) !important;}.has-fraunces-font-family{font-family: var(--wp--preset--font-family--fraunces) !important;}.has-gabarito-font-family{font-family: var(--wp--preset--font-family--gabarito) !important;}.has-ibm-plex-mono-font-family{font-family: var(--wp--preset--font-family--ibm-plex-mono) !important;}.has-ibm-plex-sans-font-family{font-family: var(--wp--preset--font-family--ibm-plex-sans) !important;}.has-ibarra-real-nova-font-family{font-family: var(--wp--preset--font-family--ibarra-real-nova) !important;}.has-instrument-serif-font-family{font-family: var(--wp--preset--font-family--instrument-serif) !important;}.has-inter-font-family{font-family: var(--wp--preset--font-family--inter) !important;}.has-josefin-sans-font-family{font-family: var(--wp--preset--font-family--josefin-sans) !important;}.has-jost-font-family{font-family: var(--wp--preset--font-family--jost) !important;}.has-libre-baskerville-font-family{font-family: var(--wp--preset--font-family--libre-baskerville) !important;}.has-libre-franklin-font-family{font-family: var(--wp--preset--font-family--libre-franklin) !important;}.has-literata-font-family{font-family: var(--wp--preset--font-family--literata) !important;}.has-lora-font-family{font-family: var(--wp--preset--font-family--lora) !important;}.has-merriweather-font-family{font-family: var(--wp--preset--font-family--merriweather) !important;}.has-montserrat-font-family{font-family: var(--wp--preset--font-family--montserrat) !important;}.has-newsreader-font-family{font-family: var(--wp--preset--font-family--newsreader) !important;}.has-noto-sans-mono-font-family{font-family: var(--wp--preset--font-family--noto-sans-mono) !important;}.has-nunito-font-family{font-family: var(--wp--preset--font-family--nunito) !important;}.has-open-sans-font-family{font-family: var(--wp--preset--font-family--open-sans) !important;}.has-overpass-font-family{font-family: var(--wp--preset--font-family--overpass) !important;}.has-pt-serif-font-family{font-family: var(--wp--preset--font-family--pt-serif) !important;}.has-petrona-font-family{font-family: var(--wp--preset--font-family--petrona) !important;}.has-piazzolla-font-family{font-family: var(--wp--preset--font-family--piazzolla) !important;}.has-playfair-display-font-family{font-family: var(--wp--preset--font-family--playfair-display) !important;}.has-plus-jakarta-sans-font-family{font-family: var(--wp--preset--font-family--plus-jakarta-sans) !important;}.has-poppins-font-family{font-family: var(--wp--preset--font-family--poppins) !important;}.has-raleway-font-family{font-family: var(--wp--preset--font-family--raleway) !important;}.has-roboto-font-family{font-family: var(--wp--preset--font-family--roboto) !important;}.has-roboto-slab-font-family{font-family: var(--wp--preset--font-family--roboto-slab) !important;}.has-rubik-font-family{font-family: var(--wp--preset--font-family--rubik) !important;}.has-rufina-font-family{font-family: var(--wp--preset--font-family--rufina) !important;}.has-sora-font-family{font-family: var(--wp--preset--font-family--sora) !important;}.has-source-sans-3-font-family{font-family: var(--wp--preset--font-family--source-sans-3) !important;}.has-source-serif-4-font-family{font-family: var(--wp--preset--font-family--source-serif-4) !important;}.has-space-mono-font-family{font-family: var(--wp--preset--font-family--space-mono) !important;}.has-syne-font-family{font-family: var(--wp--preset--font-family--syne) !important;}.has-texturina-font-family{font-family: var(--wp--preset--font-family--texturina) !important;}.has-urbanist-font-family{font-family: var(--wp--preset--font-family--urbanist) !important;}.has-work-sans-font-family{font-family: var(--wp--preset--font-family--work-sans) !important;}
+/*# sourceURL=global-styles-inline-css */
+</style>
+
+<link crossorigin='anonymous' rel='stylesheet' id='all-css-14-1' href='/wp-content/mu-plugins/jetpack-mu-wpcom-plugin/sun/jetpack_vendor/automattic/jetpack-mu-wpcom/src/build/verbum-comments/verbum-comments.css?m=1785880900i&cssminify=yes' type='text/css' media='all' />
+<link rel='stylesheet' id='verbum-gutenberg-css-css' href='https://widgets.wp.com/verbum-block-editor/block-editor.css?ver=1771405207' media='all' />
+<link crossorigin='anonymous' rel='stylesheet' id='all-css-16-1' href='/wp-content/themes/pub/untitled/style.css?m=1741693348i&cssminify=yes' type='text/css' media='all' />
+<link rel='stylesheet' id='untitled-webfont-css' href='https://fonts-api.wp.com/css?family=Raleway:400,600|Arvo:400,700&#038;ver=7.1.1-alpha-63587' media='all' />
+<link crossorigin='anonymous' rel='stylesheet' id='all-css-18-1' href='/_static/??-eJx9jUEOwjAMBD+EsSoFAQfEW9rUDakcO6odledTlUu5cJuRdrS4VogqTuLoLypkWNuATTw704iz4cT0BuM80rLzF8/R7ISHujSo3FIWw4UG1rRhwm110H9RIgXW2HtW+RGYuM/737M8unC5h3C7dmH+ABo6RUk=&cssminify=yes' type='text/css' media='all' />
+<style id="jetpack-global-styles-frontend-style-inline-css">
+:root { --font-headings: unset; --font-base: unset; --font-headings-default: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif; --font-base-default: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif;}
+/*# sourceURL=jetpack-global-styles-frontend-style-inline-css */
+</style>
+<link crossorigin='anonymous' rel='stylesheet' id='all-css-20-1' href='/wp-content/themes/h4/global.css?m=1420737423i&cssminify=yes' type='text/css' media='all' />
+<script id="wpcom-actionbar-placeholder-js-extra">
+var actionbardata = {"siteID":"64718911","postID":"86","siteURL":"https://turnturnturnpdx.com","xhrURL":"https://turnturnturnpdx.com/wp-admin/admin-ajax.php","nonce":"f86642e316","isLoggedIn":"","statusMessage":"","subsEmailDefault":"instantly","proxyScriptUrl":"https://s0.wp.com/wp-content/js/wpcom-proxy-request.js?m=1513050504i&amp;ver=20211021","shortlink":"https://wp.me/P4nylp-1o","i18n":{"followedText":"New posts from this site will now appear in your \u003Ca href=\"https://wordpress.com/reader\"\u003EReader\u003C/a\u003E","foldBar":"Collapse this bar","unfoldBar":"Expand this bar","shortLinkCopied":"Shortlink copied to clipboard."}};
+//# sourceURL=wpcom-actionbar-placeholder-js-extra
+</script>
+<script id="jetpack-mu-wpcom-settings-js-before">
+var JETPACK_MU_WPCOM_SETTINGS = {"assetsUrl":"https://s1.wp.com/wp-content/mu-plugins/jetpack-mu-wpcom-plugin/sun/jetpack_vendor/automattic/jetpack-mu-wpcom/src/build/"};
+//# sourceURL=jetpack-mu-wpcom-settings-js-before
+</script>
+<script crossorigin='anonymous' type='text/javascript'  src='/_static/??-eJyNjUsOwjAMRC+E6wLit0CcBRoDjpI0OI5ob08iiMQOVh7NvPHgM8IwBqWgaBOKU4gyTnNn0wJLxmFw2VCqoX1kkvlzOs/hJwSeb3JW+obbmt7Jl0rMF8xBWR2Z2r86miA5NiRtqVpvB/7/03TBT/643K36zbrf7g/2BVY9WeA='></script>
+<script id="rlt-proxy-js-after">
+	rltInitialize( {"token":null,"iframeOrigins":["https:\/\/widgets.wp.com"]} );
+//# sourceURL=rlt-proxy-js-after
+</script>
+<link rel="EditURI" type="application/rsd+xml" title="RSD" href="https://turnturnturnpdx.wordpress.com/xmlrpc.php?rsd" />
+<meta name="generator" content="WordPress.com" />
+<link rel="canonical" href="https://turnturnturnpdx.com/entertainment/" />
+<link rel='shortlink' href='https://wp.me/P4nylp-1o' />
+<link rel="alternate" type="application/json+oembed" href="https://public-api.wordpress.com/oembed/?format=json&amp;url=https%3A%2F%2Fturnturnturnpdx.com%2Fentertainment%2F&amp;for=wpcom-auto-discovery" /><link rel="alternate" type="application/xml+oembed" href="https://public-api.wordpress.com/oembed/?format=xml&amp;url=https%3A%2F%2Fturnturnturnpdx.com%2Fentertainment%2F&amp;for=wpcom-auto-discovery" />
+<!-- Jetpack Open Graph Tags -->
+<meta property="og:type" content="article" />
+<meta property="og:title" content="LIVE!" />
+<meta property="og:url" content="https://turnturnturnpdx.com/entertainment/" />
+<meta property="og:description" content="Daytime events are All AgesDoors open 30 minutes before showtime After 8PM we are 21+All shows end by 11PM sharp (noise curfew)Admission is cash only at the door, advance tickets available belowBar…" />
+<meta property="article:published_time" content="2014-03-01T22:00:33+00:00" />
+<meta property="article:modified_time" content="2026-09-16T20:10:41+00:00" />
+<meta property="og:site_name" content="Turn! Turn! Turn!" />
+<meta property="og:image" content="https://i0.wp.com/turnturnturnpdx.com/wp-content/uploads/2014/02/barfull-e1393317609831.jpg?fit=1200%2C434&#038;ssl=1" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="434" />
+<meta property="og:image:alt" content="" />
+<meta property="og:locale" content="en_US" />
+<meta property="article:publisher" content="https://www.facebook.com/WordPresscom" />
+<meta name="twitter:text:title" content="LIVE!" />
+<meta name="twitter:image" content="https://i0.wp.com/turnturnturnpdx.com/wp-content/uploads/2014/02/barfull-e1393317609831.jpg?fit=1200%2C434&#038;ssl=1&#038;w=640" />
+<meta name="twitter:card" content="summary_large_image" />
+
+<!-- End Jetpack Open Graph Tags -->
+<link rel='openid.server' href='https://turnturnturnpdx.com/?openidserver=1' />
+<link rel='openid.delegate' href='https://turnturnturnpdx.com/' />
+<link rel="search" type="application/opensearchdescription+xml" href="https://turnturnturnpdx.com/osd.xml" title="Turn! Turn! Turn!" />
+<link rel="search" type="application/opensearchdescription+xml" href="https://s1.wp.com/opensearch.xml" title="WordPress.com" />
+<meta name="theme-color" content="#ffffff" />
+<meta name="description" content="Daytime events are All AgesDoors open 30 minutes before showtime After 8PM we are 21+All shows end by 11PM sharp (noise curfew)Admission is cash only at the door, advance tickets available belowBar accepts all payment types for food and beverages Recurring events at Turn! Turn! Turn! Every Friday 5-7 pm, FREE! Casual Friday happy hour&hellip;" />
+<link rel="icon" href="https://turnturnturnpdx.com/wp-content/uploads/2024/01/turn-raccoon500sq.jpg?w=32" sizes="32x32" />
+<link rel="icon" href="https://turnturnturnpdx.com/wp-content/uploads/2024/01/turn-raccoon500sq.jpg?w=192" sizes="192x192" />
+<link rel="apple-touch-icon" href="https://turnturnturnpdx.com/wp-content/uploads/2024/01/turn-raccoon500sq.jpg?w=180" />
+<meta name="msapplication-TileImage" content="https://turnturnturnpdx.com/wp-content/uploads/2024/01/turn-raccoon500sq.jpg?w=270" />
+			<link rel="stylesheet" id="custom-css-css" type="text/css" href="https://s0.wp.com/?custom-css=1&#038;csblog=4nylp&#038;cscache=6&#038;csrev=47" />
+			<link crossorigin='anonymous' rel='stylesheet' id='all-css-0-5' href='/_static/??-eJyNjMEKgzAQBX9IfVpq60X8lGLXRaLJJrhZ/P1SUM8eZxgGeyopSmbJCFYmb7MTxcI5jbQeDDXBxwnh6yOtCt1d4q0i1QK3ByFO5llB4xZN2V/NKf6/IfTNu2sfzbPuXssPrlM6pw==&cssminify=yes' type='text/css' media='all' />
+
+</head>
+
+<body class="wp-singular page-template-default page page-id-86 wp-theme-pubuntitled customizer-styles-applied jetpack-reblog-enabled">
+	<div id="page" class="hfeed site">
+				<div id="masthead-wrap">
+			<header id="masthead" class="site-header" role="banner">
+				<div id="logo">
+										<h1 class="site-title"><a href="https://turnturnturnpdx.com/" title="Turn! Turn! Turn!" rel="home">Turn! Turn! Turn!</a></h1>
+									</div>
+				<div class="nav-wrap">
+					<nav role="navigation" class="site-navigation main-navigation">
+						<h1 class="assistive-text">Menu</h1>
+						<div class="assistive-text skip-link"><a href="#content" title="Skip to content">Skip to content</a></div>
+
+						<div class="menu-top-menu-container"><ul id="menu-top-menu" class="menu"><li id="menu-item-4172" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-home menu-item-4172"><a href="https://turnturnturnpdx.com/">HOME</a></li>
+<li id="menu-item-4165" class="menu-item menu-item-type-post_type menu-item-object-page current-menu-item page_item page-item-86 current_page_item menu-item-4165"><a href="https://turnturnturnpdx.com/entertainment/" aria-current="page">LIVE!</a></li>
+<li id="menu-item-4163" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4163"><a href="https://turnturnturnpdx.com/beer/">DRINKS!</a></li>
+<li id="menu-item-4166" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4166"><a href="https://turnturnturnpdx.com/the-food/">EAT!</a></li>
+<li id="menu-item-4164" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4164"><a href="https://turnturnturnpdx.com/booking/">BOOKING</a></li>
+<li id="menu-item-4162" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4162"><a href="https://turnturnturnpdx.com/contact/">CONTACT</a></li>
+</ul></div>					</nav><!-- .site-navigation -->
+				</div><!-- .nav-wrap -->
+			</header><!-- #masthead -->
+		</div><!-- #masthead-wrap -->
+		<div class="singleimg"><img width="1224" height="400" src="https://turnturnturnpdx.com/wp-content/uploads/2014/02/barfull-e1393317609831.jpg?w=1224&amp;h=400&amp;crop=1" class="attachment-slider-img size-slider-img wp-post-image" alt="" decoding="async" srcset="https://turnturnturnpdx.com/wp-content/uploads/2014/02/barfull-e1393317609831.jpg?w=1224&amp;h=400&amp;crop=1 1224w, https://turnturnturnpdx.com/wp-content/uploads/2014/02/barfull-e1393317609831.jpg?w=150&amp;h=49&amp;crop=1 150w, https://turnturnturnpdx.com/wp-content/uploads/2014/02/barfull-e1393317609831.jpg?w=300&amp;h=98&amp;crop=1 300w, https://turnturnturnpdx.com/wp-content/uploads/2014/02/barfull-e1393317609831.jpg?w=768&amp;h=251&amp;crop=1 768w, https://turnturnturnpdx.com/wp-content/uploads/2014/02/barfull-e1393317609831.jpg?w=1024&amp;h=335&amp;crop=1 1024w" sizes="(max-width: 1224px) 100vw, 1224px" data-attachment-id="15" data-permalink="https://turnturnturnpdx.com/barfull/" data-orig-file="https://turnturnturnpdx.com/wp-content/uploads/2014/02/barfull-e1393317609831.jpg" data-orig-size="1224,443" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;}" data-image-title="barfull" data-image-description="" data-image-caption="" data-large-file="https://turnturnturnpdx.com/wp-content/uploads/2014/02/barfull-e1393317609831.jpg?w=700" /></div>
+	
+	<div id="main" class="site-main">
+		<div id="primary" class="content-area">
+			<div id="content" class="site-content" role="main">
+
+				
+<article id="post-86" class="post-86 page type-page status-publish has-post-thumbnail hentry post-thumb">
+	<header class="entry-header"><h1 class="page-title">LIVE!</h1></header><!-- .entry-header -->
+	<div class="entry-content">
+		
+<h2 class="wp-block-heading">Daytime events are All Ages<br>Doors open 30 minutes before showtime <br>After 8PM we are 21+<br>All shows end by 11PM sharp (noise curfew)<br>Admission is cash only at the door, advance tickets available below<br>Bar accepts all payment types for food and beverages<br></h2>
+
+
+
+<hr class="wp-block-separator has-alpha-channel-opacity" />
+
+
+
+<h2 class="wp-block-heading has-text-align-left">Recurring events at Turn! Turn! Turn!</h2>
+
+
+
+<p class="wp-block-paragraph"></p>
+
+
+
+<div class="wp-block-media-text is-stacked-on-mobile" style="grid-template-columns:37% auto"><figure class="wp-block-media-text__media"><img data-attachment-id="5305" data-permalink="https://turnturnturnpdx.com/about/casualfriday450-2/" data-orig-file="https://turnturnturnpdx.com/wp-content/uploads/2025/01/casualfriday450-1.jpg" data-orig-size="450,450" data-comments-opened="0" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;1&quot;}" data-image-title="casualfriday450" data-image-description="" data-image-caption="" data-large-file="https://turnturnturnpdx.com/wp-content/uploads/2025/01/casualfriday450-1.jpg?w=450" width="450" height="450" src="https://turnturnturnpdx.com/wp-content/uploads/2025/01/casualfriday450-1.jpg?w=450" alt="" class="wp-image-5305 size-full" srcset="https://turnturnturnpdx.com/wp-content/uploads/2025/01/casualfriday450-1.jpg 450w, https://turnturnturnpdx.com/wp-content/uploads/2025/01/casualfriday450-1.jpg?w=150 150w, https://turnturnturnpdx.com/wp-content/uploads/2025/01/casualfriday450-1.jpg?w=300 300w" sizes="(max-width: 450px) 100vw, 450px" /></figure><div class="wp-block-media-text__content">
+<p class="wp-block-paragraph"><strong>Every Friday 5-7 pm, FREE!</strong></p>
+
+
+
+<p class="wp-block-paragraph"><a href="https://www.instagram.com/loganloughmiller/" target="_blank" rel="noreferrer noopener"><mark style="background-color:rgba(0, 0, 0, 0)" class="has-inline-color has-vivid-cyan-blue-color">Casual Friday</mark></a> happy hour comedy open-mic, with host Logan Loughmiller!</p>
+</div></div>
+
+
+
+<div style="height:45px" aria-hidden="true" class="wp-block-spacer"></div>
+
+
+
+<div class="wp-block-media-text is-stacked-on-mobile" style="grid-template-columns:37% auto"><figure class="wp-block-media-text__media"><img data-attachment-id="5309" data-permalink="https://turnturnturnpdx.com/about/magicluscious450/" data-orig-file="https://turnturnturnpdx.com/wp-content/uploads/2025/01/magicluscious450.jpg" data-orig-size="450,450" data-comments-opened="0" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;1&quot;}" data-image-title="magicluscious450" data-image-description="" data-image-caption="" data-large-file="https://turnturnturnpdx.com/wp-content/uploads/2025/01/magicluscious450.jpg?w=450" width="450" height="450" src="https://turnturnturnpdx.com/wp-content/uploads/2025/01/magicluscious450.jpg?w=450" alt="" class="wp-image-5309 size-full" srcset="https://turnturnturnpdx.com/wp-content/uploads/2025/01/magicluscious450.jpg 450w, https://turnturnturnpdx.com/wp-content/uploads/2025/01/magicluscious450.jpg?w=150 150w, https://turnturnturnpdx.com/wp-content/uploads/2025/01/magicluscious450.jpg?w=300 300w" sizes="(max-width: 450px) 100vw, 450px" /></figure><div class="wp-block-media-text__content">
+<p class="wp-block-paragraph"><strong>First and third Mondays 2 &#8211; 4 pm, FREE!</strong></p>
+
+
+
+<p class="wp-block-paragraph"><a href="https://www.instagram.com/magic_luscious_spirit_sounds/" target="_blank" rel="noreferrer noopener"><mark style="background-color:rgba(0, 0, 0, 0)" class="has-inline-color has-vivid-cyan-blue-color">Magic Luscious Spirit Sounds</mark></a> collaborative cross-abilities music collective!</p>
+</div></div>
+
+
+
+<div style="height:45px" aria-hidden="true" class="wp-block-spacer"></div>
+
+
+
+<div class="wp-block-media-text is-stacked-on-mobile" style="grid-template-columns:37% auto"><figure class="wp-block-media-text__media"><img data-attachment-id="5311" data-permalink="https://turnturnturnpdx.com/about/ktellarryokee450/" data-orig-file="https://turnturnturnpdx.com/wp-content/uploads/2025/01/ktellarryokee450.jpg" data-orig-size="450,450" data-comments-opened="0" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;1&quot;}" data-image-title="ktellarryokee450" data-image-description="" data-image-caption="" data-large-file="https://turnturnturnpdx.com/wp-content/uploads/2025/01/ktellarryokee450.jpg?w=450" width="450" height="450" src="https://turnturnturnpdx.com/wp-content/uploads/2025/01/ktellarryokee450.jpg?w=450" alt="" class="wp-image-5311 size-full" srcset="https://turnturnturnpdx.com/wp-content/uploads/2025/01/ktellarryokee450.jpg 450w, https://turnturnturnpdx.com/wp-content/uploads/2025/01/ktellarryokee450.jpg?w=150 150w, https://turnturnturnpdx.com/wp-content/uploads/2025/01/ktellarryokee450.jpg?w=300 300w" sizes="(max-width: 450px) 100vw, 450px" /></figure><div class="wp-block-media-text__content">
+<p class="wp-block-paragraph"><strong>Monthly Rotating Monday 8-11 pm, FREE!</strong></p>
+
+
+
+<p class="wp-block-paragraph">Karaoke with master MC&#8217;s <a href="https://www.instagram.com/k_tel_and_larry_okee/" target="_blank" rel="noreferrer noopener"><mark style="background-color:rgba(0, 0, 0, 0)" class="has-inline-color has-vivid-cyan-blue-color">K-Tel and Larry-okee!</mark></a></p>
+</div></div>
+
+
+
+<div style="height:45px" aria-hidden="true" class="wp-block-spacer"></div>
+
+
+
+<div class="wp-block-media-text is-stacked-on-mobile" style="grid-template-columns:37% auto"><figure class="wp-block-media-text__media"><img data-attachment-id="5313" data-permalink="https://turnturnturnpdx.com/about/t34450/" data-orig-file="https://turnturnturnpdx.com/wp-content/uploads/2025/01/t34450.jpg" data-orig-size="450,450" data-comments-opened="0" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;1&quot;}" data-image-title="t34450" data-image-description="" data-image-caption="" data-large-file="https://turnturnturnpdx.com/wp-content/uploads/2025/01/t34450.jpg?w=450" loading="lazy" width="450" height="450" src="https://turnturnturnpdx.com/wp-content/uploads/2025/01/t34450.jpg?w=450" alt="" class="wp-image-5313 size-full" srcset="https://turnturnturnpdx.com/wp-content/uploads/2025/01/t34450.jpg 450w, https://turnturnturnpdx.com/wp-content/uploads/2025/01/t34450.jpg?w=150 150w, https://turnturnturnpdx.com/wp-content/uploads/2025/01/t34450.jpg?w=300 300w" sizes="auto, (max-width: 450px) 100vw, 450px" /></figure><div class="wp-block-media-text__content">
+<p class="wp-block-paragraph"><strong>Second and fourth Thursdays 4:30 &#8211; 7 pm, FREE!</strong></p>
+
+
+
+<p class="wp-block-paragraph">The T34, T3&#8217;s very own house jass quartet!</p>
+</div></div>
+
+
+
+<div style="height:45px" aria-hidden="true" class="wp-block-spacer"></div>
+
+
+
+<p class="wp-block-paragraph"></p>
+
+
+
+<p class="wp-block-paragraph"></p>
+
+
+
+<h1 class="wp-block-heading">Upcoming:</h1>
+
+
+
+<hr class="wp-block-separator has-alpha-channel-opacity" />
+
+
+
+<div class="wp-block-media-text is-stacked-on-mobile" style="grid-template-columns:43% auto"><figure class="wp-block-media-text__media"><a href="https://turnturnturnpdx.com/wp-content/uploads/2026/09/turn-9-16-flier.png"><img data-attachment-id="9284" data-permalink="https://turnturnturnpdx.com/entertainment/turn-9-16-flier/" data-orig-file="https://turnturnturnpdx.com/wp-content/uploads/2026/09/turn-9-16-flier.png" data-orig-size="1080,1350" data-comments-opened="0" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;,&quot;alt&quot;:&quot;&quot;}" data-image-title="turn 9-16 flier" data-image-description="" data-image-caption="" data-large-file="https://turnturnturnpdx.com/wp-content/uploads/2026/09/turn-9-16-flier.png?w=700" loading="lazy" width="819" height="1023" src="https://turnturnturnpdx.com/wp-content/uploads/2026/09/turn-9-16-flier.png?w=819" alt="" class="wp-image-9284 size-full" srcset="https://turnturnturnpdx.com/wp-content/uploads/2026/09/turn-9-16-flier.png?w=819 819w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/turn-9-16-flier.png?w=120 120w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/turn-9-16-flier.png?w=240 240w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/turn-9-16-flier.png?w=768 768w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/turn-9-16-flier.png 1080w" sizes="auto, (max-width: 819px) 100vw, 819px" /></a></figure><div class="wp-block-media-text__content">
+<p class="wp-block-paragraph">Wed, Sep 16</p>
+
+
+
+<p class="wp-block-paragraph">Shop Regulars, Camp Cataract (Sara Jaffe Solo), Chadwick Ferguson &#8220;Onomatopoetics&#8221;</p>
+
+
+
+<p class="wp-block-paragraph">8pm 21+ <br><br><a href="https://app.opendate.io/e/camp-cataract-sara-jaffe-solo-shop-regulars-chadwick-ferguson-onomatopoetics-september-16-2026-741834#tickets">Buy Tickets</a></p>
+</div></div>
+
+
+
+<hr class="wp-block-separator has-alpha-channel-opacity" />
+
+
+
+<div class="wp-block-media-text is-stacked-on-mobile" style="grid-template-columns:43% auto"><figure class="wp-block-media-text__media"><a href="https://turnturnturnpdx.com/wp-content/uploads/2026/08/screen-shot-2026-08-17-at-4.30.12-pm.png"><img data-attachment-id="9202" data-permalink="https://turnturnturnpdx.com/entertainment/screen-shot-2026-08-17-at-4-30-12-pm/" data-orig-file="https://turnturnturnpdx.com/wp-content/uploads/2026/08/screen-shot-2026-08-17-at-4.30.12-pm.png" data-orig-size="1250,1338" data-comments-opened="0" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;,&quot;alt&quot;:&quot;&quot;}" data-image-title="Screen Shot 2026-08-17 at 4.30.12 PM" data-image-description="" data-image-caption="" data-large-file="https://turnturnturnpdx.com/wp-content/uploads/2026/08/screen-shot-2026-08-17-at-4.30.12-pm.png?w=700" loading="lazy" width="957" height="1024" src="https://turnturnturnpdx.com/wp-content/uploads/2026/08/screen-shot-2026-08-17-at-4.30.12-pm.png?w=957" alt="" class="wp-image-9202 size-full" srcset="https://turnturnturnpdx.com/wp-content/uploads/2026/08/screen-shot-2026-08-17-at-4.30.12-pm.png?w=957 957w, https://turnturnturnpdx.com/wp-content/uploads/2026/08/screen-shot-2026-08-17-at-4.30.12-pm.png?w=140 140w, https://turnturnturnpdx.com/wp-content/uploads/2026/08/screen-shot-2026-08-17-at-4.30.12-pm.png?w=280 280w, https://turnturnturnpdx.com/wp-content/uploads/2026/08/screen-shot-2026-08-17-at-4.30.12-pm.png?w=768 768w, https://turnturnturnpdx.com/wp-content/uploads/2026/08/screen-shot-2026-08-17-at-4.30.12-pm.png 1250w" sizes="auto, (max-width: 957px) 100vw, 957px" /></a></figure><div class="wp-block-media-text__content">
+<p class="wp-block-paragraph"><br>Thur, Sep17<br><br>V1deoboy + DMN (music video premiere) + Fr3sh N3w H3ll<br><br>8PM 21+<br><br><a href="https://app.opendate.io/e/v1deoboy-dmn-music-video-premiere-fr3sh-n3w-h3ll-september-17-2026-734154#tickets">Buy Tickets</a></p>
+</div></div>
+
+
+
+<hr class="wp-block-separator has-alpha-channel-opacity" />
+
+
+
+<div class="wp-block-media-text is-stacked-on-mobile" style="grid-template-columns:43% auto"><figure class="wp-block-media-text__media"><a href="https://turnturnturnpdx.com/wp-content/uploads/2026/08/a1797921144_16.jpeg"><img data-attachment-id="9239" data-permalink="https://turnturnturnpdx.com/entertainment/a1797921144_16/" data-orig-file="https://turnturnturnpdx.com/wp-content/uploads/2026/08/a1797921144_16.jpeg" data-orig-size="700,700" data-comments-opened="0" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;,&quot;alt&quot;:&quot;&quot;}" data-image-title="a1797921144_16" data-image-description="" data-image-caption="" data-large-file="https://turnturnturnpdx.com/wp-content/uploads/2026/08/a1797921144_16.jpeg?w=700" loading="lazy" width="700" height="700" src="https://turnturnturnpdx.com/wp-content/uploads/2026/08/a1797921144_16.jpeg?w=700" alt="" class="wp-image-9239 size-full" srcset="https://turnturnturnpdx.com/wp-content/uploads/2026/08/a1797921144_16.jpeg 700w, https://turnturnturnpdx.com/wp-content/uploads/2026/08/a1797921144_16.jpeg?w=150 150w, https://turnturnturnpdx.com/wp-content/uploads/2026/08/a1797921144_16.jpeg?w=300 300w" sizes="auto, (max-width: 700px) 100vw, 700px" /></a></figure><div class="wp-block-media-text__content">
+<p class="wp-block-paragraph">Fri, Sep 18</p>
+
+
+
+<p class="wp-block-paragraph">REGULAR MUSIC + NICE NICE</p>
+
+
+
+<p class="wp-block-paragraph">8PM  21+<br><br><a href="https://www.lonelygodpdx.com/events/regular-music-nice-nice-earworm">Buy Tickets</a></p>
+</div></div>
+
+
+
+<hr class="wp-block-separator has-alpha-channel-opacity" />
+
+
+
+<div class="wp-block-media-text is-stacked-on-mobile" style="grid-template-columns:43% auto"><figure class="wp-block-media-text__media"><a href="https://turnturnturnpdx.com/wp-content/uploads/2026/08/screen-shot-2026-08-23-at-12.19.29-pm.png"><img data-attachment-id="9241" data-permalink="https://turnturnturnpdx.com/entertainment/screen-shot-2026-08-23-at-12-19-29-pm/" data-orig-file="https://turnturnturnpdx.com/wp-content/uploads/2026/08/screen-shot-2026-08-23-at-12.19.29-pm.png" data-orig-size="1326,920" data-comments-opened="0" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;,&quot;alt&quot;:&quot;&quot;}" data-image-title="Screen Shot 2026-08-23 at 12.19.29 PM" data-image-description="" data-image-caption="" data-large-file="https://turnturnturnpdx.com/wp-content/uploads/2026/08/screen-shot-2026-08-23-at-12.19.29-pm.png?w=700" loading="lazy" width="1024" height="710" src="https://turnturnturnpdx.com/wp-content/uploads/2026/08/screen-shot-2026-08-23-at-12.19.29-pm.png?w=1024" alt="" class="wp-image-9241 size-full" srcset="https://turnturnturnpdx.com/wp-content/uploads/2026/08/screen-shot-2026-08-23-at-12.19.29-pm.png?w=1024 1024w, https://turnturnturnpdx.com/wp-content/uploads/2026/08/screen-shot-2026-08-23-at-12.19.29-pm.png?w=150 150w, https://turnturnturnpdx.com/wp-content/uploads/2026/08/screen-shot-2026-08-23-at-12.19.29-pm.png?w=300 300w, https://turnturnturnpdx.com/wp-content/uploads/2026/08/screen-shot-2026-08-23-at-12.19.29-pm.png?w=768 768w, https://turnturnturnpdx.com/wp-content/uploads/2026/08/screen-shot-2026-08-23-at-12.19.29-pm.png 1326w" sizes="auto, (max-width: 1024px) 100vw, 1024px" /></a></figure><div class="wp-block-media-text__content">
+<p class="wp-block-paragraph">Sat, Sept 19<br><br>BRYAN APPLEBY + GARY V + PAYTON ROWE<br><br>8PM  21+<br><br><a href="https://www.lonelygodpdx.com/events/bryan-appleby-gary-v-payton-rowe">Buy Tickets</a></p>
+</div></div>
+
+
+
+<hr class="wp-block-separator has-alpha-channel-opacity" />
+
+
+
+<div class="wp-block-media-text is-stacked-on-mobile" style="grid-template-columns:43% auto"><figure class="wp-block-media-text__media"><a href="https://turnturnturnpdx.com/wp-content/uploads/2026/08/snapinsta.to_656309817_18196164865356812_7025110356623482503_n.jpg"><img data-attachment-id="9243" data-permalink="https://turnturnturnpdx.com/entertainment/snapinsta-to_656309817_18196164865356812_7025110356623482503_n/" data-orig-file="https://turnturnturnpdx.com/wp-content/uploads/2026/08/snapinsta.to_656309817_18196164865356812_7025110356623482503_n.jpg" data-orig-size="1440,1800" data-comments-opened="0" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;,&quot;alt&quot;:&quot;&quot;}" data-image-title="SnapInsta.to_656309817_18196164865356812_7025110356623482503_n" data-image-description="" data-image-caption="" data-large-file="https://turnturnturnpdx.com/wp-content/uploads/2026/08/snapinsta.to_656309817_18196164865356812_7025110356623482503_n.jpg?w=700" loading="lazy" width="819" height="1023" src="https://turnturnturnpdx.com/wp-content/uploads/2026/08/snapinsta.to_656309817_18196164865356812_7025110356623482503_n.jpg?w=819" alt="" class="wp-image-9243 size-full" srcset="https://turnturnturnpdx.com/wp-content/uploads/2026/08/snapinsta.to_656309817_18196164865356812_7025110356623482503_n.jpg?w=819 819w, https://turnturnturnpdx.com/wp-content/uploads/2026/08/snapinsta.to_656309817_18196164865356812_7025110356623482503_n.jpg?w=120 120w, https://turnturnturnpdx.com/wp-content/uploads/2026/08/snapinsta.to_656309817_18196164865356812_7025110356623482503_n.jpg?w=240 240w, https://turnturnturnpdx.com/wp-content/uploads/2026/08/snapinsta.to_656309817_18196164865356812_7025110356623482503_n.jpg?w=768 768w, https://turnturnturnpdx.com/wp-content/uploads/2026/08/snapinsta.to_656309817_18196164865356812_7025110356623482503_n.jpg 1440w" sizes="auto, (max-width: 819px) 100vw, 819px" /></a></figure><div class="wp-block-media-text__content">
+<p class="wp-block-paragraph">Sun, Sep 20<br><br><a href="https://www.lonelygodpdx.com/events/dean-the-dog-sawtooth-walkaway-wendies">Dean the Dog + Sawtooth + Walkaway Wendies</a></p>
+
+
+
+<p class="wp-block-paragraph">8PM  21+<br><br><a href="https://www.lonelygodpdx.com/events/dean-the-dog-sawtooth-walkaway-wendies">Buy Tickets</a></p>
+</div></div>
+
+
+
+<hr class="wp-block-separator has-alpha-channel-opacity" />
+
+
+
+<div class="wp-block-media-text is-stacked-on-mobile" style="grid-template-columns:43% auto"><figure class="wp-block-media-text__media"><a href="https://turnturnturnpdx.com/wp-content/uploads/2026/07/screen-shot-2026-07-18-at-9.41.11-pm.png"><img data-attachment-id="9114" data-permalink="https://turnturnturnpdx.com/entertainment/screen-shot-2026-07-18-at-9-41-11-pm/" data-orig-file="https://turnturnturnpdx.com/wp-content/uploads/2026/07/screen-shot-2026-07-18-at-9.41.11-pm.png" data-orig-size="846,970" data-comments-opened="0" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;,&quot;alt&quot;:&quot;&quot;}" data-image-title="Screen Shot 2026-07-18 at 9.41.11 PM" data-image-description="" data-image-caption="" data-large-file="https://turnturnturnpdx.com/wp-content/uploads/2026/07/screen-shot-2026-07-18-at-9.41.11-pm.png?w=700" loading="lazy" width="846" height="970" src="https://turnturnturnpdx.com/wp-content/uploads/2026/07/screen-shot-2026-07-18-at-9.41.11-pm.png?w=846" alt="" class="wp-image-9114 size-full" srcset="https://turnturnturnpdx.com/wp-content/uploads/2026/07/screen-shot-2026-07-18-at-9.41.11-pm.png 846w, https://turnturnturnpdx.com/wp-content/uploads/2026/07/screen-shot-2026-07-18-at-9.41.11-pm.png?w=131 131w, https://turnturnturnpdx.com/wp-content/uploads/2026/07/screen-shot-2026-07-18-at-9.41.11-pm.png?w=262 262w, https://turnturnturnpdx.com/wp-content/uploads/2026/07/screen-shot-2026-07-18-at-9.41.11-pm.png?w=768 768w" sizes="auto, (max-width: 846px) 100vw, 846px" /></a></figure><div class="wp-block-media-text__content">
+<p class="wp-block-paragraph">Mon, Sep 21<br><br><a href="https://www.lonelygodpdx.com/events/arch-cape-strawberry-hands-philly-jesse-moss-water-shrews-turn-turn-turn">Arch Cape + Strawberry Hands (Philly) + Jesse Moss &amp; Water Shrews</a><br><br>8PM  21+ <br><br><a href="https://www.lonelygodpdx.com/events/arch-cape-strawberry-hands-philly-jesse-moss-water-shrews-turn-turn-turn">Buy Tickets</a></p>
+</div></div>
+
+
+
+<hr class="wp-block-separator has-alpha-channel-opacity" />
+
+
+
+<div class="wp-block-media-text is-stacked-on-mobile" style="grid-template-columns:43% auto"><figure class="wp-block-media-text__media"><a href="https://turnturnturnpdx.com/wp-content/uploads/2026/07/screen-shot-2026-07-18-at-9.42.31-pm.png"><img data-attachment-id="9116" data-permalink="https://turnturnturnpdx.com/entertainment/screen-shot-2026-07-18-at-9-42-31-pm/" data-orig-file="https://turnturnturnpdx.com/wp-content/uploads/2026/07/screen-shot-2026-07-18-at-9.42.31-pm.png" data-orig-size="724,974" data-comments-opened="0" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;,&quot;alt&quot;:&quot;&quot;}" data-image-title="Screen Shot 2026-07-18 at 9.42.31 PM" data-image-description="" data-image-caption="" data-large-file="https://turnturnturnpdx.com/wp-content/uploads/2026/07/screen-shot-2026-07-18-at-9.42.31-pm.png?w=700" loading="lazy" width="724" height="974" src="https://turnturnturnpdx.com/wp-content/uploads/2026/07/screen-shot-2026-07-18-at-9.42.31-pm.png?w=724" alt="" class="wp-image-9116 size-full" srcset="https://turnturnturnpdx.com/wp-content/uploads/2026/07/screen-shot-2026-07-18-at-9.42.31-pm.png 724w, https://turnturnturnpdx.com/wp-content/uploads/2026/07/screen-shot-2026-07-18-at-9.42.31-pm.png?w=111 111w, https://turnturnturnpdx.com/wp-content/uploads/2026/07/screen-shot-2026-07-18-at-9.42.31-pm.png?w=223 223w" sizes="auto, (max-width: 724px) 100vw, 724px" /></a></figure><div class="wp-block-media-text__content">
+<p class="wp-block-paragraph">Tue, Sep 22<br><br>ERASER + COLLATE + ODOR EATER</p>
+
+
+
+<p class="wp-block-paragraph">8PM  21+ <br><br><a href="https://www.lonelygodpdx.com/events/eraser-collate-odor-eater-at-turn-turn-turn">Buy Tickets</a></p>
+</div></div>
+
+
+
+<hr class="wp-block-separator has-alpha-channel-opacity" />
+
+
+
+<div class="wp-block-media-text is-stacked-on-mobile" style="grid-template-columns:43% auto"><figure class="wp-block-media-text__media"><a href="https://turnturnturnpdx.com/wp-content/uploads/2026/08/screen-shot-2026-08-17-at-4.34.11-pm.png"><img data-attachment-id="9204" data-permalink="https://turnturnturnpdx.com/entertainment/screen-shot-2026-08-17-at-4-34-11-pm/" data-orig-file="https://turnturnturnpdx.com/wp-content/uploads/2026/08/screen-shot-2026-08-17-at-4.34.11-pm.png" data-orig-size="950,1018" data-comments-opened="0" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;,&quot;alt&quot;:&quot;&quot;}" data-image-title="Screen Shot 2026-08-17 at 4.34.11 PM" data-image-description="" data-image-caption="" data-large-file="https://turnturnturnpdx.com/wp-content/uploads/2026/08/screen-shot-2026-08-17-at-4.34.11-pm.png?w=700" loading="lazy" width="950" height="1018" src="https://turnturnturnpdx.com/wp-content/uploads/2026/08/screen-shot-2026-08-17-at-4.34.11-pm.png?w=950" alt="" class="wp-image-9204 size-full" srcset="https://turnturnturnpdx.com/wp-content/uploads/2026/08/screen-shot-2026-08-17-at-4.34.11-pm.png 950w, https://turnturnturnpdx.com/wp-content/uploads/2026/08/screen-shot-2026-08-17-at-4.34.11-pm.png?w=140 140w, https://turnturnturnpdx.com/wp-content/uploads/2026/08/screen-shot-2026-08-17-at-4.34.11-pm.png?w=280 280w, https://turnturnturnpdx.com/wp-content/uploads/2026/08/screen-shot-2026-08-17-at-4.34.11-pm.png?w=768 768w" sizes="auto, (max-width: 950px) 100vw, 950px" /></a></figure><div class="wp-block-media-text__content">
+<p class="wp-block-paragraph"><br>Wed, Sep 23<br><br>Devin Gray Trio (NYC/Berlin) feat. Mike Gamble &amp; Noah Simpson + Pacific Lumber + Wire<br><br>8PM 21+<br><br><a href="https://app.opendate.io/e/devin-gray-trio-nyc-berlin-feat-mike-gamble-noah-simpson-pacific-lumber-wire-september-23-2026-742124#tickets">Buy Tickets</a></p>
+</div></div>
+
+
+
+<hr class="wp-block-separator has-alpha-channel-opacity" />
+
+
+
+<div class="wp-block-media-text is-stacked-on-mobile" style="grid-template-columns:43% auto"><figure class="wp-block-media-text__media"><a href="https://turnturnturnpdx.com/wp-content/uploads/2026/09/screen-shot-2026-09-04-at-3.30.29-pm.png"><img data-attachment-id="9264" data-permalink="https://turnturnturnpdx.com/entertainment/screen-shot-2026-09-04-at-3-30-29-pm/" data-orig-file="https://turnturnturnpdx.com/wp-content/uploads/2026/09/screen-shot-2026-09-04-at-3.30.29-pm.png" data-orig-size="1060,630" data-comments-opened="0" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;,&quot;alt&quot;:&quot;&quot;}" data-image-title="Screen Shot 2026-09-04 at 3.30.29 PM" data-image-description="" data-image-caption="" data-large-file="https://turnturnturnpdx.com/wp-content/uploads/2026/09/screen-shot-2026-09-04-at-3.30.29-pm.png?w=700" loading="lazy" width="1024" height="608" src="https://turnturnturnpdx.com/wp-content/uploads/2026/09/screen-shot-2026-09-04-at-3.30.29-pm.png?w=1024" alt="" class="wp-image-9264 size-full" srcset="https://turnturnturnpdx.com/wp-content/uploads/2026/09/screen-shot-2026-09-04-at-3.30.29-pm.png?w=1024 1024w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/screen-shot-2026-09-04-at-3.30.29-pm.png?w=150 150w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/screen-shot-2026-09-04-at-3.30.29-pm.png?w=300 300w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/screen-shot-2026-09-04-at-3.30.29-pm.png?w=768 768w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/screen-shot-2026-09-04-at-3.30.29-pm.png 1060w" sizes="auto, (max-width: 1024px) 100vw, 1024px" /></a></figure><div class="wp-block-media-text__content">
+<p class="wp-block-paragraph">Thurs, Sep 24</p>
+
+
+
+<p class="wp-block-paragraph"><a href="https://www.lonelygodpdx.com/events/sonic-blossoms-morrison-graves-nite-hike">Sonic Blossoms + Morrison Graves + Nite Hike</a><br><br><a href="https://www.lonelygodpdx.com/events/sonic-blossoms-morrison-graves-nite-hike">Buy Tickets</a></p>
+</div></div>
+
+
+
+<hr class="wp-block-separator has-alpha-channel-opacity" />
+
+
+
+<div class="wp-block-media-text is-stacked-on-mobile" style="grid-template-columns:43% auto"><figure class="wp-block-media-text__media"><a href="https://turnturnturnpdx.com/wp-content/uploads/2026/08/images-1.jpeg"><img data-attachment-id="9209" data-permalink="https://turnturnturnpdx.com/entertainment/images-2/" data-orig-file="https://turnturnturnpdx.com/wp-content/uploads/2026/08/images-1.jpeg" data-orig-size="636,482" data-comments-opened="0" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;,&quot;alt&quot;:&quot;&quot;}" data-image-title="images" data-image-description="" data-image-caption="" data-large-file="https://turnturnturnpdx.com/wp-content/uploads/2026/08/images-1.jpeg?w=636" loading="lazy" width="636" height="482" src="https://turnturnturnpdx.com/wp-content/uploads/2026/08/images-1.jpeg?w=636" alt="" class="wp-image-9209 size-full" srcset="https://turnturnturnpdx.com/wp-content/uploads/2026/08/images-1.jpeg 636w, https://turnturnturnpdx.com/wp-content/uploads/2026/08/images-1.jpeg?w=150 150w, https://turnturnturnpdx.com/wp-content/uploads/2026/08/images-1.jpeg?w=300 300w" sizes="auto, (max-width: 636px) 100vw, 636px" /></a></figure><div class="wp-block-media-text__content">
+<p class="wp-block-paragraph">Fri, Sep 25</p>
+
+
+
+<p class="wp-block-paragraph">ORCHESTRA GOLD + LARRY YES</p>
+
+
+
+<p class="wp-block-paragraph">8PM 21+ <br><br><a href="https://www.lonelygodpdx.com/events/orchestra-gold-larry-yes/#checkout">Buy Tickets</a><br></p>
+</div></div>
+
+
+
+<hr class="wp-block-separator has-alpha-channel-opacity" />
+
+
+
+<div class="wp-block-media-text is-stacked-on-mobile" style="grid-template-columns:43% auto"><figure class="wp-block-media-text__media"><a href="https://turnturnturnpdx.com/wp-content/uploads/2026/08/474866628_986890200165747_5016831770224030128_n.jpeg"><img data-attachment-id="9247" data-permalink="https://turnturnturnpdx.com/entertainment/474866628_986890200165747_5016831770224030128_n/" data-orig-file="https://turnturnturnpdx.com/wp-content/uploads/2026/08/474866628_986890200165747_5016831770224030128_n.jpeg" data-orig-size="864,614" data-comments-opened="0" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;,&quot;alt&quot;:&quot;&quot;}" data-image-title="474866628_986890200165747_5016831770224030128_n" data-image-description="" data-image-caption="" data-large-file="https://turnturnturnpdx.com/wp-content/uploads/2026/08/474866628_986890200165747_5016831770224030128_n.jpeg?w=700" loading="lazy" width="864" height="614" src="https://turnturnturnpdx.com/wp-content/uploads/2026/08/474866628_986890200165747_5016831770224030128_n.jpeg?w=864" alt="" class="wp-image-9247 size-full" srcset="https://turnturnturnpdx.com/wp-content/uploads/2026/08/474866628_986890200165747_5016831770224030128_n.jpeg 864w, https://turnturnturnpdx.com/wp-content/uploads/2026/08/474866628_986890200165747_5016831770224030128_n.jpeg?w=150 150w, https://turnturnturnpdx.com/wp-content/uploads/2026/08/474866628_986890200165747_5016831770224030128_n.jpeg?w=300 300w, https://turnturnturnpdx.com/wp-content/uploads/2026/08/474866628_986890200165747_5016831770224030128_n.jpeg?w=768 768w" sizes="auto, (max-width: 864px) 100vw, 864px" /></a></figure><div class="wp-block-media-text__content">
+<p class="wp-block-paragraph">Sat, Sep 26<br><br><a href="https://www.lonelygodpdx.com/events/exceptional-failures-the-purrs-wolfpack-serenade">Exceptional Failures + The Purrs + Wolfpack Serenade</a><br><br>8PM  21+<br><br><a href="https://www.lonelygodpdx.com/events/exceptional-failures-the-purrs-wolfpack-serenade">Buy Tickets</a></p>
+</div></div>
+
+
+
+<hr class="wp-block-separator has-alpha-channel-opacity" />
+
+
+
+<div class="wp-block-media-text is-stacked-on-mobile" style="grid-template-columns:43% auto"><figure class="wp-block-media-text__media"><a href="https://turnturnturnpdx.com/wp-content/uploads/2026/09/screenshot_2026-09-07_at_7.22.12-pm-1.jpg"><img data-attachment-id="9289" data-permalink="https://turnturnturnpdx.com/entertainment/screenshot_2026-09-07_at_7-22-12-pm-1/" data-orig-file="https://turnturnturnpdx.com/wp-content/uploads/2026/09/screenshot_2026-09-07_at_7.22.12-pm-1.jpg" data-orig-size="1920,960" data-comments-opened="0" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;,&quot;alt&quot;:&quot;&quot;}" data-image-title="Screenshot_2026-09-07_at_7.22.12 PM (1)" data-image-description="" data-image-caption="" data-large-file="https://turnturnturnpdx.com/wp-content/uploads/2026/09/screenshot_2026-09-07_at_7.22.12-pm-1.jpg?w=700" loading="lazy" width="1024" height="512" src="https://turnturnturnpdx.com/wp-content/uploads/2026/09/screenshot_2026-09-07_at_7.22.12-pm-1.jpg?w=1024" alt="" class="wp-image-9289 size-full" srcset="https://turnturnturnpdx.com/wp-content/uploads/2026/09/screenshot_2026-09-07_at_7.22.12-pm-1.jpg?w=1024 1024w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/screenshot_2026-09-07_at_7.22.12-pm-1.jpg?w=150 150w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/screenshot_2026-09-07_at_7.22.12-pm-1.jpg?w=300 300w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/screenshot_2026-09-07_at_7.22.12-pm-1.jpg?w=768 768w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/screenshot_2026-09-07_at_7.22.12-pm-1.jpg?w=1440 1440w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/screenshot_2026-09-07_at_7.22.12-pm-1.jpg 1920w" sizes="auto, (max-width: 1024px) 100vw, 1024px" /></a></figure><div class="wp-block-media-text__content">
+<p class="wp-block-paragraph">Sun, Sep 27<br><br>Sea Moss, + Special Surprise Guests<br><br>8PM 21+<br><br><a href="https://www.lonelygodpdx.com/events/sea-moss-surprise-guests/#checkout">Buy Tickets</a></p>
+</div></div>
+
+
+
+<hr class="wp-block-separator has-alpha-channel-opacity" />
+
+
+
+<div class="wp-block-media-text is-stacked-on-mobile" style="grid-template-columns:43% auto"><figure class="wp-block-media-text__media"><a href="https://turnturnturnpdx.com/wp-content/uploads/2026/09/screenshot_2026-09-02_at_1.39.47-am.jpg"><img data-attachment-id="9267" data-permalink="https://turnturnturnpdx.com/entertainment/screenshot_2026-09-02_at_1-39-47-am/" data-orig-file="https://turnturnturnpdx.com/wp-content/uploads/2026/09/screenshot_2026-09-02_at_1.39.47-am.jpg" data-orig-size="1088,544" data-comments-opened="0" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;,&quot;alt&quot;:&quot;&quot;}" data-image-title="Screenshot_2026-09-02_at_1.39.47 AM" data-image-description="" data-image-caption="" data-large-file="https://turnturnturnpdx.com/wp-content/uploads/2026/09/screenshot_2026-09-02_at_1.39.47-am.jpg?w=700" loading="lazy" width="1024" height="512" src="https://turnturnturnpdx.com/wp-content/uploads/2026/09/screenshot_2026-09-02_at_1.39.47-am.jpg?w=1024" alt="" class="wp-image-9267 size-full" srcset="https://turnturnturnpdx.com/wp-content/uploads/2026/09/screenshot_2026-09-02_at_1.39.47-am.jpg?w=1024 1024w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/screenshot_2026-09-02_at_1.39.47-am.jpg?w=150 150w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/screenshot_2026-09-02_at_1.39.47-am.jpg?w=300 300w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/screenshot_2026-09-02_at_1.39.47-am.jpg?w=768 768w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/screenshot_2026-09-02_at_1.39.47-am.jpg 1088w" sizes="auto, (max-width: 1024px) 100vw, 1024px" /></a></figure><div class="wp-block-media-text__content">
+<p class="wp-block-paragraph">Mon, Sep 28<br><br><a href="https://www.lonelygodpdx.com/events/lexie-helgerson-wild-flowers-nate-wey">Lexie Helgerson + Wild Flowers + Nate Wey</a><br><br><a href="https://www.lonelygodpdx.com/events/lexie-helgerson-wild-flowers-nate-wey">Buy Tickets</a></p>
+</div></div>
+
+
+
+<hr class="wp-block-separator has-alpha-channel-opacity" />
+
+
+
+<div class="wp-block-media-text is-stacked-on-mobile" style="grid-template-columns:43% auto"><figure class="wp-block-media-text__media"><a href="https://turnturnturnpdx.com/wp-content/uploads/2026/08/screen-shot-2026-08-23-at-12.30.27-pm.png"><img data-attachment-id="9249" data-permalink="https://turnturnturnpdx.com/entertainment/screen-shot-2026-08-23-at-12-30-27-pm/" data-orig-file="https://turnturnturnpdx.com/wp-content/uploads/2026/08/screen-shot-2026-08-23-at-12.30.27-pm.png" data-orig-size="1342,1454" data-comments-opened="0" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;,&quot;alt&quot;:&quot;&quot;}" data-image-title="Screen Shot 2026-08-23 at 12.30.27 PM" data-image-description="" data-image-caption="" data-large-file="https://turnturnturnpdx.com/wp-content/uploads/2026/08/screen-shot-2026-08-23-at-12.30.27-pm.png?w=700" loading="lazy" width="945" height="1023" src="https://turnturnturnpdx.com/wp-content/uploads/2026/08/screen-shot-2026-08-23-at-12.30.27-pm.png?w=945" alt="" class="wp-image-9249 size-full" srcset="https://turnturnturnpdx.com/wp-content/uploads/2026/08/screen-shot-2026-08-23-at-12.30.27-pm.png?w=945 945w, https://turnturnturnpdx.com/wp-content/uploads/2026/08/screen-shot-2026-08-23-at-12.30.27-pm.png?w=138 138w, https://turnturnturnpdx.com/wp-content/uploads/2026/08/screen-shot-2026-08-23-at-12.30.27-pm.png?w=277 277w, https://turnturnturnpdx.com/wp-content/uploads/2026/08/screen-shot-2026-08-23-at-12.30.27-pm.png?w=768 768w, https://turnturnturnpdx.com/wp-content/uploads/2026/08/screen-shot-2026-08-23-at-12.30.27-pm.png 1342w" sizes="auto, (max-width: 945px) 100vw, 945px" /></a></figure><div class="wp-block-media-text__content">
+<p class="wp-block-paragraph">Wed, Sep 30<br><br><a href="https://www.lonelygodpdx.com/events/johnny-bell-josh-moss-lucas-gunn-nate-wallace">Johnny Bell + Josh Moss + Lucas Gunn + Nate Wallace</a><br><br>8PM  21+</p>
+</div></div>
+
+
+
+<hr class="wp-block-separator has-alpha-channel-opacity" />
+
+
+
+<div class="wp-block-media-text is-stacked-on-mobile" style="grid-template-columns:43% auto"><figure class="wp-block-media-text__media"><a href="https://turnturnturnpdx.com/wp-content/uploads/2026/08/snapinsta.to_523502529_18522539173024892_2035220320650975460_n.jpg"><img data-attachment-id="9254" data-permalink="https://turnturnturnpdx.com/entertainment/snapinsta-to_523502529_18522539173024892_2035220320650975460_n/" data-orig-file="https://turnturnturnpdx.com/wp-content/uploads/2026/08/snapinsta.to_523502529_18522539173024892_2035220320650975460_n.jpg" data-orig-size="1440,1800" data-comments-opened="0" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;,&quot;alt&quot;:&quot;&quot;}" data-image-title="SnapInsta.to_523502529_18522539173024892_2035220320650975460_n" data-image-description="" data-image-caption="" data-large-file="https://turnturnturnpdx.com/wp-content/uploads/2026/08/snapinsta.to_523502529_18522539173024892_2035220320650975460_n.jpg?w=700" loading="lazy" width="819" height="1023" src="https://turnturnturnpdx.com/wp-content/uploads/2026/08/snapinsta.to_523502529_18522539173024892_2035220320650975460_n.jpg?w=819" alt="" class="wp-image-9254 size-full" srcset="https://turnturnturnpdx.com/wp-content/uploads/2026/08/snapinsta.to_523502529_18522539173024892_2035220320650975460_n.jpg?w=819 819w, https://turnturnturnpdx.com/wp-content/uploads/2026/08/snapinsta.to_523502529_18522539173024892_2035220320650975460_n.jpg?w=120 120w, https://turnturnturnpdx.com/wp-content/uploads/2026/08/snapinsta.to_523502529_18522539173024892_2035220320650975460_n.jpg?w=240 240w, https://turnturnturnpdx.com/wp-content/uploads/2026/08/snapinsta.to_523502529_18522539173024892_2035220320650975460_n.jpg?w=768 768w, https://turnturnturnpdx.com/wp-content/uploads/2026/08/snapinsta.to_523502529_18522539173024892_2035220320650975460_n.jpg 1440w" sizes="auto, (max-width: 819px) 100vw, 819px" /></a></figure><div class="wp-block-media-text__content">
+<p class="wp-block-paragraph">Fri, Oct 2<br><br><a href="https://www.lonelygodpdx.com/events/tricky-fm-dwelling-unit-piggy-bank-snakey-dublay">Tricky FM + Dwelling Unit + Piggy Bank + Snakey Dublay</a></p>
+
+
+
+<p class="wp-block-paragraph">8PM  21+<br><br><a href="https://www.lonelygodpdx.com/events/tricky-fm-dwelling-unit-piggy-bank-snakey-dublay">Buy Tickets</a></p>
+</div></div>
+
+
+
+<hr class="wp-block-separator has-alpha-channel-opacity" />
+
+
+
+<div class="wp-block-media-text is-stacked-on-mobile" style="grid-template-columns:43% auto"><figure class="wp-block-media-text__media"><a href="https://turnturnturnpdx.com/wp-content/uploads/2026/09/open-uri20260803-878-6tdezv.jpeg"><img data-attachment-id="9272" data-permalink="https://turnturnturnpdx.com/entertainment/open-uri20260803-878-6tdezv/" data-orig-file="https://turnturnturnpdx.com/wp-content/uploads/2026/09/open-uri20260803-878-6tdezv.jpeg" data-orig-size="1296,648" data-comments-opened="0" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;,&quot;alt&quot;:&quot;&quot;}" data-image-title="open-uri20260803-878-6tdezv" data-image-description="" data-image-caption="" data-large-file="https://turnturnturnpdx.com/wp-content/uploads/2026/09/open-uri20260803-878-6tdezv.jpeg?w=700" loading="lazy" width="1024" height="512" src="https://turnturnturnpdx.com/wp-content/uploads/2026/09/open-uri20260803-878-6tdezv.jpeg?w=1024" alt="" class="wp-image-9272 size-full" srcset="https://turnturnturnpdx.com/wp-content/uploads/2026/09/open-uri20260803-878-6tdezv.jpeg?w=1024 1024w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/open-uri20260803-878-6tdezv.jpeg?w=150 150w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/open-uri20260803-878-6tdezv.jpeg?w=300 300w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/open-uri20260803-878-6tdezv.jpeg?w=768 768w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/open-uri20260803-878-6tdezv.jpeg 1296w" sizes="auto, (max-width: 1024px) 100vw, 1024px" /></a></figure><div class="wp-block-media-text__content">
+<p class="wp-block-paragraph">Sun, Oct 4<br><br><a href="https://www.lonelygodpdx.com/events/megagonefree-at-turn-turn-turn">MegaGoneFree + LIVT</a><br><br>4PM 21+<br><br><a href="https://www.lonelygodpdx.com/events/megagonefree-at-turn-turn-turn">Buy Tickets</a></p>
+</div></div>
+
+
+
+<hr class="wp-block-separator has-alpha-channel-opacity" />
+
+
+
+<div class="wp-block-media-text is-stacked-on-mobile" style="grid-template-columns:43% auto"><figure class="wp-block-media-text__media"><a href="https://turnturnturnpdx.com/wp-content/uploads/2026/09/screenshot_2026-09-06_at_5.23.07-pm.jpg"><img data-attachment-id="9292" data-permalink="https://turnturnturnpdx.com/entertainment/screenshot_2026-09-06_at_5-23-07-pm/" data-orig-file="https://turnturnturnpdx.com/wp-content/uploads/2026/09/screenshot_2026-09-06_at_5.23.07-pm.jpg" data-orig-size="1330,665" data-comments-opened="0" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;,&quot;alt&quot;:&quot;&quot;}" data-image-title="Screenshot_2026-09-06_at_5.23.07 PM" data-image-description="" data-image-caption="" data-large-file="https://turnturnturnpdx.com/wp-content/uploads/2026/09/screenshot_2026-09-06_at_5.23.07-pm.jpg?w=700" loading="lazy" width="1024" height="512" src="https://turnturnturnpdx.com/wp-content/uploads/2026/09/screenshot_2026-09-06_at_5.23.07-pm.jpg?w=1024" alt="" class="wp-image-9292 size-full" srcset="https://turnturnturnpdx.com/wp-content/uploads/2026/09/screenshot_2026-09-06_at_5.23.07-pm.jpg?w=1024 1024w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/screenshot_2026-09-06_at_5.23.07-pm.jpg?w=150 150w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/screenshot_2026-09-06_at_5.23.07-pm.jpg?w=300 300w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/screenshot_2026-09-06_at_5.23.07-pm.jpg?w=768 768w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/screenshot_2026-09-06_at_5.23.07-pm.jpg 1330w" sizes="auto, (max-width: 1024px) 100vw, 1024px" /></a></figure><div class="wp-block-media-text__content">
+<h3 class="wp-block-heading">Sat, Oct 10<br><br>Davey Bones + Isle Decide + Susurrus Station</h3>
+
+
+
+<p class="wp-block-paragraph">8PM  21+</p>
+
+
+
+<p class="wp-block-paragraph"><a href="https://www.lonelygodpdx.com/events/davey-bones-isle-decide-susurrus-station/">Buy Tickets</a></p>
+</div></div>
+
+
+
+<hr class="wp-block-separator has-alpha-channel-opacity" />
+
+
+
+<div class="wp-block-media-text is-stacked-on-mobile" style="grid-template-columns:43% auto"><figure class="wp-block-media-text__media"><a href="https://turnturnturnpdx.com/wp-content/uploads/2026/09/screen-shot-2026-09-04-at-3.37.56-pm.png"><img data-attachment-id="9274" data-permalink="https://turnturnturnpdx.com/entertainment/screen-shot-2026-09-04-at-3-37-56-pm/" data-orig-file="https://turnturnturnpdx.com/wp-content/uploads/2026/09/screen-shot-2026-09-04-at-3.37.56-pm.png" data-orig-size="1128,706" data-comments-opened="0" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;,&quot;alt&quot;:&quot;&quot;}" data-image-title="Screen Shot 2026-09-04 at 3.37.56 PM" data-image-description="" data-image-caption="" data-large-file="https://turnturnturnpdx.com/wp-content/uploads/2026/09/screen-shot-2026-09-04-at-3.37.56-pm.png?w=700" loading="lazy" width="1024" height="640" src="https://turnturnturnpdx.com/wp-content/uploads/2026/09/screen-shot-2026-09-04-at-3.37.56-pm.png?w=1024" alt="" class="wp-image-9274 size-full" srcset="https://turnturnturnpdx.com/wp-content/uploads/2026/09/screen-shot-2026-09-04-at-3.37.56-pm.png?w=1024 1024w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/screen-shot-2026-09-04-at-3.37.56-pm.png?w=150 150w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/screen-shot-2026-09-04-at-3.37.56-pm.png?w=300 300w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/screen-shot-2026-09-04-at-3.37.56-pm.png?w=768 768w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/screen-shot-2026-09-04-at-3.37.56-pm.png 1128w" sizes="auto, (max-width: 1024px) 100vw, 1024px" /></a></figure><div class="wp-block-media-text__content">
+<p class="wp-block-paragraph">Tues, Oct 20<br><br><a href="https://www.lonelygodpdx.com/events/the-crooked-rugs-worry-wart-chandler-trey-johnson-at-turn-turn-turn">The Crooked Rugs + Worry Wart + Chandler Trey Johnson</a><br><br>8PM 21+<br><br><a href="https://www.lonelygodpdx.com/events/the-crooked-rugs-worry-wart-chandler-trey-johnson-at-turn-turn-turn">Buy Tickets</a></p>
+</div></div>
+
+
+
+<hr class="wp-block-separator has-alpha-channel-opacity" />
+
+
+
+<div class="wp-block-media-text is-stacked-on-mobile" style="grid-template-columns:43% auto"><figure class="wp-block-media-text__media"><a href="https://turnturnturnpdx.com/wp-content/uploads/2026/09/0042927938_10.jpeg"><img data-attachment-id="9294" data-permalink="https://turnturnturnpdx.com/entertainment/0042927938_10/" data-orig-file="https://turnturnturnpdx.com/wp-content/uploads/2026/09/0042927938_10.jpeg" data-orig-size="1200,600" data-comments-opened="0" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;,&quot;alt&quot;:&quot;&quot;}" data-image-title="0042927938_10" data-image-description="" data-image-caption="" data-large-file="https://turnturnturnpdx.com/wp-content/uploads/2026/09/0042927938_10.jpeg?w=700" loading="lazy" width="1024" height="512" src="https://turnturnturnpdx.com/wp-content/uploads/2026/09/0042927938_10.jpeg?w=1024" alt="" class="wp-image-9294 size-full" srcset="https://turnturnturnpdx.com/wp-content/uploads/2026/09/0042927938_10.jpeg?w=1024 1024w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/0042927938_10.jpeg?w=150 150w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/0042927938_10.jpeg?w=300 300w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/0042927938_10.jpeg?w=768 768w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/0042927938_10.jpeg 1200w" sizes="auto, (max-width: 1024px) 100vw, 1024px" /></a></figure><div class="wp-block-media-text__content">
+<p class="wp-block-paragraph">Thurs, Oct 22<br><br><a href="https://www.lonelygodpdx.com/events/imaad-wasif-ilyas-ahmed-tispur">Imaad Wasif + Ilyas Ahmed + Tispur</a><br><br>8PM  21+<br><br><a href="https://www.lonelygodpdx.com/events/imaad-wasif-ilyas-ahmed-tispur/">Buy Tickets</a></p>
+</div></div>
+
+
+
+<hr class="wp-block-separator has-alpha-channel-opacity" />
+
+
+
+<div class="wp-block-media-text is-stacked-on-mobile" style="grid-template-columns:43% auto"><figure class="wp-block-media-text__media"><a href="https://turnturnturnpdx.com/wp-content/uploads/2026/09/img_0135.jpeg"><img data-attachment-id="9276" data-permalink="https://turnturnturnpdx.com/entertainment/img_0135/" data-orig-file="https://turnturnturnpdx.com/wp-content/uploads/2026/09/img_0135.jpeg" data-orig-size="2160,1080" data-comments-opened="0" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;,&quot;alt&quot;:&quot;&quot;}" data-image-title="IMG_0135" data-image-description="" data-image-caption="" data-large-file="https://turnturnturnpdx.com/wp-content/uploads/2026/09/img_0135.jpeg?w=700" loading="lazy" width="1024" height="512" src="https://turnturnturnpdx.com/wp-content/uploads/2026/09/img_0135.jpeg?w=1024" alt="" class="wp-image-9276 size-full" srcset="https://turnturnturnpdx.com/wp-content/uploads/2026/09/img_0135.jpeg?w=1024 1024w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/img_0135.jpeg?w=2048 2048w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/img_0135.jpeg?w=150 150w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/img_0135.jpeg?w=300 300w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/img_0135.jpeg?w=768 768w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/img_0135.jpeg?w=1440 1440w" sizes="auto, (max-width: 1024px) 100vw, 1024px" /></a></figure><div class="wp-block-media-text__content">
+<p class="wp-block-paragraph">Wed, Oct 28<br><br><a href="https://www.lonelygodpdx.com/events/cormae-combobox">CorMae + Combobox</a></p>
+
+
+
+<p class="wp-block-paragraph">8PM 21+<br><br><a href="https://www.lonelygodpdx.com/events/cormae-combobox">Buy Tickets</a></p>
+</div></div>
+
+
+
+<hr class="wp-block-separator has-alpha-channel-opacity" />
+
+
+
+<hr class="wp-block-separator has-alpha-channel-opacity" />
+
+
+
+<div class="wp-block-media-text is-stacked-on-mobile" style="grid-template-columns:43% auto"><figure class="wp-block-media-text__media"><a href="https://turnturnturnpdx.com/wp-content/uploads/2026/09/csm_david_bowie_ohl-019112_ausschnitt_f62904d43f.jpeg"><img data-attachment-id="9280" data-permalink="https://turnturnturnpdx.com/entertainment/csm_david_bowie_ohl-019112_ausschnitt_f62904d43f/" data-orig-file="https://turnturnturnpdx.com/wp-content/uploads/2026/09/csm_david_bowie_ohl-019112_ausschnitt_f62904d43f.jpeg" data-orig-size="998,499" data-comments-opened="0" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;,&quot;alt&quot;:&quot;&quot;}" data-image-title="csm_david_bowie_ohl-019112_ausschnitt_f62904d43f" data-image-description="" data-image-caption="" data-large-file="https://turnturnturnpdx.com/wp-content/uploads/2026/09/csm_david_bowie_ohl-019112_ausschnitt_f62904d43f.jpeg?w=700" loading="lazy" width="998" height="499" src="https://turnturnturnpdx.com/wp-content/uploads/2026/09/csm_david_bowie_ohl-019112_ausschnitt_f62904d43f.jpeg?w=998" alt="" class="wp-image-9280 size-full" srcset="https://turnturnturnpdx.com/wp-content/uploads/2026/09/csm_david_bowie_ohl-019112_ausschnitt_f62904d43f.jpeg 998w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/csm_david_bowie_ohl-019112_ausschnitt_f62904d43f.jpeg?w=150 150w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/csm_david_bowie_ohl-019112_ausschnitt_f62904d43f.jpeg?w=300 300w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/csm_david_bowie_ohl-019112_ausschnitt_f62904d43f.jpeg?w=768 768w" sizes="auto, (max-width: 998px) 100vw, 998px" /></a></figure><div class="wp-block-media-text__content">
+<p class="wp-block-paragraph">Fri, Oct 30<br><br><a href="https://www.lonelygodpdx.com/events/boys-keep-swing-friends">Boys Keep Swinging + Friends</a><br><br>8PM 21+</p>
+
+
+
+<p class="wp-block-paragraph"><a href="https://www.lonelygodpdx.com/events/boys-keep-swing-friends">Buy Tickets</a></p>
+</div></div>
+
+
+
+<hr class="wp-block-separator has-alpha-channel-opacity" />
+
+
+
+<div class="wp-block-media-text is-stacked-on-mobile" style="grid-template-columns:43% auto"><figure class="wp-block-media-text__media"><a href="https://turnturnturnpdx.com/wp-content/uploads/2026/09/1435836273.jpeg"><img data-attachment-id="9297" data-permalink="https://turnturnturnpdx.com/entertainment/attachment/1435836273/" data-orig-file="https://turnturnturnpdx.com/wp-content/uploads/2026/09/1435836273.jpeg" data-orig-size="2160,1080" data-comments-opened="0" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;,&quot;alt&quot;:&quot;&quot;}" data-image-title="1435836273" data-image-description="" data-image-caption="" data-large-file="https://turnturnturnpdx.com/wp-content/uploads/2026/09/1435836273.jpeg?w=700" loading="lazy" width="1024" height="512" src="https://turnturnturnpdx.com/wp-content/uploads/2026/09/1435836273.jpeg?w=1024" alt="" class="wp-image-9297 size-full" srcset="https://turnturnturnpdx.com/wp-content/uploads/2026/09/1435836273.jpeg?w=1024 1024w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/1435836273.jpeg?w=2048 2048w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/1435836273.jpeg?w=150 150w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/1435836273.jpeg?w=300 300w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/1435836273.jpeg?w=768 768w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/1435836273.jpeg?w=1440 1440w" sizes="auto, (max-width: 1024px) 100vw, 1024px" /></a></figure><div class="wp-block-media-text__content">
+<p class="wp-block-paragraph">Sat, Oct 31<br><br><a href="https://www.lonelygodpdx.com/events/the-ghoulfriends-supergroup-benefit-for-the-ukulele-project">The Ghoulfriends&#8217; Supergroup (benefit for The Ukulele Project)</a></p>
+
+
+
+<p class="wp-block-paragraph">4PM All Ages<br><br><a href="https://www.lonelygodpdx.com/events/the-ghoulfriends-supergroup-benefit-for-the-ukulele-project/#checkout">Buy Tickets</a></p>
+</div></div>
+
+
+
+<div class="wp-block-media-text is-stacked-on-mobile" style="grid-template-columns:43% auto"><figure class="wp-block-media-text__media"><a href="https://turnturnturnpdx.com/wp-content/uploads/2026/09/1000017210.jpeg"><img data-attachment-id="9299" data-permalink="https://turnturnturnpdx.com/entertainment/attachment/1000017210/" data-orig-file="https://turnturnturnpdx.com/wp-content/uploads/2026/09/1000017210.jpeg" data-orig-size="2000,1000" data-comments-opened="0" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;,&quot;alt&quot;:&quot;&quot;}" data-image-title="1000017210" data-image-description="" data-image-caption="" data-large-file="https://turnturnturnpdx.com/wp-content/uploads/2026/09/1000017210.jpeg?w=700" loading="lazy" width="1024" height="512" src="https://turnturnturnpdx.com/wp-content/uploads/2026/09/1000017210.jpeg?w=1024" alt="" class="wp-image-9299 size-full" srcset="https://turnturnturnpdx.com/wp-content/uploads/2026/09/1000017210.jpeg?w=1024 1024w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/1000017210.jpeg?w=150 150w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/1000017210.jpeg?w=300 300w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/1000017210.jpeg?w=768 768w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/1000017210.jpeg?w=1440 1440w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/1000017210.jpeg 2000w" sizes="auto, (max-width: 1024px) 100vw, 1024px" /></a></figure><div class="wp-block-media-text__content">
+<p class="wp-block-paragraph">Sat, Oct 31</p>
+
+
+
+<h3 class="wp-block-heading">is this really HALLOWEEN? w/ Surgery Season + Golem Pink + Cassie Candles &amp; the Cocker Spaniels + Koa Koala (Tacoma)</h3>
+
+
+
+<p class="wp-block-paragraph">8PM  21+<br><br><a href="https://www.lonelygodpdx.com/events/is-this-really-halloween-w-surgery-season-golem-pink-cassie-candles-the-cocker-spaniels-koa-koala-tacoma">Buy Tickets<strong> </strong></a></p>
+</div></div>
+
+
+
+<hr class="wp-block-separator has-alpha-channel-opacity" />
+
+
+
+<div class="wp-block-media-text is-stacked-on-mobile" style="grid-template-columns:43% auto"><figure class="wp-block-media-text__media"><a href="https://turnturnturnpdx.com/wp-content/uploads/2026/09/eric_silverman_by_pearl_mathilde_martin-eagle_hmm-909_crop.jpeg"><img data-attachment-id="9301" data-permalink="https://turnturnturnpdx.com/entertainment/eric_silverman_by_pearl_mathilde_martin-eagle_hmm-909_crop/" data-orig-file="https://turnturnturnpdx.com/wp-content/uploads/2026/09/eric_silverman_by_pearl_mathilde_martin-eagle_hmm-909_crop.jpeg" data-orig-size="2160,1080" data-comments-opened="0" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;,&quot;alt&quot;:&quot;&quot;}" data-image-title="Eric_Silverman_by_Pearl_Mathilde_Martin-Eagle_HMM-909_crop" data-image-description="" data-image-caption="" data-large-file="https://turnturnturnpdx.com/wp-content/uploads/2026/09/eric_silverman_by_pearl_mathilde_martin-eagle_hmm-909_crop.jpeg?w=700" loading="lazy" width="1024" height="512" src="https://turnturnturnpdx.com/wp-content/uploads/2026/09/eric_silverman_by_pearl_mathilde_martin-eagle_hmm-909_crop.jpeg?w=1024" alt="" class="wp-image-9301 size-full" srcset="https://turnturnturnpdx.com/wp-content/uploads/2026/09/eric_silverman_by_pearl_mathilde_martin-eagle_hmm-909_crop.jpeg?w=1024 1024w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/eric_silverman_by_pearl_mathilde_martin-eagle_hmm-909_crop.jpeg?w=2048 2048w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/eric_silverman_by_pearl_mathilde_martin-eagle_hmm-909_crop.jpeg?w=150 150w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/eric_silverman_by_pearl_mathilde_martin-eagle_hmm-909_crop.jpeg?w=300 300w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/eric_silverman_by_pearl_mathilde_martin-eagle_hmm-909_crop.jpeg?w=768 768w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/eric_silverman_by_pearl_mathilde_martin-eagle_hmm-909_crop.jpeg?w=1440 1440w" sizes="auto, (max-width: 1024px) 100vw, 1024px" /></a></figure><div class="wp-block-media-text__content">
+<p class="wp-block-paragraph"><a href="https://www.lonelygodpdx.com/events/eric-silverman-sam-plecker">Eric Silverman + Sam Plecker</a><br><br>8PM  21+</p>
+
+
+
+<p class="wp-block-paragraph"><a href="https://www.lonelygodpdx.com/events/eric-silverman-sam-plecker/">Buy Tickets</a></p>
+</div></div>
+
+
+
+<hr class="wp-block-separator has-alpha-channel-opacity" />
+
+
+
+<div class="wp-block-media-text is-stacked-on-mobile" style="grid-template-columns:43% auto"><figure class="wp-block-media-text__media"><a href="https://turnturnturnpdx.com/wp-content/uploads/2026/09/open-uri20260714-651-4jbdno.jpeg"><img data-attachment-id="9303" data-permalink="https://turnturnturnpdx.com/entertainment/open-uri20260714-651-4jbdno/" data-orig-file="https://turnturnturnpdx.com/wp-content/uploads/2026/09/open-uri20260714-651-4jbdno.jpeg" data-orig-size="1278,639" data-comments-opened="0" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;,&quot;alt&quot;:&quot;&quot;}" data-image-title="open-uri20260714-651-4jbdno" data-image-description="" data-image-caption="" data-large-file="https://turnturnturnpdx.com/wp-content/uploads/2026/09/open-uri20260714-651-4jbdno.jpeg?w=700" loading="lazy" width="1024" height="512" src="https://turnturnturnpdx.com/wp-content/uploads/2026/09/open-uri20260714-651-4jbdno.jpeg?w=1024" alt="" class="wp-image-9303 size-full" srcset="https://turnturnturnpdx.com/wp-content/uploads/2026/09/open-uri20260714-651-4jbdno.jpeg?w=1024 1024w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/open-uri20260714-651-4jbdno.jpeg?w=150 150w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/open-uri20260714-651-4jbdno.jpeg?w=300 300w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/open-uri20260714-651-4jbdno.jpeg?w=768 768w, https://turnturnturnpdx.com/wp-content/uploads/2026/09/open-uri20260714-651-4jbdno.jpeg 1278w" sizes="auto, (max-width: 1024px) 100vw, 1024px" /></a></figure><div class="wp-block-media-text__content">
+<p class="wp-block-paragraph">Sat, Nov 14<br><br>Elanor Moss + Bob Desaulniers <br><br>8PM 21+ $20</p>
+
+
+
+<p class="wp-block-paragraph"><a href="https://www.lonelygodpdx.com/events/elanor-moss-turn-turn-turn">Buy Tickets</a></p>
+</div></div>
+
+
+
+<hr class="wp-block-separator has-alpha-channel-opacity" />
+
+
+
+<div style="height:35px" aria-hidden="true" class="wp-block-spacer"></div>
+
+
+
+<h2 class="wp-block-heading"><strong>T3 EVENTS FAQ</strong></h2>
+
+
+
+<p class="wp-block-paragraph"><strong>How much is tonight’s show?</strong> <br><br>Turn! Turn! Turn! promotes a Do-It-Yourself esthetic. We ask that performers build their own bills, set the price for the event, and decide on the money split. We believe this approach helps promote a music-community mindset, rather than a venue/performer divide. Generally, most shows cost $10-$20, while no one will be turned away due to lack of funds.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>How much do the bands make at Turn!?</strong></p>
+
+
+
+<p class="wp-block-paragraph">Performers take home the bulk of the door money. The more you give at the door, the more the bands get! After paying the door person, the rest of the proceeds go to the performers.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>Can I pay with a credit card/phone/subdermal micro-chip?</strong></p>
+
+
+
+<p class="wp-block-paragraph">Admission to the event is cash only at the doors. However, you can purchase advance tickets at the link for each event. This makes it easy for us to pass the money directly to the performers at the end of the event. There are ATMs within walking distance of the venue.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>What about my beer and pizza?</strong></p>
+
+
+
+<p class="wp-block-paragraph">The bar accepts all payment types for food and drink. This is how the venue covers ALL of its operating expenses. The more regularly you eat and drink at Turn!, the more likely we will still be here doing this for you next year!</p>
+
+
+
+<p class="wp-block-paragraph">With love and gratitude, we hope this FAQ has been illuminating.</p>
+
+
+
+<p class="wp-block-paragraph">Thanks for reading!</p>
+
+
+
+<p class="wp-block-paragraph">XO!T3</p>
+
+
+
+<hr class="wp-block-separator has-alpha-channel-opacity" />
+
+
+
+<figure class="wp-block-image size-large"><a href="https://turnturnturnpdx.com/wp-content/uploads/2023/11/t3-remember-seriously-real.jpg"><img data-attachment-id="3877" data-permalink="https://turnturnturnpdx.com/entertainment/t3-remember-seriously-real/" data-orig-file="https://turnturnturnpdx.com/wp-content/uploads/2023/11/t3-remember-seriously-real.jpg" data-orig-size="1000,741" data-comments-opened="0" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="t3-remember-seriously-real" data-image-description="" data-image-caption="" data-large-file="https://turnturnturnpdx.com/wp-content/uploads/2023/11/t3-remember-seriously-real.jpg?w=700" loading="lazy" width="1000" height="741" src="https://turnturnturnpdx.com/wp-content/uploads/2023/11/t3-remember-seriously-real.jpg?w=1000" alt="" class="wp-image-3877" srcset="https://turnturnturnpdx.com/wp-content/uploads/2023/11/t3-remember-seriously-real.jpg 1000w, https://turnturnturnpdx.com/wp-content/uploads/2023/11/t3-remember-seriously-real.jpg?w=150 150w, https://turnturnturnpdx.com/wp-content/uploads/2023/11/t3-remember-seriously-real.jpg?w=300 300w, https://turnturnturnpdx.com/wp-content/uploads/2023/11/t3-remember-seriously-real.jpg?w=768 768w" sizes="auto, (max-width: 1000px) 100vw, 1000px" /></a></figure>
+
+
+
+<p class="wp-block-paragraph"><strong>PAST PERFORMERS:<br></strong><strong>Sad Horse, Pendejo, Thee Headliners, Marisa Anderson, Kelly Blair Bauman, Donald Beaman &amp; the Spirit Molecules, Mike Coykendall, The Bugs, Grand Style Orchestra, The Go Round, Grand Lake Islands, Dan Leif, White Shark, Spectrum Control, Raphi Gottesman, Awkward Energy, Inebriati, Tyrants, Palo Verde, DRC3, Flash Flood &amp; the Dikes, Human Behavior, Magisterial, The Baron Robber, Chelsea Appel, Old Barn Preservation Society, Floorboards, Old Light, The Very Least, Deer Lodge All-Stars, James Rabbit, Spencer Owen, Ocean Floor, The Shivas, Ruby Pins, Silver Shadows, Chuck Johnson, Spectrum Control, Alvarius B, Lana Rebel, Jernigan, 75 Dollar Bill, Park Details Band, Peter Kolovos, Musk, Piss Test, Cyclops, The Happening, Whales Whailing, Healersss, Sir Richard Bishop, Pendejo, Hearts and Tigers, Cotton, Raymond Anderson, Ave Grave, Nyx, Maurice Spencer, Darkswoon, Stephen Steinbrink, Ever Ending Kicks, Half Shadow, Michael Wohl, Derek Monypeny, Early Atoms, Audios AMigos, Jenny Don&#8217;t &amp; the SPurs, Sam Coomes, Impulsive Machinations, Spectrum Control, William Z Villain, Trick Sensei, Bunnymilk, Mananero, The Gutters, White Glove, Plastic Harmony Band, Bam Bam, Eureka California, Blind Lovejoy, Hosmanek, Superluminous, Archangels Thunderbird, The Rebs, Hungry Ghost, Dramady, Sam Humans, OK Vancouver OK, Quttinirpaaq, Jagula, Bitchin Bajas, Pulse Emitter, Kingdom of Smoth, Holographs, Crow Kane, Hungry Cloud Darkening, Sister Palace, Lost Creek, The Resolectrics, Jordannah Elizabeth, The Teas, Cloud City Cars, Ethernet, DeLyria, Kendall Station, The Saxophones, Jeremy Lee Faulkner, Mojave Bird, Brumes, Chrome Mole Monocle, Okrhana, Michael Hurley, Hearts of Oak, Old Barn Preservation Society, RLLRBLL, The Tenses, Brandon Conway, ALTO!, Sleeptalker, Post Moves, Little Star, Chung Antique, Moon Debris, The Dovecotes, Brogan Woodburn, The Crenshaw, Samantha Boshnack Quintet, Get Smashing Love Power, Sleeping Beauties, Tunnels, Jock Wurms, Not Bitter, Seth Nehill, Wishes, Fera, Zoe Sundra, Sunbathe, Dusty Santamaria &amp; the Singing Knives, JT Halmfilst, The Cedar Shakes, Lox, Mazen Kerbaj, Love/Fuck, Skin Lies, Charlie Slick, Aux. 78, DMONI, Big Feelings, Thousand Arrows, Fountainsun, Reggae 90210, Botborg, Consumer, Sea Charms, Bokros, The Woolen Men, MSHR, Christopher Gavazza, Malachi Graham, Benny Gilbert, Seth King, Roselit Bone, That Coyote, Cult Choir, Larry Yess, Ray Talley Band, Mall Walker, Coppice, Joda Clement &amp; Mathieu Ruhlman, Seth Nehill &amp; Kelly Rauer, Ingenting Kollektiva, Catherine Lee &amp; Matt Hannafin, Lee Elderton &amp; Grant Pierce, Folding Chairs, Jordan Anderson, The Verner Pantons, Sharks From Mars, Kybele, Girls in Trouble, Cynthia Nelson, Sex and Insects, Matthew Lindley, Ryan Sollee, Hawkins Wright, G. Green, Landlines, The Wimps, Bricks, Goodwin, Ken Ollis/Dan Gaynor/John Savage, ASSS, Caustic Touch, William Hart, Gravelroad, Honk Kong Banana, The Adulteration, Bob Bucko Jr., Ali Muhareb, Ghost to Falco, Sam Densmore Damsensmore, When We Met, Motel Lights, Crush Hazard, The Phantom Ships, Sister Mamie Foreskin, Machete Order, Michael Gerard Levasseur, Taylor Kingman, Arlt, Arrington de Dionysio, Shelley Short, Daniel Menche, John Haughm, Mikah Sykes, Felix Hatfield, Mafu Williams, Clinton Killingsworth, Liquid Light, Giant Bug Village, Magpies, Thandiwe Shiprah &amp; Daniel Arite, John Savage &amp; Claudia Savage, Mike Elias, Darrin Craig, Spare Arrow, Guilded, Ian Christiansen Quartet, Cedar Teeth, Lowlight, Ali Ippolito, Mouth Painter, M. Akers, Kyle Landstra, Ant&#8217;lrd, the Colin Trio, Hearts Gone South, Faxes, Fashion Club, Darkwraith Covenant, Autopilot Is for Lovers, Deer Souls, Lord Master, Coconino, Client, The Debts, Mount Joy, I Am the Lake of Fire, Color-Coder, Bombay Beach, No Phone, Zach Bryson, Dusty Boots, Cartridge, Mike Gamble, Matthew Zeltzer, Nick Peet, Bob Bures, The Welfare State, Pinehurst Kids, Safari Club, Jean Chalant, No Grave, Jesse Robison, The Golden Country, Dusty Santamaria, One Zero Street, King Ghidora, Maremoto, Chris Brokaw, Geoff Soule, Sustentacula, Prime Meridian, John Krausbauer, Brown, Failings, Bad Luck, Theoretical Planets, Astral Pork Display, Eddy Detroit, Teleporter 4, Fletcher Tucker, Dedrick Clark &amp; The Social Animals, The Reverberations, The Furies, Death Cat, Doug Detrick, The Toads, Antelopers, Shed Incorporated, Smogboss, Strange Wool, Wet Trident, Comfort Zone, Uncool Niece, Shoeshine Blue, Dr. Something, Animal Throat, Manx, Wow and Flutter, The Lavender Flu, Sleeping Beauties, Stephanie Lavon Trotter, Dolphin Midwives. John Shepski, Daniel Sharon, Casting Circles, Dark Swoon, Laura Palmer&#8217;s Death Parade, No Aloha, Adieu Caribou, Naked Hour, Sonsabitches, The Needs, Ryan A. Miller, I&#8217;d Rather Not Talk About It (Holland Andrews), Paurl Walsh &amp; Joshua Medina, I.M. Jones, Jesse R. Berlin, Hands In, Moondrake, Grand Head, Thee Last Go Round, Panting, Waver Clamor Bellow, Is/Is, Diners, Dad Works Hard, Surf Stoned and the Sun Drunx, Dana Buoy, Pale, LeMove, Waffle Taco, Alan Bowen, Yankee Gaucho, WL, Media Jeweller, Branch Walker, Ointment, Toyboat Toyboat Toyboat, Voodoo Voltage, The Pink Tiles, Mister Tang, Damn! Rich Halley/Dan Clucas/Carson Halley/Andre St. James, Catfish, Mandarin Dynasty, Mommy Long Legs, Golden Hour, The Gompers, The Skinks, Butcher Cover, Alto!, Vocanic Pynnacles, Faxes, Stevhen Peters, Richie Woods, Rabbits, Panzer Beat, Seismic Retrofit, Clawfoot Slumber, Shawn Trail, Sick Lion, Body Has No Head, The Minders, Niilo Smeds, Honus Huffhines, Lagoon Squad, Magnetic Health Factory, Marmits, Solipsists, Oro Azoro, 2&#215;2, Almost Dark, Peter Broderick, Branic Howard, Quadraphonnes + Andrew Durkin, Wiener Kids, Pat Meth, Ryan Meagher, Grant Richards/David Valdez Group, Hailey Holden &amp; Erik Clampitt, Gabrielle Macrae, Tate Peterson, Country Trash, An American Forest, Dream Tigers, Doug Theriault, Alex Callenberger, Mizuuchi/Wada/Henguchi Trio,&nbsp;John Gross/Reed Walsmith/Andre St. James/Tim DuRoche, Blind J Wakins, Doug Shafer, Brian McEvoy, Wolflaut, Haley Elizabeth, Witch Pop Choir, Tonality Star, The OO-Ray, Apartment Fox. Obsolete, Aboriginal Flowers, Ben Seretan, Weather Exposed, Jesse Hughey, Dark Palms, Sweeping Exits, Jacob Zimmerman/Ryan Beckley, Sun Machine, Tommy Alexander, Old Junior, John Sutherland, Paper Gates, Little Man Child, Bardo:Basho, Invisible City, Cosmic Butter, Vegetable Revival Project, Weak Knights, The Nervous, Sex Crime, Suicide Notes, Paradise, Disenchanter, Mammoth Salmon, Indira Valey, Toxic Slime, Jeff Witscher, Contact, Born in A Car, Dragging an Ox through Water, Gravy, Niilo Smeds, Diminished Men, A Certain Smile, Sea Fuzz, Eugene Chadbourne, The Prids, Puppy Breath, Tweaker Sneakers, Barbara Manning&#8217;s Birthday Suit, The Dead White, Nick Peets, Michael Jodell, Leroy Jerome and the Professionals, Dirty Whips, Kulululu, Lord Becky, Gooo, James Curry IV, Endless Rivers, Offret, Class M Planets, Hornet Leg, Ronnie Haines, Hunter Seeker, Swoon, Jason Urick, The North Wind, Top Parts, Death List, Grapefruit, The New Carissa, Cherry Ice Cream Smile, Fairytale Stereotypes, Death By Thumb, Jeremy Fama, Lukas Borsten, Bad Assets, Dyslexics The, Marc &amp; Tawny, Kurt Kotheimer, Carlos Whisper, Lisa Schoenberg &amp; Ally Clarys, Desert of Hiatus, Alex Salcido, Bobby Peru, Lithics, Numbered, 2 Jazz 2 Furiouz, Pete LaMalfa Trio, Blind Swords, Agents of Ekko, Body Academics, Cockeye, HUMAN, Year of the Coyote, RILLA, Zeb Dewar, Sons of Guns, Exacerbators, The Night, Hot Won&#8217;t Quit, Amos Val, Coastlands, Alex Pinto Heath Kit, Kelli Schaefer, Future Moocher, Sheers, Marcy&#8217;s Band, Survival Skills, Secret Drum Band, Galaxy Research, Lone Elder, Drunken Palms, Cool American, Stein, Three Sigma, Tsepesch, Ice Princess, Bryan Smith Group, Bill Orcutt, Barry Alan Walker, The Century, Arlo Indigo, The Exorcists, Spirit Host, John Gnorski, Gregory The Hawk, Havania Whaal, Dr. Identity, St. Even, John Kelley, The Monkeys, Subdomination Quartet, The Bad Habits, Bren&#8217;t Lewiis Ensemble, The Gods Themselves, Paleons, Cambrian Explosion, Monica Drake, Vanessa Veselka, Max Gordon, Crude Thumb, Gorgon Stare, Chronoclops, Painted Zeros, Izzy True, Astor Quintet, Christian Pincock, Lewi Longmire, Steve Wilkinson, Sneaky Bones, Ovando, Stereo No Aware, Future Machine, Ifsh, Ben Glas &amp; Joseph Wells, Mutt, Lee Allstar, Tiger Bomb!, Noah Simpson Group, Ings, The Light and the Weight, Haunted Head, Ex-Debs, Bloodtypes, The Tanked, Alma Freer, Junianna Lanning, Gordon Ashworth, Appalachian Yard Art, Butterfly, The Other Band On Earth, Necklace, Matt Norman, Airport, Two Moons, Dry Heathen, Painted Debris, Honey Bucket, Gourmet, Mister Seahorse, Casual Boyfriend, Keeper Keeper, John Gross Trio, Holy Motors, Richard Meltzer, Karl Blau, Isaac Pierce, Blowout, Soar, Alien Boy, Kela Parker, Valerie Indira, The Furrow, Wild English, Sinless, Wave Action, Rust Promoter, Young Hound, Talc, Fasala, Ape Cave, Daisy Deaths, Wreckless Eric, Conformity Contortion, Tiny Matters, Peter Ryan, Joel Medina, Dead Men Talking, The American West, Ellis Pink, Little Pilgrims, Faith Twain, Blind Swords, Sorta Ultra, U Sco, Barrows, Sol, Dead Tenant, Mondegreen, Shannon Entropy, Halfbird, The Sky Is A Suitcase, Naomi Moon Siegel, Modern Ass Jazz Singers, Lil Peso, Sallo, Survival Guide, Darkest Moons, Starover Blue, Hart &amp; Hare, Salvo Idly, Small Million, Grex, Bubble Cats, Young Elk, Bobey, Feral Friend, Erin Tobey, Weird Cactus, Fur Coats, Reptalians, Dim Wit, Kelly Asebroek, Sean O&#8217;Neill, Humours, Huger, Owner, Bullets or Balloons, Comfort Zone, The Maybe Knot, Hot Club of Hawthorne, Heavy Sunsets, Ghost Frog, Rambush, Mark E. Deutsch, Jessica Dennison &amp; Jones, The Chair Project, The Whole Wide World, Tyler M. King &amp; the Decades, Jooklo Zappa, Inconjunct, Dan Phelps, Cerberus, Peter Rainbeau, Old Unconscious, Sound Underground, Blue Nectarines, Cash Pony, Dreckig, The Lovely Lost, Lucas Biespiel and the Dangerous Gentlemen, Ezra Bell, Livy Connor, Amenta Abioto, Elton Cray, Tony Barba, Tricapitate, Kevin Hufnagel, Ron Varod, Dr. Amazon, Stunning Rayguns, Ilyas Ahmed, Sarah Louise, Itasca, Tony Dutcher, Wett Nurse, Misery Men, Stoner, Trumans Water, Sunny and Share, Dreams, Voices, Ovvn, Fussy, Coordination, Takahira Yamamoto &amp; Shin Kawasaki, Glasys, The Secret Sea, Annabelle Lord Patey, Matt Minigell, Rentz Leinbach, Focus Focus, Rob Millis, Rich Russell, Long River, Ancient Elk, Generifus, Kiyasu, Uneasy Chairs, Fiasco, Crimson Alter, Demon&#8217;s Bell, Lavender Country, The Late Great, Hollow Sidewalks, Bohr, Stoller, Dan Dan, Pee Yew, Pastel Felt, Clover, Pony Village, Silver Medal, Bevelers, Maurice and the Stiff Sisters, Aubrey Debauchery, Trujillo, Six Pack City, Atomic Candles, Millennial Falcon, Group Hug?, Prison Dress, Bushmen&#8217;s Revenge, Loveboys, Splash, OrdinaChestra, The Mighty Missoula, Avalanche Lily, The Conquerors, No La La, New Modern Warfare, Soft Paws, Pat Kearns, The Zags, Sasha Bell Band, Tatsuya Nakatani, Madelyn Villano, Kelly Pratt, Similar Fashion, Bonepocket, Lubec, Versing, Riled, Vacilando, Supercrow, Andy Fitts, Derrik Phillips and Jeff Porter, Angie Fritz and Danny Lee, Moaning, Fake Fireplaces, Joshua Emory Blatchley, Tigers on Opium, Law Boss, Pushy, Lil Weepy, Western Heartthrobs, Because, Cardioid, Ras Mix, Ergot Rye, Friends in Love, Hex Vision, Kyle Parisi, Lady Stane, Pony Hunt, Exit The President, Naan Violence, The Social Stomach, Translucent Spiders, Body Shame, Non Life, Sharon, Mope Grooves, Full Creature, Sleepy Genes, Kurly Somthing, Conan Neutron and the Secret Friends, Cut 45, Beach Party, Fox Face, Frode Gjerstadt, Katsura Yamauchi, The Original Donald Trump, Soccer Babes, No More Parachutes, Blesst Chest, Process, Todd Marsten Group, Meringue, The Wild Body, Bryson Cone, Kyle Staat, Kissenchanter, Mane of the Cur, Brian Michael Levin, Sushicar, Institute for Creative Dying, Sweatpants, PWRHAUS, Gentlemen Surfer, Elfin Elephant, Swamp Buck, Devy Metal, Hawkeye, Le Grotto, High Diving Horses, Middlewave, Mission Spotlight, Medallion, Sielaff/Wyland/Niekrasz, Demolition Duo, Chugger, Krista Michaela, Gentle Bender, The New Not Normals, Porest, Jonathan Sielaff, Hammer of Hathor, Mink Shoals, Michael Deresh, Ladywolf, Rader, Twelve Gardens, Break Up Flowers, Don Gero, Stars&#8217; Blood, Tassel African, Montgomery Word, Pelican Ossman, Quiet, Masonique, Torrey Newhart&#8217;s Obsidian Animals, Marriage and Cancer, Mr. Wrong, Star Club, Baptist Arms, The Hugs, Wild Powwers, Joshua Charles McCaslin, Dante and the Mirrors, Mall Caste, Sculpture Gardens, EMS, Long Hallways, Arrows In Orbit, Saroon, Boys Keep Swinging, Velvet Antlerground, Mini Blinds, Richard Album, Deadbeat, Maximum Mad, Hair Puller, Cool Schmool, Sillkeeper, Mulva Myiasis, SS Curmudgeon, Golden Retriever, Gulch, Rural Savage, Jawbone Flats, Lance Leonig, Jim Kemp, Dear Nora, Guyve, Sceptre Fretpen, Stochastic Mettle Union, Toadstool, The Ransom, Jeremy Joyce, Bacchanal Dreams Unit, Johanna Warren, Time Rift, Towers, Power Skeleton, Ralph White, The Vardaman Ensemble, Ron, Toothbone, Hayley Henyderickx, Lola Kirke, Wyndham, Dan Daniels, Matt D., Wait and Shackle, Holy Tentacles, Teton, SiLM, Pulsar, Cay Is Okay, Plankton Wat, Sitting, Pod Blotz, Terror Apart, Gordon Ashworth, Shana Palmer/Hugo Paris, False Face Society, Tunneler, Captain vs Crew, Viking Skate Country, Nautilus, Norman, Paper Brain, Droney Mitchell, Radler, Comet Talk, A Volcano, Somber, Gillian Francis, TBI, Lori Goldston, Kole Galbraith &amp; Juracan, Die Like Gentlemen, Aerial Ruin, The Wild War, Dogheart, Matterhorn, Lili St. Anne, Mitchell Sumner, The Strange Effects, The Braxeling Family Players, Cigarette McQueen, Retail Space, Hannah Yuen, Inky Shadows, We Three Sound Ensemble, Kelly Pratt, Homo Superior, Million Dollar Maybes, Shank Business, Bunnygrunt, Googolplexia, Kathryn Claire, Ritchie Young, The Ocean Party, No Magic, Plastic Cactus, Kayin Aaron, Mere Mention, Baus, The Bedrooms, The Raven and The Writing Desk, Forest Veil, THMPR, Furry Metals, Manglor Mountain, And And And, Ah God, Ice Queens, Loraine, Denim Country, Ana Lete, Mario Sandoval Group, Other Barry, Binary Marketing Show, Melt, Nanami Ozone, Marry Sutton, General Electric, Charts, Two Crows Fighting, Stephanie Kitson, Ashley SHadow, Fronjentress, DunkelpeK, Conditioner, Bret Higgins Atlas Revolt, Molly Burch, Weezy Ford, Lee and the Bees, Wet and Reckless, Layperson, Western Daughter, Science Slumber Party, Bliss Beam, Elly Swope, Fort Union, Johan Nystrom &amp; Justin Smith, Nick Jaina, Months, Stevie Richards, Rebecca McDade, Anna Gordon, Minda Lacy, Haley Lynn, Mo Troper, Boreen, Cool Flowers, Angel Food, VOG, Yardsss, Mujahedeen, Planet Damn, Echo Ravine, Mothbreather, Plastic Weather, Patti Mayo, Power of County, Forest Grove Outlaws, Kendall Core, Dandelyons, CJ Boyd, Jack Maybe Project, Bored of Directors, Battle Hymns and Gardens, The Americas, Team Skins, Nathaniel Talbot, The Body Holographic, Vice Device, Parlor Walls, Oracle Room, Collate, Way Worse, Marbled Eye, AJ Woods, Benjamin Blake, Crowey, Yard, Thicket, Sticky Boyfriends, Mordecai, Caspar Sonnet, Protruders, Craig Brown Band, Antonin Goroch, Sutherlin, Osama Sinatra, Matt Townsend, WHisper Hiss, The I&#8217;s, Joshua Hill, Kassi Valazza, Pareidolia, Calving, Phil Ajjarupo, The Quags, Guitar Face, May May, Guillotine Boys, The Fostamed Trio, Nervous and the Kid, Dan Lurie, Lungs and Limbs, Beatrix Sky, Samuel EM, Polaroid Bear, Origami Ghost, An Atomic Whirl, Justen Fallen, Sharkmouth, Marshyellow, Ben Ballinger, Ty-Alex, Evan Lanam and the Live Oaks, Arteries, Come Holy Spirit, Russ Tolman and the True Westerners, Count Vaseline, Jeffrey Lewis, Rebecca Tilles, Darren Hanlon, Anna Connoly, Earl and The Reggae All Stars, Human Ottoman, Sunmonks, Mascaras, Slice, Puppy Soul, Allan Callaci, Trebuchet, Dead White, Miller and Sasser, Wes Youssi and the County Champs, Mantis, Hostal Riviera, somesuprises, Antlr&#8217;d, Elliot Levin, Surfer Rosie, Hoop, Guppy Ripper, Other Lights, Johnny Butler, Neglect, Dylan M. Howe, Hayley and the Crushers, On Drugs, Sea Moss, Hunter Gather, Ssold, A Volcano, Mike Khoury, Ms. Fridrich&#8217;s MessyAnn Band, The Variants, Ripe Red Apple, Sabha Sizdahkhani, Ali Burress, Wasting Seasons, The Space Lady, Miss Rayon, Advance Base, Man At War, SARCA, RJ Reyes Group, L.O.X., Charlie Moses, PennyMart, Harrison Garrison, Mystrionics, Husky Boys, Body Mask, Sleep Millenium, Hound the Wolves, Swamp Devil, Elephant Gun, Snakes On Grass, Baronic Wall, Luthor Maggot, Paul Metzger, John St. Pelvyn, This Saxophone Kills Fascists, Dustin Scharlach, Julia Lucille, Moses Nash, Brogan Woodburn, Fernando, Sarah Parson, Why: An Outing, Cutthroat Raquetball, Forest Friends, Yce, Johnny Raincloud, Koski and the Spyce Bois, The Wilder, Invisible Mans, Starship Infinity, Bob Carol Ted, Strugglers, Red Ribbon, Low Hums, Patricia Hall, Chloe Alexandra, Ora Cogan, Tispur, North by North, Jeff Beam, Rocketship, Creature to Creature, Holy Golden, Jim Prescott Trio, Verstehen, d&#8217;rifle, Greg Sinibaldi, Sama Dams, Tino Drima, Point Juncture, WA, Sun Foot, Little One, Hockenkeit, Andrew Kaffer, Heartbreak Beat, Oort, Martha Stax, There Is No Mountain, Fake Fireplaces, YouVees, Hugs, Macks, Swamp Boys, Dark/Light, Spreads, Campfires, Lorka Scher, IDK, Mamai, Blue Crush, Serious River Song Catalogue, Wet Fruit, Poppet, Doofy Doo, Benoit Pioulard, Amulets, Weske, Abronia, Guillotine Boys, Terry Time Brother, Pie Fight, Cabin Project, Anothernight, Childspeak, Jackie-O Motherfucker, Iowa, Enron, Kool Stuff Katie, Dead Death, die Reihe, Jeff Host, Old Demons, Mind Parade, Telecommuter, Prolly Knot, Indigoe, Sunson, Rare Diagram, Strange Ranger, Goon, Alyeska, Layperson, Jeremy Ferrara, Duke of Nor Folk, Robt Sarazin Blake, Corwin Bolt, Jeff Donovan, Mughal Meusli, Bobby FKN White, Seven da Pantha, Rugby, Spirit Award, Shauna Corinne Murray, Lily SK, Brandan Seamus, Watershed, Erin Cooper, Paper/Upper/Cuts, Table Sugar, Kasey Anderson, Nathan Earle, Sean Taylor, Ixnay, OK Bird, Soft Kamikaze, Brittain Ashford, Harlowe, Birger Olsen, Adam Ostrar, David Dondero, Wild Jumps, Vanity Project, LoveBomb Go-Go, Cabbagehead, Darcy Neal, Twenty Three Suns, Neon Wilderness, Sun King, Jack Wright, Evan Lipson, Black Belt Eagle Scout, Pools, Grammarhorn Wren, Average Pageant, Farm Animals, Eaton Flowers, Tom Brosseau, Tomo Nakayama, Black Fruit, Mood Beach, Pat Moon, Another Afternoon, Alternative Milks, Ana Lungs, Nate Wey, Smiling Strange, Astral Synth Armada, Meet Cute, Inhalant, Hex, Horse Cult, Nick Superchi, Simone Turkington, Kiki and the Dowrey, Sequoia, Brett Sisun, Rebecca Connor &amp; Leon Cotter, Yr Parents, Loom, Adaptive Machines, Blurred Out, Von Howlers, Onion the Man, Alvie and the Breakfast Pigs, Honyock, Goobs, Drunk Dad, Serial Hawk, Bill Baird, Subliminal Faces, Ciboulette, John Davis, Briana Marela, Day Dos, Sentient Beings, Mulva Myasis, Tied To A Grizzly, Sunsout, Jerry David Decicca, Roseblood, Tsar Anise, Sean Croghan, Severance Package, Francisco Botello, Multiverse Ensemble, Bart and the Bedazzled, Palm Crest, Beverly, Magick Gardens, Fox Medicine, Mike Donovan, Peaceful Valley, Ash Dives, VS, Heavii Mello, Family Mansion, BR Mount and the Doubt, Bre Depriest, Autonomics, David J, Rooftop Love CLub, Skelevision, Salami Joe Rose, Cheflee, Rubedo, Scorch, Wonderhorse, Beat of Eden, Players Island, Golden Calves, Nsayi Matingou, Uriah Boyd, Parson Red Heads, Shearing Pinx, Pumping Iron, Actionesse, Millstone Grit, x_x, Burmese, Solo Organ, Cat Pierce, Swimsuit Issue, The World, Palberta, Cave Cricket, Salo Panto, Floo, Leyla Daze, Contact Cult, Iowa, Center Pieces, Stubborn Lovers, Sin City Ramblers, Gamble/Hauser/Jones, Otto Hauser, Modal XZork, Roadkill, Warm Trash, Billy and Dolly, Haunted Spurs, Foxy Lemon, Crystal Quartez, Nik Viola, Navy Gangs, Rebecca Schiffman, Nicholas Merz, MD Sharbatz, Olivia Awbrey, Evan Wey, Rascal Miles, Sun June, Karima Walker, R. Ariel, Morher, Haunts, Tamago Suck, Chloe Alexandra, Anna Vo, Those Willows, LDYCP, Scott McCaughey, Decliners, Titty Babies, Who is She? Ashtray Boy, Memory Boys, No Mutuals, 90s Television, Joypress, Ross Hammond, Matthew Pollack, Powers, Braille Stars, Smokey Kingdom, School Bully, House of Angels, Championships, Cry Babe, Slutty Hearts, Bill Brovold, Bebop &#8217;79, Said Goner, Wayside Ghost, Baywitch, Swamp Meat, MRK, Lauren Lakis, Russell Clementine, Times Infinity, Bear Clouds, Stelth Ulvang, None, Fountaine, Young Jesus, Blue Shift Rhythm Group, Eat Pray Nothing, Beautiful Terribles, Great Red Shark, Ormus, Little Mazarn, Raina Rose, Old Gold, Ruby Palms, Smith/McKay All Day, Gary Supply, Launcher, Ad-noids, Nick Normal, Sunbaby, Yard Waste, Peter Blasser, Garrett Brown, Matt Emmons, Hound Dog Taylor&#8217;s Hand, Erin Jane Laroue, Maita, Tevlin, Dominic Voz, Fashion Club, Metal Mountains, Tall Sirs, Tevlin, Dominic Voz, Fashion Club, Metal Mountains, Tall Sirs, Fruit Juice, Licky Chomps, Mir/Roth/Capello, Schlotman, Light Creates Shadows, sic, Ry Warner, The Enchanted, Lo Glo, Banny Grove, General Baby, Schaus, Sult, Caribay, Burt Sienna, Boy Romeo, Miss Massive Snowflake, The Modern Folk, Eliot Eidelman, Peace Sign, Mercury Tree, Bill Patton, Oliver Ray, Gabriel Mintz, Tashi Dorji, Aaron Turner, Lovesores, Communist Eyes, Street Hassle, Hey Lover, Coffin Apt., Pet Weapon, Olgaa, Branson Anderson, Heaven Skate, Lo-Fives, The Dewars, Justin Persichetti, Library Studies, Perfect Buzz, Lost Cat, Coma Twins, Inny, Tetuzi Akiyami, Mark Hosler, Tears Run Rings, Ruler, Hikes, The Sincerelys, Voices of the Sea, Fort Atlantic, Pauline Lay, Jamie Green. Sluggush Ensemble, Puberty Wounds, Era Bleak, Index, The Blimp, Mewn, Butch Bastard, Dead Lee, Simon Henneman, OR-7, Wavesauce, Lisa/Liza, Jason McCue, Mount Goldie, Party Witch, Indigo Kidd, Seacats, Avola, Nordra, Keith Foster, Rootless, The Optimist Club, Blue Flags and Black Grass, Chonk, Willy Tea Taylor, Tom VandenAvond, Toim, Boo The Band, Hominid, Stratocastors, ILS, Phantom Family, Weep Wave, Fantastic Plastic, Slender Gems, Lydia Brunch, Cloud Forms, David Watson, Radion, Gnarshmellow, Punk Loon, The Swan Thief, Petit Poucet, Jazz Boyfriends, Rachel Brashear, Will Adlard, Taylor Kopp, Reb Fountain, Clementine Was Right, Eat Skull, Spesh, FGBM, Late, Dress Forms, Unity Garnish, Dead Dives, Wolflaut, Nervous Defects, Neptune&#8217;s Chargers, Accumulated Mass, Michael O, Xurs, Quid Quo, The Gift Machine, Nate Ashley, Eamon Fogerty, Nate Lown, Cowgirl Sadness, Calyx, Lonesome Shack, Drew Fitchetter, Criminal Code, Pleasure Leftists, Over, Stanford Prism Experiment, Kozyol, Sunwatchers, Mike Baggetta/Mike Watt/Stephen Hodges, Cat Valley, Swift Kick, Hover Girl, Gabi Jr., Stoner Control, Risley, Moon Shy, Deadrones, Hippie Death Cult, Nervebeats, Ex-Kids, Soft Butch, Greasy Gills, Don and The Quixotes, Myth and Memory, The Cooling Pearls, Veradas, High Spirals, Emily Reo, Foxes in Fiction, Douse, Boink, Test Face, Book of Colors, Rob Noyes, Sigh, 36?, Mattress, Andy Cigarettes, Rick Bain and the Genius Position, Chad, Leggy, Supernatural Beavers, Dylan Lee Johnston, Shaylee, Sheenjek, Voychek, Virtual Balboa, Tiny Tigers, El Diablito, Berri Txarrak, Glacial Fall, Urs Leimgruber, Torsten Mueller, June Rose, J. Graves, Groove Domestic Product, Candace, TERMINATor, Library Studies, Motrik, Ferns, Tremor, Kaley Appendix, Andrew Stonestreet, Illegal Son, Alex Mahler, Rainwater, Purr Purr, Art Gray Noizz Quintet, Modridge, Julie, Ivan to the Moon, Lost Echoes, Daemones, Ten Million Lights, Unwed Sailor, Phantom Tides, Zoe Boekbinder, Drug Apts, Olden Yolk, Adam Torres, Mean Sun, The Drip, Know Your Rights, This Year&#8217;s Model, Nothing In The Dark, Philistine Dream, Twin Ultra, Nothing in the Dark, Hot Gum, Natural Man, Charley No Face, Graveshapes, Ore., Blaine Todd, Andrew Weathers, Katy Rea, Scout Gillett, Salt. Kim Gray, Bathrobe, Rain Cult, Slynger, Midwest, Tenebrae, Car Blinker Satellite, Wonder Horse, Voovol, Joe Kye, Dollar Coat, Trash, The Real Cool Times, Paul Bearers, Alana Eileen, Hypernormals, Vueltas, BARB, Voodoo Gearshift, The Hand, Kids, James Plane Wreck, Palm Sunday, Hemlock, Mad Honey, Trouble Cuts, Michae Stirling, Mamalarky, Lubelski &amp; Bassett, Ecstatic Music Band, Cex Fucx, Matt Weston, Dawn Riding, Aoi Swimming, Panther Vision, Guidon Bear, FLying Circles, Noxeema, Flysch, Human Effluence, I.O., Enchanters, The Casual Scene, The Funs, Heartlights, Taleen Kali, Swim, Super Hit, Pale Spring, Pulp Romance, Dry Wedding, The Burning Hell, Shells, Deadbeat Beat, Jesse Marchant Wyndham, Claire Cronin, Alex Dupree, Bear Call, Neck Romancer, Spain, Sequoia, Shawn Alan Hurd, Claire Morales, Cedar Sap, Sawtooth, D Pel and the Strange Attractors, Complimentary Colors, Proper, Mint Green, Cumulus, Pregnant, Chanel Beads, Yufi 64, Heart Lake, Tough Boy, Tiny Fireflies, Eric Frye, PAK, Phobia Outfit, Helens, Being Awone, School Nights, Zigtebra, Michael Beach, Thigh Master, CEEYS, Christopher Sky, Lorna Dune, Keith Sweaty, Clay Rendering, Gardener, Power Trash, Post Modern Lovers, This Fair City, Dan and Manfred, Lover, Matt D., Ian Nagoski, Six Organs of Admittance, Donovan Quinn, Last Giant, The Holdout, Medicine Bows, Inebriates, Lightheads, Daydream, We Bless This Mess, Never Better, Laura Hickli, Naked Luck, Sweet Home, Wavering, Amy Rigby, Brett Sisun Group, Black Beach, Mt. Zena, Feral Spells, Blood Honey, Help, Prism Tats, Dirt Lunch, Ozelot, ISCH, Old Growth, Tuff Talk, Ms. Deeds, The Hoons, Ava Mendoza, Dogheart, Get Real, Tuff Sunshine, L.A. Takedown, Brokeback, Has/Will, Ethan and Teal, Gard Nilssen&#8217;s Acoustic Unity, Great American Commute, Open Floor Plan, Madie, Desire Boat, Time Theft, Vista House, Luke Hogan, Rod, Kelly Bauman Band, From the Ages, Isle Decide, iyijupt, Almost Dark, Man&#8217;s Body, Neilson Family, Strawberry Shoe, Martian Church, Silent Temple, Hope Littwin, Blue Tomorrows, Barna Howard, Moon Shy, Hurry Up, Talkin&#8217; to Johnny, Jeremy James Meyers, Fox and Bones, FLoating Easements, Radio Receiver, Gayby Sitter, Mom&#8217;s Mad, Twin Chicken, Slashed Tires, Tina Richerson, Earthgasm, Plastic Pussy, Mermar, Red Rumsey, Alpine Lakes, Terry&#8217;s Paradise, Marina Price, Mutineers, Michael Ray and the Plastic Sheets, Scorch, Heart Man, Wah Bass, Idaho Joe Winslow, Blessed Broke, Graves, Lee Baggett, Quando Quando Quando, Time Theft, Open Floor Plan, Gul-Dukat, Mare, Pluto Revival, Old City, Rip Room, Helen Gillett, Skip von Kuske, Posture Culture, Noise Concerns, Cyrus Nabipoor, Ryan Miller &amp; Grant Pierce, Live Mike, Heavy Medical, Apolojeesus, Glitchlette, World Record Winner, System Exclusive, Hooveriii, Dommengang, David Turel, Shadowgraphs, Rayon, Behavior &amp; Mayako XO, Chronophage, The Grebes, Talking Contest, No, Darkwraith Covenant, Chief White Lightning, Buddy Wynkoop, Greenseeker, Antemano, Range Life, No Year, Family Worship Center, Marzipan, Spatulas, Marshall Trammell, MultiPass, Silvertongue, Ray Ramano, Lesser Demons, Underwater Cliffs, Leche Malo, Slowsea, Matt Robidoux, Painted Faces, Tony Mowe &amp; Eaton Flowers, Daniel Rossi, Tiny Jackets, Monty Vega and the Sittin&#8217; Shivas, Panthervision, Supplemental Pills, Zebra, Hella Dregs, Maggie Morris, Elizabeth Venable, Elaina Tardiff, Hondo Vale, DoomFolk StarterKit, Emma Bowe</strong><strong>rs, Rad Max, Karen Caskets, Arms </strong><strong>for Legs, Max Nordile, Translucent Envelope, Jeremy Meyers, Woodlawn Ramblers, LOOLOWNINGEN &amp; </strong><strong>the Far East Idiots, Lo Fives, Bed Bits, Petite Garçon, Sorcery of the Rabbit, Humungo, Danny Shaw, Sam Klickner, Major Plinth, Folknoize, Charlie Salas-Humara, Drop Shadow, Sean Peirce, New Injuries, David Tholfson, Elder Sister, Marlette, Wavicle, Simultangnosia, Mobilities, Canary Room, Source Material, Phone Voice, mssv (Mike Baggetta/Mike Watt/Stephen Hodges), TWANS, Arch Cape, Jenny Conlee, National Diet, Artifacts of Fiction, Bobby Musgrave, The Mean Reds, Trabants, Desert Shame, Wend, CAICEDO, Grant Olsen, Subvert Savant, Grein, Location Services, Guzo, Warm Static, Smoker Dad, Farrow and the Peach Leafs, Neal Morgan, Tahni Holt, Muffie Delgado Connelly, Maxx Katz, Anis Mojgani, PLNT DDJ, Lord Friday the 13th, Megan Diana, Dan Clucas+Lori Goldston+Noa Ver+Tim DuRoche, Saloli, Patrick McCulley, Lau Nau, Sontag Shogun, Richard Gans, Dillon Vanders, Dream Shark, Reisender, Girl Drink Drunks, Drew Grizzly, Guest Room, Ogre, Los Gondos, Smilepile, Chamberlain Gonzalaz, Triple Lutz, Juicebumps, Baby Soling, Cody Vonier, Kendall Lujan, Elliot Kennedy, Kaycie Satterfield, Hell Nancy, Gary V, Risley, Bridal Veil, Austin Christ, Ruby Oland, Jack Omen, Michael Vlatkovich Trio, James Powers Little Brass Band, Ayla, White Shark Shiver, Peter Nevins, Travis Abels, Lil Billy, Return to Zero, A&#8217;Revolution, Rocky Seahorse, Barefarm, Holly Bell, Belonging, Culpepper, SOOTH, The DoldrumsPlastic Cherries, Nicole Canaan, The Lodestones, Dubais, Mattress, Star Party, Waste Disposal, Thollem&#8217;s Hot Pursuit Of Happiness, SH, Britton Judd, Shane McDonell, DJ Acidwash, Zachary Cale, Gabriel Seaver, Grant Earl LaValley, Earth Girl Helen Brown, Mirah, Anna Diem, Matthew Ryals, Brother vs Robot, Kaho Matsui, Aurora Josephson, Golden Feelings, Peter &#8220;Spud&#8221; Siegel, Absolute Zero, FLying Caravan, Johnny Franco, The Shaky Harlots, The Happys, Mt Home, Kathy Foster, Cynthia Nelson, Chuck Westmoreland, Darci Phenix, Britney Spears<br></strong></p>
+	</div><!-- .entry-content -->
+
+	</article><!-- #post-## -->
+
+<div id="comments" class="comments-area">
+
+	
+	
+		<div id="respond" class="comment-respond">
+		<h3 id="reply-title" class="comment-reply-title">Leave a comment <small><a rel="nofollow" id="cancel-comment-reply-link" href="/entertainment/#respond" style="display:none;">Cancel reply</a></small></h3><form action="https://turnturnturnpdx.com/wp-comments-post.php" method="post" id="commentform" class="comment-form">
+
+
+<div class="comment-form__verbum transparent"></div><div class="verbum-form-meta"><input type='hidden' name='comment_post_ID' value='86' id='comment_post_ID' />
+<input type='hidden' name='comment_parent' id='comment_parent' value='0' />
+
+			<input type="hidden" name="highlander_comment_nonce" id="highlander_comment_nonce" value="7dec744a27" />
+			<input type="hidden" name="verbum_show_subscription_modal" value="" /></div><p style="display: none;"><input type="hidden" id="akismet_comment_nonce" name="akismet_comment_nonce" value="00e776ed48" /></p><p style="display: none !important;" class="akismet-fields-container" data-prefix="ak_"><label>&#916;<textarea name="ak_hp_textarea" cols="45" rows="8" maxlength="100"></textarea></label><input type="hidden" id="ak_js_1" name="ak_js" value="73"/><script>
+document.getElementById( "ak_js_1" ).setAttribute( "value", ( new Date() ).getTime() );
+</script>
+</p></form>	</div><!-- #respond -->
+	
+</div><!-- #comments .comments-area -->
+
+			</div><!-- #content -->
+		</div><!-- #primary -->
+
+
+	</div><!-- #main .site-main -->
+</div><!-- #page .hfeed .site -->
+
+	<div id="colophon-wrap">
+		<footer id="colophon" class="site-footer" role="contentinfo">
+			<div class="site-info">
+								<a href="https://wordpress.com/?ref=footer_custom_svg" title="Create a website or blog at WordPress.com" rel="nofollow"><svg style="fill: currentColor; position: relative; top: 1px;" width="14px" height="15px" viewBox="0 0 14 15" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-labelledby="title" role="img">
+				<desc id="title">Create a website or blog at WordPress.com</desc>
+				<path d="M12.5225848,4.97949746 C13.0138466,5.87586309 13.2934037,6.90452431 13.2934037,7.99874074 C13.2934037,10.3205803 12.0351007,12.3476807 10.1640538,13.4385638 L12.0862862,7.88081544 C12.4453251,6.98296834 12.5648813,6.26504621 12.5648813,5.62667922 C12.5648813,5.39497674 12.549622,5.17994084 12.5225848,4.97949746 L12.5225848,4.97949746 Z M7.86730089,5.04801561 C8.24619178,5.02808979 8.58760099,4.98823815 8.58760099,4.98823815 C8.9267139,4.94809022 8.88671369,4.44972248 8.54745263,4.46957423 C8.54745263,4.46957423 7.52803983,4.54957381 6.86996227,4.54957381 C6.25158863,4.54957381 5.21247202,4.46957423 5.21247202,4.46957423 C4.87306282,4.44972248 4.83328483,4.96816418 5.17254589,4.98823815 C5.17254589,4.98823815 5.49358462,5.02808979 5.83269753,5.04801561 L6.81314716,7.73459399 L5.43565839,11.8651647 L3.14394256,5.04801561 C3.52312975,5.02808979 3.86416859,4.98823815 3.86416859,4.98823815 C4.20305928,4.94809022 4.16305906,4.44972248 3.82394616,4.46957423 C3.82394616,4.46957423 2.80475558,4.54957381 2.14660395,4.54957381 C2.02852925,4.54957381 1.88934333,4.54668493 1.74156477,4.54194422 C2.86690406,2.83350881 4.80113651,1.70529256 6.99996296,1.70529256 C8.638342,1.70529256 10.1302017,2.33173369 11.2498373,3.35765419 C11.222726,3.35602457 11.1962815,3.35261718 11.1683554,3.35261718 C10.5501299,3.35261718 10.1114609,3.89113285 10.1114609,4.46957423 C10.1114609,4.98823815 10.4107217,5.42705065 10.7296864,5.94564049 C10.969021,6.36482346 11.248578,6.90326506 11.248578,7.68133501 C11.248578,8.21992476 11.0413918,8.84503256 10.7696866,9.71584277 L10.1417574,11.8132391 L7.86730089,5.04801561 Z M6.99996296,14.2927074 C6.38218192,14.2927074 5.78595654,14.2021153 5.22195356,14.0362644 L7.11048207,8.54925635 L9.04486267,13.8491542 C9.05760348,13.8802652 9.07323319,13.9089317 9.08989995,13.9358945 C8.43574834,14.1661896 7.73285573,14.2927074 6.99996296,14.2927074 L6.99996296,14.2927074 Z M0.706448182,7.99874074 C0.706448182,7.08630113 0.902152921,6.22015756 1.25141403,5.43749503 L4.25357806,13.6627848 C2.15393732,12.6427902 0.706448182,10.4898387 0.706448182,7.99874074 L0.706448182,7.99874074 Z M6.99996296,0.999 C3.14016476,0.999 0,4.13905746 0,7.99874074 C0,11.8585722 3.14016476,14.999 6.99996296,14.999 C10.8596871,14.999 14,11.8585722 14,7.99874074 C14,4.13905746 10.8596871,0.999 6.99996296,0.999 L6.99996296,0.999 Z" id="wordpress-logo-simplified-cmyk" stroke="none" fill=“currentColor” fill-rule="evenodd"></path>
+			</svg></a>
+							</div><!-- .site-info -->
+		</footer><!-- #colophon -->
+	</div><!-- #colophon-wrap -->
+
+<!--  -->
+<script type="speculationrules">
+{"prefetch":[{"source":"document","where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":["/wp-*.php","/wp-admin/*","/files/*","/wp-content/*","/wp-content/plugins/*","/wp-content/themes/pub/untitled/*","/*\\?(.+)"]}},{"not":{"selector_matches":"a[rel~=\"nofollow\"]"}},{"not":{"selector_matches":".no-prefetch, .no-prefetch a"}}]},"eagerness":"conservative"}]}
+</script>
+<script id="grofiles-cards-js" src="//0.gravatar.com/js/hovercards/hovercards.min.js?ver=202638d1133547e8a1f2801609f51cef12522abe7f6647d869e9fbc974fe356a37e613"></script>
+<script id="wpgroho-js-extra">
+var WPGroHo = {"my_hash":""};
+//# sourceURL=wpgroho-js-extra
+</script>
+<script crossorigin='anonymous' type='text/javascript'  src='/wp-content/mu-plugins/gravatar-hovercards/wpgroho.js?m=1610363240i'></script>
+
+	<script>
+		// Initialize and attach hovercards to all gravatars
+		( function() {
+			function init() {
+				if ( typeof Gravatar === 'undefined' ) {
+					return;
+				}
+
+				if ( typeof Gravatar.init !== 'function' ) {
+					return;
+				}
+
+				Gravatar.profile_cb = function ( hash, id ) {
+					WPGroHo.syncProfileData( hash, id );
+				};
+
+				Gravatar.my_hash = WPGroHo.my_hash;
+				Gravatar.init(
+					'body',
+					'#wp-admin-bar-my-account',
+					{
+						i18n: {
+							'Edit your profile →': 'Edit your profile →',
+							'View profile →': 'View profile →',
+							'Contact': 'Contact',
+							'Send money': 'Send money',
+							'Sorry, we are unable to load this Gravatar profile.': 'Sorry, we are unable to load this Gravatar profile.',
+							'Gravatar not found.': 'Gravatar not found.',
+							'Too Many Requests.': 'Too Many Requests.',
+							'Internal Server Error.': 'Internal Server Error.',
+							'Is this you?': 'Is this you?',
+							'Claim your free profile.': 'Claim your free profile.',
+							'Email': 'Email',
+							'Home Phone': 'Home Phone',
+							'Work Phone': 'Work Phone',
+							'Cell Phone': 'Cell Phone',
+							'Contact Form': 'Contact Form',
+							'Calendar': 'Calendar',
+						},
+					}
+				);
+			}
+
+			if ( document.readyState !== 'loading' ) {
+				init();
+			} else {
+				document.addEventListener( 'DOMContentLoaded', init );
+			}
+		} )();
+	</script>
+
+		<div style="display:none">
+	</div>
+		<div id="actionbar" dir="ltr" style="display: none;"
+			class="actnbr-pub-untitled actnbr-has-follow">
+		<ul>
+						<li class="actnbr-ellipsis actnbr-hidden">
+				<svg class="gridicon gridicons-ellipsis" height="24" width="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g><path d="M7 12c0 1.104-.896 2-2 2s-2-.896-2-2 .896-2 2-2 2 .896 2 2zm12-2c-1.104 0-2 .896-2 2s.896 2 2 2 2-.896 2-2-.896-2-2-2zm-7 0c-1.104 0-2 .896-2 2s.896 2 2 2 2-.896 2-2-.896-2-2-2z"/></g></svg>				<div class="actnbr-popover tip tip-top-left actnbr-more">
+					<div class="tip-arrow"></div>
+					<div class="tip-inner">
+						<ul>
+								<li class="actnbr-sitename">
+			<a href="https://turnturnturnpdx.com">
+				<img loading='lazy' alt='' src='https://turnturnturnpdx.com/wp-content/uploads/2024/01/turn-raccoon500sq.jpg?w=50' srcset='https://turnturnturnpdx.com/wp-content/uploads/2024/01/turn-raccoon500sq.jpg?w=50 1x, https://turnturnturnpdx.com/wp-content/uploads/2024/01/turn-raccoon500sq.jpg?w=75 1.5x, https://turnturnturnpdx.com/wp-content/uploads/2024/01/turn-raccoon500sq.jpg?w=100 2x, https://turnturnturnpdx.com/wp-content/uploads/2024/01/turn-raccoon500sq.jpg?w=150 3x, https://turnturnturnpdx.com/wp-content/uploads/2024/01/turn-raccoon500sq.jpg?w=200 4x' class='avatar avatar-50' height='50' width='50' />				Turn! Turn! Turn!			</a>
+		</li>
+								<li class="actnbr-signup"><a href="https://wordpress.com/start/">Sign up</a></li>
+							<li class="actnbr-login"><a href="https://wordpress.com/log-in?redirect_to=https%3A%2F%2Fr-login.wordpress.com%2Fremote-login.php%3Faction%3Dlink%26back%3Dhttps%253A%252F%252Fturnturnturnpdx.com%252Fentertainment%252F">Log in</a></li>
+																<li class="actnbr-shortlink">
+										<a href="https://wp.me/P4nylp-1o">
+											<span class="actnbr-shortlink__text">Copy shortlink</span>
+											<span class="actnbr-shortlink__icon"><svg class="gridicon gridicons-checkmark" height="16" width="16" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g><path d="M9 19.414l-6.707-6.707 1.414-1.414L9 16.586 20.293 5.293l1.414 1.414"/></g></svg></span>
+										</a>
+									</li>
+																<li class="flb-report">
+									<a href="https://wordpress.com/abuse/?report_url=https://turnturnturnpdx.com/entertainment/" target="_blank" rel="noopener noreferrer">
+										Report this content									</a>
+								</li>
+															<li class="actnbr-subs">
+									<a href="https://subscribe.wordpress.com/">Manage subscriptions</a>
+								</li>
+													</ul>
+					</div>
+				</div>
+			</li>
+		</ul>
+	</div>
+	
+<script>
+window.addEventListener( "DOMContentLoaded", function( event ) {
+	var link = document.createElement( "link" );
+	link.href = "/wp-content/mu-plugins/actionbar/actionbar.css?v=20250116";
+	link.type = "text/css";
+	link.rel = "stylesheet";
+	document.head.appendChild( link );
+
+	var script = document.createElement( "script" );
+	script.src = "/wp-content/mu-plugins/actionbar/actionbar.js?v=20250204";
+	document.body.appendChild( script );
+} );
+</script>
+
+			<div id="jp-carousel-loading-overlay" style="display: none;">
+			<div id="jp-carousel-loading-wrapper">
+				<span id="jp-carousel-library-loading"><svg class="jetpack-spinner" width="40" height="40" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><circle cx="50" cy="50" r="46" fill="none" stroke="#ddd" stroke-width="8"/><path d="M 50 4 A 46 46 0 0 1 96 50" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round"><animateTransform attributeName="transform" type="rotate" dur="1.4s" from="0 50 50" to="360 50 50" repeatCount="indefinite"/></path></svg></span>
+			</div>
+		</div>
+		<div class="jp-carousel-overlay" style="display: none;">
+
+		<div class="jp-carousel-container">
+			<!-- The Carousel Swiper -->
+			<div
+				class="jp-carousel-wrap swiper jp-carousel-swiper-container jp-carousel-transitions"
+				itemscope
+				itemtype="https://schema.org/ImageGallery">
+				<div class="jp-carousel swiper-wrapper"></div>
+				<div class="jp-swiper-button-prev swiper-button-prev">
+					<svg width="25" height="24" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+						<mask id="maskPrev" mask-type="alpha" maskUnits="userSpaceOnUse" x="8" y="6" width="9" height="12">
+							<path d="M16.2072 16.59L11.6496 12L16.2072 7.41L14.8041 6L8.8335 12L14.8041 18L16.2072 16.59Z" fill="white"/>
+						</mask>
+						<g mask="url(#maskPrev)">
+							<rect x="0.579102" width="23.8823" height="24" fill="#FFFFFF"/>
+						</g>
+					</svg>
+				</div>
+				<div class="jp-swiper-button-next swiper-button-next">
+					<svg width="25" height="24" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+						<mask id="maskNext" mask-type="alpha" maskUnits="userSpaceOnUse" x="8" y="6" width="8" height="12">
+							<path d="M8.59814 16.59L13.1557 12L8.59814 7.41L10.0012 6L15.9718 12L10.0012 18L8.59814 16.59Z" fill="white"/>
+						</mask>
+						<g mask="url(#maskNext)">
+							<rect x="0.34375" width="23.8822" height="24" fill="#FFFFFF"/>
+						</g>
+					</svg>
+				</div>
+			</div>
+			<!-- The main close buton -->
+			<div class="jp-carousel-close-hint">
+				<svg width="25" height="24" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+					<mask id="maskClose" mask-type="alpha" maskUnits="userSpaceOnUse" x="5" y="5" width="15" height="14">
+						<path d="M19.3166 6.41L17.9135 5L12.3509 10.59L6.78834 5L5.38525 6.41L10.9478 12L5.38525 17.59L6.78834 19L12.3509 13.41L17.9135 19L19.3166 17.59L13.754 12L19.3166 6.41Z" fill="white"/>
+					</mask>
+					<g mask="url(#maskClose)">
+						<rect x="0.409668" width="23.8823" height="24" fill="#FFFFFF"/>
+					</g>
+				</svg>
+			</div>
+			<!-- Image info, comments and meta -->
+			<div class="jp-carousel-info">
+				<div class="jp-carousel-info-footer">
+					<div class="jp-carousel-pagination-container">
+						<div class="jp-swiper-pagination swiper-pagination"></div>
+						<div class="jp-carousel-pagination"></div>
+					</div>
+					<div class="jp-carousel-photo-title-container">
+						<div class="jp-carousel-photo-caption"></div>
+					</div>
+					<div class="jp-carousel-photo-icons-container">
+						<a href="#" class="jp-carousel-icon-btn jp-carousel-icon-info" aria-label="Toggle photo metadata visibility">
+							<span class="jp-carousel-icon">
+								<svg width="25" height="24" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+									<mask id="maskInfo" mask-type="alpha" maskUnits="userSpaceOnUse" x="2" y="2" width="21" height="20">
+										<path fill-rule="evenodd" clip-rule="evenodd" d="M12.7537 2C7.26076 2 2.80273 6.48 2.80273 12C2.80273 17.52 7.26076 22 12.7537 22C18.2466 22 22.7046 17.52 22.7046 12C22.7046 6.48 18.2466 2 12.7537 2ZM11.7586 7V9H13.7488V7H11.7586ZM11.7586 11V17H13.7488V11H11.7586ZM4.79292 12C4.79292 16.41 8.36531 20 12.7537 20C17.142 20 20.7144 16.41 20.7144 12C20.7144 7.59 17.142 4 12.7537 4C8.36531 4 4.79292 7.59 4.79292 12Z" fill="white"/>
+									</mask>
+									<g mask="url(#maskInfo)">
+										<rect x="0.8125" width="23.8823" height="24" fill="#FFFFFF"/>
+									</g>
+								</svg>
+							</span>
+						</a>
+												<a href="#" class="jp-carousel-icon-btn jp-carousel-icon-comments" aria-label="Toggle photo comments visibility">
+							<span class="jp-carousel-icon">
+								<svg width="25" height="24" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+									<mask id="maskComments" mask-type="alpha" maskUnits="userSpaceOnUse" x="2" y="2" width="21" height="20">
+										<path fill-rule="evenodd" clip-rule="evenodd" d="M4.3271 2H20.2486C21.3432 2 22.2388 2.9 22.2388 4V16C22.2388 17.1 21.3432 18 20.2486 18H6.31729L2.33691 22V4C2.33691 2.9 3.2325 2 4.3271 2ZM6.31729 16H20.2486V4H4.3271V18L6.31729 16Z" fill="white"/>
+									</mask>
+									<g mask="url(#maskComments)">
+										<rect x="0.34668" width="23.8823" height="24" fill="#FFFFFF"/>
+									</g>
+								</svg>
+
+								<span class="jp-carousel-has-comments-indicator" aria-label="This image has comments."></span>
+							</span>
+						</a>
+											</div>
+				</div>
+				<div class="jp-carousel-info-extra">
+					<div class="jp-carousel-info-content-wrapper">
+						<div class="jp-carousel-photo-title-container">
+							<div class="jp-carousel-photo-title"></div>
+						</div>
+						<div class="jp-carousel-comments-wrapper">
+															<div id="jp-carousel-comments-loading">
+									<span>Loading Comments...</span>
+								</div>
+								<div class="jp-carousel-comments"></div>
+								<div id="jp-carousel-comment-form-container">
+									<span id="jp-carousel-comment-form-spinner"><svg class="jetpack-spinner" width="20" height="20" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><circle cx="50" cy="50" r="46" fill="none" stroke="#ddd" stroke-width="8"/><path d="M 50 4 A 46 46 0 0 1 96 50" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round"><animateTransform attributeName="transform" type="rotate" dur="1.4s" from="0 50 50" to="360 50 50" repeatCount="indefinite"/></path></svg></span>
+									<div id="jp-carousel-comment-post-results"></div>
+																														<form id="jp-carousel-comment-form">
+												<label for="jp-carousel-comment-form-comment-field" class="screen-reader-text">Write a Comment...</label>
+												<textarea
+													name="comment"
+													class="jp-carousel-comment-form-field jp-carousel-comment-form-textarea"
+													id="jp-carousel-comment-form-comment-field"
+													placeholder="Write a Comment..."
+												></textarea>
+												<div id="jp-carousel-comment-form-submit-and-info-wrapper">
+													<div id="jp-carousel-comment-form-commenting-as">
+																													<fieldset>
+																<label for="jp-carousel-comment-form-email-field">Email (Required)</label>
+																<input type="text" name="email" class="jp-carousel-comment-form-field jp-carousel-comment-form-text-field" id="jp-carousel-comment-form-email-field" />
+															</fieldset>
+															<fieldset>
+																<label for="jp-carousel-comment-form-author-field">Name (Required)</label>
+																<input type="text" name="author" class="jp-carousel-comment-form-field jp-carousel-comment-form-text-field" id="jp-carousel-comment-form-author-field" />
+															</fieldset>
+															<fieldset>
+																<label for="jp-carousel-comment-form-url-field">Website</label>
+																<input type="text" name="url" class="jp-carousel-comment-form-field jp-carousel-comment-form-text-field" id="jp-carousel-comment-form-url-field" />
+															</fieldset>
+																											</div>
+													<input
+														type="submit"
+														name="submit"
+														class="jp-carousel-comment-form-button"
+														id="jp-carousel-comment-form-button-submit"
+														value="Post Comment" />
+												</div>
+											</form>
+																											</div>
+													</div>
+						<div class="jp-carousel-image-meta">
+							<div class="jp-carousel-title-and-caption">
+								<div class="jp-carousel-photo-info">
+									<div class="jp-carousel-caption" itemprop="caption description"></div>
+								</div>
+
+								<div class="jp-carousel-photo-description"></div>
+							</div>
+							<a class="jp-carousel-image-download" href="#" aria-label="Download image" target="_blank" style="display: none;">
+								<svg width="25" height="24" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+									<mask id="mask0" mask-type="alpha" maskUnits="userSpaceOnUse" x="3" y="3" width="19" height="18">
+										<path fill-rule="evenodd" clip-rule="evenodd" d="M5.84615 5V19H19.7775V12H21.7677V19C21.7677 20.1 20.8721 21 19.7775 21H5.84615C4.74159 21 3.85596 20.1 3.85596 19V5C3.85596 3.9 4.74159 3 5.84615 3H12.8118V5H5.84615ZM14.802 5V3H21.7677V10H19.7775V6.41L9.99569 16.24L8.59261 14.83L18.3744 5H14.802Z" fill="white"/>
+									</mask>
+									<g mask="url(#mask0)">
+										<rect x="0.870605" width="23.8823" height="24" fill="#FFFFFF"/>
+									</g>
+								</svg>
+								<span class="jp-carousel-download-text"></span>
+							</a>
+							<div class="jp-carousel-image-map" style="display: none;"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		</div>
+		
+	<script type="text/javascript">
+		(function () {
+			var wpcom_reblog = {
+				source: 'toolbar',
+
+				toggle_reblog_box_flair: function (obj_id, post_id) {
+
+					// Go to site selector. This will redirect to their blog if they only have one.
+					const postEndpoint = `https://wordpress.com/post`;
+
+					// Ideally we would use the permalink here, but fortunately this will be replaced with the 
+					// post permalink in the editor.
+					const originalURL = `${ document.location.href }?page_id=${ post_id }`; 
+					
+					const url =
+						postEndpoint +
+						'?url=' +
+						encodeURIComponent( originalURL ) +
+						'&is_post_share=true' +
+						'&v=5';
+
+					const redirect = function () {
+						if (
+							! window.open( url, '_blank' )
+						) {
+							location.href = url;
+						}
+					};
+
+					if ( /Firefox/.test( navigator.userAgent ) ) {
+						setTimeout( redirect, 0 );
+					} else {
+						redirect();
+					}
+				},
+			};
+
+			window.wpcom_reblog = wpcom_reblog;
+		})();
+	</script>
+<script id="wp-hooks-js" src="/wp-content/plugins/gutenberg-core/v23.9.1/build/scripts/hooks/index.min.js?m=1788785546i&#038;ver=f0f188028580e8dc1255"></script>
+<script id="wp-i18n-js" src="/wp-content/plugins/gutenberg-core/v23.9.1/build/scripts/i18n/index.min.js?m=1788785546i&#038;ver=1dfe7db3940c23ea9216"></script>
+<script id="wp-i18n-js-after">
+wp.i18n.setLocaleData( { 'text direction\u0004ltr': [ 'ltr' ] } );
+//# sourceURL=wp-i18n-js-after
+</script>
+<script id="verbum-settings-js-before">
+window.VerbumComments = {"Log in or provide your name and email to leave a reply.":"Log in or provide your name and email to leave a reply.","Log in or provide your name and email to leave a comment.":"Log in or provide your name and email to leave a comment.","Receive web and mobile notifications for posts on this site.":"Receive web and mobile notifications for posts on this site.","Name":"Name","Email (address never made public)":"Email (address never made public)","Website (optional)":"Website (optional)","Leave a reply. (log in optional)":"Leave a reply. (log in optional)","Leave a comment. (log in optional)":"Leave a comment. (log in optional)","Log in to leave a reply.":"Log in to leave a reply.","Log in to leave a comment.":"Log in to leave a comment.","Logged in via %s":"Logged in via %s","Log out":"Log out","Your browser is blocking the cookies needed to log in and comment here. Allow cookies in your privacy settings, then reload the page.":"Your browser is blocking the cookies needed to log in and comment here. Allow cookies in your privacy settings, then reload the page.","Email":"Email","(Address never made public)":"(Address never made public)","Instantly":"Instantly","Daily":"Daily","Reply":"Reply","Comment":"Comment","WordPress":"WordPress","Weekly":"Weekly","Notify me of new posts":"Notify me of new posts","Email me new posts":"Email me new posts","Email me new comments":"Email me new comments","Cancel":"Cancel","Write a comment...":"Write a comment...","Write a reply...":"Write a reply...","Website":"Website","Optional":"Optional","We'll keep you in the loop!":"We'll keep you in the loop!","Loading your comment...":"Loading your comment...","Discover more from":"Discover more from Turn! Turn! Turn!","Subscribe now to keep reading and get access to the full archive.":"Subscribe now to keep reading and get access to the full archive.","Continue reading":"Continue reading","Never miss a beat!":"Never miss a beat!","Interested in getting blog post updates? Simply click the button below to stay in the loop!":"Interested in getting blog post updates? Simply click the button below to stay in the loop!","Enter your email address":"Enter your email address","Subscribe":"Subscribe","Comment sent successfully":"Comment sent successfully","Save my name, email, and website in this browser for the next time I comment.":"Save my name, email, and website in this browser for the next time I comment.","hovercardi18n":{"Edit your profile \u2192":"Edit your profile \u2192","View profile \u2192":"View profile \u2192","Contact":"Contact","Send money":"Send money","Gravatar not found.":"Gravatar not found.","This profile is private.":"This profile is private.","Too Many Requests.":"Too Many Requests.","Internal Server Error.":"Internal Server Error.","Sorry, we are unable to load this Gravatar profile.":"Sorry, we are unable to load this Gravatar profile."},"siteId":64718911,"postId":86,"mustLogIn":false,"requireNameEmail":true,"commentRegistration":false,"connectURL":"https://turnturnturnpdx.wordpress.com/public.api/connect/?action=request\u0026domain=turnturnturnpdx.com","logoutURL":"https://turnturnturnpdx.wordpress.com/wp-login.php?action=logout\u0026_wpnonce=d78a6fc1c6","homeURL":"https://turnturnturnpdx.com/","subscribeToBlog":true,"subscribeToComment":true,"isJetpackCommentsLoggedIn":false,"jetpackUsername":"","jetpackUserId":0,"jetpackSignature":"","jetpackAvatar":"https://0.gravatar.com/avatar/?s=96\u0026amp;d=identicon\u0026amp;r=G","enableBlocks":true,"enableSubscriptionModal":true,"currentLocale":"en","isJetpackComments":false,"allowedBlocks":["core/paragraph","core/list","core/code","core/list-item","core/quote","core/image","core/embed","core/quote","core/code"],"embedNonce":"40facb6a9a","verbumBundleUrl":"/wp-content/mu-plugins/jetpack-mu-wpcom-plugin/sun/jetpack_vendor/automattic/jetpack-mu-wpcom/src/features/verbum-comments/dist/index.js","isRTL":false,"vbeCacheBuster":1771405207,"iframeUniqueId":0,"colorScheme":false}
+//# sourceURL=verbum-settings-js-before
+</script>
+<script data-wp-strategy="defer" defer id="verbum-dynamic-loader-js" src="/wp-content/mu-plugins/jetpack-mu-wpcom-plugin/sun/jetpack_vendor/automattic/jetpack-mu-wpcom/src/build/verbum-comments/assets/dynamic-loader.js?m=1772522099i&#038;minify=false&#038;ver=8b5296f9195db92c42e4"></script>
+<script id="coblocks-loader-js-extra">
+var wpcom_coblocks_js = {"coblocks_masonry_js":"https://s2.wp.com/wp-content/plugins/coblocks/2.18.1-simple-rev.4/dist/js/coblocks-masonry.min.js?m=1681832297i","coblocks_lightbox_js":"https://s2.wp.com/wp-content/plugins/coblocks/2.18.1-simple-rev.4/dist/js/coblocks-lightbox.min.js?m=1681832297i","jquery_core_js":"/wp-includes/js/jquery/jquery.min.js","jquery_migrate_js":"/wp-includes/js/jquery/jquery-migrate.min.js","masonry_js":"/wp-includes/js/masonry.min.js","imagesloaded_js":"/wp-includes/js/imagesloaded.min.js"};
+var coblocksLigthboxData = {"closeLabel":"Close Gallery","leftLabel":"Previous","rightLabel":"Next"};
+//# sourceURL=coblocks-loader-js-extra
+</script>
+<script id="jetpack-carousel-js-extra">
+var jetpackSwiperLibraryPath = {"url":"/wp-content/mu-plugins/jetpack-plugin/sun/_inc/blocks/swiper.js"};
+var jetpackCarouselStrings = {"widths":[370,700,1000,1200,1400,2000],"is_logged_in":"","lang":"en","ajaxurl":"https://turnturnturnpdx.com/wp-admin/admin-ajax.php","nonce":"c6a3457d83","display_exif":"1","display_comments":"1","single_image_gallery":"1","single_image_gallery_media_file":"","background_color":"black","comment":"Comment","post_comment":"Post Comment","write_comment":"Write a Comment...","loading_comments":"Loading Comments...","image_label":"Open image in full-screen.","download_original":"View full size \u003Cspan class=\"photo-size\"\u003E{0}\u003Cspan class=\"photo-size-times\"\u003E\u00d7\u003C/span\u003E{1}\u003C/span\u003E","no_comment_text":"Please be sure to submit some text with your comment.","no_comment_email":"Please provide an email address to comment.","no_comment_author":"Please provide your name to comment.","comment_post_error":"Sorry, but there was an error posting your comment. Please try again later.","comment_approved":"Your comment was approved.","comment_unapproved":"Your comment is in moderation.","camera":"Camera","aperture":"Aperture","shutter_speed":"Shutter Speed","focal_length":"Focal Length","copyright":"Copyright","comment_registration":"0","require_name_email":"1","login_url":"https://turnturnturnpdx.wordpress.com/wp-login.php?redirect_to=https%3A%2F%2Fturnturnturnpdx.com%2Fentertainment%2F","blog_id":"64718911","meta_data":["camera","aperture","shutter_speed","focal_length","copyright"],"stats_query_args":"blog=64718911&v=wpcom&tz=-7&user_id=0&subd=turnturnturnpdx","is_public":"1"};
+//# sourceURL=jetpack-carousel-js-extra
+</script>
+<script id="jetpack-script-data-js-before">
+window.JetpackScriptData = {"site":{"host":"wpcom","is_wpcom_platform":true}};
+//# sourceURL=jetpack-script-data-js-before
+</script>
+<script crossorigin='anonymous' type='text/javascript'  src='/_static/??-eJyNkF1OAzEMhC9EYpZS6D4gjlJlEwPZdX4UO624PaFtlgoh4DHj+WbswDErm6JgFMhUX31ksGmiZBeGOz3s9KDYh0yoCh70PTjPAvOXSVEyDosOPuqZb+AqT94wIEOuE9QoXgjdJ8nBEKmAsXbAR0vVNespN7SRtLZM7z+lhqr6ojNKNnZRTTrmBl4GwDX22f6A0aUCpkoKRsTblTLMKAxT9eRWkW3xWZQzYv5RfNW3b0dcsqwpqTLSauvCH+eYxXNAURt9e47rwks5md0vbK84f8S3Z+Oew9PwuNuOm3E7Pswfztu6rA=='></script>
+<script id="wp-emoji-settings" type="application/json">
+{"baseUrl":"https://s0.wp.com/wp-content/mu-plugins/wpcom-smileys/twemoji/2/72x72/","ext":".png","svgUrl":"https://s0.wp.com/wp-content/mu-plugins/wpcom-smileys/twemoji/2/svg/","svgExt":".svg","source":{"concatemoji":"/wp-includes/js/wp-emoji-release.min.js?m=1783090810i&ver=7.1.1-alpha-63587"}}
+</script>
+<script type="module">
+/*! This file is auto-generated */
+var e="script#wp-emoji-settings",t=document.querySelector(e);if(!(t instanceof HTMLScriptElement))throw new Error("Element missing: "+e);const r=JSON.parse(t.text),s=(window._wpemojiSettings=r,"wpEmojiSettingsSupports"),o=["flag","emoji"];function i(e){try{var t={supportTests:e,timestamp:(new Date).valueOf()};sessionStorage.setItem(s,JSON.stringify(t))}catch(e){}}function c(e,t,n){e.clearRect(0,0,e.canvas.width,e.canvas.height),e.fillText(t,0,0);t=new Uint32Array(e.getImageData(0,0,e.canvas.width,e.canvas.height).data);e.clearRect(0,0,e.canvas.width,e.canvas.height),e.fillText(n,0,0);const r=new Uint32Array(e.getImageData(0,0,e.canvas.width,e.canvas.height).data);return t.every((e,t)=>e===r[t])}function p(e,t){e.clearRect(0,0,e.canvas.width,e.canvas.height),e.fillText(t,0,0);var n=e.getImageData(16,16,1,1);for(let e=0;e<n.data.length;e++)if(0!==n.data[e])return!1;return!0}function u(e,t,n,r){switch(t){case"flag":return n(e,"\ud83c\udff3\ufe0f\u200d\u26a7\ufe0f","\ud83c\udff3\ufe0f\u200b\u26a7\ufe0f")?!1:!n(e,"\ud83c\udde8\ud83c\uddf6","\ud83c\udde8\u200b\ud83c\uddf6")&&!n(e,"\ud83c\udff4\udb40\udc67\udb40\udc62\udb40\udc65\udb40\udc6e\udb40\udc67\udb40\udc7f","\ud83c\udff4\u200b\udb40\udc67\u200b\udb40\udc62\u200b\udb40\udc65\u200b\udb40\udc6e\u200b\udb40\udc67\u200b\udb40\udc7f");case"emoji":return!r(e,"\ud83e\u1fac8")}return!1}function f(e,t,n,r){let a;const s=(a="undefined"!=typeof WorkerGlobalScope&&self instanceof WorkerGlobalScope?new OffscreenCanvas(300,150):document.createElement("canvas")).getContext("2d",{willReadFrequently:!0}),o=(s.textBaseline="top",s.font="600 32px Arial",{});return e.forEach(e=>{o[e]=t(s,e,n,r)}),o}function a(e){var t=document.createElement("script");t.src=e,t.defer=!0,document.head.appendChild(t)}r.supports={everything:!0,everythingExceptFlag:!0},new Promise(t=>{let n=function(){try{var e=JSON.parse(sessionStorage.getItem(s));if("object"==typeof e&&"number"==typeof e.timestamp&&(new Date).valueOf()<e.timestamp+604800&&"object"==typeof e.supportTests)return e.supportTests}catch(e){}return null}();if(!n){if("undefined"!=typeof Worker&&"undefined"!=typeof OffscreenCanvas&&"undefined"!=typeof URL&&URL.createObjectURL&&"undefined"!=typeof Blob)try{var e="postMessage("+f.toString()+"("+[JSON.stringify(o),u.toString(),c.toString(),p.toString()].join(",")+"));",r=new Blob([e],{type:"text/javascript"});const a=new Worker(URL.createObjectURL(r),{name:"wpTestEmojiSupports"});return void(a.onmessage=e=>{i(n=e.data),a.terminate(),t(n)})}catch(e){}i(n=f(o,u,c,p))}t(n)}).then(e=>{for(const n in e)r.supports[n]=e[n],r.supports.everything=r.supports.everything&&r.supports[n],"flag"!==n&&(r.supports.everythingExceptFlag=r.supports.everythingExceptFlag&&r.supports[n]);var t;r.supports.everythingExceptFlag=r.supports.everythingExceptFlag&&!r.supports.flag,r.supports.everything||((t=r.source||{}).concatemoji?a(t.concatemoji):t.wpemoji&&t.twemoji&&(a(t.twemoji),a(t.wpemoji)))});
+//# sourceURL=/wp-includes/js/wp-emoji-loader.min.js
+</script>
+<script src="//stats.wp.com/w.js?69" defer></script> <script type="text/javascript">
+_tkq = window._tkq || [];
+_stq = window._stq || [];
+_tkq.push(['storeContext', {'blog_id':'64718911','blog_tz':'-7','user_lang':'en','blog_lang':'en','user_id':'0'}]);
+		// Prevent sending pageview tracking from WP-Admin pages.
+		_stq.push(['view', {'blog':'64718911','v':'wpcom','tz':'-7','user_id':'0','post':'86','subd':'turnturnturnpdx'}]);
+		_stq.push(['extra', {'crypt':'UE5tW3cvZGREeE5GMzhYXW9PdT1+U3BPT1lLM2FDWG10MjkyYU14M3pTejlQVTJNa21+d0gzNz9QanlhYXdDR3MyTT01STh3OXZEPW1SYklpLUtNSW43V0ZCWFdvb2V2TmxoUmY/PWJrd0tSN11ObFQtT0pTY0JaUVBfLkswTF92cE52ZD1ydj1yRjBXJWo/bDcsTnFCNFVdTT9lbi1rbC4vJm5KNHhWVkMyanJ1eW1FejdmYlVbK19mSUlhPVJETmY0PQ=='}]);
+_stq.push([ 'clickTrackerInit', '64718911', '86' ]);
+</script>
+<noscript><img src="https://pixel.wp.com/b.gif?v=noscript" style="height:1px;width:1px;overflow:hidden;position:absolute;bottom:1px;" alt="" /></noscript>
+<meta id="bilmur" property="bilmur:data" content="" data-provider="wordpress.com" data-service="simple" data-site-tz="America/Los_Angeles" data-custom-props="{&quot;enq_jquery&quot;:&quot;1&quot;,&quot;logged_in&quot;:&quot;0&quot;,&quot;wptheme&quot;:&quot;pub\/untitled&quot;,&quot;wptheme_is_block&quot;:&quot;0&quot;}"   >
+		<script defer src="/wp-content/js/bilmur.min.js?i=17&amp;m=202638"></script> 	
+<script>
+(function() {
+	'use strict';
+
+	const fetches = {};
+	const promises = {};
+	const urls = {
+		'wp-polyfill': '/wp-includes/js/dist/vendor/wp-polyfill.min.js?m=1786440387i&ver=3.15.0',
+		'verbum': '/wp-content/mu-plugins/jetpack-mu-wpcom-plugin/sun/jetpack_vendor/automattic/jetpack-mu-wpcom/src/build/verbum-comments/verbum-comments.js?m=1788900463i&minify=false&ver=3d6130a57c3104d5bc3b'
+	};
+	const loaders = {
+		'verbum': () => {
+			fetchExternalScript('wp-polyfill');
+			fetchExternalScript('verbum');
+			promises['wp-polyfill'] = promises['wp-polyfill'] || loadWPScript('wp-polyfill');
+			promises['verbum'] = promises['verbum'] || promises['wp-polyfill'].then( () => loadWPScript('verbum') );
+			return promises['verbum'];
+		},
+		
+	};
+	const scriptExtras = {
+		
+	};
+
+	window.WP_Enqueue_Dynamic_Script = {
+		loadScript: (handle) => {
+			if (!loaders[handle]) {
+				console.error('WP_Enqueue_Dynamic_Script: unregistered script `' + handle + '`.');
+			}
+			return loaders[handle]();
+		}
+	};
+
+	function fetchExternalScript(handle) {
+		if (!urls[handle]) {
+			return Promise.resolve();
+		}
+
+		fetches[handle] = fetches[handle] || fetch(urls[handle], { mode: 'no-cors' });
+		return fetches[handle];
+	}
+
+	function runExtraScript(handle, type, index) {
+		const id = 'wp-enqueue-dynamic-script:' + handle + ':' + type + ':' + (index + 1);
+		const template = document.getElementById(id);
+		if (!template) {
+			return Promise.reject();
+		}
+
+		const script = document.createElement( 'script' );
+		script.innerHTML = template.innerHTML;
+		document.body.appendChild( script );
+		return Promise.resolve();
+	}
+
+	function loadExternalScript(handle) {
+		if (!urls[handle]) {
+			return Promise.resolve();
+		}
+
+		return fetches[handle].then(() => {
+			return new Promise((resolve, reject) => {
+				const script = document.createElement('script');
+				script.onload = () => resolve();
+				script.onerror = (e) => reject(e);
+				script.src = urls[handle];
+				document.body.appendChild(script);
+			});
+		});
+	}
+
+	function loadExtra(handle, pos) {
+		const count = (scriptExtras[handle] && scriptExtras[handle][pos]) || 0;
+		let promise = Promise.resolve();
+
+		for (let i = 0; i < count; i++) {
+			promise = promise.then(() => runExtraScript(handle, pos, i));
+		}
+
+		return promise;
+	}
+
+	function loadWPScript(handle) {
+		// Core loads scripts in this order. See: https://github.com/WordPress/WordPress/blob/a59eb9d39c4fcba834b70c9e8dfd64feeec10ba6/wp-includes/class-wp-scripts.php#L428.
+		return loadExtra(handle, 'translations')
+			.then(() => loadExtra(handle, 'before'))
+			.then(() => loadExternalScript(handle))
+			.then(() => loadExtra(handle, 'after'));
+	}
+} )();
+</script>
+</body>
+</html>

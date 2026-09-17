@@ -109,6 +109,13 @@ VENUE_INFO = {
     "Chehalem Valley Brewing": ("Newberg", "2515 E Portland Rd Ste B, Newberg, OR 97132"),
     "Curious Comedy Theater": ("King", "5225 NE Martin Luther King Jr Blvd, Portland, OR 97211"),
     "Kickstand Comedy": ("Hosford-Abernethy", "1006 SE Hawthorne Blvd, Portland, OR 97214"),
+    "Turn! Turn! Turn!": ("Humboldt", "8 NE Killingsworth St, Portland, OR 97211"),
+    "The Off Beat": ("Kenton", "8440 N Interstate Ave, Portland, OR 97217"),
+    "The Siren Theater": ("Boise/Mississippi", "3913 N Mississippi Ave, Portland, OR 97227"),
+    "Walters Cultural Arts Center": ("Hillsboro", "527 E Main St, Hillsboro, OR 97123"),
+    "Chehalem Cultural Center": ("Newberg", "415 E Sheridan St, Newberg, OR 97132"),
+    "Trinity Episcopal Cathedral": ("Nob Hill/NW", "147 NW 19th Ave, Portland, OR 97209"),
+    "CORNER14": ("Oregon City", "508 14th St, Oregon City, OR 97045"),
     "Polaris Hall": ("Overlook/N Portland", "635 N Killingsworth Ct"),
     "Mississippi Studios": ("Boise/Mississippi", "3939 N Mississippi Ave"),
     "Havalina": ("St. Johns", "8927 N Lombard St, Portland, OR 97203"),
@@ -4646,6 +4653,328 @@ def parse_kickstand(text, today):
     return _crowdwork_rows(text, today, "Kickstand Comedy")
 
 
+# ===========================================================================
+# Batch 3, Sep 17 2026: seven HTML-page venues from the agent's sweep.
+# Fixtures captured from the Codespace the same day. Addresses checked
+# against each venue's own site (or the neighborhood association's).
+# ===========================================================================
+
+_MONTH_WORD = {m.lower(): i for i, m in enumerate(
+    ["January", "February", "March", "April", "May", "June", "July",
+     "August", "September", "October", "November", "December"], 1)}
+
+
+def _month_num(word):
+    w = (word or "").strip(". ").lower()
+    if w in _MONTH_WORD:
+        return _MONTH_WORD[w]
+    return MONTHS.get(w[:3].title(), 0)
+
+
+# ---- Turn! Turn! Turn! (8 NE Killingsworth). A hand-typed WordPress page:
+# one media-text block per show -- poster, then a date line ("Wed, Sep 16",
+# "Thur, Sep17", "Sat, Sept 19"), the bill, "8PM 21+" and a Buy Tickets
+# link, in whatever paragraphs the editor happened to use. The weekly free
+# series at the top carry no date and are skipped; so is a block whose date
+# was left off.
+_TTT_DATE = re.compile(r"\b(?:mon|tue|tues|wed|thu|thur|thurs|fri|sat|sun)[a-z]*\.?,?\s*"
+                       r"(jan|feb|mar|apr|may|jun|jul|aug|sept?|oct|nov|dec)[a-z]*\.?\s*(\d{1,2})\b", re.I)
+_TTT_TIME = re.compile(r"\b(\d{1,2})(?::(\d{2}))?\s*([ap])\.?m\.?\b", re.I)
+_TTT_NOISE = re.compile(r"buy tickets|\b21\s*\+|\ball\s+ages\b|\$\s*\d+(?:\.\d\d)?", re.I)
+
+
+def parse_turnturnturn(html, today):
+    soup = BeautifulSoup(html or "", "html.parser")
+    horizon = today + datetime.timedelta(days=120)
+    out, seen = [], set()
+    for b in soup.select(".wp-block-media-text"):
+        content = b.select_one(".wp-block-media-text__content")
+        if content is None:
+            continue
+        text = re.sub(r"\s+", " ", content.get_text(" ")).strip()
+        dm = _TTT_DATE.search(text)
+        if not dm:
+            continue
+        mon, day = _month_num(dm.group(1)), int(dm.group(2))
+        try:
+            d = datetime.date(infer_year(mon, today), mon, day)
+        except ValueError:
+            continue
+        if not (today <= d <= horizon):
+            continue
+        rest = text[:dm.start()] + " " + text[dm.end():]
+        tm_m = _TTT_TIME.search(rest)
+        tm = ""
+        if tm_m:
+            tm = "%d:%s %sM" % (int(tm_m.group(1)), tm_m.group(2) or "00", tm_m.group(3).upper())
+            rest = rest[:tm_m.start()] + " " + rest[tm_m.end():]
+        title = _TTT_NOISE.sub(" ", rest)
+        title = re.sub(r"\s+", " ", title).strip(" |,-")
+        if not title:
+            continue
+        key = (d.isoformat(), title.lower())
+        if key in seen:
+            continue
+        seen.add(key)
+        a = content.find("a", href=True)
+        img = b.find("img")
+        poster = ""
+        if img is not None:
+            poster = (img.get("data-orig-file") or img.get("src") or "").split("?")[0]
+        out.append(_batch_row("Turn! Turn! Turn!", d.isoformat(), tm, title,
+                              a["href"] if a else "https://turnturnturnpdx.com/entertainment/",
+                              poster, _age_in_text(text)))
+    return out
+
+
+# ---- The Off Beat (Friends of Noise, 8440 N Interstate). Portland's all-ages
+# room. An Astro page of .card blocks: date badge, a title that starts with
+# "9/19 ", and meta lines "September 19, 2026 7:30 pm - 10:30 pm",
+# "Age policy: All Ages", "Price ...".
+_OFFBEAT_WHEN = re.compile(r"([A-Za-z]+)\s+(\d{1,2}),\s*(\d{4})\s+(\d{1,2}(?::\d{2})?\s*[ap]m)", re.I)
+
+
+def parse_offbeat(html, today):
+    soup = BeautifulSoup(html or "", "html.parser")
+    horizon = today + datetime.timedelta(days=120)
+    out, seen = [], set()
+    for c in soup.select("article.card"):
+        t = c.select_one(".title")
+        if t is None:
+            continue
+        title = re.sub(r"^\s*\d{1,2}/\d{1,2}\s+", "", t.get_text(" ", strip=True)).strip()
+        meta = " ".join(p.get_text(" ", strip=True) for p in c.select(".details p"))
+        w = _OFFBEAT_WHEN.search(meta)
+        if not title or not w:
+            continue
+        mon = _month_num(w.group(1))
+        try:
+            d = datetime.date(int(w.group(3)), mon, int(w.group(2)))
+        except ValueError:
+            continue
+        if not (today <= d <= horizon):
+            continue
+        key = (d.isoformat(), title.lower())
+        if key in seen:
+            continue
+        seen.add(key)
+        a = t.find("a", href=True)
+        img = c.find("img")
+        out.append(_batch_row("The Off Beat", d.isoformat(), to_time(w.group(4)), title,
+                              a["href"] if a else "https://calendar.friendsofnoise.org/",
+                              img.get("src") if img else "",
+                              _age_in_text(meta) or "all-ages"))
+    return out
+
+
+# ---- The Siren Theater (3913 N Mississippi). Comedy. A Weebly page read in
+# document order: a date heading ("FRIDAY | SEPTEMBER 18", sometimes two
+# dates in one heading), then the show heading (name lines, "7:30 DOORS/
+# 8:00 SHOW", price), then a GET TICKETS button and a photo. Cancelled shows
+# say so in the heading and are skipped. Every row is tagged comedy.
+_SIREN_DATE = re.compile(r"\b(?:mon|tues|wednes|thurs|fri|satur|sun)day\b\W+"
+                         r"(january|february|march|april|may|june|july|august|september|october|november|december)\s+(\d{1,2})",
+                         re.I)
+_SIREN_DROP = re.compile(r"\d{1,2}:\d{2}\s*(?:doors|show)|^\s*\$|early show|late show|guest production|^[^\w&]*$", re.I)
+
+
+def parse_siren(html, today):
+    soup = BeautifulSoup(html or "", "html.parser")
+    horizon = today + datetime.timedelta(days=120)
+    base = "https://www.sirentheater.com"
+    out, seen = [], set()
+    dates, cur = [], None
+    for el in soup.find_all(["h2", "a", "img"]):
+        if el.name == "h2" and "wsite-content-title" in (el.get("class") or []):
+            lines = [re.sub(r"[\u200b\s]+", " ", x).strip() for x in el.get_text("\n").split("\n")]
+            lines = [x for x in lines if x]
+            joined = " | ".join(lines)
+            found = _SIREN_DATE.findall(joined)
+            if found and len(" ".join(lines)) < 80:
+                dates, cur = [], None
+                for mw, dd in found:
+                    mon = _month_num(mw)
+                    try:
+                        dates.append(datetime.date(infer_year(mon, today), mon, int(dd)))
+                    except ValueError:
+                        pass
+                continue
+            if not dates:
+                continue
+            if re.search(r"cancel", joined, re.I):
+                dates, cur = [], None
+                continue
+            name = " ".join(x for x in lines if not _SIREN_DROP.search(x))
+            name = re.sub(r"\s+", " ", name).strip()
+            st = re.search(r"(\d{1,2}):(\d{2})\s*show", joined, re.I)
+            tm = "%d:%s PM" % (int(st.group(1)), st.group(2)) if st else ""
+            cur = {"name": name, "time": tm, "url": "", "img": "", "dates": dates}
+            out.append(cur)
+            dates = []
+            continue
+        if cur is None:
+            continue
+        if el.name == "a" and not cur["url"] and "wsite-button" in (el.get("class") or []):
+            href = el.get("href") or ""
+            if href.startswith("http"):
+                cur["url"] = href
+        elif el.name == "img" and not cur["img"]:
+            src = el.get("src") or ""
+            if "/uploads/" in src:
+                cur["img"] = (base + src if src.startswith("/") else src).split("?")[0]
+    rows = []
+    for s in out:
+        if not s["name"]:
+            continue
+        for d in s["dates"]:
+            key = (d.isoformat(), s["name"].lower())
+            if not (today <= d <= horizon) or key in seen:
+                continue
+            seen.add(key)
+            rows.append(_batch_row("The Siren Theater", d.isoformat(), s["time"], s["name"],
+                                   s["url"] or base + "/sirentheatershows.html", s["img"], "", True))
+    return rows
+
+
+# ---- Walters Cultural Arts Center (527 E Main, Hillsboro). The City of
+# Hillsboro's Granicus calendar: .vi-events-tiles-item with a UTC start time,
+# a title and a one-line description of the kind of show. Puppetry, circus
+# and dance nights are skipped unless the description also says music.
+_WALTERS_NOT = re.compile(r"puppet|circus|\bdance\b|dancing", re.I)
+_WALTERS_MUSIC = re.compile(r"music|song|band|rock|jazz|blues|bluegrass|opera|guitar|symphony|orchestra|"
+                            r"soundtrack|cello|r&b|soul|americana", re.I)
+
+
+def parse_walters(html, today):
+    soup = BeautifulSoup(html or "", "html.parser")
+    horizon = today + datetime.timedelta(days=120)
+    base = "https://www.hillsboro-oregon.gov"
+    out, seen = [], set()
+    for it in soup.select(".vi-events-tiles-item"):
+        t = it.select_one(".vi-events-tiles-title")
+        st = it.select_one("time[itemprop=startDate]")
+        if t is None or st is None:
+            continue
+        title = re.sub(r"\s+", " ", t.get_text(" ", strip=True))
+        desc_el = it.select_one(".vi-events-tiles-desc")
+        desc = desc_el.get_text(" ", strip=True) if desc_el else ""
+        if _WALTERS_NOT.search(desc + " " + title) and not _WALTERS_MUSIC.search(desc + " " + title):
+            continue
+        try:
+            dt = datetime.datetime.fromisoformat(st.get("datetime")).astimezone(_ASP_PDT)
+        except Exception:
+            continue
+        if not title or not (today <= dt.date() <= horizon):
+            continue
+        key = (dt.date().isoformat(), title.lower())
+        if key in seen:
+            continue
+        seen.add(key)
+        a = it.select_one("a[href]")
+        href = a["href"] if a else ""
+        frame = it.select_one(".vi-events-tiles-img-frame")
+        img = ""
+        if frame is not None:
+            m = re.search(r"url\(([^)]+)\)", frame.get("style") or "")
+            if m:
+                img = m.group(1).strip("'\" ")
+                img = base + img if img.startswith("/") else img
+        out.append(_batch_row("Walters Cultural Arts Center", dt.date().isoformat(), _pt_clock(dt), title,
+                              (base + href) if href.startswith("/") else (href or base), img))
+    return out
+
+
+# ---- Chehalem Cultural Center (415 E Sheridan, Newberg) -- the LaJoie
+# Theatre season. A Squarespace carousel, one slide per show: poster, title,
+# "October 16 & 17 | 7:30pm" and a BUY TICKETS link to Arts People. Early
+# bird ticket slides are not shows. Comedy nights and vaudeville are tagged
+# comedy.
+_CCC_WHEN = re.compile(r"(january|february|march|april|may|june|july|august|september|october|november|december)\s+"
+                       r"(\d{1,2})(?:\s*&\s*(\d{1,2}))?(?:,?\s*(\d{4}))?\s*\|\s*(\d{1,2}(?::\d{2})?\s*[ap]m)", re.I)
+
+
+def parse_chehalemcc(html, today):
+    soup = BeautifulSoup(html or "", "html.parser")
+    horizon = today + datetime.timedelta(days=120)
+    out, seen = [], set()
+    for li in soup.select("li.list-item"):
+        t = li.select_one(".list-item-content__title")
+        d_el = li.select_one(".list-item-content__description")
+        if t is None or d_el is None:
+            continue
+        title = re.sub(r"\s+", " ", t.get_text(" ", strip=True))
+        desc = d_el.get_text(" | ", strip=True)
+        if not title or re.search(r"early bird", title, re.I):
+            continue
+        w = _CCC_WHEN.search(desc)
+        if not w:
+            continue
+        mon = _month_num(w.group(1))
+        days = [int(w.group(2))] + ([int(w.group(3))] if w.group(3) else [])
+        a = li.select_one("a.list-item-content__button[href]")
+        img = li.select_one("img")
+        poster = (img.get("data-src") or img.get("data-image") or img.get("src") or "") if img else ""
+        comedy = bool(re.search(r"comedy|vaudeville|stand.?up|improv", title, re.I))
+        for dd in days:
+            try:
+                d = datetime.date(int(w.group(4)) if w.group(4) else infer_year(mon, today), mon, dd)
+            except ValueError:
+                continue
+            key = (d.isoformat(), title.lower())
+            if not (today <= d <= horizon) or key in seen:
+                continue
+            seen.add(key)
+            out.append(_batch_row("Chehalem Cultural Center", d.isoformat(), to_time(w.group(5)), title,
+                                  a["href"] if a else "https://www.chehalemculturalcenter.org/lajoie-theatre",
+                                  poster, "", comedy))
+    return out
+
+
+# ---- Trinity Episcopal Cathedral (147 NW 19th) -- the Trinity Music Series.
+# Wix Events, in three widgets on one page: the Concert Series, the organ
+# recitals, and Evensong & special services. The page's warmup blob carries
+# all three; worship services (Evensong, Lessons & Carols, the Good Friday
+# meditation, the Blessing of the Animals) are skipped.
+_TRINITY_SKIP = re.compile(r"evensong|lessons\s*&\s*carols|meditation|blessing|\bservice\b|eucharist|\bmass\b", re.I)
+
+
+def _wix_warmup_all(html):
+    """Every Wix Events widget's events from the warmup blob (a page can
+    carry several), de-duplicated by id."""
+    m = _WIX_WARMUP_RE.search(html or "")
+    if not m:
+        return []
+    try:
+        data = json.loads(m.group(1))
+    except Exception:
+        return []
+    app = (data.get("appsWarmupData") or {}).get(_WIX_EVENTS_APPDEF) or {}
+    out, ids = [], set()
+    for widget in app.values():
+        ev = (widget or {}).get("events") if isinstance(widget, dict) else None
+        if isinstance(ev, dict) and isinstance(ev.get("events"), list):
+            for e in ev["events"]:
+                k = e.get("id") or (e.get("title"), str((e.get("scheduling") or {}).get("config")))
+                if k in ids:
+                    continue
+                ids.add(k)
+                out.append(e)
+    return out
+
+
+def parse_trinity(html, today):
+    raw = [e for e in _wix_warmup_all(html) if not _TRINITY_SKIP.search(e.get("title") or "")]
+    return _wix_rows(raw, "Trinity Episcopal Cathedral", "https://www.trinity-episcopal.org", today)
+
+
+# ---- CORNER14 (508 14th St, Oregon City). Wix Events: Sounds of Saturday
+# and Music Mondays. Trivia Tuesdays is skipped. A small calendar the page's
+# warmup blob carries in full (hasMore was false at capture), so no API tier.
+def parse_corner14(html, today):
+    raw = [e for e in _wix_warmup_all(html) if not re.search(r"trivia|bingo|karaoke", e.get("title") or "", re.I)]
+    return _wix_rows(raw, "CORNER14", "https://www.corner14oc.com", today)
+
+
 SOURCES = [
     # CitySpark JSON API (single feed -> 2 venues). The parser ignores the
     # GET body below and drives the POST API itself; the URL is only a cheap
@@ -4682,6 +5011,21 @@ SOURCES = [
      "urls": ["https://crowdwork.com/api/v2/curiouscomedyproductions/shows"]},
     {"name": "Kickstand Comedy (Crowdwork)", "parser": parse_kickstand,
      "urls": ["https://crowdwork.com/api/v2/kickstandcomedy/shows"]},
+    # Sep 17 2026 batch 3 (HTML pages).
+    {"name": "Turn! Turn! Turn! (turnturnturnpdx.com)", "parser": parse_turnturnturn,
+     "urls": ["https://turnturnturnpdx.com/entertainment/"]},
+    {"name": "The Off Beat (Friends of Noise)", "parser": parse_offbeat,
+     "urls": ["https://calendar.friendsofnoise.org/"]},
+    {"name": "The Siren Theater (sirentheater.com)", "parser": parse_siren,
+     "urls": ["https://www.sirentheater.com/sirentheatershows.html"]},
+    {"name": "Walters Cultural Arts Center (City of Hillsboro)", "parser": parse_walters, "tls": True,
+     "urls": ["https://www.hillsboro-oregon.gov/our-city/departments/parks-recreation/events/concerts-performances/performance-calendar"]},
+    {"name": "Chehalem Cultural Center (LaJoie Theatre)", "parser": parse_chehalemcc,
+     "urls": ["https://www.chehalemculturalcenter.org/lajoie-theatre"]},
+    {"name": "Trinity Music Series (trinity-episcopal.org)", "parser": parse_trinity, "tls": True,
+     "urls": ["https://www.trinity-episcopal.org/music-series"]},
+    {"name": "CORNER14 (corner14oc.com)", "parser": parse_corner14,
+     "urls": ["https://www.corner14oc.com/event-list"]},
     {"name": "Haymaker (haymakerportland.com)", "parser": parse_haymaker,
      "urls": ["https://www.haymakerportland.com/events"]},
     # A watcher: their calendar is films and lectures, so nothing is normal.
