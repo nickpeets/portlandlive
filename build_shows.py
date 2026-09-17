@@ -1102,9 +1102,10 @@ def update_news(shows, venues, today):
             continue
         if not _row_is_ticketed(row):
             continue                                   # the page would not show it
+        if m.get("price_type") != "free":
+            continue                                   # free only since Sep 17 2026; older face-value posts are not advertised
         n = int(m.get("quantity") or 1)
-        how = "free" if m.get("price_type") == "free" else "at face value"
-        new_lines[key] = {"text": f"Miracle: {n} ticket{'s' if n != 1 else ''} {how} for {row.get('title','a show')} at {row.get('venue','')}.",
+        new_lines[key] = {"text": f"Miracle: {n} free ticket{'s' if n != 1 else ''} for {row.get('title','a show')} at {row.get('venue','')}.",
                           "url": f"#/show/{sl}", "until": row["date"]}
 
     until = (today + datetime.timedelta(days=NEWS_RUN_DAYS)).isoformat()
@@ -1114,7 +1115,9 @@ def update_news(shows, venues, today):
                      "from": today.isoformat(), "until": line.get("until") or until}
         if line.get("url"):
             auto[key]["url"] = line["url"]
-    kept = [i for i in auto.values() if (i.get("until") or "9999") >= today.isoformat()]
+    kept = [i for i in auto.values() if (i.get("until") or "9999") >= today.isoformat()
+            # Miracles went free-only Sep 17 2026: retire any face-value line already running.
+            and not (str(i.get("key", "")).startswith("miracle:") and "at face value" in (i.get("text") or ""))]
     news["items"] = hand + sorted(kept, key=lambda i: i.get("from", ""), reverse=True)
     news["announced"] = sorted(seen | set(auto))
     with open(NEWS_FILE, "w") as f:

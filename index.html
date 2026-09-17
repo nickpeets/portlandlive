@@ -716,9 +716,9 @@ body{
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 
 /* ===== TICKET EXCHANGE (Stage 3) =====
-   Face value or free is guaranteed by form shape: the poster chooses one of
-   two options and there is no amount field anywhere, so there is no price to
-   police. Reuses the comments section's visual language (cream cards on the
+   Free only (Sep 17 2026), guaranteed by form shape and a database check:
+   there is no price choice and no amount field anywhere, so there is no
+   price to police. Reuses the comments section's visual language (cream cards on the
    water background, Alfa Slab One heading, Oswald labels, Bitter body). */
 .tx{margin:26px 0 4px}
 .tx-head{display:flex;align-items:baseline;gap:10px;margin-bottom:6px}
@@ -2435,7 +2435,7 @@ const STATIC_PAGES = {
   about: {title: 'About', html:
     '<p>Rain Or Shows is a guide to live music in Portland, Oregon. Every night, every room we can find \u2014 arenas to dive bars \u2014 in one place, updated every morning from the venues\u2019 own calendars.</p>'
   + '<p>Listings are pulled from public venue calendars and Ticketmaster, then checked for duplicates, rescheduled dates and cancellations. Times, ages and prices come from the venue. Always confirm with the venue before heading out \u2014 things change.</p>'
-  + '<p><strong>Miracles</strong> are extra tickets passed on at face value or free, never above. <strong>Picks</strong> are shows we think are worth your night. <strong>Stubs</strong> are your own record of where you\u2019ve been.</p>'
+  + '<p><strong>Miracles</strong> are spare tickets given away free, never sold. <strong>Picks</strong> are shows we think are worth your night. <strong>Stubs</strong> are your own record of where you\u2019ve been.</p>'
   + '<p>Missing a show? <a href="#/submit">Send it in.</a> Something wrong? <a href="mailto:corrections@rainorshows.com?subject=%5BROS%5D%20Correction">Let us know.</a> Run a venue and want your calendar handled a certain way? Same address.</p>'
   + '<p class="sub-lead" style="margin-top:18px"><a href="#/privacy">Privacy</a></p>'},
   privacy: {title: 'Privacy', html:
@@ -3126,7 +3126,8 @@ function renderShowDetail(wrap, show, kind){
 
 
 // ===== IS THIS SHOW TICKETED? (gates Miracles only) =====
-// Miracles is a face-value-or-free handoff for a ticket that exists. At a
+// Miracles is a free handoff of a ticket that exists (free only since
+// Sep 17 2026 -- a miracle is a gift, the way the Dead lot meant it). At a
 // door-cover bar there is no ticket to hand off, so the section is just
 // clutter. This decides which shows get it.
 //
@@ -3138,7 +3139,7 @@ function renderShowDetail(wrap, show, kind){
 //
 // Unknown FAILS OPEN (shows Miracles). Hiding it on a sold-out show costs a
 // real handoff; showing it on a door show costs little, because the form is
-// face-value-or-free and a free show simply won't attract posts.
+// free-only and a free show simply won't attract posts.
 //
 // Who's Going is deliberately NOT gated -- attendance works fine at a free
 // bar show.
@@ -3209,9 +3210,9 @@ function showIsTicketed(show){
 // cross-show marketplace and no way to reach these posts except through the
 // show they belong to.
 //
-// Face value or free is enforced by the SHAPE OF THE FORM: the poster picks
-// one of two options and there is no amount field anywhere in this UI or in
-// the ticket_posts table, so there is no price for anyone to police.
+// Free only (Sep 17 2026), enforced by the SHAPE OF THE FORM -- no price
+// choice and no amount field anywhere in this UI or in the ticket_posts table
+// -- and by the ticket_posts_free_only check in the database.
 //
 // Out of scope here, on purpose: reputation counts, "handoff complete" state
 // (that belongs in a trade thread, and messaging is Stage 4), resale/affiliate
@@ -3235,6 +3236,9 @@ const TX_POST_HANDOFF = { byPost: {} };
 
 function txClient(){ return window.__plAuth || null; }
 
+// Free only since Sep 17 2026. Posts made before then may still say
+// face_value; they keep their own label until their show passes, so an offer
+// someone made is never shown as something it wasn't.
 function txPriceLabel(t){ return t === 'free' ? 'Free' : 'At face value'; }
 
 // ===== HANDOFF COUNTS / REPUTATION BADGE (Fork Stage 5) =====
@@ -3393,8 +3397,10 @@ function txRow(p, myUserId){
       + '</span>'
       + '<span class="tx-when">' + esc(cmtRelTime(p.created_at)) + '</span>'
     + '</span>'
-    + '<span class="tx-tag ' + (free ? 'tx-tag-free' : 'tx-tag-face') + '">'
-      + (free ? 'Free' : 'Face value') + '</span>'
+    // Every miracle is free, so a free post carries no tag -- saying "Free"
+    // on every row is noise. Only a face-value post made before Sep 17 2026
+    // still says so, until its show passes.
+    + (free ? '' : '<span class="tx-tag tx-tag-face">Face value</span>')
     + '<span class="tx-actions">'
       + txThreadAffordance(p, mine, myUserId)
       + (mine ? '<button type="button" class="tx-cancel" data-tx-cancel="'+esc(p.id)+'">Cancel</button>' : '')
@@ -3468,7 +3474,7 @@ async function renderExchange(host, slug){
   let html = '<div class="tx-head"><h3>Miracles ☝️</h3>'
     + (visible.length ? '<span class="tx-count">' + available + ' available' + '</span>' : '')
     + '</div>'
-    + '<p class="tx-note">Passed on at face value or free — never above. Arrange the handoff between yourselves.</p>';
+    + '<p class="tx-note">Given away free — never sold. Arrange the handoff between yourselves.</p>';
 
   // Two different empty states, deliberately not the same sentence: one means
   // nothing ever happened here, the other means everything did.
@@ -3487,13 +3493,6 @@ async function renderExchange(host, slug){
       + '<span class="tx-field">'
         + '<label class="tx-label" for="txQty">How many</label>'
         + '<select class="tx-select" id="txQty" name="qty">' + opts + '</select>'
-      + '</span>'
-      + '<span class="tx-field">'
-        + '<span class="tx-label" id="txPriceLabel">Price</span>'
-        + '<span class="tx-seg" role="radiogroup" aria-labelledby="txPriceLabel">'
-          + '<label><input type="radio" name="txprice" value="face_value" checked><span>At face value</span></label>'
-          + '<label><input type="radio" name="txprice" value="free"><span>Free</span></label>'
-        + '</span>'
       + '</span>'
       + '<button type="submit" class="tx-submit">Post a Miracle</button>'
       + '<p class="tx-form-msg" data-tx-form-msg hidden></p>'
@@ -3528,11 +3527,11 @@ function bindExchange(host, slug){
     form.addEventListener('submit', async function(e){
       e.preventDefault();
       const qty = parseInt(form.querySelector('#txQty').value, 10);
-      const checked = form.querySelector('input[name="txprice"]:checked');
-      const priceType = checked ? checked.value : 'face_value';
-      // Both values come from a fixed-option control, so this only catches a
-      // tampered DOM; the CHECK constraints are the real guarantee.
-      if(!(qty >= 1 && qty <= TX_MAX_QTY) || (priceType !== 'face_value' && priceType !== 'free')) return;
+      // Miracles are free only; there is no price choice to read. The
+      // quantity check only catches a tampered DOM -- the CHECK constraints
+      // (including ticket_posts_free_only) are the real guarantee.
+      const priceType = 'free';
+      if(!(qty >= 1 && qty <= TX_MAX_QTY)) return;
       submit.disabled = true;
       msg.hidden = true;
       // user_id and display_name are set by the insert trigger.
