@@ -5426,6 +5426,7 @@ function inboxWire(){
       e.stopPropagation();
       const wasOpen = INBOX.open === which;
       inboxClose();
+      if(typeof window.quickMenuClose === 'function') window.quickMenuClose();
       if(!wasOpen){
         INBOX.open = which; list.hidden = false; btn.setAttribute('aria-expanded', 'true');
         INBOX.shown[which] = INBOX_PAGE;
@@ -6984,9 +6985,15 @@ $('#browseSelect').addEventListener('change', e => {
   const qlist = document.getElementById('quickMenuList');
   const qmenu = document.getElementById('quickMenu');
   if(!qbtn || !qlist || !qmenu) return;
+  // One dropdown at a time (Sep 17 2026): each header button stops its click
+  // from reaching the page, so the other panel's click-outside never fires --
+  // closing the inbox panels here, and the menu from there, keeps them from
+  // stacking on top of each other.
+  window.quickMenuClose = function(){ qlist.hidden = true; qbtn.setAttribute('aria-expanded','false'); };
   qbtn.addEventListener('click', (e) => {
     e.stopPropagation();
     const opening = qlist.hidden;
+    if(opening && typeof inboxClose === 'function') inboxClose();
     qlist.hidden = !opening;
     qbtn.setAttribute('aria-expanded', String(opening));
   });
