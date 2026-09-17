@@ -1176,20 +1176,24 @@ body{
         <form id="authForm">
           <div class="auth-field" id="authDisplayNameField" hidden>
             <label class="auth-label" for="authDisplayNameInput">Display name</label>
-            <input type="text" id="authDisplayNameInput" maxlength="60" autocomplete="nickname" placeholder="What should we call you?">
+            <input type="text" id="authDisplayNameInput" name="nickname" maxlength="60" autocomplete="nickname" placeholder="What should we call you?">
           </div>
           <div class="auth-field" id="authHandleField" hidden>
             <label class="auth-label" for="authHandleInput">Handle</label>
-            <input type="text" id="authHandleInput" maxlength="20" autocomplete="username" autocapitalize="off" spellcheck="false" placeholder="yourhandle">
+            <input type="text" id="authHandleInput" name="handle" maxlength="20" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="yourhandle">
             <div class="auth-hint">3&ndash;20 letters, numbers or underscores. This is how people @mention you, and it can&rsquo;t be changed later.</div>
           </div>
           <div class="auth-field">
             <label class="auth-label" for="authEmailInput">Email</label>
-            <input type="email" id="authEmailInput" required autocomplete="email" placeholder="you@example.com">
+            <!-- The email IS the login, so it is marked "username": iOS Password AutoFill
+                 pairs it with the password and fills both from a saved login. The
+                 handle field used to carry "username", which pointed AutoFill at a
+                 field that is hidden on the Sign In tab (Sep 17 2026). -->
+            <input type="email" id="authEmailInput" name="email" required autocomplete="username" inputmode="email" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="you@example.com">
           </div>
           <div class="auth-field">
             <label class="auth-label" for="authPasswordInput">Password</label>
-            <input type="password" id="authPasswordInput" required autocomplete="current-password" minlength="6" placeholder="At least 6 characters">
+            <input type="password" id="authPasswordInput" name="password" required autocomplete="current-password" minlength="6" placeholder="At least 6 characters">
           </div>
           <button type="submit" class="auth-submit" id="authSubmitBtn">Sign In</button>
           <div class="auth-msg" id="authMsg"></div>
@@ -2573,7 +2577,7 @@ function renderSubmitRoute(){
     + '<label>Link<input type="url" name="url" placeholder="https://\u2026 event or ticket page" maxlength="500"></label>'
     + '<label>Ages<select name="age"><option value="">Not sure</option><option value="all-ages">All ages</option><option value="21+">21+</option><option value="18+">18+</option></select></label>'
     + '<label>Anything else<textarea name="notes" maxlength="1000" placeholder="Support acts, cover, a note for us \u2014 not published"></textarea></label>'
-    + '<label>Your email<input type="email" name="email" maxlength="254" placeholder="So we can follow up if something\u2019s unclear" required></label>'
+    + '<label>Your email<input type="email" name="email" autocomplete="email" inputmode="email" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="254" placeholder="So we can follow up if something\u2019s unclear" required></label>'
     + '<div class="sub-actions"><button type="submit" class="tx-submit" id="subSend">Send it in</button></div>'
     + '<div class="tx-state" id="subState" aria-live="polite"></div>'
     + '</form></div>';
