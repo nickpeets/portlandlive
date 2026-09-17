@@ -1384,8 +1384,10 @@ function _normTitle(t){ return String(t||'').toLowerCase().replace(/\s+/g,' ').t
 // Punctuation and accents are ignored on both sides ("St. Johns" = "st johns",
 // "Evente" = "Eventé").
 function _srchNorm(x){
+  // Apostrophes are dropped, not turned into a space, so "Dante's" is one
+  // word: typing "dantes" finds it (Sep 17 2026).
   return ' ' + String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'')
-    .toLowerCase().replace(/[^a-z0-9]+/g,' ').trim() + ' ';
+    .toLowerCase().replace(/['\u2018\u2019\u02bc]/g,'').replace(/[^a-z0-9]+/g,' ').trim() + ' ';
 }
 // Towns outside Portland that the feed names only as a neighborhood.
 const _SRCH_TOWNS = ['lake oswego','newberg','oregon city','tigard','gresham','beaverton','troutdale',
@@ -1426,6 +1428,86 @@ function queryMatches(hay, q){
   return toks.every(t => (t.length <= 2 || _SRCH_WHOLE.has(t)) ? hay.includes(' ' + t + ' ') : hay.includes(t));
 }
 function matchesQuery(s, q){ return queryMatches(showSearchText(s), q); }
+
+// ===== SEARCHING BY DATE (Sep 17 2026) =====
+// A date anywhere in the search narrows the feed to that day or month, and
+// whatever else was typed still matches as words: "october", "oct 3",
+// "10/3", "2026-10-03", "tonight", "tomorrow", "this weekend", and
+// "dante's oct 3". Months with no day mean the whole month. A month already
+// past means next year, the same rule the scraper uses for dates.
+const _DQ_MONTHS = {jan:1,january:1,feb:2,february:2,mar:3,march:3,apr:4,april:4,may:5,jun:6,june:6,jul:7,july:7,
+  aug:8,august:8,sep:9,sept:9,september:9,oct:10,october:10,nov:11,november:11,dec:12,december:12};
+function _dqISO(y, m, d){
+  return String(y) + '-' + String(m).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+}
+function _dqLastDay(y, m){ return new Date(y, m, 0).getDate(); }
+function _dqYearFor(m, d){
+  // Same month-rollover rule as the scraper: a month already behind us is
+  // next year's. Within the current month, a day already past is next year.
+  const today = todayPacific, ty = +today.slice(0,4), tm = +today.slice(5,7), td = +today.slice(8,10);
+  if(m < tm) return ty + 1;
+  if(m === tm && d && d < td) return ty + 1;
+  return ty;
+}
+function parseDateQuery(q){
+  let text = ' ' + String(q||'').toLowerCase().replace(/[^a-z0-9/\-]+/g,' ').trim() + ' ';
+  if(text.trim() === '') return null;
+  const today = todayPacific;
+  // Every match is tried, not just the first: in "jazz october" the
+  // month-shaped word is the second one.
+  const cut = (re, fn) => {
+    const rx = new RegExp(re.source, re.flags.includes('g') ? re.flags : re.flags + 'g');
+    let m;
+    while((m = rx.exec(text)) !== null){
+      const got = fn(m);
+      if(got){
+        text = (text.slice(0, m.index) + ' ' + text.slice(m.index + m[0].length)).replace(/\s+/g,' ');
+        hit = got;
+        return true;
+      }
+      rx.lastIndex = m.index + 1;                     // overlapping words: " a b " eats its spaces
+    }
+    return false;
+  };
+  let hit = null;
+  const plus = n => { const d = new Date(today + 'T12:00:00'); d.setDate(d.getDate() + n); return d.toISOString().slice(0,10); };
+  cut(/\s(\d{4})-(\d{2})-(\d{2})\s/, m => ({from: m[1]+'-'+m[2]+'-'+m[3], to: m[1]+'-'+m[2]+'-'+m[3]}))
+  || cut(/\s(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?\s/, m => {
+      const mo = +m[1], d = +m[2];
+      if(mo < 1 || mo > 12 || d < 1 || d > 31) return null;
+      let y = m[3] ? +m[3] : _dqYearFor(mo, d);
+      if(y < 100) y += 2000;
+      return {from: _dqISO(y,mo,d), to: _dqISO(y,mo,d)};
+    })
+  || cut(/\s([a-z]{3,9})\.?\s+(\d{1,2})(?:st|nd|rd|th)?(?:\s+(\d{4}))?\s/, m => {
+      const mo = _DQ_MONTHS[m[1]]; const d = +m[2];
+      if(!mo || d < 1 || d > 31) return null;
+      const y = m[3] ? +m[3] : _dqYearFor(mo, d);
+      return {from: _dqISO(y,mo,d), to: _dqISO(y,mo,d)};
+    })
+  || cut(/\s(\d{1,2})(?:st|nd|rd|th)?\s+([a-z]{3,9})\.?\s/, m => {
+      const mo = _DQ_MONTHS[m[2]]; const d = +m[1];
+      if(!mo || d < 1 || d > 31) return null;
+      const y = _dqYearFor(mo, d);
+      return {from: _dqISO(y,mo,d), to: _dqISO(y,mo,d)};
+    })
+  || cut(/\s(today|tonight)\s/, () => ({from: today, to: today}))
+  || cut(/\s(tomorrow)\s/, () => ({from: plus(1), to: plus(1)}))
+  || cut(/\s(?:this\s+)?(weekend)\s/, () => {
+      const dow = new Date(today + 'T12:00:00').getDay();      // 0 Sun .. 6 Sat
+      const toFri = (5 - dow + 7) % 7;
+      return {from: plus(dow === 0 ? 0 : toFri), to: plus(dow === 0 ? 0 : toFri + 2)};
+    })
+  || cut(/\s([a-z]{3,9})\.?(?:\s+(\d{4}))?\s/, m => {
+      const mo = _DQ_MONTHS[m[1]];
+      if(!mo) return null;
+      const y = m[2] ? +m[2] : _dqYearFor(mo, 0);
+      return {from: _dqISO(y,mo,1), to: _dqISO(y,mo,_dqLastDay(y,mo))};
+    });
+  if(!hit) return null;
+  hit.rest = text.trim();
+  return hit;
+}
 // A multi-word search that appears as a phrase somewhere wins outright:
 // "st johns" is the St. Johns neighborhood, not every show on a street with
 // "St" in the address and a Johnson on the bill. Only when nothing contains
@@ -1654,8 +1736,15 @@ function filtered(){
   // ages until 9pm", "minors w/ guardian") are stored as unknown upstream and
   // correctly do not appear.
   if(state.allAges) out = out.filter(s => s.age === 'all-ages');
-  const q = state.q.trim().toLowerCase();
-  if(q) out = filterByQuery(out, q, showSearchText);
+  let q = state.q.trim().toLowerCase();   // a date typed in the query is cut out of it below
+  if(q){
+    const dq = parseDateQuery(q);
+    if(dq){
+      out = out.filter(s => (s.date || '') >= dq.from && (s.date || '') <= dq.to);
+      q = dq.rest;                                   // "dante's oct 3" still matches Dante's
+    }
+    if(q) out = filterByQuery(out, q, showSearchText);
+  }
    // FOLLOWING FILTER: hide-style collapse to shows whose band (band:: key) OR venue
    // (venue:: key) is hearted. Uses the SAME key construction as favoriting
    // (bandFavKey(s.title) / venueFavKey(s.venue)) so a hearted band/venue reliably
@@ -2174,10 +2263,17 @@ function renderVenues(){
   if(!state.audit){
     all = state.comedy ? all.filter(s => s.contentType === 'comedy') : all.filter(s => s.contentType === 'music');
   }
-    const q = state.q.trim().toLowerCase();
+    let q = state.q.trim().toLowerCase();   // a date typed in the query is cut out of it below
   if(state.selectedVenue){
     let vshows = all.filter(s => s.venue === state.selectedVenue);
-    if(q) vshows = filterByQuery(vshows, q, showSearchText);
+    if(q){
+      const dqv = parseDateQuery(q);                 // dates work on a venue page too
+      if(dqv){
+        vshows = vshows.filter(s => (s.date || '') >= dqv.from && (s.date || '') <= dqv.to);
+        q = dqv.rest;
+      }
+      if(q) vshows = filterByQuery(vshows, q, showSearchText);
+    }
     vshows = sortShows(vshows);
     // A venue with no upcoming shows has no row to read its address from;
     // the directory the build publishes (state.venues) has it either way.
@@ -2888,9 +2984,12 @@ async function renderThreadRoute(handle){
   ta.focus();
 }
 
-function peopleRow(u, removable){
+function peopleRow(u, removable, unfollowable){
   // removable: an "x" that removes this person as a follower. Only shown on
   // your own followers list (Sep 2026; Nick chose remove over block).
+  // unfollowable: the same "x" on your own Following list, which stops you
+  // following them (Sep 17 2026) -- before this the only way out was to open
+  // their profile and press Following.
   return '<div class="people-row-wrap">'
     + '<a class="people-row" href="#/u/' + encodeURIComponent(u.handle) + '">'
     +   avImg(u.id, u.display_name, 'av-sm')
@@ -2898,6 +2997,7 @@ function peopleRow(u, removable){
     +   '<span class="people-handle">@' + esc(u.handle) + '</span>'
     + '</a>'
     + (removable ? '<button type="button" class="people-remove" data-remove-follower="' + esc(u.id) + '" title="Remove follower" aria-label="Remove ' + esc(u.display_name || u.handle) + ' as a follower">&times;</button>' : '')
+    + (unfollowable ? '<button type="button" class="people-remove" data-unfollow="' + esc(u.id) + '" title="Unfollow" aria-label="Unfollow ' + esc(u.display_name || u.handle) + '">&times;</button>' : '')
     + '</div>';
 }
 // Search by handle (Sep 2026): a query starting with "@" searches people
@@ -3073,13 +3173,30 @@ async function renderProfileRoute(handle){
       var rows = (r && r.data) || [];
       rows.forEach(function(u){ AV_CACHE[u.id] = { id: u.id, display_name: u.display_name, avatar_url: u.avatar_url }; });
       var removable = isMe && which === 'followers';
+      var unfollowable = isMe && which === 'following';
       peoplePanel.innerHTML = '<div class="pf-people-head">' + label + ' <span class="count">' + rows.length + '</span></div>'
-        + (rows.length ? '<div class="people-list">' + rows.map(function(u){ return peopleRow(u, removable); }).join('') + '</div>'
+        + (rows.length ? '<div class="people-list">' + rows.map(function(u){ return peopleRow(u, removable, unfollowable); }).join('') + '</div>'
                        : '<div class="pf-empty">' + (which === 'followers' ? 'No followers yet.' : 'Not following anyone yet.') + '</div>');
     });
   });
   // Remove a follower: one tap, no confirm (they can follow again, and the
   // row disappears right there). The count in the header ticks down.
+  // Unfollow straight from your own Following list, same one-tap shape as
+  // removing a follower (Sep 17 2026). The delete policy on follows only
+  // matches your own rows, so this is your follow and nobody else's.
+  peoplePanel.addEventListener('click', async function(e){
+    var btn = e.target.closest('[data-unfollow]');
+    if(!btn) return;
+    e.preventDefault(); e.stopPropagation();
+    btn.disabled = true;
+    var r = await safe(sb.from('follows').delete().eq('followee_id', btn.getAttribute('data-unfollow')));
+    if(r && r.error){ console.warn('[profile] unfollow failed:', r.error.message || r.error); btn.disabled = false; return; }
+    var wrapRow = btn.closest('.people-row-wrap'); if(wrapRow) wrapRow.remove();
+    var cnt = page.querySelector('[data-pf-following]');
+    if(cnt){ var n = Math.max(0, (parseInt(cnt.textContent, 10) || 1) - 1); cnt.textContent = n + ' following'; }
+    var pc = peoplePanel.querySelector('.pf-people-head .count'); if(pc) pc.textContent = String(Math.max(0, (parseInt(pc.textContent, 10) || 1) - 1));
+    if(!peoplePanel.querySelector('.people-row-wrap')){ var l = peoplePanel.querySelector('.people-list'); if(l) l.outerHTML = '<div class="pf-empty">Not following anyone yet.</div>'; }
+  });
   peoplePanel.addEventListener('click', async function(e){
     var btn = e.target.closest('[data-remove-follower]');
     if(!btn) return;
