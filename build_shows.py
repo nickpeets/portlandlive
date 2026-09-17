@@ -554,6 +554,12 @@ def _venue_directory(shows):
 # pass is skipped with a note; a failed fetch is a WARN. Never fatal.
 # ---------------------------------------------------------------------------
 TM_VENUE_MAP = {
+    # Ridgefield WA, a half-hour up I-5 -- in range since the pull went to a
+    # radius rather than city=Portland/OR (Sep 2026).
+    "Ilani Cowlitz Ballroom": "ilani",
+    "Cowlitz Ballroom at Ilani Casino Resort": "ilani",
+    "ilani Casino Resort": "ilani",
+    "Rock & Brews at ilani": "ilani",
     "Revolution Hall - Portland": "Revolution Hall",
     "McMenamins Crystal Ballroom": "Crystal Ballroom",
     "McMenamins Mission Theater": "Mission Theater",
@@ -638,8 +644,16 @@ def tm_fetch(today, days=90):
     end = today + datetime.timedelta(days=days)
     out, page = [], 0
     while page < 10:
+        # A radius around downtown Portland, not city=Portland/OR: the city
+        # filter stopped at the state line, so Ridgefield WA -- ilani and
+        # Cascades Amphitheater, both a half-hour up I-5 and both places
+        # Portlanders drive to -- returned nothing (Nick, Sep 2026). 35 miles
+        # covers Vancouver, Ridgefield, Beaverton, Hillsboro, Troutdale and
+        # Forest Grove; 503 events where the city filter found 487, and no
+        # venue in the result that TM_VENUE_MAP does not already know.
         q = urllib.parse.urlencode({
-            "apikey": key, "city": "Portland", "stateCode": "OR", "classificationName": "music",
+            "apikey": key, "latlong": "45.5152,-122.6784", "radius": 35, "unit": "miles",
+            "classificationName": "music",
             "size": 200, "page": page, "sort": "date,asc",
             "startDateTime": today.isoformat() + "T00:00:00Z",
             "endDateTime": end.isoformat() + "T23:59:59Z"})
@@ -775,6 +789,8 @@ VIVID_VENUE_MAP = {
     "The Den - Portland": "The Den",   # 116 SE Yamhill -- NOT Al's Den (McMenamins, SW 12th). Was wrong until 2026-09-16.
     "Hillsboro Ballpark": "Hops Ballpark",
     "The Melody Event Center - The Get Down Music Venue": "The Get Down",
+    "Ilani Cowlitz Ballroom": "ilani",
+    "Cowlitz Ballroom at Ilani Casino Resort": "ilani",
     "Helium Comedy Club - Portland": "Helium Comedy Club",
 }
 _VIVID_DATE = re.compile(r"-(\d{1,2})-(\d{1,2})-(\d{4})(?=--|/|$)")
