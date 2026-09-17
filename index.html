@@ -1028,10 +1028,10 @@ body{
     <div class="ctl-row">
       <div class="search-pill pill">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-        <input id="searchInput" type="text" autocomplete="off" placeholder="search bands, venues, @people…">
+        <input id="searchInput" type="text" autocomplete="off" placeholder="bands, venues, neighborhoods, towns, @people…">
       </div>
       <!-- Sort dropdown + Reset button removed (search already matches
-           title+venue+neighborhood, so a separate neighborhood control was
+           title, venue, neighborhood, address, town and quadrant, so a separate neighborhood control was
            redundant; nothing else called #resetBtn's handler). byHoodToggle
            stays in the DOM, hidden and now unreachable on purpose: the
            day→neighborhood grouped-rendering logic it drove is left in
@@ -1357,6 +1357,76 @@ function liveFestivals(){
 // Normalize a title for matching: lowercase + collapse whitespace.
 function _normTitle(t){ return String(t||'').toLowerCase().replace(/\s+/g,' ').trim(); }
 
+// ===== SEARCH (Sep 17 2026) =====
+// One matcher for the feed, the venue page and the venue directory. A show is
+// found by any mix of words from its title, venue, neighborhood, street
+// address, city and Portland quadrant -- "jazz se", "comedy king",
+// "newberg", "north portland", "st johns". Every word typed must appear
+// somewhere (AND). Words of one or two letters ("se", "n", "st") must match a
+// whole word, so "se" finds SE Portland without matching "session".
+// Punctuation and accents are ignored on both sides ("St. Johns" = "st johns",
+// "Evente" = "Eventé").
+function _srchNorm(x){
+  return ' ' + String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .toLowerCase().replace(/[^a-z0-9]+/g,' ').trim() + ' ';
+}
+// Towns outside Portland that the feed names only as a neighborhood.
+const _SRCH_TOWNS = ['lake oswego','newberg','oregon city','tigard','gresham','beaverton','troutdale',
+  'forest grove','hillsboro','hood river','trout lake','ridgefield','vancouver','camas','milwaukie','west linn'];
+const _SRCH_QUAD = {ne:'northeast', se:'southeast', sw:'southwest', nw:'northwest', n:'north', s:'south'};
+function placeWords(neighborhood, address){
+  const hood = String(neighborhood||''), addr = String(address||'');
+  let city = '';
+  const m = addr.match(/,\s*([A-Za-z .'-]+?)\s*(?:,\s*(?:OR|WA)\b|$)/);
+  if(m && !/^\s*(OR|WA)\s*$/i.test(m[1])) city = m[1];
+  if(!city){
+    const h = hood.toLowerCase();
+    city = _SRCH_TOWNS.find(t => h.includes(t)) || '';
+  }
+  if(!city) city = 'Portland';
+  let words = city;
+  if(/^portland$/i.test(city.trim())){
+    words += ' pdx';
+    const q = addr.match(/^\s*\d+[A-Za-z]?\s+(NE|SE|SW|NW|N|S)\b/i);
+    if(q){
+      const k = q[1].toLowerCase(), full = _SRCH_QUAD[k];
+      words += ' ' + k + ' ' + k + ' portland ' + full + ' ' + full + ' portland' + (k === 'n' ? ' nopo' : '');
+    }
+  }
+  return words;
+}
+function showSearchText(s){
+  if(s._srch === undefined){
+    s._srch = _srchNorm([s.title, s.venue, s.neighborhood, s.address, placeWords(s.neighborhood, s.address)].join(' '));
+  }
+  return s._srch;
+}
+// Direction words are whole-word too, so "north portland" is North Portland
+// and not every Northeast and Northwest room as well.
+const _SRCH_WHOLE = new Set(['north','south','east','west','northeast','northwest','southeast','southwest','nopo','pdx']);
+function queryMatches(hay, q){
+  const toks = _srchNorm(q).trim().split(' ').filter(Boolean);
+  return toks.every(t => (t.length <= 2 || _SRCH_WHOLE.has(t)) ? hay.includes(' ' + t + ' ') : hay.includes(t));
+}
+function matchesQuery(s, q){ return queryMatches(showSearchText(s), q); }
+// A multi-word search that appears as a phrase somewhere wins outright:
+// "st johns" is the St. Johns neighborhood, not every show on a street with
+// "St" in the address and a Johnson on the bill. Only when nothing contains
+// the phrase do the words match independently ("jazz se").
+function filterByQuery(items, q, textOf){
+  const norm = _srchNorm(q), toks = norm.trim().split(' ').filter(Boolean);
+  if(!toks.length) return items;
+  if(toks.length > 1){
+    const phrase = items.filter(x => textOf(x).includes(norm));
+    if(phrase.length) return phrase;
+  }
+  return items.filter(x => queryMatches(textOf(x), q));
+}
+function venueSearchText(v){
+  if(v._srch === undefined) v._srch = _srchNorm([v.name, v.neighborhood, v.address, placeWords(v.neighborhood, v.address)].join(' '));
+  return v._srch;
+}
+
 // Public classifier: keyword result first, then name-based overrides take precedence.
 function classifyType(s){
   // The build can say what a row is, and does for Ticketmaster events --
@@ -1568,7 +1638,7 @@ function filtered(){
   // correctly do not appear.
   if(state.allAges) out = out.filter(s => s.age === 'all-ages');
   const q = state.q.trim().toLowerCase();
-  if(q) out = out.filter(s => (s.title+" "+s.venue+" "+s.neighborhood).toLowerCase().includes(q));
+  if(q) out = filterByQuery(out, q, showSearchText);
    // FOLLOWING FILTER: hide-style collapse to shows whose band (band:: key) OR venue
    // (venue:: key) is hearted. Uses the SAME key construction as favoriting
    // (bandFavKey(s.title) / venueFavKey(s.venue)) so a hearted band/venue reliably
@@ -2037,7 +2107,7 @@ function renderVenues(){
     const q = state.q.trim().toLowerCase();
   if(state.selectedVenue){
     let vshows = all.filter(s => s.venue === state.selectedVenue);
-    if(q) vshows = vshows.filter(s => (s.title+" "+s.venue+" "+s.neighborhood).toLowerCase().includes(q));
+    if(q) vshows = filterByQuery(vshows, q, showSearchText);
     vshows = sortShows(vshows);
     // A venue with no upcoming shows has no row to read its address from;
     // the directory the build publishes (state.venues) has it either way.
@@ -2066,14 +2136,15 @@ function renderVenues(){
     // has an address, a page, and a reason to be findable. Feed venues are
     // unioned in for an older shows.json without the directory.
     const dir={};
-    (state.venues || []).forEach(v=>{ dir[v.name]={name:v.name,neighborhood:v.neighborhood||"",count:0}; });
+    (state.venues || []).forEach(v=>{ dir[v.name]={name:v.name,neighborhood:v.neighborhood||"",address:v.address||"",count:0}; });
     state.shows.filter(x=>x.venue && x.date>=todayPacific).forEach(x=>{
-      if(!dir[x.venue]) dir[x.venue]={name:x.venue,neighborhood:x.neighborhood||"",count:0};
+      if(!dir[x.venue]) dir[x.venue]={name:x.venue,neighborhood:x.neighborhood||"",address:x.address||"",count:0};
+      if(!dir[x.venue].address && x.address) dir[x.venue].address=x.address;
       dir[x.venue].count++;
       if(!dir[x.venue].neighborhood && x.neighborhood) dir[x.venue].neighborhood=x.neighborhood;
     });
     let dlist=Object.values(dir);
-    if(q) dlist=dlist.filter(v=>(v.name+" "+v.neighborhood).toLowerCase().includes(q));
+    if(q) dlist=filterByQuery(dlist, q, venueSearchText);
     dlist.sort((a,b)=>a.name.localeCompare(b.name));
     $("#resultCount").textContent = dlist.length ? `${dlist.length} venue${dlist.length>1?"s":""}` : "No venues";
     const dhead=document.createElement("div"); dhead.className="venue-header";
