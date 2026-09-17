@@ -3222,31 +3222,6 @@ async function renderProfileRoute(handle){
   // view now lands here, and the sections it alone had (upcoming hearts,
   // followed bands and venues, "Did you make it?") render first, only for
   // you. Everyone else sees the public record below, unchanged.
-  // Who sees your upcoming shows, saved shows and stubs. One switch; it
-  // writes profiles.upcoming_visibility, which can_see_upcoming() reads
-  // (Sep 17 2026 -- before this the value could only be changed in SQL).
-  if(isMe){
-    var vis = document.createElement('div');
-    vis.className = 'pf-visibility';
-    vis.innerHTML = 'Your upcoming shows, saved shows and stubs are visible to '
-      + '<select id="pfVisibility" aria-label="Who can see your shows and stubs">'
-      + '<option value="followers"' + (p.upcoming_visibility === 'followers' || !p.upcoming_visibility ? ' selected' : '') + '>your followers</option>'
-      + '<option value="public"' + (p.upcoming_visibility === 'public' ? ' selected' : '') + '>anyone</option>'
-      + '<option value="private"' + (p.upcoming_visibility === 'private' ? ' selected' : '') + '>no one</option>'
-      + '</select><span class="pf-vis-note" hidden>Saved</span>';
-    page.appendChild(vis);
-    vis.querySelector('#pfVisibility').addEventListener('change', async function(e){
-      var want = e.target.value;
-      e.target.disabled = true;
-      var r = await safe(sb.from('profiles').update({ upcoming_visibility: want }).eq('id', p.id));
-      e.target.disabled = false;
-      if(r && r.error){ console.warn('[profile] visibility failed:', r.error.message || r.error); e.target.value = p.upcoming_visibility || 'followers'; return; }
-      p.upcoming_visibility = want;
-      var note = vis.querySelector('.pf-vis-note');
-      if(note){ note.hidden = false; setTimeout(function(){ note.hidden = true; }, 1600); }
-    });
-  }
-
   if(isMe && typeof renderPrivateSections === 'function'){
     try{ renderPrivateSections(wrap); }catch(e){ console.warn('[profile] private sections:', e); }
   }
@@ -3300,7 +3275,8 @@ async function renderProfileRoute(handle){
   })();
 
   // What a non-follower is told, per section, for the three visibility
-  // settings (Sep 17 2026: 'private' means not even followers).
+  // settings (Sep 17 2026: 'private' means not even followers). The switch
+  // itself lives in the header menu (auth.js, #visibilityEditor).
   function withheld(what){
     if(isMe) return '';
     if(p.upcoming_visibility === 'private') return esc(p.display_name || 'This person') + ' keeps ' + what + ' private.';
@@ -7343,10 +7319,6 @@ a.inbox-thread-who:hover{text-decoration:underline}
 .people-row-wrap{display:flex;align-items:center;gap:6px}
 .people-row-wrap .people-row{flex:1 1 auto;min-width:0}
 .pf-follow.is-requested{opacity:.8;font-style:italic}
-.pf-visibility{margin:10px 0 2px;font-family:'Josefin Slab',Georgia,serif;font-size:14px;opacity:.85;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.pf-visibility select{font-family:inherit;font-size:14px;background:rgba(255,255,255,.1);color:var(--cream);border:1px solid rgba(255,255,255,.28);border-radius:6px;padding:3px 6px}
-.pf-visibility select option{color:var(--ink);background:var(--cream)}
-.pf-vis-note{opacity:.7;font-style:italic}
 .people-remove{flex:0 0 auto;background:none;border:1px solid rgba(243,234,215,.25);color:var(--cream);opacity:.55;border-radius:50%;width:28px;height:28px;line-height:1;font-size:16px;cursor:pointer}
 .people-remove:hover{opacity:1;border-color:var(--cream)}
 .people-name{font-family:'Bitter',Georgia,serif;font-weight:600;font-size:15px}

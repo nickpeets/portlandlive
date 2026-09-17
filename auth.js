@@ -203,8 +203,9 @@
     }
   }
 
-  // Who may see your upcoming shows (D1): your followers (Part 4), or
-  // everyone.
+  // Who may see your upcoming shows, saved shows and stubs (D1): your
+  // accepted followers, everyone, or no one (Sep 17 2026 -- 'private').
+  // One setting, profiles.upcoming_visibility, read by can_see_upcoming().
   function renderVisibilityEditor(visibility, userId) {
     const slot = el.visibilityEditor;
     if (!slot) return;
@@ -216,18 +217,19 @@
     slot.hidden = false;
     slot.innerHTML =
       '<div class="handle-edit">' +
-        '<label class="av-edit-note" style="padding:0" for="pfVisSelect">Upcoming shows visible to</label>' +
+        '<label class="av-edit-note" style="padding:0" for="pfVisSelect">Shows & stubs visible to</label>' +
         '<select id="pfVisSelect" data-vis-select>' +
           '<option value="followers">Followers only</option>' +
           '<option value="public">Everyone</option>' +
+          '<option value="private">No one</option>' +
         "</select>" +
-        '<div class="handle-edit-msg" data-vis-msg>Who can see the shows you\u2019re going to.</div>' +
+        '<div class="handle-edit-msg" data-vis-msg>Your upcoming shows, saved shows and stubs.</div>' +
       "</div>";
     const sel = slot.querySelector("[data-vis-select]");
     const msg = slot.querySelector("[data-vis-msg]");
     sel.value = visibility;
     sel.addEventListener("change", async () => {
-      const next = sel.value === "public" ? "public" : "followers";
+      const next = sel.value === "public" ? "public" : sel.value === "private" ? "private" : "followers";
       sel.disabled = true;
       msg.classList.remove("is-error");
       msg.textContent = "Saving\u2026";
@@ -239,7 +241,9 @@
           sel.value = visibility;
         } else {
           visibility = next;
-          msg.textContent = next === "public" ? "Anyone can see your upcoming shows." : "Only followers can see your upcoming shows.";
+          msg.textContent = next === "public" ? "Anyone can see your shows and stubs."
+            : next === "private" ? "Only you can see your shows and stubs."
+            : "Only followers you\u2019ve approved can see your shows and stubs.";
         }
       } catch (err) {
         msg.textContent = "Couldn\u2019t save. Try again.";
