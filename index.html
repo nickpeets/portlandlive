@@ -3259,7 +3259,13 @@ async function renderProfileRoute(handle){
     stubs.forEach(function(o){ grid.appendChild(stubTileCanvas(o)); });
     st.appendChild(grid);
   } else {
-    st.innerHTML += '<div class="pf-empty">' + (isMe ? 'No stubs yet. After a show, tap \u201CI was there\u201D and keep the stub.' : 'No stubs yet.') + '</div>';
+    // Since Sep 17 2026 stubs_for_user returns nothing to a non-follower
+    // (same rule as upcoming shows), so word that instead of "no stubs".
+    st.innerHTML += '<div class="pf-empty">' + (isMe
+      ? 'No stubs yet. After a show, tap \u201CI was there\u201D and keep the stub.'
+      : (p.upcoming_visibility === 'followers' && !iFollow
+          ? esc(p.display_name || 'This person') + ' shares stubs with followers.'
+          : 'No stubs yet.')) + '</div>';
   }
   page.appendChild(st);
 
