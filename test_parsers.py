@@ -190,6 +190,23 @@ def main():
         fails += 1
         print(f"  FAIL wildhare.ics (links)         {fb} of {len(wh)} rows link to a Facebook event; expected 21 of 21")
     print()
+    # Show time, not doors (Sep 17 2026): the helpers, then Bunk Bar, whose
+    # structured start is doors while the card says "Doors: 7pm Show: 8pm".
+    probs = []
+    for txt, want in [("6pm doors, 7pm show", "7:00 PM"), ("Doors: 7PM / Show: 8PM", "8:00 PM"),
+                      ("7:30pm doors, 8pm show", "8:00 PM"), ("6-9pm", "6:00 PM"), ("8pm", "8:00 PM"),
+                      ("5:30-7:30pm", "5:30 PM"), ("Show at 9 p.m.", "9:00 PM")]:
+        if sv.start_time(txt) != want:
+            probs.append(f"start_time({txt!r}) = {sv.start_time(txt)!r}, want {want!r}")
+    bb = {r["title"]: r["time"] for r in sv.parse_bunkbar(load("bunkbar.html"), TODAY)}
+    if bb.get("Sean Rowe") != "8:00 PM":
+        probs.append(f"Bunk Bar Sean Rowe time {bb.get('Sean Rowe')!r}, want '8:00 PM' (show, not doors)")
+    if probs:
+        fails += 1
+        print("  FAIL show-time helpers            " + "; ".join(probs))
+    else:
+        print("  ok   show-time helpers             7 cases + Bunk Bar -- show time wins over doors; range reads its start")
+    print()
     # Laurelthirst walks months by POSTing to EventON itself, so it cannot be
     # driven from one HTML file the way the others are. Feed it the captured
     # September month through a stubbed _laurel_month and check the poster
@@ -216,11 +233,13 @@ def main():
     sv.MCMENAMINS_VENUES = {"55": "White Eagle Saloon"}
     rows = sv.parse_mcmenamins("<html></html>", TODAY)
     n_t = sum(1 for r in rows if (r.get("time") or "").strip()); n_a = sum(1 for r in rows if (r.get("age") or "").strip())
-    if len(rows) == 10 and n_t == 10 and n_a == 8:
-        print(f"  ok   mcmenamins-scroll-10.html    {len(rows):3d} rows  -- getScrollEvents fragment via stubbed session; age from card text")
+    # Show time, not doors: 7 of these 10 cards read "7:30pm doors, 8pm show".
+    doors_taken = sum(1 for r in rows if r.get("time") in ("7:30 PM", "5:30 PM", "8:30 PM") )
+    if len(rows) == 10 and n_t == 10 and n_a == 8 and doors_taken == 0:
+        print(f"  ok   mcmenamins-scroll-10.html    {len(rows):3d} rows  -- getScrollEvents fragment via stubbed session; age from card text; show time not doors")
     else:
         fails += 1
-        print(f"  FAIL mcmenamins-scroll-10.html    rows {len(rows)} != 10 or time {n_t} != 10 or age {n_a} != 8")
+        print(f"  FAIL mcmenamins-scroll-10.html    rows {len(rows)} != 10 or time {n_t} != 10 or age {n_a} != 8 or {doors_taken} rows took the doors time")
     print()
     # Ticketmaster enrichment/gap-fill (build_shows.tm_apply) against the
     # captured Discovery API pull. The feed it matches against changes

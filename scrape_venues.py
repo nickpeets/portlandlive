@@ -162,6 +162,38 @@ def to_time(s):
     h = int(m.group(1)); mm = m.group(2) or "00"; ap = m.group(3).upper()
     return f"{h}:{mm} {ap}M"
 
+# ---- Show time, not doors (Sep 17 2026). Nick spotted the Robert Hunter night
+# at Kennedy School listed at 6 PM when the venue says "doors at 6, show at 7":
+# McMenamins cards read "6pm doors, 7pm show" and to_time() takes the first
+# time it meets. The feed's time is the SHOW time wherever the venue states
+# one. to_time() itself is unchanged; parsers whose text carries both call
+# show_time() first.
+_SHOW_AFTER = re.compile(r"\bshow\s*(?:time|starts?|at)?\s*[:@-]?\s*(\d{1,2}(?::\d{2})?\s*[ap]\.?m\.?)", re.I)
+_SHOW_BEFORE = re.compile(r"(\d{1,2}(?::\d{2})?\s*[ap]\.?m\.?)\s*show\b", re.I)
+_RANGE_START = re.compile(r"\b(\d{1,2})(?::(\d{2}))?\s*(?:([ap])\.?m\.?)?\s*[-\u2013]\s*\d{1,2}(?::\d{2})?\s*([ap])\.?m", re.I)
+
+
+def show_time(s):
+    """The show time when the text states one ("Doors: 7pm Show: 8pm",
+    "6pm doors, 7pm show"); "" when it doesn't."""
+    s = s or ""
+    m = _SHOW_AFTER.search(s) or _SHOW_BEFORE.search(s)
+    return to_time(m.group(1).replace(".", "")) if m else ""
+
+
+def start_time(s):
+    """Show time if stated; else the START of a range ("6-9pm" is 6:00 PM,
+    where to_time would read the 9pm); else the first time."""
+    st = show_time(s)
+    if st:
+        return st
+    m = _RANGE_START.search(s or "")
+    if m:
+        ap = (m.group(3) or m.group(4)).upper()
+        return "%d:%s %sM" % (int(m.group(1)), m.group(2) or "00", ap)
+    return to_time(s or "")
+
+
 def infer_year(month, today):
     return today.year + 1 if month < today.month else today.year
 
@@ -2309,6 +2341,9 @@ def parse_bunkbar(html, today):
             dt_p = _dt.datetime(yr, mo, day, hh, mn) - _dt.timedelta(hours=7)
             date = dt_p.strftime("%Y-%m-%d")
             tm = dt_p.strftime("%I:%M %p").lstrip("0")
+            # The structured start is the doors time; the card's own text
+            # ("Doors: 7pm Show: 8pm") says when the show starts.
+            tm = show_time(clean(c.get_text(" "))) or tm
         else:
             date = f"{yr:04d}-{mo:02d}-{day:02d}"
             tm = ""
@@ -3664,7 +3699,7 @@ def parse_mcmenamins(html, today):
                 date = datetime.date(yr, mon, int(m.group(2))).isoformat()
             except ValueError:
                 continue
-            tm_str = to_time(time_txt)
+            tm_str = start_time(time_txt)       # show time, not doors; start of a range
             href = a.get("href") or ""
             url = ("https://www.mcmenamins.com" + href) if href.startswith("/") else href
             # Real art is the teaser div background-image; the <img> is a blank.gif
