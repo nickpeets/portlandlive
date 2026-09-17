@@ -3098,6 +3098,7 @@ async function renderProfileRoute(handle){
   var stateRow = (out[4] && !out[4].error && Array.isArray(out[4].data)) ? out[4].data[0] : null;
   var iFollow = !!(stateRow && stateRow.i_follow);
   var followsMe = !!(stateRow && stateRow.follows_me);
+  var iRequested = !!(stateRow && stateRow.i_requested);   // my request is waiting (Sep 17 2026)
   if(out[0].error) console.warn('[profile] stubs failed:', out[0].error.message);
   if(out[1].error) console.warn('[profile] attendance failed:', out[1].error.message);
   if(out[3].error) console.warn('[profile] follow counts failed:', out[3].error.message);
@@ -3106,10 +3107,12 @@ async function renderProfileRoute(handle){
   page.className = 'pf-page';
 
   // Header. The Follow button (Stage 10 Part 4) is never shown signed-out
-  // or on your own page. Three states: Follow / Follow back (they already
-  // follow you) / Following (click to unfollow -- a follow is one row, and
-  // redoing it costs nothing, so no confirm step).
-  var followLabel = iFollow ? 'Following' : (followsMe ? 'Follow back' : 'Follow');
+  // or on your own page. Four states since follow requests (Sep 17 2026):
+  // Follow / Follow back (they already follow you) / Requested (yours is
+  // waiting -- tap to take it back) / Following (tap to unfollow). All three
+  // of the last three are the same one row, deleted.
+  var followLabel = iFollow ? 'Following' : iRequested ? 'Requested' : (followsMe ? 'Follow back' : 'Follow');
+  var followAction = (iFollow || iRequested) ? 'unfollow' : 'follow';
   page.innerHTML = '<div class="pf-head">'
     + avImg(p.id, p.display_name, 'av-lg pf-av')
     + '<div class="pf-id">'
@@ -3124,7 +3127,7 @@ async function renderProfileRoute(handle){
     + '</div>'
     + ((myId && !isMe)
         ? '<div class="pf-actions">'
-          + '<button type="button" class="pf-follow' + (iFollow ? ' is-following' : '') + '" data-pf-follow="' + (iFollow ? 'unfollow' : 'follow') + '"'
+          + '<button type="button" class="pf-follow' + (iFollow ? ' is-following' : '') + (iRequested ? ' is-requested' : '') + '" data-pf-follow="' + followAction + '"'
             + (iFollow ? ' title="Unfollow"' : '') + '>' + followLabel + '</button>'
           // Message (Sep 2026). Nick's rule: either of you follows the other.
           // Not allowed yet: the button says so and does nothing.
@@ -4824,6 +4827,35 @@ async function inboxLoad(){
       }
     }catch(e){ console.warn('[inbox] followers threw:', e); }
 
+    // ---- Follow requests (Sep 17 2026) -------------------------------
+    // These are the only notifications with a decision attached: a follow now
+    // waits for you, so nobody reads a followers-only profile by subscribing
+    // to it. Opening the row shows Allow / Decline.
+    try{
+      const q = await sb.rpc('follow_requests', { p_limit: 50 });
+      if(!q.error){
+        const seenNow = txSeenMap();
+        (q.data || []).forEach(function(f){
+          const key = 'fr:' + f.follower_id + ':' + f.created_at;
+          items.push({
+            kind: 'followreq',
+            seenKey: key,
+            otherId: f.follower_id,
+            who: f.display_name || 'Someone',
+            handle: f.handle || '',
+            slug: '',
+            kindLabel: 'Follow request',
+            snippet: 'wants to follow you',
+            at: f.created_at,
+            unread: !seenNow[key],
+            empty: false
+          });
+        });
+      } else {
+        console.warn('[inbox] follow requests failed:', q.error.message);
+      }
+    }catch(e){ console.warn('[inbox] follow requests threw:', e); }
+
     // ---- Direct messages (Sep 2026) ---------------------------------
     try{
       const q = await sb.rpc('dm_threads_mine', { p_limit: 50 });
@@ -4883,7 +4915,7 @@ async function inboxLoad(){
     // own unread flag from dm_threads_mine, and the ticket/show pass below
     // does not know about it -- without this line DMs were dropped here, so
     // the badge never counted them.
-    const direct = items.filter(function(i){ return i.kind === 'report' || i.kind === 'mention' || i.kind === 'follow' || i.kind === 'dm'; });
+    const direct = items.filter(function(i){ return i.kind === 'report' || i.kind === 'mention' || i.kind === 'follow' || i.kind === 'followreq' || i.kind === 'dm'; });
     INBOX.items = items.filter(function(i){ return i.kind === 'ticket' || i.kind === 'show'; }).map(function(i){
       const m = latest[(i.kind === 'ticket' ? 't:' : 's:') + i.threadId];
       const unread = !!(m && m.sender_id !== uid
@@ -4992,6 +5024,7 @@ async function inboxOpenThread(idx){
   if(item.kind === 'report'){ inboxRenderReport(idx); return; }
   if(item.kind === 'mention'){ inboxOpenMention(idx); return; }
   if(item.kind === 'follow'){ inboxOpenFollow(idx); return; }
+  if(item.kind === 'followreq'){ inboxOpenFollowReq(idx); return; }
   if(item.kind === 'dm'){ inboxOpenDm(idx); return; }
 
   const sb = inboxClient();
@@ -5170,6 +5203,47 @@ function inboxOpenMention(idx){
 
 // A new follower is read by opening it; it closes the panel and goes to
 // their profile. Nothing to accept or decline.
+// A follow request, with the decision on it. Allow promotes the row to an
+// accepted follow; Decline deletes it, and they can ask again (there is no
+// blocklist). Either way the request leaves the list (Sep 17 2026).
+function inboxOpenFollowReq(idx){
+  const list = inboxPanelEl();
+  const item = INBOX.items[idx];
+  if(!list || !item) return;
+  txMarkSeen(item.seenKey, item.at || new Date().toISOString());
+  item.unread = false;
+  inboxRenderBadge();
+  list.innerHTML = '<div class="inbox-thread-head">'
+      + '<button type="button" class="inbox-back" data-inbox-back aria-label="Back to notifications">&#8592;</button>'
+      + '<span class="inbox-thread-who">' + esc(item.who) + (item.handle ? ' \u00b7 @' + esc(item.handle) : '') + '</span>'
+    + '</div>'
+    + '<div class="inbox-thread-about">wants to follow you. Your followers can see your upcoming and saved shows.</div>'
+    + '<div class="inbox-report-acts">'
+      + '<button type="button" class="mod-dismiss" data-followreq="approve">Allow</button>'
+      + '<button type="button" class="mod-uphold" data-followreq="decline">Decline</button>'
+    + '</div>';
+  list.querySelectorAll('[data-followreq]').forEach(function(b){
+    b.addEventListener('click', async function(){
+      const what = b.getAttribute('data-followreq');
+      list.querySelectorAll('[data-followreq]').forEach(function(x){ x.disabled = true; });
+      const sb = inboxClient();
+      try{
+        const { error } = await sb.rpc(what === 'approve' ? 'approve_follow' : 'decline_follow', { p_follower: item.otherId });
+        if(error){ console.warn('[inbox] follow request ' + what + ' failed:', error.message); list.querySelectorAll('[data-followreq]').forEach(function(x){ x.disabled = false; }); return; }
+      }catch(e){
+        console.warn('[inbox] follow request ' + what + ' threw:', e);
+        list.querySelectorAll('[data-followreq]').forEach(function(x){ x.disabled = false; });
+        return;
+      }
+      INBOX.items = INBOX.items.filter(function(x){ return x !== item; });
+      INBOX.viewing = null;
+      inboxRenderBadge();
+      inboxRenderList();
+      inboxLoad();
+    });
+  });
+}
+
 function inboxOpenFollow(idx){
   const item = INBOX.items[idx];
   if(!item) return;
@@ -7202,6 +7276,7 @@ a.inbox-thread-who:hover{text-decoration:underline}
 .people-row .av-sm{width:32px;height:32px;border-radius:50%;flex:0 0 32px;display:inline-flex;align-items:center;justify-content:center;font-family:'Oswald',sans-serif;font-weight:600;color:#1f3a30;object-fit:cover}
 .people-row-wrap{display:flex;align-items:center;gap:6px}
 .people-row-wrap .people-row{flex:1 1 auto;min-width:0}
+.pf-follow.is-requested{opacity:.8;font-style:italic}
 .people-remove{flex:0 0 auto;background:none;border:1px solid rgba(243,234,215,.25);color:var(--cream);opacity:.55;border-radius:50%;width:28px;height:28px;line-height:1;font-size:16px;cursor:pointer}
 .people-remove:hover{opacity:1;border-color:var(--cream)}
 .people-name{font-family:'Bitter',Georgia,serif;font-weight:600;font-size:15px}
