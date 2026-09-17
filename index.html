@@ -5186,7 +5186,7 @@ async function inboxOpenDm(idx){
       + avImg(item.otherId, item.who)
       + '<a class="inbox-thread-who" href="#/u/' + encodeURIComponent(item.handle || '') + '" data-inbox-profile>' + esc(item.who) + '</a>'
     + '</div>'
-    + '<div class="inbox-thread-about">@' + esc(item.handle || '') + '</div>'
+    + '<div class="inbox-thread-about">@' + esc(item.handle || '') + '<button type="button" class="inbox-thread-del" data-dm-del-thread title="Delete this conversation">Delete conversation</button></div>'
     + '<div class="inbox-state">Loading\u2026</div>';
   let uid = null;
   try{ const { data } = await sb.auth.getSession(); uid = data && data.session && data.session.user ? data.session.user.id : null; }catch(_){}
@@ -5235,6 +5235,20 @@ async function inboxOpenDm(idx){
       body.outerHTML = html;
     }
     const ul = list.querySelector('.inbox-msgs'); if(ul) ul.scrollTop = ul.scrollHeight;
+  }
+  // Delete the conversation for you (Sep 17 2026): it leaves your inbox;
+  // the other person keeps theirs, and a new message from them brings it back.
+  const delThread = list.querySelector('[data-dm-del-thread]');
+  if(delThread){
+    delThread.addEventListener('click', async function(){
+      if(!confirm('Delete this conversation? It disappears from your inbox; ' + (item.who || 'they') + ' keeps their copy.')) return;
+      delThread.disabled = true;
+      const rr = await dmSafe(sb.rpc('dm_delete_thread', { p_thread: threadId }));
+      if(rr && rr.error){ console.warn('[inbox] delete thread failed:', rr.error.message || rr.error); delThread.disabled = false; return; }
+      INBOX.items = INBOX.items.filter(function(x){ return x !== item; });
+      INBOX.viewing = null;
+      inboxRenderBadge(); inboxRenderList(); inboxLoad();
+    });
   }
   // Delete one of your own messages (Sep 17 2026). dm_delete refuses
   // anything you did not send; the list reloads from the server after.
@@ -7267,6 +7281,8 @@ a.inbox-thread-who:hover{text-decoration:underline}
 .inbox-msg-mine:hover .inbox-msg-del,.inbox-msg-del:focus{opacity:.55}
 @media(hover:none){.inbox-msg-del{opacity:.45}}
 .inbox-clear{margin-left:6px;opacity:.75}
+.inbox-thread-del{float:right;background:none;border:0;color:var(--ink);opacity:.6;font:inherit;font-size:12px;text-decoration:underline;cursor:pointer;padding:0}
+.inbox-thread-del:hover{opacity:1}
 .inbox-msg-body{font-family:'Bitter',Georgia,serif;font-size:12.5px;color:var(--ink);background:rgba(61,87,74,.1);border-radius:10px;padding:6px 10px;max-width:80%;overflow-wrap:anywhere}
 .inbox-msg-mine .inbox-msg-body{background:var(--forest);color:var(--cream)}
 .inbox-reply{display:flex;gap:6px;padding:8px 4px 4px}
