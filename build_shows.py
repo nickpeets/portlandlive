@@ -1012,7 +1012,7 @@ def festival_summaries(shows):
 _TICKETERS = ("etix", "tixr", "eventbrite", "livenation", "monqui", "rosequarter",
               "portland5", "ticketmaster", "axs.com", "seetickets", "dice.fm",
               "ticketweb", "seatgeek")
-_DOOR_VENUES = {"Starday Tavern", "Laurelthirst Public House", "No Fun", "Tomorrow's Verse",
+_DOOR_VENUES = {"The Wild Hare Saloon", "Starday Tavern", "Laurelthirst Public House", "No Fun", "Tomorrow's Verse",
                 "Alberta Street Pub", "Mississippi Pizza", "Havalina", "Music Millennium",
                 "Showdown Saloon", "Arbor Beer Lodge", "Dublin Pub", "Twilight Cafe & Bar"}
 

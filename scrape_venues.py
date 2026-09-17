@@ -4438,6 +4438,25 @@ def parse_oldliberty(text, today):
 # trivia and music bingo are weekly RRULEs (skipped, as Switchback does).
 # Years of history sit in the same feed; the date window handles that.
 _WH_SKIP = re.compile(r"trivia|bingo|closed|no live music|st\.? patrick|game night", re.I)
+# Every band's calendar entry carries a "More Info/RSVP" link to its own
+# Facebook event, which is where the poster lives. We link to it -- we do not
+# fetch it (the site never reads Facebook). Sep 17 2026, Nick: "option 1 go".
+_WH_FB = re.compile(r"https?://(?:www\.|m\.)?facebook\.com/events/\d+", re.I)
+_WH_PAGE = "https://thewildharesaloon.com/special-events/"
+
+
+def _wh_events(text):
+    """(dtstart, summary, has_rrule, description) per VEVENT -- _ics_events
+    plus the DESCRIPTION, which holds the Facebook event link."""
+    text = re.sub(r"\r?\n[ \t]", "", text or "")
+    for blk in re.findall(r"BEGIN:VEVENT(.*?)END:VEVENT", text, re.S):
+        ds = re.search(r"^DTSTART(?:;[^:\n]*)?:(\S+)", blk, re.M)
+        sm = re.search(r"^SUMMARY:(.*)$", blk, re.M)
+        if not (ds and sm):
+            continue
+        de = re.search(r"^DESCRIPTION:(.*)$", blk, re.M)
+        desc = (de.group(1) if de else "").replace("\\,", ",").replace("\\;", ";").replace("\\n", " ")
+        yield ds.group(1).strip(), clean(sm.group(1)), ("RRULE:" in blk), desc
 
 
 def parse_wildhare(text, today):
@@ -4445,7 +4464,7 @@ def parse_wildhare(text, today):
     pt = ZoneInfo("America/Los_Angeles")
     horizon = today + datetime.timedelta(days=120)
     out, seen = [], set()
-    for dstart, summary, recurs in _ics_events(text or ""):
+    for dstart, summary, recurs, desc in _wh_events(text):
         if recurs or _WH_SKIP.search(summary):
             continue
         m = re.match(r"^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})(Z?))?$", dstart)
@@ -4465,8 +4484,10 @@ def parse_wildhare(text, today):
         if not title or key in seen:
             continue
         seen.add(key)
+        fb = _WH_FB.search(desc)
         out.append(_batch_row("The Wild Hare Saloon", day.isoformat(), tm, title,
-                              "https://thewildharesaloon.com/special-events/", "", "21+"))
+                              fb.group(0) if fb else _WH_PAGE, "",
+                              _age_in_text(_unhtml(desc)) or "21+"))
     return out
 
 

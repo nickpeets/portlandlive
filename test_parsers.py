@@ -172,6 +172,16 @@ def main():
         fails += 1
         print(f"  FAIL the1905-p1+p2.json           rows {len(rows)} != 10 or time {n_t} != 10 or all-ages {n_a} != 9 or a night doubled")
     print()
+    # Wild Hare: each band links to its own Facebook event (where the poster
+    # is), read from the calendar DESCRIPTION -- linked, never fetched.
+    wh = sv.parse_wildhare(load("wildhare.ics"), TODAY)
+    fb = sum(1 for r in wh if "facebook.com/events/" in r.get("venueUrl", ""))
+    if fb == len(wh) == 21:
+        print(f"  ok   wildhare.ics (links)         {fb:3d} rows  -- every band links to its Facebook event")
+    else:
+        fails += 1
+        print(f"  FAIL wildhare.ics (links)         {fb} of {len(wh)} rows link to a Facebook event; expected 21 of 21")
+    print()
     # Laurelthirst walks months by POSTing to EventON itself, so it cannot be
     # driven from one HTML file the way the others are. Feed it the captured
     # September month through a stubbed _laurel_month and check the poster

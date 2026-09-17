@@ -3203,7 +3203,11 @@ function renderShowDetail(wrap, show, kind){
   let actions;
   if(kind === 'upcoming'){
     actions = '<div class="show-actions">'
-      + (show.venueUrl ? '<a class="tix" href="'+esc(show.venueUrl)+'" target="_blank" rel="noopener">Tickets</a>' : '')
+      // A Facebook event link is where a free show's details live, not a
+      // ticket sale -- label it for what it is (Wild Hare, Sep 17 2026).
+      + (show.venueUrl ? '<a class="tix" href="'+esc(show.venueUrl)+'" target="_blank" rel="noopener">'
+          + (/(^|\.)facebook\.com$/i.test((function(){ try{ return new URL(show.venueUrl).hostname; }catch(_){ return ''; } })()) ? 'More info' : 'Tickets')
+          + '</a>' : '')
       + heartBtn(show)
       + planBtn(show)
       + '</div>'
@@ -3293,6 +3297,7 @@ var TICKETED_HOSTS = [
 // first pass and is the part most likely to be wrong -- correct it freely,
 // it is the only place venue ticketing policy lives.
 var DOOR_VENUES = [
+  "The Wild Hare Saloon",   // free admission every night; nothing to hand off (Sep 17 2026)
   "Starday Tavern",
   "Laurelthirst Public House",
   "No Fun",
