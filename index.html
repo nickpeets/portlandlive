@@ -478,6 +478,13 @@ body{
        "Browse" dropdown instead of 3 separate grid cells. */
     .controls-inner .ctl-row + .ctl-row .pill-narrow{display:none}
     .controls-inner .ctl-row + .ctl-row .browse-pill{display:inline-flex}
+    /* The whole Browse box opens the menu, not just its text (Sep 17 2026,
+       Nick): the select is stretched over the entire pill, padded past the
+       icon so "Browse" sits where it did; the icon lets taps fall through. */
+    .controls-inner .ctl-row + .ctl-row .browse-pill{position:relative}
+    .controls-inner .ctl-row + .ctl-row .browse-pill svg{pointer-events:none}
+    .controls-inner .ctl-row + .ctl-row .browse-pill select{position:absolute;inset:0;width:100%;height:100%;
+      box-sizing:border-box;padding:0 14px 0 36px;margin:0;z-index:1;cursor:pointer}
   .results{overflow-x:hidden}
   .results-inner{padding:0 16px}
   .row{gap:11px;padding:9px 10px}
