@@ -43,8 +43,14 @@
 html{scroll-behavior:smooth;scroll-padding-top:66px}
 /* Mobile guard (Sep 2026): nothing may be wider than the screen. On a phone
    one overflowing element zooms the whole page out until the user resizes
-   it -- Nick hit this. Clip at the root, and let long words wrap anywhere. */
-html,body{overflow-x:hidden;max-width:100%}
+   it -- Nick hit this. Clip at the root, and let long words wrap anywhere.
+   CLIP, not hidden (Sep 17 2026): overflow-x:hidden on html/body turns them
+   into scroll containers, and a position:sticky child then pins to a box that
+   never scrolls -- the masthead scrolled away with the listings. clip trims
+   the overflow without making a scroll container, so the header stays put.
+   Browsers too old for clip get the old hidden rule. */
+html,body{overflow-x:clip;max-width:100%}
+@supports not (overflow-x:clip){html,body{overflow-x:hidden}}
 img,video{max-width:100%}
 .fest-name,.s-title,.dm-body,.dm-snippet,.people-name,.cmt-body,.pf-name{overflow-wrap:anywhere}
 body{
