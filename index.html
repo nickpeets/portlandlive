@@ -1850,7 +1850,58 @@ function viewPath(){
   if(state.q && state.q.trim()) return '/#/search';
   return '/';
 }
+// ===== FEED DRAWN IN PIECES (Sep 17 2026) =====
+// The whole feed still loads (search, venue pages and counts need it), but
+// the default and By Hood views draw it a week at a time: the next 7 days
+// (at least 40 shows) first, then another week each time the reader scrolls
+// within ~1,500px of the end. Before this, first load built a card for every
+// upcoming show -- about 2,000 -- and the search box rebuilt all of them on
+// every keystroke. The result count still reports the full total.
+const FEED_BATCH_DAYS = 7, FEED_BATCH_MIN = 40, FEED_AHEAD_PX = 1500;
+let _feedPager = null;
+function stopFeedPager(){ if(_feedPager){ _feedPager.stop(); _feedPager = null; } }
+function drawDaysInPieces(wrap, days, drawDay){
+  stopFeedPager();
+  let i = 0, io = null, stopped = false;
+  const sentinel = document.createElement('div');
+  sentinel.className = 'feed-more'; sentinel.setAttribute('aria-hidden', 'true');
+  wrap.appendChild(sentinel);
+  function stop(){ stopped = true; if(io){ io.disconnect(); io = null; } if(sentinel.parentNode) sentinel.remove(); }
+  function batch(){
+    if(stopped) return;
+    if(!sentinel.isConnected){ stop(); return; }     // another view replaced #results
+    let n = 0, d = 0;
+    while(i < days.length && (d < FEED_BATCH_DAYS || n < FEED_BATCH_MIN)){
+      sentinel.parentNode.insertBefore(drawDay(days[i][0], days[i][1]), sentinel);
+      n += days[i][1].length; d++; i++;
+    }
+    if(i >= days.length) stop();
+  }
+  function fill(){
+    batch();
+    // An observer only fires on a change, so if the end is still close after a
+    // batch (a tall screen, a light week), keep going on the next frame.
+    if(!stopped && sentinel.getBoundingClientRect().top < window.innerHeight + FEED_AHEAD_PX) requestAnimationFrame(fill);
+  }
+  batch();
+  if(!stopped){
+    if('IntersectionObserver' in window){
+      io = new IntersectionObserver(function(es){ if(es.some(function(e){ return e.isIntersecting; })) fill(); },
+                                    { rootMargin: FEED_AHEAD_PX + 'px 0px' });
+      io.observe(sentinel);
+    } else {
+      while(!stopped) batch();                       // no observer: draw it all, as before
+    }
+  }
+  _feedPager = {
+    stop: stop,
+    // Draw on until a given card exists (old #show-{id} share links).
+    untilId: function(id){ while(!stopped && !document.getElementById('show-' + id)) batch(); }
+  };
+}
+
 function render(){
+  stopFeedPager();
   try{ if(typeof trackView === 'function') trackView(viewPath()); }catch(_){}
   // A permanent show page owns #results while the URL points at one; route away
   // instead of racing it (e.g. a filter-pill click while viewing a show page).
@@ -1943,13 +1994,14 @@ function render(){
     // alphabetical neighborhood sub-headers with that day's shows beneath.
     const groups = {};
     list.forEach(s=>{(groups[s.date]=groups[s.date]||[]).push(s);});
-    Object.keys(groups).sort().forEach(date=>{
+    const days = Object.keys(groups).sort().map(date => [date, groups[date]]);
+    drawDaysInPieces(wrap, days, function(date, shows){
       const g = document.createElement('div'); g.className='daygroup';
       const dh = document.createElement('div'); dh.className='dayhead';
-      dh.innerHTML = `${ordinalDate(date)}<span class="count">${groups[date].length} show${groups[date].length>1?'s':''}</span>`;
+      dh.innerHTML = `${ordinalDate(date)}<span class="count">${shows.length} show${shows.length>1?'s':''}</span>`;
       g.appendChild(dh);
       const hoods = {};
-      groups[date].forEach(s=>{const k=(s.neighborhood||'').trim()||'Other';(hoods[k]=hoods[k]||[]).push(s);});
+      shows.forEach(s=>{const k=(s.neighborhood||'').trim()||'Other';(hoods[k]=hoods[k]||[]).push(s);});
       Object.keys(hoods).sort((a,b)=>a.toLowerCase().localeCompare(b.toLowerCase())).forEach(hood=>{
         const hg = document.createElement('div'); hg.className='hoodgroup';
         const hh = document.createElement('div'); hh.className='hoodhead';
@@ -1958,17 +2010,18 @@ function render(){
         hg.appendChild(listOf(hoods[hood]));
         g.appendChild(hg);
       });
-      wrap.appendChild(g);
+      return g;
     });
   } else if(!state.picks){
     // group by day (default view), no time-window filter
     const groups = {};
     list.forEach(s=>{(groups[s.date]=groups[s.date]||[]).push(s);});
-    Object.keys(groups).sort().forEach(date=>{
+    const days = Object.keys(groups).sort().map(date => [date, groups[date]]);
+    drawDaysInPieces(wrap, days, function(date, shows){
       const g = document.createElement('div'); g.className='daygroup';
-      g.innerHTML = `<div class="dayhead">${ordinalDate(date)}<span class="count">${groups[date].length} shows</span></div>`;
-      g.appendChild(listOf(groups[date]));
-      wrap.appendChild(g);
+      g.innerHTML = `<div class="dayhead">${ordinalDate(date)}<span class="count">${shows.length} shows</span></div>`;
+      g.appendChild(listOf(shows));
+      return g;
     });
   } else {
     wrap.appendChild(listOf(list, true));
@@ -6281,7 +6334,9 @@ function favKey(s){ return (s.venue||'') + '|' + (s.date||'') + '|' + (s.title||
       }
 
 /* events */
-$('#searchInput').addEventListener('input',e=>{state.q=e.target.value;if(state.q && state.selectedVenue){state.selectedVenue=null;state.view='shows';}render();});
+// Redraw after a short pause in typing, not on every letter (Sep 17 2026).
+let _searchTimer = null;
+$('#searchInput').addEventListener('input',e=>{state.q=e.target.value;if(state.q && state.selectedVenue){state.selectedVenue=null;state.view='shows';}clearTimeout(_searchTimer);_searchTimer=setTimeout(render,150);});
 $('#byHoodToggle').addEventListener('click',()=>{const on=!state.byHood;leaveSections('byHood');state.byHood=on;$('#byHoodToggle').classList.toggle('on',state.byHood);render();});
         $('#venuesToggle').addEventListener('click',()=>{leaveSections('venues');const onDirectory=state.view==='venues'&&!state.selectedVenue;const on=!onDirectory;
           // Directory is addressable (#/venues); turning it off returns to the
@@ -6759,6 +6814,8 @@ function wiDeepLink(){
   var m = /^#show-(.+)$/.exec(location.hash || "");
   if(!m) return;
   var id = decodeURIComponent(m[1]);
+  // The feed draws a week at a time; draw on until the linked card exists.
+  if(_feedPager) _feedPager.untilId(id);
   var el = document.getElementById("show-" + id);
   if(!el){
     // Linked show isn't currently rendered (passed, filtered, or aged out).
@@ -7056,6 +7113,7 @@ a.fest-artist:hover{text-decoration:underline}
 .auth-pill:hover{background:rgba(255,255,255,.28)}
 .auth-pill-user{position:relative;background:rgba(255,255,255,.22)}
 .auth-pill[hidden]{display:none}
+.feed-more{height:1px}
 /* Phone masthead (Sep 17 2026): wordmark + mail + bell + menu were ~460px of
    content on a ~390px screen, so the menu button ran off the right edge (Nick's
    screenshot). On phones the buttons go icon-only and compact, the caret goes,
