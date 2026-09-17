@@ -1005,6 +1005,27 @@ def festival_summaries(shows):
 # not against yesterday's feed, so a venue that briefly drops to zero and
 # comes back is not announced twice.
 # ---------------------------------------------------------------------------
+# The same rule the show page uses (index.html showIsTicketed): a miracle is
+# only announced where the site would actually display it. A door venue with
+# no advance sale has nothing to hand off, so a stray post there is not news
+# (Nick, Sep 2026 -- the ticker advertised one the page was hiding).
+_TICKETERS = ("etix", "tixr", "eventbrite", "livenation", "monqui", "rosequarter",
+              "portland5", "ticketmaster", "axs.com", "seetickets", "dice.fm",
+              "ticketweb", "seatgeek")
+_DOOR_VENUES = {"Starday Tavern", "Laurelthirst Public House", "No Fun", "Tomorrow's Verse",
+                "Alberta Street Pub", "Mississippi Pizza", "Havalina", "Music Millennium",
+                "Showdown Saloon", "Arbor Beer Lodge", "Dublin Pub", "Twilight Cafe & Bar"}
+
+
+def _row_is_ticketed(r):
+    if r.get("festival"):
+        return False
+    blob = " ".join(str(r.get(k) or "") for k in ("ticketUrl", "venueUrl", "imageUrl")).lower()
+    if r.get("resaleUrl") or any(t in blob for t in _TICKETERS):
+        return True
+    return r.get("venue") not in _DOOR_VENUES
+
+
 NEWS_FILE = os.path.join(HERE, "news.json")
 NEWS_RUN_DAYS = 14          # how long a venue/festival line stays up
 
@@ -1079,6 +1100,8 @@ def update_news(shows, venues, today):
         key = "miracle:" + sl
         if not row or key in seen or (row.get("date") or "") < today.isoformat():
             continue
+        if not _row_is_ticketed(row):
+            continue                                   # the page would not show it
         n = int(m.get("quantity") or 1)
         how = "free" if m.get("price_type") == "free" else "at face value"
         new_lines[key] = {"text": f"Miracle: {n} ticket{'s' if n != 1 else ''} {how} for {row.get('title','a show')} at {row.get('venue','')}.",

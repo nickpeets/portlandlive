@@ -3171,21 +3171,36 @@ var DOOR_VENUES = [
 ];
 // -----------------------------------------------------------------------
 
+function _hostIsTicketer(u){
+  if(!u || u.indexOf('http') !== 0) return false;
+  var host = '';
+  try { host = new URL(u).hostname.replace(/^www\./,'').toLowerCase(); } catch(e){ return false; }
+  for(var i=0;i<TICKETED_HOSTS.length;i++){
+    var t = TICKETED_HOSTS[i];
+    if(host === t || (host.length > t.length && host.slice(-(t.length+1)) === '.'+t)) return true;
+  }
+  return false;
+}
+// Evidence that THIS show sells tickets in advance, whatever the venue
+// usually does. A door venue that puts one show on Etix is still selling a
+// ticket for that show, and the poster it pulled from the ticketer is the
+// tell -- Mississippi Pizza's Lucky Beaucoup carries an etix image and a
+// per-event page while the venue is otherwise cash at the door (Sep 2026).
+function showHasTicketEvidence(show){
+  if(!show) return false;
+  if(_hostIsTicketer(show.ticketUrl) || _hostIsTicketer(show.venueUrl)) return true;
+  if(show.resaleUrl) return true;
+  var img = String(show.imageUrl || '').toLowerCase();
+  return /etix|ticketweb|tixr|eventbrite|seetickets|dice\.fm|ticketmaster/.test(img);
+}
 function showIsTicketed(show){
   if(!show) return true;
   // Festival sets are free and carry no ticket, so there is nothing to hand
   // off. The registry is the authority -- this stays correct for every
   // festival added later without touching DOOR_VENUES.
   if(typeof isFestivalShow === 'function' && isFestivalShow(show)) return false;
-  var u = show.venueUrl || '';
-  if(u.indexOf('http') === 0){
-    var host = '';
-    try { host = new URL(u).hostname.replace(/^www\./,'').toLowerCase(); } catch(e){ host = ''; }
-    for(var i=0;i<TICKETED_HOSTS.length;i++){
-      var t = TICKETED_HOSTS[i];
-      if(host === t || (host.length > t.length && host.slice(-(t.length+1)) === '.'+t)) return true;
-    }
-  }
+  // The show decides before the venue does.
+  if(showHasTicketEvidence(show)) return true;
   return DOOR_VENUES.indexOf(show.venue) === -1;
 }
 
