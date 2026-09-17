@@ -1359,6 +1359,10 @@ function _normTitle(t){ return String(t||'').toLowerCase().replace(/\s+/g,' ').t
 
 // Public classifier: keyword result first, then name-based overrides take precedence.
 function classifyType(s){
+  // The build can say what a row is, and does for Ticketmaster events --
+  // TM classifies its own catalog, so a touring comic lands in the comedy
+  // bin without the keyword sniff having to recognise the name (Sep 2026).
+  if(s && s.contentType === 'comedy') return 'comedy';
   const nt = _normTitle(s && s.title);
   for(const e of FORCE_MUSIC){ if(e && nt.includes(_normTitle(e))) return "music"; }
   for(const e of FORCE_NON_MUSIC){

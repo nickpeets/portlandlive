@@ -91,6 +91,7 @@ VENUE_INFO = {
     "The Haven": ("Kerns", "2505 NE Pacific St, Portland, OR 97232"),
     "The Reser": ("Beaverton", "12625 SW Crescent St, Beaverton, OR 97005"),
     "ilani": ("Ridgefield, WA", "1 Cowlitz Way, Ridgefield, WA 98642"),
+    "Helium Comedy Club": ("Central Eastside", "1510 SE 9th Ave, Portland, OR 97214"),
     "Tomorrow Theater": ("Richmond", "3530 SE Division St, Portland, OR 97202"),
     "Realm": ("Central Eastside", "615 SE Alder St, Portland, OR 97214"),
     "The Den": ("Central Eastside", "116 SE Yamhill St, Portland, OR 97214"),

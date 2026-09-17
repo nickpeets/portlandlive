@@ -560,6 +560,8 @@ TM_VENUE_MAP = {
     "Cowlitz Ballroom at Ilani Casino Resort": "ilani",
     "ilani Casino Resort": "ilani",
     "Rock & Brews at ilani": "ilani",
+    "Helium Comedy Club - Portland": "Helium Comedy Club",
+    "ALBERTA ROSE": "Alberta Rose Theatre",
     "Revolution Hall - Portland": "Revolution Hall",
     "McMenamins Crystal Ballroom": "Crystal Ballroom",
     "McMenamins Mission Theater": "Mission Theater",
@@ -621,7 +623,11 @@ def _tm_normalize(ev, venue_info):
     return {"title": name.strip(), "venue": venue, "neighborhood": nb, "address": addr,
             "date": date, "time": tm, "venueUrl": ev.get("url") or "",
             "ticketUrl": ev.get("url") or "", "imageUrl": pick,
-            "age": _sv().__dict__["_age_in_text"](note) if note else "", "_tm": True}
+            "age": _sv().__dict__["_age_in_text"](note) if note else "", "_tm": True,
+            # Ticketmaster says what this is; the app's keyword sniff never
+            # has to guess whether "Matt Rife: Stay Golden World Tour" is a
+            # band (audit, 2026-09-17).
+            "contentType": "comedy" if ev.get("_ros_class") == "comedy" else ""}
 
 
 def _sv():
@@ -635,7 +641,7 @@ def _sv():
     return _sv.mod
 
 
-def tm_fetch(today, days=90):
+def tm_fetch(today, days=90, classification="music"):
     key = os.environ.get("TM_API_KEY", "").strip()
     if not key:
         print("  note: Ticketmaster: TM_API_KEY not set; pass skipped")
@@ -653,7 +659,7 @@ def tm_fetch(today, days=90):
         # venue in the result that TM_VENUE_MAP does not already know.
         q = urllib.parse.urlencode({
             "apikey": key, "latlong": "45.5152,-122.6784", "radius": 35, "unit": "miles",
-            "classificationName": "music",
+            "classificationName": classification,
             "size": 200, "page": page, "sort": "date,asc",
             "startDateTime": today.isoformat() + "T00:00:00Z",
             "endDateTime": end.isoformat() + "T23:59:59Z"})
@@ -664,6 +670,8 @@ def tm_fetch(today, days=90):
             print(f"  WARN: Ticketmaster: fetch failed on page {page}: {type(e).__name__}: {e}")
             break
         ev = ((d.get("_embedded") or {}).get("events")) or []
+        for x in ev:
+            x["_ros_class"] = classification
         out += ev
         if not ev or page >= (d.get("page") or {}).get("totalPages", 1) - 1:
             break
@@ -1123,7 +1131,7 @@ def main():
     # missed at venues the site covers. See the block above.
     _pac = datetime.timezone(datetime.timedelta(hours=-8))
     _today = datetime.datetime.now(_pac).date()
-    _tm_events = tm_fetch(_today)
+    _tm_events = tm_fetch(_today) + tm_fetch(_today, classification="comedy")
     if _tm_events:
         _m, _a, _unc = tm_apply(shows, _tm_events, _today)
         _u = ", ".join(f"{v} ({c})" for v, c in _unc.most_common(6))
@@ -1273,7 +1281,10 @@ def main():
     # Strip internal-only keys (leading underscore, e.g. the scraper's _hand
     # retention flag) so they never reach the public feed.
     if isinstance(out, dict) and "shows" in out:
-        out["shows"] = [{k: v for k, v in s.items() if not k.startswith("_")}
+        # Drop internals and empty-string fields the client never reads --
+        # contentType only means something when it is set.
+        out["shows"] = [{k: v for k, v in s.items()
+                         if not k.startswith("_") and not (k == "contentType" and not v)}
                         for s in out["shows"]]
         out["festivals"] = festival_summaries(out["shows"])
         update_news(out["shows"], out.get("venues") or [], datetime.date.today())
