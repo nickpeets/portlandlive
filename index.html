@@ -2208,7 +2208,11 @@ function renderVenues(){
     });
     let dlist=Object.values(dir);
     if(q) dlist=filterByQuery(dlist, q, venueSearchText);
-    dlist.sort((a,b)=>a.name.localeCompare(b.name));
+    // Alphabetize on the name without a leading "The": The Wild Hare Saloon
+    // files under W, The 1905 under the digits, as a reader looks for them.
+    // Display names are unchanged (Sep 17 2026).
+    const sortName = n => String(n||'').replace(/^the\s+/i,'');
+    dlist.sort((a,b)=>sortName(a.name).localeCompare(sortName(b.name), 'en', {numeric:true, sensitivity:'base'}));
     $("#resultCount").textContent = dlist.length ? `${dlist.length} venue${dlist.length>1?"s":""}` : "No venues";
     const dhead=document.createElement("div"); dhead.className="venue-header";
     const withShows = dlist.filter(v=>v.count>0).length;
