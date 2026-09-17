@@ -93,6 +93,7 @@ VENUE_INFO = {
     "ilani": ("Ridgefield, WA", "1 Cowlitz Way, Ridgefield, WA 98642"),
     "Helium Comedy Club": ("Central Eastside", "1510 SE 9th Ave, Portland, OR 97214"),
     "Haymaker": ("Overlook", "1223 N Killingsworth St, Portland, OR 97217"),
+    "Strum PDX": ("Buckman", "1415 SE Stark St #C, Portland, OR 97214"),
     "Tomorrow Theater": ("Richmond", "3530 SE Division St, Portland, OR 97202"),
     "Realm": ("Central Eastside", "615 SE Alder St, Portland, OR 97214"),
     "The Den": ("Central Eastside", "116 SE Yamhill St, Portland, OR 97214"),
@@ -2362,6 +2363,64 @@ def _squarespace_events(html, today, venue, base, skip=None, default_age="",
     return out
 
 
+# Workshops are lessons, and a "Package" row is a bundle of a show already
+# listed -- neither is a show. Everything else on the table is.
+_STRUM_SKIP = re.compile(r"\b(workshop|package|class|lesson|clinic)\b", re.I)
+
+
+def parse_strum(html, today):
+    """Strum PDX (1415 SE Stark, a guitar shop with a small room, all ages).
+    A plain HTML table: Date ("10/2", no year), Time ("7:00", no meridiem --
+    every show here is afternoon or evening, so PM), Performer (with the
+    price and sometimes SOLD OUT appended), Style. The performer cell links
+    to the show page when there is one."""
+    out, seen = [], set()
+    soup = BeautifulSoup(html, "html.parser")
+    nb, addr = VENUE_INFO.get("Strum PDX", ("Buckman", ""))
+    horizon = today + datetime.timedelta(days=200)
+    table = soup.find("table")
+    if not table:
+        return out
+    for tr in table.find_all("tr"):
+        cells = tr.find_all(["td", "th"])
+        if len(cells) < 3:
+            continue
+        dtxt = clean(cells[0].get_text(" "))
+        m = re.match(r"^(\d{1,2})/(\d{1,2})$", dtxt)
+        if not m:
+            continue                                   # header row, or a date we do not understand
+        mon, day = int(m.group(1)), int(m.group(2))
+        try:
+            d = datetime.date(infer_year(mon, today), mon, day)
+        except ValueError:
+            continue
+        if not (today <= d <= horizon):
+            continue
+        title = clean(cells[2].get_text(" "))
+        title = re.sub(r",?\s*\$\d+(\.\d\d)?\s*$", "", title).strip()       # trailing price
+        title = re.sub(r",?\s*SOLD OUT\s*$", "", title, flags=re.I).strip()
+        if not title or _STRUM_SKIP.search(title):
+            continue
+        tm = ""
+        ttxt = clean(cells[1].get_text(" ")).split("/")[0]
+        mt = re.match(r"^(\d{1,2})(?::(\d{2}))?$", ttxt)
+        if mt:
+            hh = int(mt.group(1))
+            # Always PM: the shop is open noon to five and the shows are
+            # afternoon or evening. A 7:00 here is never 7am.
+            tm = f"{hh % 12 or 12}:{mt.group(2) or '00'} PM"
+        a = tr.find("a", href=True)
+        url = a["href"] if a and a["href"].startswith("http") else "https://strumpdx.com/shows/"
+        key = (d.isoformat(), title.lower())
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append({"title": title, "venue": "Strum PDX", "neighborhood": nb, "address": addr,
+                    "date": d.isoformat(), "time": tm, "venueUrl": url,
+                    "imageUrl": "", "age": "all-ages"})
+    return out
+
+
 def parse_haymaker(html, today):
     """Haymaker (1223 N Killingsworth) -- bluegrass Wednesdays, the EasyFolk
     open mic, weekend bands, and comedy on Mondays and the last Tuesday.
@@ -4204,6 +4263,7 @@ SOURCES = [
     {"name": "Havalina (havalinapdx.com)", "parser": parse_havalina, "urls": ["https://havalinapdx.com/events?format=json"]},
     {"name": "Process (processpdx.club)", "parser": parse_process, "urls": ["https://www.processpdx.club/"]},
     {"name": "Realm (realmpdx.com)", "parser": parse_realm, "tls": True, "urls": ["https://realmpdx.com/events/"]},
+    {"name": "Strum PDX (strumpdx.com)", "parser": parse_strum, "urls": ["https://strumpdx.com/shows/"]},
     {"name": "Haymaker (haymakerportland.com)", "parser": parse_haymaker,
      "urls": ["https://www.haymakerportland.com/events"]},
     # A watcher: their calendar is films and lectures, so nothing is normal.
