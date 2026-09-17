@@ -4057,6 +4057,18 @@ function txMarkSeen(threadId, ts){
     localStorage.setItem('pl_tx_seen_v1', JSON.stringify(m));
   }catch(e){}
 }
+// "Clear" on the bell (Sep 17 2026): notifications are rebuilt from the
+// server on every load, so clearing is a timestamp -- anything dated at or
+// before it is dropped from the list. Reports and follow requests are
+// decisions, not news, so they are never cleared this way.
+function notifClearedAt(){ try{ return localStorage.getItem('pl_notif_cleared_v1') || ''; }catch(e){ return ''; } }
+function notifClearNow(){
+  const at = new Date().toISOString();
+  try{ localStorage.setItem('pl_notif_cleared_v1', at); }catch(e){}
+  INBOX.items.forEach(function(i){ if(!inboxIsMail(i) && i.kind !== 'report' && i.kind !== 'followreq'){ if(i.seenKey) txMarkSeen(i.seenKey, i.at || at); i.unread = false; } });
+  INBOX.items = INBOX.items.filter(function(i){ return inboxIsMail(i) || i.kind === 'report' || i.kind === 'followreq' || String(i.at || '') > at; });
+  inboxRenderBadge(); inboxRenderList();
+}
 function txIsUnread(threadId, myUserId){
   const latest = TX_THREADS.latest[threadId];
   if(!latest || latest.sender_id === myUserId) return false;   // your own last word isn't unread
@@ -4974,7 +4986,9 @@ async function inboxLoad(){
     // job is "who said something," so it's dropped rather than shown blank.
     .filter(function(i){ return !i.empty; });
     // Reports go to the top: they're the only thing here with a deadline.
+    const clearedAt = notifClearedAt();
     INBOX.items = direct.concat(INBOX.items)
+      .filter(function(i){ return inboxIsMail(i) || i.kind === 'report' || i.kind === 'followreq' || !clearedAt || String(i.at || '') > clearedAt; })
       .sort(function(a, b){
         if((a.kind === 'report') !== (b.kind === 'report')) return a.kind === 'report' ? -1 : 1;
         if(a.unread !== b.unread) return a.unread ? -1 : 1;
@@ -5027,6 +5041,7 @@ function inboxRenderList(){
     + '<span class="inbox-tabs">'
     +   '<button type="button" class="inbox-tab' + (tab === 'all' ? ' on' : '') + '" data-inbox-tab="all">All</button>'
     +   '<button type="button" class="inbox-tab' + (tab === 'unread' ? ' on' : '') + '" data-inbox-tab="unread">Unread</button>'
+    +   (which === 'notif' && all.length ? '<button type="button" class="inbox-tab inbox-clear" data-inbox-clear title="Clear notifications">Clear</button>' : '')
     + '</span></div>'
     ;
   if(!pool.length){
@@ -5194,7 +5209,9 @@ async function inboxOpenDm(idx){
     item.unread = false; inboxRenderBadge();
     const rows = msgs.map(function(m){
       const mine = m.sender_id === uid;
-      return '<li class="inbox-msg' + (mine ? ' inbox-msg-mine' : '') + '"><span class="inbox-msg-body">' + esc(m.body || '') + '</span></li>';
+      return '<li class="inbox-msg' + (mine ? ' inbox-msg-mine' : '') + '">'
+        + (mine ? '<button type="button" class="inbox-msg-del" data-dm-del="' + esc(String(m.id)) + '" title="Delete message" aria-label="Delete message">&times;</button>' : '')
+        + '<span class="inbox-msg-body">' + esc(m.body || '') + '</span></li>';
     }).join('');
     let body = list.querySelector('.inbox-msgs') || list.querySelector('.inbox-state');
     const html = msgs.length ? '<ul class="inbox-msgs">' + rows + '</ul>' : '<div class="inbox-state">Say hello.</div>';
@@ -5219,6 +5236,17 @@ async function inboxOpenDm(idx){
     }
     const ul = list.querySelector('.inbox-msgs'); if(ul) ul.scrollTop = ul.scrollHeight;
   }
+  // Delete one of your own messages (Sep 17 2026). dm_delete refuses
+  // anything you did not send; the list reloads from the server after.
+  list.addEventListener('click', async function(e){
+    const b = e.target.closest('[data-dm-del]');
+    if(!b) return;
+    e.preventDefault(); e.stopPropagation();
+    b.disabled = true;
+    const rr = await dmSafe(sb.rpc('dm_delete', { p_id: parseInt(b.getAttribute('data-dm-del'), 10) }));
+    if(rr && rr.error){ console.warn('[inbox] dm delete failed:', rr.error.message || rr.error); b.disabled = false; return; }
+    await load(true);
+  });
   await load(true);
   (function poll(){
     setTimeout(async function(){
@@ -5392,6 +5420,7 @@ function inboxWire(){
       const tab = e.target.closest('[data-inbox-tab]');
       if(tab){ INBOX.tab[which] = tab.getAttribute('data-inbox-tab'); INBOX.shown[which] = INBOX_PAGE; inboxRenderList(); return; }
       if(e.target.closest('[data-inbox-more]')){ INBOX.shown[which] += INBOX_PAGE; inboxRenderList(); return; }
+      if(e.target.closest('[data-inbox-clear]')){ notifClearNow(); return; }
       if(e.target.closest('[data-inbox-profile]')){ inboxClose(); return; }   // name -> profile; let it navigate
       const openRow = e.target.closest('[data-inbox-open]');
       if(openRow){ inboxOpenThread(parseInt(openRow.getAttribute('data-inbox-open'), 10)); return; }
@@ -7233,7 +7262,11 @@ load();
 a.inbox-thread-who:hover{text-decoration:underline}
 .inbox-msgs{list-style:none;margin:0;padding:0 4px;display:flex;flex-direction:column;gap:6px;max-height:38vh;overflow-y:auto}
 .inbox-msg{display:flex}
-.inbox-msg-mine{justify-content:flex-end}
+.inbox-msg-mine{justify-content:flex-end;align-items:center;gap:6px}
+.inbox-msg-del{background:none;border:0;color:var(--ink);opacity:0;font-size:15px;line-height:1;cursor:pointer;padding:2px 4px}
+.inbox-msg-mine:hover .inbox-msg-del,.inbox-msg-del:focus{opacity:.55}
+@media(hover:none){.inbox-msg-del{opacity:.45}}
+.inbox-clear{margin-left:6px;opacity:.75}
 .inbox-msg-body{font-family:'Bitter',Georgia,serif;font-size:12.5px;color:var(--ink);background:rgba(61,87,74,.1);border-radius:10px;padding:6px 10px;max-width:80%;overflow-wrap:anywhere}
 .inbox-msg-mine .inbox-msg-body{background:var(--forest);color:var(--cream)}
 .inbox-reply{display:flex;gap:6px;padding:8px 4px 4px}
