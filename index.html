@@ -1444,7 +1444,10 @@ function _dqLastDay(y, m){ return new Date(y, m, 0).getDate(); }
 function _dqYearFor(m, d){
   // Same month-rollover rule as the scraper: a month already behind us is
   // next year's. Within the current month, a day already past is next year.
-  const today = todayPacific, ty = +today.slice(0,4), tm = +today.slice(5,7), td = +today.slice(8,10);
+  // pacificTodayISO(), not the feed's local todayPacific: this runs outside
+  // filtered(), and reaching for that local threw, so every search silently
+  // did nothing (Sep 17 2026).
+  const today = pacificTodayISO(), ty = +today.slice(0,4), tm = +today.slice(5,7), td = +today.slice(8,10);
   if(m < tm) return ty + 1;
   if(m === tm && d && d < td) return ty + 1;
   return ty;
@@ -1452,7 +1455,7 @@ function _dqYearFor(m, d){
 function parseDateQuery(q){
   let text = ' ' + String(q||'').toLowerCase().replace(/[^a-z0-9/\-]+/g,' ').trim() + ' ';
   if(text.trim() === '') return null;
-  const today = todayPacific;
+  const today = pacificTodayISO();
   // Every match is tried, not just the first: in "jazz october" the
   // month-shaped word is the second one.
   const cut = (re, fn) => {
