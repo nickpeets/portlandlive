@@ -630,6 +630,56 @@ def _tm_normalize(ev, venue_info):
             "contentType": "comedy" if ev.get("_ros_class") == "comedy" else ""}
 
 
+_TM_RESALE = re.compile(r"ticketmaster\.com/event/Z", re.I)
+# Where to send a resale-only row. Named here when the venue's other rows
+# link to a ticketing host (an etix.com root is nowhere) or when Ticketmaster
+# is the venue's only source; everything else is learned from the venue's own
+# rows. Sites checked Sep 17 2026.
+VENUE_HOME = {
+    "Helium Comedy Club": "https://portland.heliumcomedy.com/",
+    "Crystal Ballroom": "https://www.crystalballroompdx.com/",
+    "Aladdin Theater": "https://www.aladdin-theater.com/",
+    "Hawthorne Theatre": "https://hawthornetheatre.com/",
+    "Arlene Schnitzer Concert Hall": "https://www.portland5.com/",
+    "Keller Auditorium": "https://www.portland5.com/",
+    "Newmark Theatre": "https://www.portland5.com/",
+    "Revolution Hall": "https://www.revolutionhall.com/",
+}
+# Never learn a "home" from these: they are ticket sellers, not the venue.
+_TICKETING_HOSTS = re.compile(r"(^|\.)(etix|ticketweb|tixr|eventbrite|axs|seetickets|ticketmaster|dice|showclix|freshtix|bandsintown|songkick)\.", re.I)
+
+
+def tm_resale_links(shows):
+    """Replace a Ticketmaster resale (Z) link with the venue's own page, learned
+    from that venue's other rows (the site each one links to), else
+    VENUE_HOME. Clears ticketUrl when it is the same resale link. Returns the
+    number of rows changed."""
+    from urllib.parse import urlsplit
+    home = {}
+    for r in shows:
+        u = r.get("venueUrl") or ""
+        if u.startswith("http") and not _TM_RESALE.search(u) and not _TICKETING_HOSTS.search(urlsplit(u).netloc):
+            v = r.get("venue")
+            parts = urlsplit(u)
+            root = f"{parts.scheme}://{parts.netloc}/"
+            home.setdefault(v, {}).setdefault(root, 0)
+            home[v][root] += 1
+    n = 0
+    for r in shows:
+        u = r.get("venueUrl") or ""
+        if not _TM_RESALE.search(u):
+            continue
+        v = r.get("venue")
+        pick = VENUE_HOME.get(v) or (max(home[v], key=home[v].get) if home.get(v) else "")
+        if not pick:
+            continue
+        r["venueUrl"] = pick
+        if _TM_RESALE.search(r.get("ticketUrl") or ""):
+            r["ticketUrl"] = ""
+        n += 1
+    return n
+
+
 def _sv():
     """scrape_venues as a module, loaded once (for _age_in_text and VENUE_INFO)."""
     if not hasattr(_sv, "mod"):
@@ -873,20 +923,49 @@ def vivid_index(feed_text, venue_names):
         date = f"{m.group(3)}-{int(m.group(1)):02d}-{int(m.group(2)):02d}"
         price = cols[ix["Money2"]].strip()
         key = (venue, date)
-        # Several rows can share a venue+date (packages, parking, a second
-        # listing); keep the cheapest real one.
-        if key not in out or (price and (not out[key][1] or float(price) < float(out[key][1] or 1e9))):
-            out[key] = (url, price)
+        # The artist is the start of the inner path ("kev-herrera-tickets-
+        # portland-helium-..."): keep it so a two-show night (Helium's two
+        # rooms, a 6:30 and 9:30 at The 1905) links each row to ITS listing,
+        # not the cheapest one that night (Sep 17 2026: Kelsey Cook's page
+        # carried Kev Herrera's link).
+        path = inner.split("vividseats.com/", 1)[-1]
+        artist = path.split("-tickets-", 1)[0].replace("-", " ") if "-tickets-" in path else ""
+        out.setdefault(key, []).append((url, price, artist))
+    # Cheapest first, so a single-listing venue+date behaves as before.
+    for key in out:
+        out[key].sort(key=lambda t: float(t[1]) if t[1] else 1e9)
     return out
 
 
+_VIVID_STOP = {"the", "and", "with", "of", "a", "an", "at", "in", "live", "tour", "show", "night", "presents", "feat", "featuring"}
+
+
+def _vivid_words(text):
+    return {w for w in re.findall(r"[a-z0-9]+", (text or "").lower()) if w not in _VIVID_STOP and len(w) > 1}
+
+
 def vivid_apply(shows, index):
-    """Attach resaleUrl / resaleFrom to matched rows. Returns count."""
+    """Attach resaleUrl / resaleFrom to matched rows. Returns count.
+
+    One listing that night: take it. Several: take the one whose artist
+    shares a word with the show title; if none does, attach nothing rather
+    than the wrong comedian."""
     n = 0
     for r in shows:
-        hit = index.get((r.get("venue"), r.get("date")))
-        if hit:
-            r["resaleUrl"], r["resaleFrom"] = hit[0], hit[1]
+        hits = index.get((r.get("venue"), r.get("date"))) or []
+        if not hits:
+            continue
+        pick = None
+        if len(hits) == 1:
+            pick = hits[0]
+        else:
+            tw = _vivid_words(r.get("title"))
+            for h in hits:
+                if tw & _vivid_words(h[2]):
+                    pick = h
+                    break
+        if pick:
+            r["resaleUrl"], r["resaleFrom"] = pick[0], pick[1]
             n += 1
     return n
 
@@ -1239,6 +1318,16 @@ def main():
 
     # Vivid Seats: exact resale links from the Impact catalog. See the block
     # above. Runs after Ticketmaster so TM-added rows can match too.
+    # A Ticketmaster id that starts with Z is a resale-marketplace listing,
+    # an echo of a show sold somewhere else (Etix, the venue's own site).
+    # Its page is often empty, so it is no place to send a Tickets button
+    # (Sep 17 2026 -- Nick: "ticket links aren't working" at Helium; 63 rows
+    # in the feed had one). Point those rows at the venue's own site instead
+    # and keep no ticket link; Vivid handles resale.
+    _fixed = tm_resale_links(shows)
+    if _fixed:
+        print(f"  Ticketmaster: {_fixed} resale-only links replaced with the venue's own page")
+
     _vf = vivid_fetch_feed()
     if _vf:
         _vi = vivid_index(_vf, {r.get("venue") for r in shows})
