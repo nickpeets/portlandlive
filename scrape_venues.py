@@ -5033,6 +5033,57 @@ def parse_corner14(html, today):
     return _wix_rows(raw, "CORNER14", "https://www.corner14oc.com", today)
 
 
+# ---- Helium Comedy Club (1510 SE 9th). The homepage carries one JSON-LD
+# Place with an "Events" array: every set for months out (255 at capture),
+# UTC startDate, name, the show's own page, a poster. Names come prefixed
+# ("Special Event: ", "Helium Presents: ", "The Neon Room at Helium: " --
+# the second, smaller room); the prefix is dropped and a Neon Room set is
+# tagged in the title. Every row is comedy. Two sets a night of the same
+# bill are two rows with their own times. Sep 18 2026.
+_HELIUM_PREFIX = re.compile(r"^\s*(?:special event|helium presents|helium comedy club presents)\s*:\s*", re.I)
+_HELIUM_NEON = re.compile(r"^\s*the neon room(?: at helium)?\s*:\s*", re.I)
+
+
+def parse_helium(html, today):
+    from zoneinfo import ZoneInfo
+    pt = ZoneInfo("America/Los_Angeles")
+    m = re.search(r'<script type="application/ld\+json">(.*?)</script>', html or "", re.S)
+    if not m:
+        return []
+    try:
+        data = json.loads(m.group(1))
+    except Exception:
+        return []
+    events = data.get("Events") if isinstance(data, dict) else None
+    if not isinstance(events, list):
+        return []
+    horizon = today + datetime.timedelta(days=HORIZON_DAYS)
+    out, seen = [], set()
+    for e in events:
+        name = _unhtml(e.get("name"))
+        try:
+            dt = datetime.datetime.fromisoformat((e.get("startDate") or "").replace("Z", "+00:00")).astimezone(pt)
+        except Exception:
+            continue
+        if not name or not (today <= dt.date() <= horizon):
+            continue
+        neon = bool(_HELIUM_NEON.match(name))
+        title = _HELIUM_NEON.sub("", _HELIUM_PREFIX.sub("", name)).strip()
+        if neon:
+            title += " (Neon Room)"
+        key = (dt.date().isoformat(), dt.hour, dt.minute, title.lower())
+        if key in seen:
+            continue
+        seen.add(key)
+        img = e.get("image") or ""
+        if isinstance(img, list):
+            img = img[0] if img else ""
+        out.append(_batch_row("Helium Comedy Club", dt.date().isoformat(), _pt_clock(dt), title,
+                              e.get("url") or "https://portland.heliumcomedy.com/", img,
+                              _age_in_text(_unhtml(e.get("description"))), True))
+    return out
+
+
 SOURCES = [
     # CitySpark JSON API (single feed -> 2 venues). The parser ignores the
     # GET body below and drives the POST API itself; the URL is only a cheap
@@ -5084,6 +5135,8 @@ SOURCES = [
      "urls": ["https://www.trinity-episcopal.org/music-series"]},
     {"name": "CORNER14 (corner14oc.com)", "parser": parse_corner14,
      "urls": ["https://www.corner14oc.com/event-list"]},
+    {"name": "Helium Comedy Club (portland.heliumcomedy.com)", "parser": parse_helium,
+     "urls": ["https://portland.heliumcomedy.com/"]},
     {"name": "Haymaker (haymakerportland.com)", "parser": parse_haymaker,
      "urls": ["https://www.haymakerportland.com/events"]},
     # A watcher: their calendar is films and lectures, so nothing is normal.
