@@ -297,7 +297,10 @@
       } catch (_) {}
     }
     function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]; }); }
-    slot.addEventListener("click", async function (e) {
+    // Assigned, not added: refreshAuthUI re-renders this editor on every auth
+    // event, and stacked listeners fired Add (and the delete confirm) once per
+    // render -- three rows from one click (Sep 18 2026).
+    slot.onclick = async function (e) {
       e.stopPropagation();
       const add = e.target.closest("[data-tk-add]");
       if (add) {
@@ -321,8 +324,8 @@
         catch (_) { del.disabled = false; return; }
         await load();
       }
-    });
-    slot.querySelector("[data-tk-text]").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); slot.querySelector("[data-tk-add]").click(); } });
+    };
+    slot.querySelector("[data-tk-text]").onkeydown = function (e) { if (e.key === "Enter") { e.preventDefault(); slot.querySelector("[data-tk-add]").click(); } };
     await load();
     // Media usage (Sep 18 2026): files and bytes per bucket, so growth is
     // visible before Spend Cap's ceiling is. Storage only; egress is on the
