@@ -1266,18 +1266,27 @@ def update_news(shows, venues, today):
         new_lines[key] = {"text": f"Miracle: {n} free ticket{'s' if n != 1 else ''} for {row.get('title','a show')} at {row.get('venue','')}.",
                           "url": f"#/show/{sl}", "until": row["date"]}
 
-    # Welcome lines: one per person who joined since the previous build. They
-    # run for the day they are written only (until = today), so the ticker
-    # never carries a stale welcome.
-    for m in fetch_new_members(datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=2)):
-        name = (m.get("display_name") or "").strip()
-        joined = (m.get("joined_at") or "")[:10]
-        if not name:
-            continue
-        key = "member:%s:%s" % (joined, name.lower())
-        if key in seen:
-            continue
-        new_lines[key] = {"text": f"Welcome {name} to Rain Or Shows.", "until": today.isoformat()}
+    # Welcome line (Sep 18 2026, Nick's shape): ONE rolling line naming the
+    # newest members -- everyone who joined in the last 7 days, newest first,
+    # six by name and "and N more" past that. Rewritten on every build, so a
+    # new joiner appears at the front and a week-old one drops off; the line
+    # vanishes when nobody has joined in a week. Keyed by its window so the
+    # announced-once rule never freezes it.
+    members = [m for m in fetch_new_members(datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=7))
+               if (m.get("display_name") or "").strip()]
+    members.sort(key=lambda m: m.get("joined_at") or "", reverse=True)
+    for k in [k for k in auto if str(k).startswith("member")]:
+        del auto[k]                                        # yesterday's line; rebuilt below
+    if members:
+        names = [m["display_name"].strip() for m in members]
+        shown, extra = names[:6], len(names) - 6
+        if len(shown) == 1:
+            who = shown[0]
+        else:
+            who = ", ".join(shown[:-1]) + " and " + shown[-1]
+        if extra > 0:
+            who = ", ".join(shown) + f" and {extra} more"
+        new_lines["members:rolling"] = {"text": f"Welcome {who} to Rain Or Shows.", "until": today.isoformat()}
 
     until = (today + datetime.timedelta(days=NEWS_RUN_DAYS)).isoformat()
     for key, val in new_lines.items():
