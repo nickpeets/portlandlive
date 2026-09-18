@@ -4102,6 +4102,34 @@ function txMarkSeen(threadId, ts){
     m[threadId] = ts || new Date().toISOString();
     localStorage.setItem('pl_tx_seen_v1', JSON.stringify(m));
   }catch(e){}
+  notifStatePush();
+}
+// Read state follows the account (Sep 18 2026): what this browser knows is
+// merged with the server's copy on load, and pushed back (debounced) after
+// every mark-seen or Clear, so the phone and the desktop agree.
+let _notifPushTimer = null, _notifPulledFor = null;
+function notifStatePush(){
+  clearTimeout(_notifPushTimer);
+  _notifPushTimer = setTimeout(async function(){
+    const sb = window.__plAuth; if(!sb) return;
+    try{ await sb.rpc('notif_state_merge', { p_seen: txSeenMap(), p_cleared_at: notifClearedAt() || null }); }catch(e){}
+  }, 800);
+}
+async function notifStatePull(uid){
+  const sb = window.__plAuth; if(!sb || !uid || _notifPulledFor === uid) return;
+  _notifPulledFor = uid;
+  try{
+    const r = await sb.rpc('notif_state_get');
+    const row = r && r.data && r.data[0];
+    if(!row) { notifStatePush(); return; }              // first device: seed the server
+    const local = txSeenMap(), remote = row.seen || {};
+    let changed = false;
+    Object.keys(remote).forEach(function(k){ if(!local[k] || String(remote[k]) > String(local[k])){ local[k] = remote[k]; changed = true; } });
+    if(changed){ try{ localStorage.setItem('pl_tx_seen_v1', JSON.stringify(local)); }catch(e){} }
+    const rc = row.cleared_at || '', lc = notifClearedAt();
+    if(rc && rc > lc){ try{ localStorage.setItem('pl_notif_cleared_v1', rc); }catch(e){} }
+    notifStatePush();                                    // and send the server anything local had
+  }catch(e){}
 }
 // "Clear" on the bell (Sep 17 2026): notifications are rebuilt from the
 // server on every load, so clearing is a timestamp -- anything dated at or
@@ -4111,6 +4139,7 @@ function notifClearedAt(){ try{ return localStorage.getItem('pl_notif_cleared_v1
 function notifClearNow(){
   const at = new Date().toISOString();
   try{ localStorage.setItem('pl_notif_cleared_v1', at); }catch(e){}
+  notifStatePush();
   INBOX.items.forEach(function(i){ if(!inboxIsMail(i) && i.kind !== 'report' && i.kind !== 'followreq'){ if(i.seenKey) txMarkSeen(i.seenKey, i.at || at); i.unread = false; } });
   INBOX.items = INBOX.items.filter(function(i){ return inboxIsMail(i) || i.kind === 'report' || i.kind === 'followreq' || String(i.at || '') > at; });
   inboxRenderBadge(); inboxRenderList();
@@ -4789,6 +4818,8 @@ async function inboxLoad(){
     inboxRenderBadge();
     return;
   }
+  // Merge the account's read state before deciding what is unread (once per session).
+  await notifStatePull(uid);
   wrap.hidden = false; if(nwrap) nwrap.hidden = false;
 
   const items = [];
