@@ -6115,7 +6115,7 @@ async function mountPhotos(wrap, slug, show){
     if(canAdd){
       html += '<div class="ph-add">'
         + (mine < PH_MAX_PER_SHOW
-            ? '<label class="ph-add-btn"><input type="file" accept="image/*" multiple hidden data-ph-file>&#128247; Add photos</label>'
+            ? '<button type="button" class="ph-add-btn" data-ph-pick>&#128247; Add photos</button><input type="file" accept="image/*" multiple data-ph-file style="display:none">'
               + '<span class="ph-note">From your night. Up to ' + PH_MAX_PER_SHOW + ' per show.</span>'
             : '<span class="ph-note">You\u2019ve added ' + PH_MAX_PER_SHOW + ' photos to this show.</span>')
         + '</div>';
@@ -6159,6 +6159,12 @@ async function mountPhotos(wrap, slug, show){
     });
   }
   host.addEventListener('click', async function(e){
+    // Nothing in this section is any other handler's business: the page has
+    // a global click handler for the stub shelf, and a photo click must
+    // never reach it (Sep 18 2026 -- "Add photos" was minting a stub).
+    e.stopPropagation();
+    const pick = e.target.closest('[data-ph-pick]');
+    if(pick){ e.preventDefault(); const inp = host.querySelector('[data-ph-file]'); if(inp) inp.click(); return; }
     const del = e.target.closest('[data-ph-del]');
     if(del){
       e.preventDefault();
@@ -6625,6 +6631,9 @@ function favKey(s){ return (s.venue||'') + '|' + (s.date||'') + '|' + (s.title||
     // Mint: snapshot a show into the permanent collection. Dedupe is a gentle no-op.
     function mintStub(snap){
       if(!plRequireSignIn('keep stubs')) return {ok:false, reason:'signedout'};
+      // A stub is a show: no title, venue or date means no stub (Sep 18 2026 --
+      // a stray click minted a blank one).
+      if(!snap || !(snap.title||'').trim() || !(snap.venue||'').trim() || !(snap.date||'').trim()){ return {ok:false, reason:'blank'}; }
       const stubs = loadStubs();
       const id = stubIdOf(snap);
       if(stubs.some(s => stubIdOf(s)===id)){ return {ok:false, reason:'dupe'}; }
