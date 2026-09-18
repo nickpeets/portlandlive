@@ -104,9 +104,12 @@ body{
 .masthead-brand:hover{opacity:.85}
 .masthead-logo{
   display:grid;place-items:center;width:38px;height:38px;border-radius:999px;
-  background:var(--cream);flex:0 0 auto;
+  background:transparent;flex:0 0 auto;
 }
-.masthead-logo img{width:26px;height:26px;object-fit:contain}
+/* The colored mark (sky, green mountain, lime arcs) fills the circle
+   (Sep 18 2026, Nick). It is round with a transparent outside, so no cream
+   disc behind it. */
+.masthead-logo img{width:38px;height:38px;object-fit:contain}
 .masthead-word{
   font-family:'Bevan',Georgia,serif;font-size:22px;font-weight:400;
   letter-spacing:.02em;text-transform:uppercase;color:var(--cream);white-space:nowrap;
@@ -967,7 +970,7 @@ body{
   <div class="masthead" id="masthead">
     <div class="masthead-inner">
       <div class="masthead-brand">
-        <span class="masthead-logo"><img src="/logo_trans.png" alt=""></span>
+        <span class="masthead-logo"><img src="/logo_color.png" alt=""></span>
         <span class="masthead-word">Rain Or Shows</span>
       </div>
       <div class="header-utility" id="headerUtility">
@@ -8044,7 +8047,7 @@ a.fest-artist:hover{text-decoration:underline}
   .quick-menu-caret{display:none}
   .masthead-brand{gap:8px;min-width:0}
   .masthead-logo{width:34px;height:34px}
-  .masthead-logo img{width:23px;height:23px}
+  .masthead-logo img{width:34px;height:34px}
   .masthead-word{font-size:16px}
   /* iOS Safari zooms the page when a text field under 16px gets focus and
      never zooms back (Sep 18 2026: the sign-in sheet left the feed zoomed
