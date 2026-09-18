@@ -2056,6 +2056,13 @@ function render(){
       // music/non-music separation before trusting it to hide shows.
       if(state.audit){ wrap.insertAdjacentHTML('beforeend', auditPanelHtml()); }
 
+  // Latest photos strip (Sep 18 2026): the front door to the galleries.
+  // Only on the plain home feed -- no search, no pill -- so it never gets in
+  // the way of someone looking for a specific thing.
+  const plainHome = !state.q.trim() && !state.tonight && !state.thisWeek && !state.picks && !state.myShows
+    && !state.festivals && !state.allAges && !state.following && !state.byHood && !state.comedy && !state.selectedVenue && state.view === 'shows';
+  if(plainHome) mountPhotoStrip(wrap);
+
   if(!list.length){
     wrap.innerHTML = state.picks ? '<div class="empty"><h2>No picks this week</h2><p>Check back soon — fresh picks are curated weekly.</p></div>' : state.following ? '<div class="empty"><h2>Nothing here yet</h2><p>Heart some bands and venues, or follow people from their profiles, to see their shows here.</p></div>' : state.myShows ? '<div class="empty"><h2>No favorites yet</h2><p>Tap the heart on a show to save it.</p></div>' : '<div class="empty"><h2>No Results Found.</h2><p>Try widening your dates or clearing the search.</p></div>';
     return;
@@ -6092,6 +6099,36 @@ function phResize(file){
     img.src = url;
   });
 }
+// The strip: newest photos across all shows from the last three weeks,
+// swipeable, each captioned with the band and room, tapping opens that
+// show's page. Draws nothing at all when there are no photos, so the feed
+// looks exactly as before until people start posting.
+let PH_STRIP_CACHE = { at: 0, rows: null };
+async function mountPhotoStrip(wrap){
+  const sb = phClient();
+  if(!sb) return;
+  const host = document.createElement('section');
+  host.className = 'ph-strip';
+  host.hidden = true;
+  wrap.appendChild(host);
+  let rows = PH_STRIP_CACHE.rows;
+  if(!rows || Date.now() - PH_STRIP_CACHE.at > 60000){
+    const r = await Promise.resolve(sb.rpc('latest_photos', { p_limit: 20 })).catch(function(e){ return { error: e }; });
+    if(r.error || !host.isConnected) return;
+    rows = r.data || [];
+    PH_STRIP_CACHE = { at: Date.now(), rows: rows };
+  }
+  if(!host.isConnected || !rows.length) return;
+  host.innerHTML = '<h3 class="ph-strip-head">Latest photos</h3>'
+    + '<div class="ph-strip-row">' + rows.map(function(x){
+        return '<a class="ph-strip-item" href="#/show/' + esc(x.show_slug) + '" title="' + esc((x.title || '') + (x.venue ? ' at ' + x.venue : '')) + '">'
+          + '<img src="' + esc(phUrl(x.path)) + '" alt="" loading="lazy">'
+          + '<span class="ph-strip-cap"><b>' + esc(x.title || 'A show') + '</b>' + (x.venue ? '<i>' + esc(x.venue) + '</i>' : '') + '</span>'
+          + '</a>';
+      }).join('') + '</div>';
+  host.hidden = false;
+}
+
 async function mountPhotos(wrap, slug, show){
   const sb = phClient();
   const host = document.createElement('section');
@@ -7509,6 +7546,16 @@ a.inbox-thread-who:hover{text-decoration:underline}
 .ph-cap .rp-btn{color:var(--ink)}
 .ph-del{background:none;border:0;color:var(--ink);opacity:.55;font-size:18px;line-height:1;cursor:pointer;padding:0 2px}
 .ph-del:hover{opacity:1;color:var(--rust)}
+.ph-strip{margin:0 0 22px}
+.ph-strip-head{font-family:'Alfa Slab One',serif;font-weight:400;font-size:19px;color:var(--cream);margin:0 0 10px}
+.ph-strip-row{display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
+.ph-strip-row::-webkit-scrollbar{height:6px}
+.ph-strip-row::-webkit-scrollbar-thumb{background:rgba(243,234,215,.35);border-radius:3px}
+.ph-strip-item{flex:0 0 150px;scroll-snap-align:start;display:block;background:var(--cream);color:var(--ink);border-radius:6px;overflow:hidden;text-decoration:none;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+.ph-strip-item img{width:150px;height:150px;object-fit:cover;display:block;background:#000}
+.ph-strip-cap{display:block;padding:5px 8px 7px;font-family:'Oswald',sans-serif;font-size:11.5px;line-height:1.25;letter-spacing:.03em}
+.ph-strip-cap b{display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ph-strip-cap i{display:block;font-style:normal;opacity:.7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ph-light{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;cursor:zoom-out}
 .ph-light img{max-width:96vw;max-height:92vh;object-fit:contain;box-shadow:0 8px 40px rgba(0,0,0,.6)}
 .ph-close{position:absolute;top:12px;right:16px;background:none;border:0;color:#fff;font-size:34px;line-height:1;cursor:pointer;opacity:.85}
