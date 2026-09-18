@@ -787,9 +787,9 @@ def tm_apply(shows, events, today):
                 break
         if best is not None:
             matched += 1
-            for k in ("time", "imageUrl", "age", "ticketUrl"):
+            for k in ("time", "imageUrl", "age", "ticketUrl", "contentType"):
                 if not (best.get(k) or "").strip() and n.get(k):
-                    best[k] = n[k]
+                    best[k] = n[k]          # contentType: Ticketmaster's comedy pull labels a matched row too (Sep 18 2026)
             continue
         # No row on that date. Reschedule check: the venue lists the same
         # headliner on another date that Ticketmaster does NOT list. Beck
