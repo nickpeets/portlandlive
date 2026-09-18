@@ -479,10 +479,17 @@ body{
        items again — display:contents removes the wrapper's own box without
        moving its children in the DOM, so the grid stays exactly as before. */
     .controls-inner .ctl-row + .ctl-row .ctl-group{display:contents}
-    /* Aug 23 doc, mobile only: Venues/Festivals/Comedy collapse into one
-       "Browse" dropdown instead of 3 separate grid cells. */
-    .controls-inner .ctl-row + .ctl-row .pill-narrow{display:none}
+    /* Phone rows (Sep 18 2026, Nick): Tonight / Venues, Comedy / Browse.
+       This Week is off phones (the feed is that by default); Picks, All Ages
+       and Festivals live in Browse. Grid order set explicitly so the four
+       land in that arrangement whatever the DOM order. */
+    .controls-inner .ctl-row + .ctl-row .pill-when:not(#tonightPill),
+    .controls-inner .ctl-row + .ctl-row #festivalsPill{display:none}
     .controls-inner .ctl-row + .ctl-row .browse-pill{display:inline-flex}
+    .controls-inner .ctl-row + .ctl-row #tonightPill{order:1}
+    .controls-inner .ctl-row + .ctl-row #venuesPill{order:2}
+    .controls-inner .ctl-row + .ctl-row #comedyPill{order:3}
+    .controls-inner .ctl-row + .ctl-row .browse-pill{order:4}
     /* The whole Browse box opens the menu, not just its text (Sep 17 2026,
        Nick): the select is stretched over the entire pill, padded past the
        icon so "Browse" sits where it did; the icon lets taps fall through. */
@@ -1061,7 +1068,7 @@ body{
     </div>
 
     <div class="ctl-row">
-      <label class="pill pill-when" title="Only shows happening tonight">
+      <label class="pill pill-when" id="tonightPill" title="Only shows happening tonight">
         <span class="toggle" id="tonightToggle"></span>
         <span>Tonight</span>
       </label>
@@ -1082,7 +1089,7 @@ body{
         <span>All Ages</span>
       </label>
       <div class="ctl-group">
-            <label class="pill pill-narrow" title="Browse all venues we cover (coverage directory)">
+            <label class="pill pill-narrow" id="venuesPill" title="Browse all venues we cover (coverage directory)">
             <span class="toggle" id="venuesToggle"></span>
             <span>Venues</span>
             </label>
@@ -1092,7 +1099,7 @@ body{
         <span class="toggle" id="festivalsToggle"></span>
         <span>Festivals</span>
       </label>
-      <label class="pill pill-narrow" title="Show comedy / stand-up shows instead of music">
+      <label class="pill pill-narrow" id="comedyPill" title="Show comedy / stand-up shows instead of music">
         <span class="toggle" id="comedyToggle"></span>
         <span>Comedy</span>
       </label>
@@ -1106,9 +1113,9 @@ body{
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
         <select id="browseSelect" aria-label="Browse">
           <option value="" selected>Browse</option>
-          <option value="venues">Venues</option>
+          <option value="picks">Picks</option>
+          <option value="allages">All Ages</option>
           <option value="festivals" id="browseFestivals" hidden>Festivals</option>
-          <option value="comedy">Comedy</option>
         </select>
       </div>
       </div>
@@ -2056,10 +2063,7 @@ function render(){
   // Venues/Comedy is actually on, however it got there (pill click, Reset, etc).
   const _browseSel = document.getElementById('browseSelect');
   if(_browseSel){
-    const _venuesOn = document.getElementById('venuesToggle').classList.contains('on');
-    const _comedyOn = document.getElementById('comedyToggle').classList.contains('on');
-    const _festOn = state.festivals;
-    _browseSel.value = _venuesOn ? 'venues' : _comedyOn ? 'comedy' : _festOn ? 'festivals' : '';
+    _browseSel.value = state.picks ? 'picks' : state.allAges ? 'allages' : state.festivals ? 'festivals' : '';
   }
   if(state.myShows){ renderFavorites(); return; }
   if(state.view === "venues"){ renderVenues(); return; }
@@ -7293,14 +7297,16 @@ $('#followingToggle').addEventListener('click',()=>{
 // Browse dropdown (mobile row 2): re-triggers the existing #venuesToggle /
 // #comedyToggle click handlers rather than reimplementing view/filter logic.
 // "" (the default "Browse" option) turns off whichever of the two is on.
+// Browse (phones) holds Picks / All Ages / Festivals since Sep 18 2026;
+// Tonight, Venues and Comedy are their own pills there. Each option just
+// presses the matching pill, so the filter logic is unchanged.
 $('#browseSelect').addEventListener('change', e => {
   const v = e.target.value;
-  const venuesOn = $('#venuesToggle').classList.contains('on');
-  const comedyOn = $('#comedyToggle').classList.contains('on');
-  if(v === 'venues'){ if(!venuesOn) $('#venuesToggle').click(); }
-  else if(v === 'comedy'){ if(!comedyOn) $('#comedyToggle').click(); }
-  else if(v === 'festivals'){ if(!$('#festivalsToggle').classList.contains('on')) $('#festivalsToggle').click(); }
-  else { if(venuesOn) $('#venuesToggle').click(); if(comedyOn) $('#comedyToggle').click(); }
+  const on = id => $('#' + id).classList.contains('on');
+  if(v === 'picks'){ if(!on('picksToggle')) $('#picksToggle').click(); }
+  else if(v === 'allages'){ if(!on('allAgesToggle')) $('#allAgesToggle').click(); }
+  else if(v === 'festivals'){ if(!on('festivalsToggle')) $('#festivalsToggle').click(); }
+  else { ['picksToggle','allAgesToggle','festivalsToggle'].forEach(function(id){ if(on(id)) $('#' + id).click(); }); }
 });
 
 // ===== ADD TO HOME SCREEN =====
@@ -7807,6 +7813,7 @@ a.inbox-thread-who:hover{text-decoration:underline}
 .ph-strip-head .pf-count{font-family:'Oswald',sans-serif;font-size:14px;opacity:.7;margin-left:4px}
 .ph-strip-caret{font-size:22px;line-height:1;opacity:.9;width:22px;text-align:center}
 .ph-strip-pill{flex:0 0 auto;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.06em;text-transform:uppercase;border:1px solid rgba(255,255,255,.4);border-radius:999px;padding:4px 10px;opacity:.9}
+@media(max-width:600px){.ph-strip-head{font-size:15px;padding:8px 10px;gap:8px}.ph-strip-caret{font-size:18px;width:18px}.ph-strip-head .pf-count{font-size:12px}}
 .ph-strip-row{display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
 .ph-strip-row[hidden]{display:none}  /* the flex rule outranks the hidden attribute otherwise (Sep 18 2026) */
 .ph-strip-row::-webkit-scrollbar{height:6px}
