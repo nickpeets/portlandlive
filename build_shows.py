@@ -1109,6 +1109,25 @@ NEWS_FILE = os.path.join(HERE, "news.json")
 NEWS_RUN_DAYS = 14          # how long a venue/festival line stays up
 
 
+def fetch_show_overrides():
+    """slug -> image_url set from the show page (show_overrides_all RPC,
+    readable by anyone). Never raises."""
+    url, key = _supabase_public_config()
+    if not url or not key:
+        return {}
+    try:
+        import urllib.request
+        req = urllib.request.Request(f"{url}/rest/v1/rpc/show_overrides_all", data=b"{}",
+                                     headers={"apikey": key, "Authorization": "Bearer " + key,
+                                              "Content-Type": "application/json"})
+        with urllib.request.urlopen(req, timeout=20) as r:
+            rows = json.loads(r.read().decode("utf-8")) or []
+        return {x["slug"]: x["image_url"] for x in rows if x.get("slug") and x.get("image_url")}
+    except Exception as e:
+        print(f"  note: poster overrides not fetched ({type(e).__name__})")
+        return {}
+
+
 def fetch_miracles():
     """Open miracles. ticket_posts is readable by anyone (its select policy
     is `to anon, authenticated using (true)`), so the build reads it with
@@ -1324,6 +1343,17 @@ def main():
     # (Sep 17 2026 -- Nick: "ticket links aren't working" at Helium; 63 rows
     # in the feed had one). Point those rows at the venue's own site instead
     # and keep no ticket link; Vivid handles resale.
+    # Poster overrides set from the show page by a moderator (Sep 18 2026):
+    # applied after every other source, so they win and survive the scrape.
+    _ov = fetch_show_overrides()
+    if _ov:
+        _n = 0
+        for r in shows:
+            u = _ov.get(make_slug(r))
+            if u and r.get("imageUrl") != u:
+                r["imageUrl"] = u; _n += 1
+        print(f"  Posters: {_n} override(s) applied")
+
     _fixed = tm_resale_links(shows)
     if _fixed:
         print(f"  Ticketmaster: {_fixed} resale-only links replaced with the venue's own page")

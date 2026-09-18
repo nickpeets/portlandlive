@@ -3495,6 +3495,7 @@ function renderShowDetail(wrap, show, kind){
   wrap.innerHTML = '';
   wrap.appendChild(grid);
   const _slug = show._slug || show.slug || makeSlug(show);
+  mountPosterEditor(card, show, _slug);
   // Appended in mobile reading order. mountExchange/mountComments each attach
   // their host synchronously before their first await, so the resulting DOM
   // order is deterministic even though both are async.
@@ -6204,6 +6205,70 @@ async function mountPhotoStrip(wrap){
   host.hidden = false;
 }
 
+// ===== POSTER OVERRIDE (moderator, Sep 18 2026) =====
+// A show page reads its own poster override so a fresh one shows at once
+// (the nightly build bakes overrides into the feed for the cards). For a
+// moderator, a "Set poster" control appears under the card: pick an image,
+// it is resized in the browser, stored under posters/<slug>.jpg, and the
+// override recorded. "Remove" clears it back to whatever the venue had.
+async function mountPosterEditor(card, show, slug){
+  const sb = phClient();
+  if(!sb || !slug) return;
+  // Live override, for everyone.
+  try{
+    const r = await sb.rpc('show_override', { p_slug: slug });
+    const url = r && !r.error && typeof r.data === 'string' ? r.data : null;
+    if(url && url !== show.imageUrl){ show.imageUrl = url; swapPoster(card, url); }
+  }catch(e){}
+  if(typeof rpIsModerator !== 'function' || !(await rpIsModerator())) return;
+  if(!card.isConnected) return;
+  const box = document.createElement('div');
+  box.className = 'poster-edit';
+  box.innerHTML = '<button type="button" class="poster-edit-btn" data-poster-pick>&#128444; Set poster</button>'
+    + '<button type="button" class="poster-edit-btn poster-edit-clear" data-poster-clear' + (show.imageUrl ? '' : ' hidden') + '>Remove poster</button>'
+    + '<input type="file" accept="image/*" data-poster-file style="display:none">'
+    + '<span class="poster-edit-note" data-poster-note></span>';
+  card.insertAdjacentElement('afterend', box);
+  const note = box.querySelector('[data-poster-note]');
+  box.addEventListener('click', async function(e){
+    e.stopPropagation();
+    if(e.target.closest('[data-poster-pick]')){ e.preventDefault(); box.querySelector('[data-poster-file]').click(); return; }
+    if(e.target.closest('[data-poster-clear]')){
+      e.preventDefault();
+      if(!confirm('Remove the poster override? The card goes back to whatever the venue publishes.')) return;
+      const r = await sb.rpc('set_show_poster', { p_slug: slug, p_image_url: null });
+      if(r.error){ note.textContent = 'Couldn\u2019t remove: ' + r.error.message; return; }
+      try{ await sb.storage.from('posters').remove([slug.slice(0, 200) + '.jpg']); }catch(_){}
+      note.textContent = 'Removed. The card updates on the next build.';
+      box.querySelector('[data-poster-clear]').hidden = true;
+    }
+  });
+  box.querySelector('[data-poster-file]').addEventListener('change', async function(){
+    const f = this.files && this.files[0]; if(!f) return;
+    note.textContent = 'Uploading\u2026';
+    try{
+      const out = await phResize(f);
+      const path = slug.slice(0, 200) + '.jpg';
+      const up = await sb.storage.from('posters').upload(path, out.blob, { contentType: 'image/jpeg', upsert: true });
+      if(up.error){ note.textContent = 'Upload failed: ' + up.error.message; return; }
+      const url = sb.storage.from('posters').getPublicUrl(path).data.publicUrl + '?v=' + Date.now();
+      const r = await sb.rpc('set_show_poster', { p_slug: slug, p_image_url: url });
+      if(r.error){ note.textContent = 'Couldn\u2019t save: ' + r.error.message; return; }
+      show.imageUrl = url; swapPoster(card, url);
+      box.querySelector('[data-poster-clear]').hidden = false;
+      note.textContent = 'Saved. Feed cards pick it up on the next build.';
+    }catch(e){ note.textContent = 'That didn\u2019t work: ' + (e && e.message || e); }
+  });
+}
+function swapPoster(card, url){
+  const img = card.querySelector('.s-img');
+  if(img){ img.src = url; img.classList.remove('s-img-broken'); return; }
+  // No poster before: build the media block the way smediaFor does.
+  const media = document.createElement('div'); media.className = 's-media';
+  media.innerHTML = '<img class="s-img s-img--zoom" data-lb="1" alt="" src="' + esc(url) + '">';
+  card.classList.remove('no-media'); card.insertAdjacentElement('afterbegin', media);
+}
+
 async function mountPhotos(wrap, slug, show){
   const sb = phClient();
   const host = document.createElement('section');
@@ -7624,6 +7689,10 @@ a.inbox-thread-who:hover{text-decoration:underline}
 .ph-cap .rp-btn{color:var(--ink)}
 .ph-del{background:none;border:0;color:var(--ink);opacity:.55;font-size:18px;line-height:1;cursor:pointer;padding:0 2px}
 .ph-del:hover{opacity:1;color:var(--rust)}
+.poster-edit{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:8px 0 4px;font-family:'Bitter',Georgia,serif;font-size:13px;color:rgba(243,234,215,.8)}
+.poster-edit-btn{border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.1);color:var(--cream);font-family:'Oswald',sans-serif;font-size:12.5px;letter-spacing:.04em;text-transform:uppercase;padding:6px 10px;border-radius:999px;cursor:pointer}
+.poster-edit-btn:hover{background:rgba(255,255,255,.2)}
+.poster-edit-clear{opacity:.7}
 .ph-strip{margin:0 0 22px}
 .ph-strip-head{font-family:'Alfa Slab One',serif;font-weight:400;font-size:19px;color:var(--cream);margin:0 0 10px}
 .ph-strip-row{display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
