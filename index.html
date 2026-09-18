@@ -698,6 +698,7 @@ body{
   .show-grid > .venue-header .venue-name{margin-top:0}
   .show-grid > .list{grid-column:1;grid-row:2}
   .show-grid > .cmts{grid-column:1;grid-row:4}
+  .show-grid > .ph-section{grid-column:1;grid-row:3;margin-top:0}  /* photos above comments on desktop too (Sep 18 2026) */
   /* Explicit row 5: comments are pinned to row 4, so an unplaced panel
      auto-fills the first free cell -- row 3 -- and renders ABOVE the
      comments it should follow. */
@@ -7573,7 +7574,7 @@ a.inbox-thread-who:hover{text-decoration:underline}
 .stub{cursor:pointer}
 .pf-stub{cursor:pointer}
 /* Show photos (Sep 18 2026) -- styled like the Comments section below it */
-.ph-section{grid-column:1 / -1;margin:26px 0 4px}
+.ph-section{margin:26px 0 4px}
 .ph-head{display:flex;align-items:baseline;gap:10px;margin:0 0 12px;font-family:'Alfa Slab One',serif;font-weight:400;font-size:19px;color:var(--cream)}
 .ph-head .pf-count{font-family:'Oswald',sans-serif;font-size:14px;opacity:.7}
 .ph-state,.ph-note{font-family:'Bitter',Georgia,serif;font-size:13.5px;line-height:1.5;color:rgba(243,234,215,.8);padding:2px 0 6px}
