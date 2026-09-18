@@ -25,6 +25,13 @@
    "until": "2026-09-18"
   },
   {
+   "text": "Festival added: Easyfolk Fest Sep 18-19.",
+   "auto": true,
+   "key": "fest:easyfolk-fest-2026",
+   "from": "2026-09-18",
+   "until": "2026-10-02"
+  },
+  {
    "text": "24 new venues on the calendar: Alberta Abbey, CORNER14, Chehalem Cultural Center and 21 more.",
    "auto": true,
    "key": "venues:2026-09-17",
@@ -40,6 +47,7 @@
   }
  ],
  "announced": [
+  "fest:easyfolk-fest-2026",
   "fest:northwest-roots-fest-2026",
   "fest:st-johns-music-fest-2026",
   "member:2026-09-16:nay nay",
