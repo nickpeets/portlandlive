@@ -7863,5 +7863,49 @@ a.fest-artist:hover{text-decoration:underline}
 </script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
     <script src="auth.js" defer></script>
+<script>
+// ===== NEW-BUILD CHECK (Sep 18 2026) =====
+// Every push to index.html or auth.js needed a hard refresh on every device,
+// and nobody's friends know to do that. This asks the server for
+// index.html's fingerprint (its ETag / Last-Modified) a minute after load,
+// then every three minutes and whenever the tab comes back to the front. If
+// it changed, the page re-fetches index.html and auth.js past the browser
+// cache and reloads -- but only when it won't lose anything: not while a
+// field is focused, the sign-in sheet is open, or an upload is running.
+(function(){
+  var BOOT = null, DUE = false;
+  function fingerprint(){
+    return fetch('/index.html', { method: 'HEAD', cache: 'no-store' })
+      .then(function(r){ return (r.headers.get('etag') || '') + '|' + (r.headers.get('last-modified') || ''); })
+      .catch(function(){ return null; });
+  }
+  function busy(){
+    var a = document.activeElement;
+    if(a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA' || a.isContentEditable)) return true;
+    var ov = document.getElementById('authOverlay');
+    if(ov && ov.getAttribute('aria-hidden') === 'false') return true;
+    if(document.querySelector('.ph-note') && /Uploading/.test(document.querySelector('.ph-note').textContent || '')) return true;
+    return false;
+  }
+  function reloadFresh(){
+    if(busy()){ setTimeout(reloadFresh, 20000); return; }
+    Promise.all([
+      fetch('/index.html', { cache: 'reload' }).catch(function(){}),
+      fetch('/auth.js', { cache: 'reload' }).catch(function(){})
+    ]).then(function(){ location.reload(); });
+  }
+  function check(){
+    fingerprint().then(function(fp){
+      if(!fp || fp === '|') return;                       // no headers to compare; stay quiet
+      if(BOOT === null){ BOOT = fp; return; }
+      if(fp !== BOOT && !DUE){ DUE = true; reloadFresh(); }
+    });
+  }
+  setTimeout(check, 60000);
+  setInterval(check, 180000);
+  document.addEventListener('visibilitychange', function(){ if(document.visibilityState === 'visible') check(); });
+  window.addEventListener('online', check);
+})();
+</script>
 </body>
 </html>
