@@ -11,25 +11,18 @@
    "until": "2026-11-01"
   },
   {
-   "text": "Welcome Kim to Rain Or Shows.",
-   "auto": true,
-   "key": "member:2026-09-17:kim",
-   "from": "2026-09-18",
-   "until": "2026-09-18"
-  },
-  {
-   "text": "Welcome Auprah to Rain Or Shows.",
-   "auto": true,
-   "key": "member:2026-09-18:auprah",
-   "from": "2026-09-18",
-   "until": "2026-09-18"
-  },
-  {
    "text": "Festival added: Easyfolk Fest Sep 18-19.",
    "auto": true,
    "key": "fest:easyfolk-fest-2026",
    "from": "2026-09-18",
    "until": "2026-10-02"
+  },
+  {
+   "text": "Welcome Auprah, Kim, Chad, Jason The Apostle, Seth, Tamra and 3 more to Rain Or Shows.",
+   "auto": true,
+   "key": "members:rolling",
+   "from": "2026-09-18",
+   "until": "2026-09-18"
   },
   {
    "text": "24 new venues on the calendar: Alberta Abbey, CORNER14, Chehalem Cultural Center and 21 more.",
@@ -58,6 +51,7 @@
   "member:2026-09-17:seth",
   "member:2026-09-17:tamra",
   "member:2026-09-18:auprah",
+  "members:rolling",
   "miracle:2026-09-18-mississippi-pizza-lucky-beaucoup",
   "venue:Al's Den",
   "venue:Aladdin Theater",
