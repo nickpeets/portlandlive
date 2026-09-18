@@ -6200,9 +6200,10 @@ async function mountPhotoStrip(wrap){
   if(!host.isConnected || !rows.length) return;
   // Folded by default (Sep 18 2026, Nick); the choice sticks per browser.
   let open = false;
-  try{ open = localStorage.getItem('pl_strip_open') === '1'; }catch(_){}
+  try{ open = localStorage.getItem('pl_strip_open_v2') === '1'; }catch(_){}   // v2: reset to folded after the first version failed to fold
   host.innerHTML = '<button type="button" class="ph-strip-head" data-strip-toggle aria-expanded="' + (open ? 'true' : 'false') + '">'
-      + '<span class="ph-strip-caret">' + (open ? '&#9662;' : '&#9656;') + '</span> Latest photos <span class="pf-count">' + rows.length + '</span></button>'
+      + '<span class="ph-strip-caret">' + (open ? '&#9662;' : '&#9656;') + '</span><span class="ph-strip-title">Latest photos <span class="pf-count">' + rows.length + '</span></span>'
+      + '<span class="ph-strip-pill">' + (open ? 'Hide' : 'Show') + '</span></button>'
     + '<div class="ph-strip-row"' + (open ? '' : ' hidden') + '>' + rows.map(function(x){
         return '<a class="ph-strip-item" href="#/show/' + esc(x.show_slug) + '" title="' + esc((x.title || '') + (x.venue ? ' at ' + x.venue : '')) + '">'
           + '<img src="' + esc(phUrl(x.path)) + '" alt="" loading="lazy">' + (x.kind === 'video' ? '<span class="ph-play ph-play-sm" aria-hidden="true">&#9654;</span>' : '')
@@ -6215,7 +6216,8 @@ async function mountPhotoStrip(wrap){
     row.hidden = !now;
     this.setAttribute('aria-expanded', now ? 'true' : 'false');
     this.querySelector('.ph-strip-caret').innerHTML = now ? '&#9662;' : '&#9656;';
-    try{ localStorage.setItem('pl_strip_open', now ? '1' : '0'); }catch(_){}
+    this.querySelector('.ph-strip-pill').textContent = now ? 'Hide' : 'Show';
+    try{ localStorage.setItem('pl_strip_open_v2', now ? '1' : '0'); }catch(_){}
   });
   host.hidden = false;
 }
@@ -7799,9 +7801,12 @@ a.inbox-thread-who:hover{text-decoration:underline}
 .poster-edit-btn:hover{background:rgba(255,255,255,.2)}
 .poster-edit-clear{opacity:.7}
 .ph-strip{margin:0 0 22px}
-.ph-strip-head{display:flex;align-items:center;gap:8px;font-family:'Alfa Slab One',serif;font-weight:400;font-size:19px;color:var(--cream);margin:0 0 10px;background:none;border:0;padding:0;cursor:pointer;text-align:left}
-.ph-strip-head .pf-count{font-family:'Oswald',sans-serif;font-size:14px;opacity:.7}
-.ph-strip-caret{font-size:14px;opacity:.75;width:14px}
+.ph-strip-head{display:flex;align-items:center;gap:10px;width:100%;font-family:'Alfa Slab One',serif;font-weight:400;font-size:19px;color:var(--cream);margin:0 0 10px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.22);border-radius:8px;padding:10px 12px;cursor:pointer;text-align:left}
+.ph-strip-head:hover{background:rgba(255,255,255,.14)}
+.ph-strip-title{flex:1 1 auto}
+.ph-strip-head .pf-count{font-family:'Oswald',sans-serif;font-size:14px;opacity:.7;margin-left:4px}
+.ph-strip-caret{font-size:22px;line-height:1;opacity:.9;width:22px;text-align:center}
+.ph-strip-pill{flex:0 0 auto;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.06em;text-transform:uppercase;border:1px solid rgba(255,255,255,.4);border-radius:999px;padding:4px 10px;opacity:.9}
 .ph-strip-row{display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
 .ph-strip-row[hidden]{display:none}  /* the flex rule outranks the hidden attribute otherwise (Sep 18 2026) */
 .ph-strip-row::-webkit-scrollbar{height:6px}
