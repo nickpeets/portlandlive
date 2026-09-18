@@ -6201,7 +6201,7 @@ async function mountPhotoStrip(wrap){
   host.innerHTML = '<h3 class="ph-strip-head">Latest photos</h3>'
     + '<div class="ph-strip-row">' + rows.map(function(x){
         return '<a class="ph-strip-item" href="#/show/' + esc(x.show_slug) + '" title="' + esc((x.title || '') + (x.venue ? ' at ' + x.venue : '')) + '">'
-          + '<img src="' + esc(phUrl(x.path)) + '" alt="" loading="lazy">'
+          + '<img src="' + esc(phUrl(x.path)) + '" alt="" loading="lazy">' + (x.kind === 'video' ? '<span class="ph-play ph-play-sm" aria-hidden="true">&#9654;</span>' : '')
           + '<span class="ph-strip-cap"><b>' + esc(x.title || 'A show') + '</b>' + (x.venue ? '<i>' + esc(x.venue) + '</i>' : '') + '</span>'
           + '</a>';
       }).join('') + '</div>';
@@ -6296,6 +6296,36 @@ function swapPoster(card, url){
   else { card.classList.add('no-media'); }
 }
 
+// Video clips (Sep 18 2026): 20 seconds, 60 MB, stored as shot. The browser
+// reads the clip first -- if it can't play it (a raw HEVC file dragged in on
+// a desktop) it is declined before any upload -- checks the length, and grabs
+// a frame at one second as the thumbnail. Phones hand us H.264 MP4, so the
+// usual case just works.
+const VD_MAX_S = 20, VD_MAX_BYTES = 60 * 1024 * 1024;
+function vdUrl(path){ try{ return phClient().storage.from('videos').getPublicUrl(path).data.publicUrl; }catch(e){ return ''; } }
+function vdProbe(file){
+  return new Promise(function(resolve, reject){
+    const v = document.createElement('video'); v.muted = true; v.playsInline = true; v.preload = 'metadata';
+    const url = URL.createObjectURL(file);
+    const done = function(err, out){ URL.revokeObjectURL(url); err ? reject(err) : resolve(out); };
+    v.onerror = function(){ done(new Error("This video can't play in your browser. Save it as an MP4 first.")); };
+    v.onloadedmetadata = function(){
+      if(!isFinite(v.duration) || v.duration > VD_MAX_S + 0.5){ done(new Error('Clips are up to ' + VD_MAX_S + ' seconds. Trim it in your Photos app first.')); return; }
+      v.currentTime = Math.min(1, Math.max(0, v.duration / 2));
+    };
+    v.onseeked = function(){
+      try{
+        const w = v.videoWidth, hgt = v.videoHeight;
+        const k = Math.min(1, PH_MAX_SIDE / Math.max(w, hgt));
+        const cv = document.createElement('canvas'); cv.width = Math.round(w * k); cv.height = Math.round(hgt * k);
+        cv.getContext('2d').drawImage(v, 0, 0, cv.width, cv.height);
+        cv.toBlob(function(b){ if(!b){ done(new Error('Could not read a frame.')); return; } done(null, { thumb: b, width: cv.width, height: cv.height, duration: Math.round(v.duration) }); }, 'image/jpeg', PH_QUALITY);
+      }catch(e){ done(e); }
+    };
+    v.src = url;
+  });
+}
+
 async function mountPhotos(wrap, slug, show){
   const sb = phClient();
   const host = document.createElement('section');
@@ -6319,8 +6349,8 @@ async function mountPhotos(wrap, slug, show){
     if(canAdd){
       html += '<div class="ph-add">'
         + (mine < PH_MAX_PER_SHOW
-            ? '<button type="button" class="ph-add-btn" data-ph-pick>&#128247; Add photos</button><input type="file" accept="image/*" multiple data-ph-file style="display:none">'
-              + '<span class="ph-note">From your night. Up to ' + PH_MAX_PER_SHOW + ' per show.</span>'
+            ? '<button type="button" class="ph-add-btn" data-ph-pick>&#128247; Add photos or clips</button><input type="file" accept="image/*,video/*" multiple data-ph-file style="display:none">'
+              + '<span class="ph-note">From your night. Up to ' + PH_MAX_PER_SHOW + ' per show; clips up to ' + VD_MAX_S + ' seconds.</span>'
             : '<span class="ph-note">You\u2019ve added ' + PH_MAX_PER_SHOW + ' photos to this show.</span>')
         + '</div>';
     } else if(!myId){
@@ -6331,8 +6361,9 @@ async function mountPhotos(wrap, slug, show){
     if(rows.length){
       html += '<div class="ph-grid">' + rows.map(function(x){
         const isMine = x.user_id === myId;
-        return '<figure class="ph-item">'
-          + '<button type="button" class="ph-open" data-ph-open="' + esc(phUrl(x.path)) + '" aria-label="Open photo"><img src="' + esc(phUrl(x.path)) + '" alt="" loading="lazy"></button>'
+        const isVideo = x.kind === 'video' && x.video_path;
+        return '<figure class="ph-item' + (isVideo ? ' ph-item-video' : '') + '">'
+          + '<button type="button" class="ph-open" data-ph-open="' + esc(phUrl(x.path)) + '"' + (isVideo ? ' data-ph-video="' + esc(vdUrl(x.video_path)) + '"' : '') + ' aria-label="' + (isVideo ? 'Play clip' : 'Open photo') + '"><img src="' + esc(phUrl(x.path)) + '" alt="" loading="lazy">' + (isVideo ? '<span class="ph-play" aria-hidden="true">&#9654;</span>' : '') + '</button>'
           + '<figcaption class="ph-cap"><span class="ph-by">' + esc(x.display_name || 'Someone') + '</span>'
           + (isMine ? '<button type="button" class="ph-del" data-ph-del="' + esc(x.id) + '" data-ph-path="' + esc(x.path) + '" title="Delete photo" aria-label="Delete your photo">&times;</button>'
                     : (typeof rpButton === 'function' ? rpButton('photo', x.id, false, !!myId) : ''))
@@ -6348,17 +6379,31 @@ async function mountPhotos(wrap, slug, show){
       if(!files.length) return;
       const note = host.querySelector('.ph-note'); if(note) note.textContent = 'Uploading ' + files.length + '\u2026';
       let bad = 0;
+      let why = '';
       for(const f of files){
         try{
+          const stem = myId + '/' + slug.slice(0, 80) + '/' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
+          if(/^video\//.test(f.type) || /\.(mp4|mov|webm|m4v)$/i.test(f.name)){
+            if(f.size > VD_MAX_BYTES){ bad++; why = 'Clips are up to 60 MB.'; continue; }
+            const probe = await vdProbe(f);                      // throws with a plain reason
+            const tpath = stem + '.jpg', vpath = stem + (/webm/i.test(f.type) ? '.webm' : '.mp4');
+            const t = await sb.storage.from('photos').upload(tpath, probe.thumb, { contentType: 'image/jpeg', upsert: false });
+            if(t.error){ bad++; console.warn('[photos] thumb upload failed:', t.error.message); continue; }
+            const vu = await sb.storage.from('videos').upload(vpath, f, { contentType: f.type || 'video/mp4', upsert: false });
+            if(vu.error){ bad++; console.warn('[photos] clip upload failed:', vu.error.message); await sb.storage.from('photos').remove([tpath]).catch(function(){}); continue; }
+            const r = await sb.rpc('add_show_video', { p_slug: slug, p_stub_id: stubIdOf(show), p_path: tpath, p_video_path: vpath, p_width: probe.width, p_height: probe.height, p_duration: probe.duration });
+            if(r.error){ bad++; console.warn('[photos] add clip failed:', r.error.message); await sb.storage.from('videos').remove([vpath]).catch(function(){}); await sb.storage.from('photos').remove([tpath]).catch(function(){}); }
+            continue;
+          }
           const out = await phResize(f);
-          const path = myId + '/' + slug.slice(0, 80) + '/' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8) + '.jpg';
+          const path = stem + '.jpg';
           const up = await sb.storage.from('photos').upload(path, out.blob, { contentType: 'image/jpeg', upsert: false });
           if(up.error){ bad++; console.warn('[photos] upload failed:', up.error.message); continue; }
           const r = await sb.rpc('add_show_photo', { p_slug: slug, p_stub_id: stubIdOf(show), p_path: path, p_width: out.width, p_height: out.height });
           if(r.error){ bad++; console.warn('[photos] add failed:', r.error.message); await sb.storage.from('photos').remove([path]).catch(function(){}); }
-        }catch(e){ bad++; console.warn('[photos] threw:', e); }
+        }catch(e){ bad++; why = (e && e.message) || ''; console.warn('[photos] threw:', e); }
       }
-      if(bad && note) note.textContent = bad + ' photo' + (bad > 1 ? 's' : '') + ' didn\u2019t upload.';
+      if(bad && note) note.textContent = bad + (bad > 1 ? ' didn\u2019t upload. ' : ' didn\u2019t upload. ') + why;
       await load();
     });
   }
@@ -6377,6 +6422,7 @@ async function mountPhotos(wrap, slug, show){
       const r = await sb.rpc('delete_show_photo', { p_id: del.getAttribute('data-ph-del') });
       if(r.error){ console.warn('[photos] delete failed:', r.error.message); del.disabled = false; return; }
       try{ await sb.storage.from('photos').remove([del.getAttribute('data-ph-path')]); }catch(_){}
+      try{ const row = Array.isArray(r.data) ? r.data[0] : r.data; if(row && row.video_path) await sb.storage.from('videos').remove([row.video_path]); }catch(_){}
       await load();
       return;
     }
@@ -6385,7 +6431,12 @@ async function mountPhotos(wrap, slug, show){
       e.preventDefault();
       const box = document.createElement('div');
       box.className = 'ph-light';
-      box.innerHTML = '<img src="' + esc(open.getAttribute('data-ph-open')) + '" alt=""><button type="button" class="ph-close" aria-label="Close">&times;</button>';
+      const vsrc = open.getAttribute('data-ph-video');
+      box.innerHTML = (vsrc
+          ? '<video src="' + esc(vsrc) + '" poster="' + esc(open.getAttribute('data-ph-open')) + '" controls autoplay playsinline preload="metadata"></video>'
+          : '<img src="' + esc(open.getAttribute('data-ph-open')) + '" alt="">')
+        + '<button type="button" class="ph-close" aria-label="Close">&times;</button>';
+      if(vsrc){ box.querySelector('video').addEventListener('click', function(ev){ ev.stopPropagation(); }); }
       box.addEventListener('click', function(){ box.remove(); });
       document.addEventListener('keydown', function esc_(ev){ if(ev.key === 'Escape'){ box.remove(); document.removeEventListener('keydown', esc_); } });
       document.body.appendChild(box);
@@ -7745,6 +7796,11 @@ a.inbox-thread-who:hover{text-decoration:underline}
 .ph-strip-cap{display:block;padding:5px 8px 7px;font-family:'Oswald',sans-serif;font-size:11.5px;line-height:1.25;letter-spacing:.03em}
 .ph-strip-cap b{display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ph-strip-cap i{display:block;font-style:normal;opacity:.7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ph-open{position:relative}
+.ph-play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:44px;height:44px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;font-size:18px;line-height:44px;text-align:center;padding-left:3px;box-sizing:border-box;pointer-events:none}
+.ph-play-sm{width:34px;height:34px;line-height:34px;font-size:14px;top:calc(50% - 16px)}
+.ph-strip-item{position:relative}
+.ph-light video{max-width:96vw;max-height:92vh;background:#000;box-shadow:0 8px 40px rgba(0,0,0,.6)}
 .ph-light{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;cursor:zoom-out}
 .ph-light img{max-width:96vw;max-height:92vh;object-fit:contain;box-shadow:0 8px 40px rgba(0,0,0,.6)}
 .ph-close{position:absolute;top:12px;right:16px;background:none;border:0;color:#fff;font-size:34px;line-height:1;cursor:pointer;opacity:.85}

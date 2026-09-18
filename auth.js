@@ -324,6 +324,21 @@
     });
     slot.querySelector("[data-tk-text]").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); slot.querySelector("[data-tk-add]").click(); } });
     await load();
+    // Media usage (Sep 18 2026): files and bytes per bucket, so growth is
+    // visible before Spend Cap's ceiling is. Storage only; egress is on the
+    // Supabase dashboard (Reports -> Usage) and in its quota emails.
+    try {
+      const u = await sb.rpc("media_usage");
+      const rows = (u && !u.error && u.data) || [];
+      if (rows.length) {
+        const gb = function (b) { return (b / 1073741824).toFixed(2) + " GB"; };
+        const total = rows.reduce(function (s, r) { return s + Number(r.bytes || 0); }, 0);
+        const line = document.createElement("div");
+        line.className = "handle-edit-msg ticker-usage";
+        line.textContent = "Media: " + rows.map(function (r) { return r.bucket + " " + r.files + " (" + gb(Number(r.bytes || 0)) + ")"; }).join(" \u00b7 ") + " \u00b7 " + gb(total) + " of 100 GB";
+        slot.querySelector(".ticker-edit").appendChild(line);
+      }
+    } catch (_) {}
   }
 
   async function refreshAuthUI() {
