@@ -135,7 +135,7 @@ ARCHIVE = os.path.join(HERE, "archive.json")
 
 _ARCHIVE_SOURCE = "Append-only archive of past shows (accumulated across builds)"
 _ARCHIVE_FIELDS = ("title", "venue", "neighborhood", "address",
-                   "date", "time", "venueUrl", "ticketUrl", "imageUrl", "age")
+                   "date", "time", "venueUrl", "ticketUrl", "imageUrl", "age", "contentType")
 
 
 def make_slug(show):
@@ -1365,10 +1365,15 @@ def main():
         except Exception as e:
             print(f"  archive: previous shows.json unreadable ({e}); "
                   f"archiving from manual_shows.json only")
-    _past = [s for s in shows if s.get("date", "") < cutoff]
+    # A show is archived on the DAY it happens, not the morning after (Sep 18
+    # 2026). Ticketmaster-added rows can leave the feed the evening of the
+    # show, so a next-morning archive never saw them: Sep 17 archived 32 rows
+    # of the day's ~35, and none of Helium's. Add-only and slug-deduped, so a
+    # row archived today while still in the feed costs nothing.
+    _past = [s for s in shows if s.get("date", "") <= cutoff]
     _seen_past = {(s.get("venue", ""), s.get("date", ""), s.get("title", "")) for s in _past}
     for s in _prev_feed:
-        if s.get("date", "") >= cutoff:
+        if s.get("date", "") > cutoff:
             continue
         k = (s.get("venue", ""), s.get("date", ""), s.get("title", ""))
         if k in _seen_past:

@@ -2276,6 +2276,15 @@ function renderVenues(){
     let q = state.q.trim().toLowerCase();   // a date typed in the query is cut out of it below
   if(state.selectedVenue){
     let vshows = all.filter(s => s.venue === state.selectedVenue);
+    // A room that has nothing in the current bin shows what it does have
+    // (Sep 18 2026): Helium's page read "Nothing on the calendar" with 200
+    // comedy shows because the music gate was on. A music bar's stray comedy
+    // night stays gated, since the bar has music rows.
+    if(!vshows.length && !state.audit){
+      const other = state.shows.filter(s => s.date >= todayPacific && s.venue === state.selectedVenue
+        && s.contentType === (state.comedy ? 'music' : 'comedy'));
+      if(other.length) vshows = other;
+    }
     if(q){
       const dqv = parseDateQuery(q);                 // dates work on a venue page too
       if(dqv){
