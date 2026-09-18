@@ -6202,7 +6202,7 @@ async function mountPhotoStrip(wrap){
   let open = false;
   try{ open = localStorage.getItem('pl_strip_open_v2') === '1'; }catch(_){}   // v2: reset to folded after the first version failed to fold
   host.innerHTML = '<button type="button" class="ph-strip-head" data-strip-toggle aria-expanded="' + (open ? 'true' : 'false') + '">'
-      + '<span class="ph-strip-caret">' + (open ? '&#9662;' : '&#9656;') + '</span><span class="ph-strip-title">Latest photos <span class="pf-count">' + rows.length + '</span></span>'
+      + '<span class="ph-strip-caret">' + (open ? '&#9662;' : '&#9656;') + '</span><span class="ph-strip-title">Latest photos &amp; clips <span class="pf-count">' + rows.length + '</span></span>'
       + '<span class="ph-strip-pill">' + (open ? 'Hide' : 'Show') + '</span></button>'
     + '<div class="ph-strip-row"' + (open ? '' : ' hidden') + '>' + rows.map(function(x){
         return '<a class="ph-strip-item" href="#/show/' + esc(x.show_slug) + '" title="' + esc((x.title || '') + (x.venue ? ' at ' + x.venue : '')) + '">'
@@ -6344,7 +6344,7 @@ async function mountPhotos(wrap, slug, show){
   const sb = phClient();
   const host = document.createElement('section');
   host.className = 'ph-section';
-  host.innerHTML = '<h3 class="ph-head">Photos <span class="pf-count" data-ph-count></span></h3><div class="ph-state">Loading\u2026</div>';
+  host.innerHTML = '<h3 class="ph-head">Photos &amp; clips <span class="pf-count" data-ph-count></span></h3><div class="ph-state">Loading\u2026</div>';
   wrap.appendChild(host);
   if(!sb){ host.querySelector('.ph-state').textContent = 'Photos unavailable right now.'; return; }
   let myId = null;
@@ -6368,9 +6368,9 @@ async function mountPhotos(wrap, slug, show){
             : '<span class="ph-note">You\u2019ve added ' + PH_MAX_PER_SHOW + ' photos to this show.</span>')
         + '</div>';
     } else if(!myId){
-      html += '<div class="ph-note">Went to this show? Sign in, tap \u201cI was there\u201d, and add your photos.</div>';
+      html += '<div class="ph-note">Went to this show? Sign in, tap \u201cI was there\u201d, and add your photos or clips.</div>';
     } else {
-      html += '<div class="ph-note">Only people with a stub for this show can add photos.</div>';
+      html += '<div class="ph-note">Only people with a stub for this show can add photos or clips.</div>';
     }
     if(rows.length){
       html += '<div class="ph-grid">' + rows.map(function(x){
@@ -6384,9 +6384,9 @@ async function mountPhotos(wrap, slug, show){
           + '</figcaption></figure>';
       }).join('') + '</div>';
     } else {
-      html += '<div class="ph-state">No photos yet.</div>';
+      html += '<div class="ph-state">No photos or clips yet.</div>';
     }
-    host.innerHTML = '<h3 class="ph-head">Photos <span class="pf-count" data-ph-count>' + (rows.length || '') + '</span></h3>' + html;
+    host.innerHTML = '<h3 class="ph-head">Photos &amp; clips <span class="pf-count" data-ph-count>' + (rows.length || '') + '</span></h3>' + html;
     const inp = host.querySelector('[data-ph-file]');
     if(inp) inp.addEventListener('change', async function(){
       const files = Array.from(inp.files || []).slice(0, PH_MAX_PER_SHOW - mine);
