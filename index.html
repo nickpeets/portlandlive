@@ -1650,6 +1650,7 @@ async function load(){
     if(typeof revealFestivalsPill === 'function') revealFestivalsPill();
     state.shows.forEach(s => { s._slug = makeSlug(s); }); // permanent per-show page identity
     classifyAll(); // tag each show with s.contentType
+    applyPosterOverrides();  // moderator-set posters, live (the build bakes them in nightly too)
     state.stamp = data.generated || "";
     buildNeighborhoods();
     if(state.stamp){
@@ -3457,6 +3458,7 @@ function renderShowDetail(wrap, show, kind){
 
   const card = document.createElement('div');
   card.className = 'scard show-detail-card';
+  card._show = show;                         // for swapPoster (poster override)
   const media = smediaFor(show);
   if(!media) card.classList.add('no-media');
   let actions;
@@ -6205,6 +6207,23 @@ async function mountPhotoStrip(wrap){
   host.hidden = false;
 }
 
+// Poster overrides on the FEED, live (Sep 18 2026 -- "the poster doesn't stay
+// put"): one read of show_overrides_all when the feed loads, patched onto
+// the rows by slug and redrawn. Waits briefly for the Supabase client, which
+// loads after this script.
+function applyPosterOverrides(tries){
+  const sb = window.__plAuth;
+  if(!sb){ if((tries || 0) < 25) setTimeout(function(){ applyPosterOverrides((tries || 0) + 1); }, 200); return; }
+  Promise.resolve(sb.rpc('show_overrides_all')).then(function(r){
+    const rows = (r && !r.error && r.data) || [];
+    if(!rows.length) return;
+    const map = {}; rows.forEach(function(x){ if(x.slug && x.image_url) map[x.slug] = x.image_url; });
+    let n = 0;
+    state.shows.forEach(function(s){ const u = map[s._slug]; if(u && s.imageUrl !== u){ s.imageUrl = u; s._srch = undefined; n++; } });
+    if(n) render();
+  }).catch(function(){});
+}
+
 // ===== POSTER OVERRIDE (moderator, Sep 18 2026) =====
 // A show page reads its own poster override so a fresh one shows at once
 // (the nightly build bakes overrides into the feed for the cards). For a
@@ -6214,6 +6233,7 @@ async function mountPhotoStrip(wrap){
 async function mountPosterEditor(card, show, slug){
   const sb = phClient();
   if(!sb || !slug) return;
+  const origImage = show.imageUrl;           // what the venue publishes, for Remove
   // Live override, for everyone.
   try{
     const r = await sb.rpc('show_override', { p_slug: slug });
@@ -6241,6 +6261,7 @@ async function mountPosterEditor(card, show, slug){
       try{ await sb.storage.from('posters').remove([slug.slice(0, 200) + '.jpg']); }catch(_){}
       note.textContent = 'Removed. The card updates on the next build.';
       box.querySelector('[data-poster-clear]').hidden = true;
+      if(origImage !== undefined){ show.imageUrl = origImage; swapPoster(card, origImage); }
     }
   });
   box.querySelector('[data-poster-file]').addEventListener('change', async function(){
@@ -6261,12 +6282,17 @@ async function mountPosterEditor(card, show, slug){
   });
 }
 function swapPoster(card, url){
-  const img = card.querySelector('.s-img');
-  if(img){ img.src = url; img.classList.remove('s-img-broken'); return; }
-  // No poster before: build the media block the way smediaFor does.
-  const media = document.createElement('div'); media.className = 's-media';
-  media.innerHTML = '<img class="s-img s-img--zoom" data-lb="1" alt="" src="' + esc(url) + '">';
-  card.classList.remove('no-media'); card.insertAdjacentElement('afterbegin', media);
+  // Rebuild the card's media block the way the card builder does (tile,
+  // image, scrim), so an override lays out exactly like a scraped poster.
+  // (The first version dropped in a bare <img>, which left a tall empty
+  // band under it -- Nick's screenshot, Sep 18 2026.)
+  const show = card._show;
+  if(!show) return;
+  const old = card.querySelector('.s-media');
+  if(old) old.remove();
+  const html = smediaFor(show);
+  if(html){ card.insertAdjacentHTML('afterbegin', html); card.classList.remove('no-media'); }
+  else { card.classList.add('no-media'); }
 }
 
 async function mountPhotos(wrap, slug, show){
