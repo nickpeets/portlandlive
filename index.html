@@ -1448,14 +1448,16 @@ function _dqISO(y, m, d){
 }
 function _dqLastDay(y, m){ return new Date(y, m, 0).getDate(); }
 function _dqYearFor(m, d){
-  // Same month-rollover rule as the scraper: a month already behind us is
-  // next year's. Within the current month, a day already past is next year.
+  // A date up to ~90 days behind us is THIS year and means the archive
+  // ("sep 12" last week, "august"); anything further back rolls to next year,
+  // the way the scraper reads venue calendars (Sep 18 2026: past-date search).
   // pacificTodayISO(), not the feed's local todayPacific: this runs outside
-  // filtered(), and reaching for that local threw, so every search silently
-  // did nothing (Sep 17 2026).
-  const today = pacificTodayISO(), ty = +today.slice(0,4), tm = +today.slice(5,7), td = +today.slice(8,10);
-  if(m < tm) return ty + 1;
-  if(m === tm && d && d < td) return ty + 1;
+  // filtered(), and reaching for that local threw once (Sep 17 2026).
+  const today = pacificTodayISO(), ty = +today.slice(0,4);
+  const cand = new Date(ty, m - 1, d || 1, 12);
+  const now = new Date(today + 'T12:00:00');
+  const daysBack = Math.round((now - cand) / 86400000);
+  if(daysBack > 90) return ty + 1;
   return ty;
 }
 function parseDateQuery(q){
@@ -1502,6 +1504,13 @@ function parseDateQuery(q){
     })
   || cut(/\s(today|tonight)\s/, () => ({from: today, to: today}))
   || cut(/\s(tomorrow)\s/, () => ({from: plus(1), to: plus(1)}))
+  || cut(/\s(yesterday|last\s+night)\s/, () => ({from: plus(-1), to: plus(-1)}))
+  || cut(/\s(last\s+weekend)\s/, () => {
+      const dow = new Date(today + 'T12:00:00').getDay();          // back to the most recent Sunday
+      const toSun = dow === 0 ? 7 : dow;
+      return {from: plus(-toSun - 2), to: plus(-toSun)};
+    })
+  || cut(/\s(last\s+week)\s/, () => ({from: plus(-7), to: plus(-1)}))
   || cut(/\s(?:this\s+)?(weekend)\s/, () => {
       const dow = new Date(today + 'T12:00:00').getDay();      // 0 Sun .. 6 Sat
       const toFri = (5 - dow + 7) % 7;
@@ -1749,6 +1758,25 @@ function filtered(){
   if(q){
     const dq = parseDateQuery(q);
     if(dq){
+      if(dq.from < todayPacific){
+        // Past dates come from the archive (Sep 18 2026). It loads once, on
+        // first need, and the feed re-renders when it lands; archive rows
+        // without a type are music (the type was only archived from today).
+        if(ARCHIVE_ROWS){
+          const seen = new Set(out.map(s => s._slug || makeSlug(s)));
+          ARCHIVE_ROWS.forEach(function(s){
+            if(s.date >= dq.from && s.date <= dq.to && !seen.has(s._slug)){
+              const t = s.contentType || 'music';
+              if(state.audit || t === (state.comedy ? 'comedy' : 'music')) out.push(s);
+            }
+          });
+        } else {
+          loadArchive().then(function(a){
+            ARCHIVE_ROWS = ((a && a.shows) || []).map(function(s){ s._slug = s._slug || makeSlug(s); return s; });
+            if(state.q.trim()) render();
+          });
+        }
+      }
       out = out.filter(s => (s.date || '') >= dq.from && (s.date || '') <= dq.to);
       q = dq.rest;                                   // "dante's oct 3" still matches Dante's
     }
@@ -2568,6 +2596,7 @@ function makeSlug(show){
 }
 
 let _archivePromise = null;
+let ARCHIVE_ROWS = null;   // archive.json rows once a past-date search asks for them
 function loadArchive(){
   if(!_archivePromise){
     _archivePromise = fetch('/archive.json?v=' + Math.floor(Date.now()/60000),{cache:'no-store'}).then(function(r){ return r.json(); })
