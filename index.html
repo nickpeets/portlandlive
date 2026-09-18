@@ -1838,6 +1838,22 @@ function auditPanelHtml(){
     function renderDidYouMakeIt(wrap){
       const claimed = claimedStubIds();
       const pending = pastSavedSnapshots().filter(ps => !claimed.has(stubIdOf(ps)));
+      // Going marks too (Sep 18 2026): they arrive a beat later, from the
+      // database, and get the same rows.
+      const sbg = window.__plAuth;
+      if(sbg && typeof window.myPastGoing === 'function' && !renderDidYouMakeIt._goingDone){
+        renderDidYouMakeIt._goingDone = true;
+        (async function(){
+          try{
+            const me = (await sbg.auth.getSession()).data.session; const uid = me && me.user ? me.user.id : null;
+            const going = await window.myPastGoing(sbg, uid);
+            const have = new Set(pending.map(ps => stubIdOf(ps)));
+            const extra = going.filter(s => !have.has(stubIdOf(s)));
+            if(extra.length && wrap.isConnected){ renderDidYouMakeIt._goingDone = false; renderDidYouMakeIt(wrap, extra); }
+          }catch(_){}
+        })();
+      }
+      if(arguments[1]) pending.push.apply(pending, arguments[1]);
       if(!pending.length) return;
       const sec = document.createElement('div'); sec.className='fav-group dym-group';
       const h = document.createElement('div'); h.className='fav-group-head';
@@ -3383,7 +3399,8 @@ async function renderProfileRoute(handle){
   // Prize note, right of the count, on your own page (Nick, Sep 2026).
   st.innerHTML = '<h3 class="pf-section-head">Stubs <span class="pf-count">' + stubs.length + '</span>'
     + (isMe ? '<span class="pf-prize">Collect stubs to win prizes \u2014 concert tickets, merch and more.</span>' : '')
-    + '</h3>';
+    + '</h3>'
+    + (isMe ? '<div class="pf-stub-how">Tap <b>I\u2019m going</b> on a show. After the night, we\u2019ll ask if you made it \u2014 say yes and the stub is yours.</div>' : '');
   if(stubs.length){
     var grid = document.createElement('div');
     grid.className = 'pf-stubs';
@@ -5039,6 +5056,25 @@ async function inboxLoad(){
       }
     }catch(e){ console.warn('[inbox] follow requests threw:', e); }
 
+    // ---- Did you make it? (Sep 18 2026) -----------------------------
+    // One per show you marked going that has passed with no stub. Opening it
+    // goes to the show page, where "I was there" is. It leaves the list on
+    // its own once the stub exists.
+    try{
+      const dy = await myPastGoing(sb, uid);
+      const seenNow = txSeenMap();
+      dy.forEach(function(s){
+        const key = 'dy:' + s._slug;
+        items.push({
+          kind: 'didyou', seenKey: key, slug: s._slug,
+          who: s.title || 'a show', handle: '',
+          kindLabel: 'Did you make it?',
+          snippet: (s.title || 'This show') + (s.venue ? ' at ' + s.venue : '') + ' \u2014 tap to collect your stub.',
+          at: (s.date || '') + 'T23:59:00', unread: !seenNow[key], empty: false
+        });
+      });
+    }catch(e){ console.warn('[inbox] did-you-make-it threw:', e); }
+
     // ---- Direct messages (Sep 2026) ---------------------------------
     try{
       const q = await sb.rpc('dm_threads_mine', { p_limit: 50 });
@@ -5098,7 +5134,7 @@ async function inboxLoad(){
     // own unread flag from dm_threads_mine, and the ticket/show pass below
     // does not know about it -- without this line DMs were dropped here, so
     // the badge never counted them.
-    const direct = items.filter(function(i){ return i.kind === 'report' || i.kind === 'mention' || i.kind === 'follow' || i.kind === 'followreq' || i.kind === 'dm'; });
+    const direct = items.filter(function(i){ return i.kind === 'report' || i.kind === 'mention' || i.kind === 'follow' || i.kind === 'followreq' || i.kind === 'didyou' || i.kind === 'dm'; });
     INBOX.items = items.filter(function(i){ return i.kind === 'ticket' || i.kind === 'show'; }).map(function(i){
       const m = latest[(i.kind === 'ticket' ? 't:' : 's:') + i.threadId];
       const unread = !!(m && m.sender_id !== uid
@@ -5216,6 +5252,7 @@ async function inboxOpenThread(idx){
   if(item.kind === 'mention'){ inboxOpenMention(idx); return; }
   if(item.kind === 'follow'){ inboxOpenFollow(idx); return; }
   if(item.kind === 'followreq'){ inboxOpenFollowReq(idx); return; }
+  if(item.kind === 'didyou'){ txMarkSeen(item.seenKey, item.at); item.unread = false; inboxRenderBadge(); inboxClose(); location.hash = '#/show/' + item.slug; return; }
   if(item.kind === 'dm'){ inboxOpenDm(idx); return; }
 
   const sb = inboxClient();
@@ -7936,6 +7973,7 @@ a.inbox-thread-who:hover{text-decoration:underline}
 .people-row-wrap{display:flex;align-items:center;gap:6px}
 .people-row-wrap .people-row{flex:1 1 auto;min-width:0}
 .pf-follow.is-requested{opacity:.8;font-style:italic}
+.pf-stub-how{font-family:'Bitter',Georgia,serif;font-size:13px;line-height:1.45;color:rgba(243,234,215,.8);margin:-4px 0 10px}
 .people-remove{flex:0 0 auto;background:none;border:1px solid rgba(243,234,215,.25);color:var(--cream);opacity:.55;border-radius:50%;width:28px;height:28px;line-height:1;font-size:16px;cursor:pointer}
 .people-remove:hover{opacity:1;border-color:var(--cream)}
 .people-name{font-family:'Bitter',Georgia,serif;font-weight:600;font-size:15px}
@@ -8099,6 +8137,32 @@ a.fest-artist:hover{text-decoration:underline}
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
     <script src="auth.js" defer></script>
 <script>
+// ===== DID YOU MAKE IT? from your going marks (Sep 18 2026) =====
+// The shows you marked "I'm going" whose date has passed and that have no
+// stub yet. Read from your own show_attendees rows (the select policy is
+// own-rows-only), resolved to show rows from the feed or the archive, last
+// 21 days. Feeds the bell and the wall prompt alike.
+async function myPastGoing(sb, uid){
+  if(!sb || !uid) return [];
+  const today = pacificTodayISO();
+  const floor = (function(){ const d = new Date(today + 'T12:00:00'); d.setDate(d.getDate() - 21); return d.toISOString().slice(0,10); })();
+  let rows = [];
+  try{
+    const r = await sb.from('show_attendees').select('show_slug, created_at').eq('user_id', uid);
+    rows = (r && !r.error && r.data) || [];
+  }catch(e){ return []; }
+  const past = rows.filter(function(x){ const d = String(x.show_slug || '').slice(0, 10); return d >= floor && d < today; });
+  if(!past.length) return [];
+  const byS = {};
+  state.shows.forEach(function(s){ if(s._slug) byS[s._slug] = s; });
+  let arc = ARCHIVE_ROWS;
+  if(!arc){ try{ const a = await loadArchive(); arc = ((a && a.shows) || []).map(function(s){ s._slug = s._slug || makeSlug(s); return s; }); ARCHIVE_ROWS = arc; }catch(e){ arc = []; } }
+  arc.forEach(function(s){ if(s._slug && !byS[s._slug]) byS[s._slug] = s; });
+  const claimed = (typeof claimedStubIds === 'function') ? claimedStubIds() : new Set();
+  return past.map(function(x){ return byS[x.show_slug]; }).filter(function(s){ return s && !claimed.has(stubIdOf(s)); });
+}
+window.myPastGoing = myPastGoing;
+
 // ===== NEW-BUILD CHECK (Sep 18 2026) =====
 // Every push to index.html or auth.js needed a hard refresh on every device,
 // and nobody's friends know to do that. This asks the server for
