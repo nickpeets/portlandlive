@@ -6115,7 +6115,7 @@ async function mountPhotos(wrap, slug, show){
     if(canAdd){
       html += '<div class="ph-add">'
         + (mine < PH_MAX_PER_SHOW
-            ? '<label class="iwt-btn ph-add-btn"><input type="file" accept="image/*" multiple hidden data-ph-file> Add photos</label>'
+            ? '<label class="ph-add-btn"><input type="file" accept="image/*" multiple hidden data-ph-file>&#128247; Add photos</label>'
               + '<span class="ph-note">From your night. Up to ' + PH_MAX_PER_SHOW + ' per show.</span>'
             : '<span class="ph-note">You\u2019ve added ' + PH_MAX_PER_SHOW + ' photos to this show.</span>')
         + '</div>';
@@ -7483,20 +7483,23 @@ a.inbox-thread-who:hover{text-decoration:underline}
 .inbox-clear{margin-left:6px;opacity:.75}
 .stub{cursor:pointer}
 .pf-stub{cursor:pointer}
-/* Show photos (Sep 18 2026) */
-.ph-section{grid-column:1 / -1;margin-top:8px}
-.ph-head{font-family:'Bevan',serif;font-size:18px;margin:0 0 8px;display:flex;align-items:center;gap:8px}
-.ph-state,.ph-note{font-family:'Josefin Slab',Georgia,serif;font-size:14px;opacity:.8}
-.ph-add{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:6px 0 12px}
-.ph-add-btn{cursor:pointer}
-.ph-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
-.ph-item{margin:0;background:rgba(255,255,255,.08);border-radius:8px;overflow:hidden}
+/* Show photos (Sep 18 2026) -- styled like the Comments section below it */
+.ph-section{grid-column:1 / -1;margin:26px 0 4px}
+.ph-head{display:flex;align-items:baseline;gap:10px;margin:0 0 12px;font-family:'Alfa Slab One',serif;font-weight:400;font-size:19px;color:var(--cream)}
+.ph-head .pf-count{font-family:'Oswald',sans-serif;font-size:14px;opacity:.7}
+.ph-state,.ph-note{font-family:'Bitter',Georgia,serif;font-size:13.5px;line-height:1.5;color:rgba(243,234,215,.8);padding:2px 0 6px}
+.ph-add{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:2px 0 14px}
+.ph-add-btn{display:inline-flex;align-items:center;gap:8px;border:0;cursor:pointer;font-family:'Alfa Slab One',serif;text-transform:uppercase;letter-spacing:.04em;font-size:14px;padding:11px 16px;border-radius:4px;background:var(--rust);color:#fff;box-shadow:0 2px 0 rgba(0,0,0,.2)}
+.ph-add-btn:hover{filter:brightness(1.08)}
+.ph-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.ph-item{margin:0;background:var(--cream);color:var(--ink);border-radius:6px;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,.25)}
 .ph-open{display:block;width:100%;aspect-ratio:1;padding:0;border:0;background:#000;cursor:zoom-in}
 .ph-open img{width:100%;height:100%;object-fit:cover;display:block}
-.ph-cap{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:4px 8px;font-family:'Josefin Slab',Georgia,serif;font-size:12px}
-.ph-by{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;opacity:.85}
-.ph-del{background:none;border:0;color:var(--cream);opacity:.6;font-size:16px;line-height:1;cursor:pointer;padding:0 2px}
-.ph-del:hover{opacity:1}
+.ph-cap{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:5px 9px;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.03em}
+.ph-by{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink)}
+.ph-cap .rp-btn{color:var(--ink)}
+.ph-del{background:none;border:0;color:var(--ink);opacity:.55;font-size:18px;line-height:1;cursor:pointer;padding:0 2px}
+.ph-del:hover{opacity:1;color:var(--rust)}
 .ph-light{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;cursor:zoom-out}
 .ph-light img{max-width:96vw;max-height:92vh;object-fit:contain;box-shadow:0 8px 40px rgba(0,0,0,.6)}
 .ph-close{position:absolute;top:12px;right:16px;background:none;border:0;color:#fff;font-size:34px;line-height:1;cursor:pointer;opacity:.85}
