@@ -7803,6 +7803,7 @@ a.inbox-thread-who:hover{text-decoration:underline}
 .ph-strip-head .pf-count{font-family:'Oswald',sans-serif;font-size:14px;opacity:.7}
 .ph-strip-caret{font-size:14px;opacity:.75;width:14px}
 .ph-strip-row{display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
+.ph-strip-row[hidden]{display:none}  /* the flex rule outranks the hidden attribute otherwise (Sep 18 2026) */
 .ph-strip-row::-webkit-scrollbar{height:6px}
 .ph-strip-row::-webkit-scrollbar-thumb{background:rgba(243,234,215,.35);border-radius:3px}
 .ph-strip-item{flex:0 0 150px;scroll-snap-align:start;display:block;background:var(--cream);color:var(--ink);border-radius:6px;overflow:hidden;text-decoration:none;box-shadow:0 2px 6px rgba(0,0,0,.25)}
