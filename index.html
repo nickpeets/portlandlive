@@ -6202,9 +6202,10 @@ async function mountPhotoStrip(wrap){
     PH_STRIP_CACHE = { at: Date.now(), rows: rows };
   }
   if(!host.isConnected || !rows.length) return;
-  // Folded by default (Sep 18 2026, Nick); the choice sticks per browser.
-  let open = false;
-  try{ open = localStorage.getItem('pl_strip_open_v2') === '1'; }catch(_){}   // v2: reset to folded after the first version failed to fold
+  // Folded every time the feed is drawn (Sep 18 2026, Nick): opening it is
+  // for this look at the feed only; leave for a show or a search and it
+  // closes again. Nothing is remembered.
+  const open = false;
   host.innerHTML = '<button type="button" class="ph-strip-head" data-strip-toggle aria-expanded="' + (open ? 'true' : 'false') + '">'
       + '<span class="ph-strip-caret">' + (open ? '&#9662;' : '&#9656;') + '</span><span class="ph-strip-title">Latest photos &amp; clips <span class="pf-count">' + rows.length + '</span></span>'
       + '<span class="ph-strip-pill">' + (open ? 'Hide' : 'Show') + '</span></button>'
@@ -6221,7 +6222,6 @@ async function mountPhotoStrip(wrap){
     this.setAttribute('aria-expanded', now ? 'true' : 'false');
     this.querySelector('.ph-strip-caret').innerHTML = now ? '&#9662;' : '&#9656;';
     this.querySelector('.ph-strip-pill').textContent = now ? 'Hide' : 'Show';
-    try{ localStorage.setItem('pl_strip_open_v2', now ? '1' : '0'); }catch(_){}
   });
   host.hidden = false;
 }
