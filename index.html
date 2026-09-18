@@ -6922,6 +6922,9 @@ $('#byHoodToggle').addEventListener('click',()=>{const on=!state.byHood;leaveSec
         // Saved lives on your profile now. Signed in with a handle: go there.
         // Otherwise fall through to the old inline view (which itself asks
         // for sign-in).
+        // The menu closes on the way out (Sep 18 2026 -- it had stayed open
+        // over the profile it just opened).
+        if(typeof window.quickMenuClose === 'function') window.quickMenuClose();
         if(state._signedIn){
           try{
             const sb = txClient();
