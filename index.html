@@ -2298,6 +2298,34 @@ function renderVenues(){
       em.innerHTML='<h2>Nothing on the calendar right now.</h2><p>Know a show here we\u2019re missing? <a href="#/submit">Send it in</a>.</p>';
       wrap.appendChild(em);
     }
+    // ---- Past shows (Sep 18 2026) -------------------------------------
+    // The venue page becomes a record of what has played here, from
+    // archive.json, newest first, 30 at a time. Their show pages work; that
+    // is where photos will go.
+    if(!q){
+      const past = document.createElement('section');
+      past.className = 'venue-past';
+      past.innerHTML = '<h3 class="pf-section-head">Past shows</h3>';
+      wrap.appendChild(past);
+      const vname = state.selectedVenue;
+      loadArchive().then(function(a){
+        if(state.selectedVenue !== vname || !past.isConnected) return;
+        const rows = ((a && a.shows) || []).filter(function(x){ return x.venue === vname && x.date && x.date < todayPacific; })
+          .sort(function(x, y){ return y.date < x.date ? -1 : y.date > x.date ? 1 : 0; });
+        if(!rows.length){ past.innerHTML += '<div class="pf-empty">No past shows on record yet.</div>'; return; }
+        let shown = 0;
+        const list = document.createElement('div'); past.appendChild(list);
+        const more = document.createElement('button'); more.type = 'button'; more.className = 'inbox-more'; more.textContent = 'Show more';
+        function batch(){
+          const chunk = rows.slice(shown, shown + 30); shown += chunk.length;
+          chunk.forEach(function(x){ x._slug = x._slug || makeSlug(x); });
+          list.appendChild(listOf(chunk, true));
+          if(shown >= rows.length) more.remove();
+        }
+        batch();
+        if(shown < rows.length){ more.addEventListener('click', batch); past.appendChild(more); }
+      }).catch(function(){ past.innerHTML += '<div class="pf-empty">Past shows unavailable right now.</div>'; });
+    }
     return;
   } else {
     // Every venue the site knows, from the directory the build publishes --
@@ -6498,6 +6526,13 @@ function favKey(s){ return (s.venue||'') + '|' + (s.date||'') + '|' + (s.title||
       var edge=''; for(var i=0;i<10;i++){ edge += '<span>'+((code.charCodeAt(i%code.length)*7+i*13)%100+'').padStart(2,'0')+'</span>'; }
       const el=document.createElement('div');
       el.className='stub stub-v'+v;
+      // A stub opens its show page (Sep 18 2026, Nick): the page keeps
+      // working after the show from archive.json, and it is where the
+      // photos will live. The delete x on your own shelf is left alone.
+      el.setAttribute('role','link'); el.setAttribute('tabindex','0');
+      el.title = 'Open this show';
+      el.addEventListener('click', function(e){ if(e.target.closest('.stub-del')) return; location.hash = '#/show/' + makeSlug(o); });
+      el.addEventListener('keydown', function(e){ if(e.key === 'Enter' && !e.target.closest('.stub-del')){ location.hash = '#/show/' + makeSlug(o); } });
       el.innerHTML =
         '<div class="stub-edge">'+edge+'</div>'
        +'<div class="stub-core">'
@@ -7314,6 +7349,9 @@ a.inbox-thread-who:hover{text-decoration:underline}
 .inbox-msg-mine:hover .inbox-msg-del,.inbox-msg-del:focus{opacity:.55}
 @media(hover:none){.inbox-msg-del{opacity:.45}}
 .inbox-clear{margin-left:6px;opacity:.75}
+.stub{cursor:pointer}
+.venue-past{margin-top:28px}
+.venue-past .scard{opacity:.88}
 .inbox-item-wrap{display:flex;align-items:center;gap:2px}
 .inbox-item-wrap .inbox-item{flex:1 1 auto;min-width:0}
 .inbox-item-del{flex:0 0 auto;background:none;border:0;color:var(--ink);opacity:.45;font-size:18px;line-height:1;cursor:pointer;padding:6px 8px;border-radius:6px}
