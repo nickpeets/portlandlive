@@ -432,6 +432,9 @@
         }
         closeSheet();
         await refreshAuthUI();
+        // Signing in re-renders the feed for the account; start it from the
+        // top rather than wherever the sheet caught the page (Sep 18 2026).
+        try { window.scrollTo({ top: 0, behavior: "instant" }); } catch (_) { window.scrollTo(0, 0); }
       }
     } catch (err) {
       setMsg("Something went wrong. Try again.", true);
