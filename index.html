@@ -7773,6 +7773,10 @@ a.fest-artist:hover{text-decoration:underline}
   .masthead-logo{width:34px;height:34px}
   .masthead-logo img{width:23px;height:23px}
   .masthead-word{font-size:16px}
+  /* iOS Safari zooms the page when a text field under 16px gets focus and
+     never zooms back (Sep 18 2026: the sign-in sheet left the feed zoomed
+     in). At 16px it leaves the page alone. The search box included. */
+  input[type="text"],input[type="email"],input[type="password"],input[type="search"],input[type="number"],select,textarea{font-size:16px!important}
 }
 @media(max-width:380px){
   .masthead-inner{gap:8px}
