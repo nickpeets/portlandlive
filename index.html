@@ -2714,6 +2714,7 @@ const STATIC_PAGES = {
     '<p>Short version: we keep as little as possible, and we don\u2019t sell any of it.</p>'
   + '<p><strong>Without an account</strong>, nothing about you is stored on our servers. Your saved shows and stubs live in your own browser. We use GoatCounter for visit counts \u2014 it sets no cookies and doesn\u2019t identify you.</p>'
   + '<p><strong>With an account</strong>, we store your email address, your handle, and the things you choose to make public: shows you\u2019re going to, your stub shelf, miracles you post, comments. Email us and we\u2019ll delete your account and everything with it.</p>'
+  + '<p><strong>Photos.</strong> If you add photos to a show you attended, they appear on that show\u2019s page for anyone to see, with your display name. You can delete your own at any time, and anyone can report a photo; a reported photo is hidden while we look. Don\u2019t post photos of people who wouldn\u2019t want to be there.</p>'
   + '<p><strong>When you submit a show</strong>, we keep the submission and the email you gave so we can tell you whether it went up. We don\u2019t use that email for anything else.</p>'
   + '<p><strong>Ticket links.</strong> The Tickets button goes to the venue or its ticket seller. Where a show page offers resale tickets, that link goes through an affiliate program and the site may earn a small commission if you buy \u2014 it costs you nothing extra, and it\u2019s marked where it appears. Miracles are never affiliated.</p>'
   + '<p><strong>Third parties.</strong> Accounts run on Supabase, the site is hosted on GitHub Pages, email is sent through Resend. Each has its own privacy policy. We don\u2019t run ads.</p>'
@@ -3467,6 +3468,9 @@ function renderShowDetail(wrap, show, kind){
   // exchange -- so, like Miracles, this only shows on upcoming shows. A past
   // show gets comments (recaps) but no Who's Going.
   if(kind === 'upcoming') mountWhosGoing(side, _slug);
+  // Photos only make sense once the show has happened; that is also when
+  // stubs exist, and a stub is what lets someone add (Sep 18 2026).
+  if(kind === 'past') mountPhotos(grid, _slug, show);
   mountComments(grid, _slug);
   // No-ops for everyone who isn't a moderator (report_queue() returns nothing
   // to them), and renders nothing at all when the queue is empty.
@@ -6059,6 +6063,127 @@ function cmtRow(c, myUserId, hidden, resolved, authorHandle){
     + '</li>';
 }
 
+// ===== SHOW PHOTOS (Sep 18 2026) =====
+// A shared gallery on the show page. Anyone can look. Only a stub-holder
+// (someone who tapped "I was there") can add, up to 12 per show; photos are
+// resized in the browser before upload (longest side 1,600px, JPEG). Your
+// own carry a delete x; others carry the usual report flag. Reports hide a
+// photo the moment they are filed, like comments.
+const PH_MAX_SIDE = 1600, PH_QUALITY = 0.85, PH_MAX_PER_SHOW = 12;
+function phClient(){ return window.__plAuth || null; }
+function phUrl(path){
+  const sb = phClient();
+  try{ return sb.storage.from('photos').getPublicUrl(path).data.publicUrl; }catch(e){ return ''; }
+}
+function phResize(file){
+  return new Promise(function(resolve, reject){
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = function(){
+      URL.revokeObjectURL(url);
+      let w = img.naturalWidth, h = img.naturalHeight;
+      const k = Math.min(1, PH_MAX_SIDE / Math.max(w, h));
+      w = Math.round(w * k); h = Math.round(h * k);
+      const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+      cv.getContext('2d').drawImage(img, 0, 0, w, h);
+      cv.toBlob(function(b){ if(b) resolve({ blob: b, width: w, height: h }); else reject(new Error('encode failed')); }, 'image/jpeg', PH_QUALITY);
+    };
+    img.onerror = function(){ URL.revokeObjectURL(url); reject(new Error('not an image')); };
+    img.src = url;
+  });
+}
+async function mountPhotos(wrap, slug, show){
+  const sb = phClient();
+  const host = document.createElement('section');
+  host.className = 'ph-section';
+  host.innerHTML = '<h3 class="ph-head">Photos <span class="pf-count" data-ph-count></span></h3><div class="ph-state">Loading\u2026</div>';
+  wrap.appendChild(host);
+  if(!sb){ host.querySelector('.ph-state').textContent = 'Photos unavailable right now.'; return; }
+  let myId = null;
+  try{ const me = (await sb.auth.getSession()).data.session; myId = me && me.user ? me.user.id : null; }catch(e){}
+  const canAdd = !!myId && typeof claimedStubIds === 'function' && claimedStubIds().has(stubIdOf(show));
+  async function load(){
+    const r = await Promise.resolve(sb.rpc('photos_for_show', { p_slug: slug })).catch(function(e){ return { error: e }; });
+    if(!host.isConnected) return;
+    if(r.error){ host.querySelector('.ph-state').textContent = 'Photos unavailable right now.'; return; }
+    draw(r.data || []);
+  }
+  function draw(rows){
+    const mine = rows.filter(function(x){ return x.user_id === myId; }).length;
+    const cnt = host.querySelector('[data-ph-count]'); if(cnt) cnt.textContent = rows.length ? String(rows.length) : '';
+    let html = '';
+    if(canAdd){
+      html += '<div class="ph-add">'
+        + (mine < PH_MAX_PER_SHOW
+            ? '<label class="iwt-btn ph-add-btn"><input type="file" accept="image/*" multiple hidden data-ph-file> Add photos</label>'
+              + '<span class="ph-note">From your night. Up to ' + PH_MAX_PER_SHOW + ' per show.</span>'
+            : '<span class="ph-note">You\u2019ve added ' + PH_MAX_PER_SHOW + ' photos to this show.</span>')
+        + '</div>';
+    } else if(!myId){
+      html += '<div class="ph-note">Went to this show? Sign in, tap \u201cI was there\u201d, and add your photos.</div>';
+    } else {
+      html += '<div class="ph-note">Only people with a stub for this show can add photos.</div>';
+    }
+    if(rows.length){
+      html += '<div class="ph-grid">' + rows.map(function(x){
+        const isMine = x.user_id === myId;
+        return '<figure class="ph-item">'
+          + '<button type="button" class="ph-open" data-ph-open="' + esc(phUrl(x.path)) + '" aria-label="Open photo"><img src="' + esc(phUrl(x.path)) + '" alt="" loading="lazy"></button>'
+          + '<figcaption class="ph-cap"><span class="ph-by">' + esc(x.display_name || 'Someone') + '</span>'
+          + (isMine ? '<button type="button" class="ph-del" data-ph-del="' + esc(x.id) + '" data-ph-path="' + esc(x.path) + '" title="Delete photo" aria-label="Delete your photo">&times;</button>'
+                    : (typeof rpButton === 'function' ? rpButton('photo', x.id, false, !!myId) : ''))
+          + '</figcaption></figure>';
+      }).join('') + '</div>';
+    } else {
+      html += '<div class="ph-state">No photos yet.</div>';
+    }
+    host.innerHTML = '<h3 class="ph-head">Photos <span class="pf-count" data-ph-count>' + (rows.length || '') + '</span></h3>' + html;
+    const inp = host.querySelector('[data-ph-file]');
+    if(inp) inp.addEventListener('change', async function(){
+      const files = Array.from(inp.files || []).slice(0, PH_MAX_PER_SHOW - mine);
+      if(!files.length) return;
+      const note = host.querySelector('.ph-note'); if(note) note.textContent = 'Uploading ' + files.length + '\u2026';
+      let bad = 0;
+      for(const f of files){
+        try{
+          const out = await phResize(f);
+          const path = myId + '/' + slug.slice(0, 80) + '/' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8) + '.jpg';
+          const up = await sb.storage.from('photos').upload(path, out.blob, { contentType: 'image/jpeg', upsert: false });
+          if(up.error){ bad++; console.warn('[photos] upload failed:', up.error.message); continue; }
+          const r = await sb.rpc('add_show_photo', { p_slug: slug, p_stub_id: stubIdOf(show), p_path: path, p_width: out.width, p_height: out.height });
+          if(r.error){ bad++; console.warn('[photos] add failed:', r.error.message); await sb.storage.from('photos').remove([path]).catch(function(){}); }
+        }catch(e){ bad++; console.warn('[photos] threw:', e); }
+      }
+      if(bad && note) note.textContent = bad + ' photo' + (bad > 1 ? 's' : '') + ' didn\u2019t upload.';
+      await load();
+    });
+  }
+  host.addEventListener('click', async function(e){
+    const del = e.target.closest('[data-ph-del]');
+    if(del){
+      e.preventDefault();
+      if(!confirm('Delete this photo?')) return;
+      del.disabled = true;
+      const r = await sb.rpc('delete_show_photo', { p_id: del.getAttribute('data-ph-del') });
+      if(r.error){ console.warn('[photos] delete failed:', r.error.message); del.disabled = false; return; }
+      try{ await sb.storage.from('photos').remove([del.getAttribute('data-ph-path')]); }catch(_){}
+      await load();
+      return;
+    }
+    const open = e.target.closest('[data-ph-open]');
+    if(open){
+      e.preventDefault();
+      const box = document.createElement('div');
+      box.className = 'ph-light';
+      box.innerHTML = '<img src="' + esc(open.getAttribute('data-ph-open')) + '" alt=""><button type="button" class="ph-close" aria-label="Close">&times;</button>';
+      box.addEventListener('click', function(){ box.remove(); });
+      document.addEventListener('keydown', function esc_(ev){ if(ev.key === 'Escape'){ box.remove(); document.removeEventListener('keydown', esc_); } });
+      document.body.appendChild(box);
+    }
+  });
+  await load();
+}
+
 async function mountComments(wrap, slug){
   if(!slug) return;
   const host = document.createElement('section');
@@ -7358,6 +7483,23 @@ a.inbox-thread-who:hover{text-decoration:underline}
 .inbox-clear{margin-left:6px;opacity:.75}
 .stub{cursor:pointer}
 .pf-stub{cursor:pointer}
+/* Show photos (Sep 18 2026) */
+.ph-section{grid-column:1 / -1;margin-top:8px}
+.ph-head{font-family:'Bevan',serif;font-size:18px;margin:0 0 8px;display:flex;align-items:center;gap:8px}
+.ph-state,.ph-note{font-family:'Josefin Slab',Georgia,serif;font-size:14px;opacity:.8}
+.ph-add{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:6px 0 12px}
+.ph-add-btn{cursor:pointer}
+.ph-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.ph-item{margin:0;background:rgba(255,255,255,.08);border-radius:8px;overflow:hidden}
+.ph-open{display:block;width:100%;aspect-ratio:1;padding:0;border:0;background:#000;cursor:zoom-in}
+.ph-open img{width:100%;height:100%;object-fit:cover;display:block}
+.ph-cap{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:4px 8px;font-family:'Josefin Slab',Georgia,serif;font-size:12px}
+.ph-by{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;opacity:.85}
+.ph-del{background:none;border:0;color:var(--cream);opacity:.6;font-size:16px;line-height:1;cursor:pointer;padding:0 2px}
+.ph-del:hover{opacity:1}
+.ph-light{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;cursor:zoom-out}
+.ph-light img{max-width:96vw;max-height:92vh;object-fit:contain;box-shadow:0 8px 40px rgba(0,0,0,.6)}
+.ph-close{position:absolute;top:12px;right:16px;background:none;border:0;color:#fff;font-size:34px;line-height:1;cursor:pointer;opacity:.85}
 .venue-past{margin-top:28px}
 .venue-past .scard{opacity:.88}
 .inbox-item-wrap{display:flex;align-items:center;gap:2px}
