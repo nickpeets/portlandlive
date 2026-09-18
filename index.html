@@ -1015,6 +1015,7 @@ body{
             <div id="avEditor" hidden></div>
             <div id="handleEditor" hidden></div>
             <div id="visibilityEditor" hidden></div>
+            <div id="tickerEditor" hidden></div>
             <button class="quick-menu-pill quick-menu-authitem" id="myShowsToggle" type="button" title="Your profile: saved shows, following, stubs">My profile</button>
             <label class="pill quick-menu-pill following-pill" title="Filter the feed to shows by the bands, venues and people you follow">
               <span class="toggle" id="followingToggle"></span>
@@ -7152,6 +7153,21 @@ $('#allAgesToggle') && $('#allAgesToggle').addEventListener('click',()=>{
     const today = new Intl.DateTimeFormat('en-CA',{timeZone:'America/Los_Angeles',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
     items = (d.items || []).filter(i => i && i.text && (!i.from || i.from <= today) && (!i.until || i.until >= today));
   }catch(_){ return; }
+  // Lines written from the header menu (Sep 18 2026) lead the rotation. The
+  // Supabase client loads after this script, so wait for it briefly; the
+  // build also folds these into news.json nightly (as key "hand:<id>"), so a
+  // line seen both ways is shown once.
+  try{
+    let sb = window.__plAuth, tries = 0;
+    while(!sb && tries++ < 25){ await new Promise(function(r){ setTimeout(r, 200); }); sb = window.__plAuth; }
+    if(sb){
+      const r = await sb.rpc('ticker_lines_live');
+      const live = (r && !r.error && r.data) || [];
+      const have = new Set(items.map(function(i){ return i.key || ''; }));
+      const fresh = live.filter(function(l){ return !have.has('hand:' + l.id); }).map(function(l){ return { text: l.text, key: 'hand:' + l.id }; });
+      items = fresh.concat(items);
+    }
+  }catch(_){}
   if(!items.length) return;
   let k = 0;
   function show(){
@@ -7768,6 +7784,18 @@ a.inbox-thread-who:hover{text-decoration:underline}
 .handle-edit-row input{flex:1;min-width:0;font-family:'Bitter',Georgia,serif;font-size:13px;color:var(--ink);background:#fff;border:1px solid rgba(74,53,38,.16);border-radius:8px;padding:6px 8px}
 .handle-edit-row input:focus{outline:2px solid var(--water-d);outline-offset:1px}
 .handle-edit-msg{font-family:'Bitter',Georgia,serif;font-size:10.5px;color:#7c6a55;min-height:1.1em;margin-top:4px}
+.ticker-edit input[type="text"],.ticker-edit input[type="date"]{width:100%;box-sizing:border-box;font-family:'Bitter',Georgia,serif;font-size:13px;color:var(--ink);background:#fff;border:1px solid rgba(74,53,38,.16);border-radius:8px;padding:6px 8px;margin-top:4px}
+.ticker-edit-row{display:flex;align-items:end;gap:6px;margin-top:6px}
+.ticker-edit-row .av-edit-note{white-space:nowrap;padding-bottom:6px}
+.ticker-edit-row input[type="date"]{flex:1 1 auto;margin-top:0}
+.ticker-add{flex:0 0 auto;padding:6px 12px}
+.ticker-list{margin-top:8px;display:flex;flex-direction:column;gap:4px}
+.ticker-line{display:flex;align-items:center;gap:6px;font-family:'Bitter',Georgia,serif;font-size:12px;color:var(--ink);background:rgba(74,53,38,.06);border-radius:6px;padding:5px 8px}
+.ticker-line.is-off{opacity:.55}
+.ticker-line-text{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ticker-line-until{flex:0 0 auto;font-size:10.5px;color:#7c6a55;white-space:nowrap}
+.ticker-line-del{flex:0 0 auto;background:none;border:0;color:var(--ink);opacity:.55;font-size:16px;line-height:1;cursor:pointer;padding:0 2px}
+.ticker-line-del:hover{opacity:1;color:var(--rust)}
 .handle-edit-msg.is-error{color:var(--rust-deep)}
 .handle-edit select{width:100%;font-family:'Bitter',Georgia,serif;font-size:13px;color:var(--ink);background:#fff;border:1px solid rgba(74,53,38,.16);border-radius:8px;padding:6px 8px;margin-top:6px}
 /* ===== Profile pages (Stage 10 Part 2) ===== */

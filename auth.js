@@ -61,6 +61,7 @@
     handle: $("authHandle"),
     handleEditor: $("handleEditor"),
     visibilityEditor: $("visibilityEditor"),
+    tickerEditor: $("tickerEditor"),
     emailInput: $("authEmailInput"),
     passwordInput: $("authPasswordInput"),
     submitBtn: $("authSubmitBtn"),
@@ -117,6 +118,7 @@
     if (el.handle) el.handle.textContent = "";
     renderHandleEditor(null);
     renderVisibilityEditor(null, null);
+    renderTickerEditor(null);
   }
 
   // The header quick-menu is closed by its own outside-click handler in
@@ -149,6 +151,7 @@
     }
     renderHandleEditor(handleInfo);
     renderVisibilityEditor(visibility, userId);
+    renderTickerEditor(userId);
   }
 
   async function fetchDisplayName(userId) {
@@ -253,6 +256,74 @@
         sel.disabled = false;
       }
     });
+  }
+
+  // Ticker editor (Sep 18 2026): moderators write ticker lines here instead
+  // of editing news.json. A line, the last day it runs, Add; the list below
+  // shows what's on file with an x to delete. Rendered only when
+  // is_moderator() says so.
+  async function renderTickerEditor(userId) {
+    const slot = el.tickerEditor;
+    if (!slot) return;
+    if (!userId) { slot.hidden = true; slot.innerHTML = ""; return; }
+    let isMod = false;
+    try { const r = await sb.rpc("is_moderator"); isMod = !r.error && r.data === true; } catch (_) {}
+    if (!isMod) { slot.hidden = true; slot.innerHTML = ""; return; }
+    slot.hidden = false;
+    const today = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Los_Angeles", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+    const twoWeeks = new Date(today + "T12:00:00"); twoWeeks.setDate(twoWeeks.getDate() + 14);
+    const dflt = twoWeeks.toISOString().slice(0, 10);
+    slot.innerHTML =
+      '<div class="handle-edit ticker-edit">' +
+        '<label class="av-edit-note" style="padding:0" for="tkText">Ticker</label>' +
+        '<input id="tkText" type="text" maxlength="200" placeholder="A line for the bar\u2026" data-tk-text>' +
+        '<div class="ticker-edit-row"><label class="av-edit-note" style="padding:0" for="tkUntil">Runs until</label>' +
+        '<input id="tkUntil" type="date" value="' + dflt + '" min="' + today + '" data-tk-until>' +
+        '<button type="button" class="quick-menu-pill ticker-add" data-tk-add>Add</button></div>' +
+        '<div class="handle-edit-msg" data-tk-msg></div>' +
+        '<div class="ticker-list" data-tk-list></div>' +
+      "</div>";
+    const msg = slot.querySelector("[data-tk-msg]"), list = slot.querySelector("[data-tk-list]");
+    async function load() {
+      try {
+        const r = await sb.rpc("ticker_lines_all");
+        const rows = (r && !r.error && r.data) || [];
+        list.innerHTML = rows.length ? rows.map(function (l) {
+          const live = l.run_from <= today && l.run_until >= today;
+          return '<div class="ticker-line' + (live ? "" : " is-off") + '"><span class="ticker-line-text">' + esc(l.text) + '</span>' +
+                 '<span class="ticker-line-until">' + (live ? "until " : (l.run_until < today ? "ended " : "from " + esc(l.run_from) + " to ")) + esc(l.run_until) + '</span>' +
+                 '<button type="button" class="ticker-line-del" data-tk-del="' + esc(l.id) + '" title="Delete line" aria-label="Delete this ticker line">&times;</button></div>';
+        }).join("") : '<div class="handle-edit-msg">No lines of yours on file.</div>';
+      } catch (_) {}
+    }
+    function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]; }); }
+    slot.addEventListener("click", async function (e) {
+      e.stopPropagation();
+      const add = e.target.closest("[data-tk-add]");
+      if (add) {
+        const text = slot.querySelector("[data-tk-text]").value.trim(), until = slot.querySelector("[data-tk-until]").value;
+        if (!text) { msg.textContent = "Type the line first."; return; }
+        if (!until) { msg.textContent = "Pick the last day it runs."; return; }
+        add.disabled = true; msg.textContent = "Adding\u2026";
+        try {
+          const r = await sb.rpc("ticker_add", { p_text: text, p_until: until });
+          if (r.error) { msg.textContent = "Couldn\u2019t add: " + r.error.message; }
+          else { msg.textContent = "On the bar the next time the site loads."; slot.querySelector("[data-tk-text]").value = ""; await load(); }
+        } catch (err) { msg.textContent = "Couldn\u2019t add. Try again."; }
+        add.disabled = false;
+        return;
+      }
+      const del = e.target.closest("[data-tk-del]");
+      if (del) {
+        if (!confirm("Delete this ticker line?")) return;
+        del.disabled = true;
+        try { const r = await sb.rpc("ticker_delete", { p_id: del.getAttribute("data-tk-del") }); if (r.error) { msg.textContent = "Couldn\u2019t delete: " + r.error.message; del.disabled = false; return; } }
+        catch (_) { del.disabled = false; return; }
+        await load();
+      }
+    });
+    slot.querySelector("[data-tk-text]").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); slot.querySelector("[data-tk-add]").click(); } });
+    await load();
   }
 
   async function refreshAuthUI() {

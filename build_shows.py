@@ -1168,6 +1168,24 @@ def fetch_new_members(since):
         return []
 
 
+def fetch_ticker_lines():
+    """Lines Nick wrote from the header menu (ticker_lines_live RPC, readable
+    by anyone). Never raises."""
+    url, key = _supabase_public_config()
+    if not url or not key:
+        return []
+    try:
+        import urllib.request
+        req = urllib.request.Request(f"{url}/rest/v1/rpc/ticker_lines_live", data=b"{}",
+                                     headers={"apikey": key, "Authorization": "Bearer " + key,
+                                              "Content-Type": "application/json"})
+        with urllib.request.urlopen(req, timeout=20) as r:
+            return json.loads(r.read().decode("utf-8")) or []
+    except Exception as e:
+        print(f"  note: ticker lines not fetched ({type(e).__name__})")
+        return []
+
+
 def _venue_line(names):
     """One line for a day's new venues: every name when there are a few,
     otherwise the first three and a count."""
@@ -1287,6 +1305,15 @@ def update_news(shows, venues, today):
         if extra > 0:
             who = ", ".join(shown) + f" and {extra} more"
         new_lines["members:rolling"] = {"text": f"Welcome {who} to Rain Or Shows.", "until": today.isoformat()}
+
+    # Lines written from the header menu (Sep 18 2026). Rewritten every build
+    # from the database so a deleted line leaves and the end date is honoured;
+    # keyed "hand:<id>" so the page shows a line once even when it reads both.
+    for k in [k for k in auto if str(k).startswith("hand:")]:
+        del auto[k]
+    for t in fetch_ticker_lines():
+        if t.get("id") and (t.get("text") or "").strip():
+            new_lines["hand:" + t["id"]] = {"text": t["text"].strip(), "until": t.get("run_until") or today.isoformat()}
 
     until = (today + datetime.timedelta(days=NEWS_RUN_DAYS)).isoformat()
     for key, val in new_lines.items():
