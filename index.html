@@ -49,8 +49,13 @@ html{scroll-behavior:smooth;scroll-padding-top:66px}
    never scrolls -- the masthead scrolled away with the listings. clip trims
    the overflow without making a scroll container, so the header stays put.
    Browsers too old for clip get the old hidden rule. */
-html,body{overflow-x:clip;max-width:100%}
-@supports not (overflow-x:clip){html,body{overflow-x:hidden}}
+html,body{max-width:100%}
+/* Sep 18 2026: the guard moved OFF the root. iOS Safari lost the sticky
+   masthead again with overflow on html/body (even clip); the header must
+   sit in a container with no overflow rule at all. The blocks below it are
+   clipped instead -- the same protection, since they are what overflow. */
+.controls,.results-wrap,.foot-bar{overflow-x:clip}
+@supports not (overflow-x:clip){.controls,.results-wrap,.foot-bar{overflow-x:hidden}}
 img,video{max-width:100%}
 .fest-name,.s-title,.dm-body,.dm-snippet,.people-name,.cmt-body,.pf-name{overflow-wrap:anywhere}
 body{
