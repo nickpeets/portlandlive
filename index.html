@@ -2880,8 +2880,15 @@ function stubTileCanvas(o){
   var cv = document.createElement('canvas');
   cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
   cv.className = 'pf-stub';
-  cv.setAttribute('role', 'img');
-  cv.setAttribute('aria-label', (o.title || 'Stub') + (o.venue ? ' at ' + o.venue : '') + (o.date ? ', ' + o.date : ''));
+  // A wall stub opens its show page (Sep 18 2026). The show page keeps
+  // working after the date from archive.json, and it is where the photos
+  // will live. (The first pass wired stubCard, the shelf renderer, not this.)
+  cv.setAttribute('role', 'link');
+  cv.setAttribute('tabindex', '0');
+  cv.title = 'Open this show';
+  cv.setAttribute('aria-label', 'Open ' + (o.title || 'this show') + (o.venue ? ' at ' + o.venue : '') + (o.date ? ', ' + o.date : ''));
+  cv.addEventListener('click', function(){ location.hash = '#/show/' + makeSlug(o); });
+  cv.addEventListener('keydown', function(e){ if(e.key === 'Enter'){ location.hash = '#/show/' + makeSlug(o); } });
   var ctx = cv.getContext('2d');
   ctx.scale(dpr, dpr);
   drawStubTile(ctx, o, pad, pad, w, h, stubRot(o) * Math.PI / 180);
@@ -7350,6 +7357,7 @@ a.inbox-thread-who:hover{text-decoration:underline}
 @media(hover:none){.inbox-msg-del{opacity:.45}}
 .inbox-clear{margin-left:6px;opacity:.75}
 .stub{cursor:pointer}
+.pf-stub{cursor:pointer}
 .venue-past{margin-top:28px}
 .venue-past .scard{opacity:.88}
 .inbox-item-wrap{display:flex;align-items:center;gap:2px}
