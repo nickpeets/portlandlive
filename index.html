@@ -109,6 +109,11 @@ body{
 }
 .masthead-brand{display:flex;align-items:center;gap:10px;cursor:pointer}
 .mast-search{flex:1 1 auto;max-width:360px;margin:0 6px}
+@media(max-width:600px){
+  .masthead-inner{flex-wrap:wrap}
+  .mast-search{order:10;flex:1 1 100%;max-width:none;margin:8px 0 0}
+  .mast-search input{padding:9px 14px}
+}
 .mast-search input{width:100%;box-sizing:border-box;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.28);color:var(--cream);font-family:'Oswald',sans-serif;font-size:14px;padding:7px 12px;border-radius:999px;outline:none}
 .mast-search input::placeholder{color:rgba(243,234,215,.6)}
 .mast-search input:focus{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.5)}
@@ -7213,9 +7218,10 @@ $('#searchInput').addEventListener('input',e=>{state.q=e.target.value;if(state.q
 (function(){
   const box = $('#searchInput'), form = $('#mastSearch'), inp = $('#mastSearchInput'), btn = $('#mastSearchBtn');
   if(!box || !form || !inp || !btn || !('IntersectionObserver' in window)) return;
-  const phone = () => window.matchMedia('(max-width:600px)').matches;
+  // Phones get the same field as a second row of the masthead (Sep 19 2026,
+  // Nick: "make the sticky masthead taller with the search bar underneath").
   let away = false;
-  function apply(){ form.hidden = !(away && !phone()); btn.hidden = !(away && phone()); }
+  function apply(){ form.hidden = !away; btn.hidden = true; }
   new IntersectionObserver(function(es){ away = !es[0].isIntersecting && es[0].boundingClientRect.top < 0; apply(); }, { threshold: 0 }).observe(box.closest('.pill') || box);
   window.addEventListener('resize', apply);
   inp.addEventListener('input', function(){
