@@ -6250,11 +6250,22 @@ async function mountPhotoStrip(wrap){
       + '<span class="ph-strip-caret">' + (open ? '&#9662;' : '&#9656;') + '</span><span class="ph-strip-title">Latest photos &amp; clips <span class="pf-count">' + rows.length + '</span></span>'
       + '<span class="ph-strip-pill">' + (open ? 'Hide' : 'Show') + '</span></button>'
     + '<div class="ph-strip-row"' + (open ? '' : ' hidden') + '>' + rows.map(function(x){
-        return '<a class="ph-strip-item" href="#/show/' + esc(x.show_slug) + '" title="' + esc((x.title || '') + (x.venue ? ' at ' + x.venue : '')) + '">'
+        // A tile opens the photo/clip right here, with the show, room and
+        // date under it and an "Open show" link for more (Sep 18 2026).
+        return '<button type="button" class="ph-strip-item" data-strip-src="' + esc(phUrl(x.path)) + '"' + (x.kind === 'video' && x.video_path ? ' data-strip-video="' + esc(vdUrl(x.video_path)) + '"' : '')
+          + ' data-strip-title="' + esc(x.title || '') + '" data-strip-venue="' + esc(x.venue || '') + '" data-strip-date="' + esc(x.show_date || '') + '" data-strip-slug="' + esc(x.show_slug) + '" title="' + esc((x.title || '') + (x.venue ? ' at ' + x.venue : '')) + '">'
           + '<img src="' + esc(phUrl(x.path)) + '" alt="" loading="lazy">' + (x.kind === 'video' ? '<span class="ph-play ph-play-sm" aria-hidden="true">&#9654;</span>' : '')
-          + '<span class="ph-strip-cap"><b>' + esc(x.title || 'A show') + '</b>' + (x.venue ? '<i>' + esc(x.venue) + '</i>' : '') + '</span>'
-          + '</a>';
+          + '<span class="ph-strip-cap"><b>' + esc(x.title || 'A show') + '</b><i>' + esc([x.venue, x.show_date ? ordinalDate(x.show_date) : ''].filter(Boolean).join(' \u00b7 ')) + '</i></span>'
+          + '</button>';
       }).join('') + '</div>';
+  host.addEventListener('click', function(e){
+    const t = e.target.closest('[data-strip-src]');
+    if(!t) return;
+    e.preventDefault(); e.stopPropagation();
+    phLightbox(t.getAttribute('data-strip-src'), t.getAttribute('data-strip-video'),
+      { title: t.getAttribute('data-strip-title'), venue: t.getAttribute('data-strip-venue'), date: t.getAttribute('data-strip-date') },
+      t.getAttribute('data-strip-slug'));
+  });
   host.querySelector('[data-strip-toggle]').addEventListener('click', function(){
     const row = host.querySelector('.ph-strip-row');
     const now = row.hidden;
@@ -6289,6 +6300,31 @@ function applyPosterOverrides(tries){
 // moderator, a "Set poster" control appears under the card: pick an image,
 // it is resized in the browser, stored under posters/<slug>.jpg, and the
 // override recorded. "Remove" clears it back to whatever the venue had.
+// One lightbox for photos and clips everywhere (Sep 18 2026). caption is
+// {title, venue, date}; when a slug is given a small "Open show" link sits
+// under the caption -- the strip uses this so a tap views the thing in
+// place instead of leaving the feed (Nick).
+function phLightbox(src, videoSrc, caption, slug){
+  const box = document.createElement('div');
+  box.className = 'ph-light';
+  const cap = caption && (caption.title || caption.venue) ? '<div class="ph-light-cap">'
+      + '<b>' + esc(caption.title || '') + '</b>'
+      + (caption.venue || caption.date ? '<span>' + esc([caption.venue, caption.date ? ordinalDate(caption.date) : ''].filter(Boolean).join(' \u00b7 ')) + '</span>' : '')
+      + (slug ? '<a href="#/show/' + esc(slug) + '" class="ph-light-link">Open show \u2192</a>' : '')
+    + '</div>' : '';
+  box.innerHTML = '<div class="ph-light-inner">' + (videoSrc
+      ? '<video src="' + esc(videoSrc) + '" poster="' + esc(src) + '" controls autoplay playsinline preload="metadata"></video>'
+      : '<img src="' + esc(src) + '" alt="">') + cap + '</div>'
+    + '<button type="button" class="ph-close" aria-label="Close">&times;</button>';
+  box.addEventListener('click', function(ev){
+    if(ev.target.closest('video') ) return;                    // controls
+    if(ev.target.closest('.ph-light-link')){ box.remove(); return; }
+    box.remove();
+  });
+  document.addEventListener('keydown', function esc_(ev){ if(ev.key === 'Escape'){ box.remove(); document.removeEventListener('keydown', esc_); } });
+  document.body.appendChild(box);
+}
+
 async function mountPosterEditor(card, show, slug){
   const sb = phClient();
   if(!sb || !slug) return;
@@ -6487,17 +6523,7 @@ async function mountPhotos(wrap, slug, show){
     const open = e.target.closest('[data-ph-open]');
     if(open){
       e.preventDefault();
-      const box = document.createElement('div');
-      box.className = 'ph-light';
-      const vsrc = open.getAttribute('data-ph-video');
-      box.innerHTML = (vsrc
-          ? '<video src="' + esc(vsrc) + '" poster="' + esc(open.getAttribute('data-ph-open')) + '" controls autoplay playsinline preload="metadata"></video>'
-          : '<img src="' + esc(open.getAttribute('data-ph-open')) + '" alt="">')
-        + '<button type="button" class="ph-close" aria-label="Close">&times;</button>';
-      if(vsrc){ box.querySelector('video').addEventListener('click', function(ev){ ev.stopPropagation(); }); }
-      box.addEventListener('click', function(){ box.remove(); });
-      document.addEventListener('keydown', function esc_(ev){ if(ev.key === 'Escape'){ box.remove(); document.removeEventListener('keydown', esc_); } });
-      document.body.appendChild(box);
+      phLightbox(open.getAttribute('data-ph-open'), open.getAttribute('data-ph-video'), null, null);
     }
   });
   await load();
@@ -7858,18 +7884,23 @@ a.inbox-thread-who:hover{text-decoration:underline}
 .ph-strip-row[hidden]{display:none}  /* the flex rule outranks the hidden attribute otherwise (Sep 18 2026) */
 .ph-strip-row::-webkit-scrollbar{height:6px}
 .ph-strip-row::-webkit-scrollbar-thumb{background:rgba(243,234,215,.35);border-radius:3px}
-.ph-strip-item{flex:0 0 150px;scroll-snap-align:start;display:block;background:var(--cream);color:var(--ink);border-radius:6px;overflow:hidden;text-decoration:none;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+.ph-strip-item{flex:0 0 150px;scroll-snap-align:start;display:block;background:var(--cream);color:var(--ink);border-radius:6px;overflow:hidden;text-decoration:none;box-shadow:0 2px 6px rgba(0,0,0,.25);border:0;padding:0;cursor:zoom-in;text-align:left;font:inherit}
+.ph-light-inner{display:flex;flex-direction:column;align-items:center;gap:10px;max-width:96vw}
+.ph-light-cap{color:#fff;font-family:'Oswald',sans-serif;font-size:14px;letter-spacing:.03em;text-align:center;display:flex;flex-direction:column;gap:3px;max-width:90vw}
+.ph-light-cap b{font-size:16px}
+.ph-light-cap span{opacity:.8}
+.ph-light-link{color:var(--cream);text-decoration:underline;margin-top:4px;font-size:13px}
 .ph-strip-item img{width:150px;height:150px;object-fit:cover;display:block;background:#000}
 .ph-strip-cap{display:block;padding:5px 8px 7px;font-family:'Oswald',sans-serif;font-size:11.5px;line-height:1.25;letter-spacing:.03em}
 .ph-strip-cap b{display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ph-strip-cap i{display:block;font-style:normal;opacity:.7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ph-open{position:relative}
-.ph-play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:44px;height:44px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;font-size:18px;line-height:44px;text-align:center;padding-left:3px;box-sizing:border-box;pointer-events:none}
-.ph-play-sm{width:34px;height:34px;line-height:34px;font-size:14px;top:calc(50% - 16px)}
+.ph-play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:64px;height:64px;border-radius:50%;background:rgba(0,0,0,.6);border:2px solid rgba(255,255,255,.9);color:#fff;font-size:28px;line-height:60px;text-align:center;padding-left:5px;box-sizing:border-box;pointer-events:none;box-shadow:0 2px 12px rgba(0,0,0,.5)}
+.ph-play-sm{width:56px;height:56px;line-height:52px;font-size:24px;top:calc(50% - 18px)}
 .ph-strip-item{position:relative}
-.ph-light video{max-width:96vw;max-height:92vh;background:#000;box-shadow:0 8px 40px rgba(0,0,0,.6)}
+.ph-light video{max-width:96vw;max-height:78vh;background:#000;box-shadow:0 8px 40px rgba(0,0,0,.6)}
 .ph-light{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;cursor:zoom-out}
-.ph-light img{max-width:96vw;max-height:92vh;object-fit:contain;box-shadow:0 8px 40px rgba(0,0,0,.6)}
+.ph-light img{max-width:96vw;max-height:78vh;object-fit:contain;box-shadow:0 8px 40px rgba(0,0,0,.6)}
 .ph-close{position:absolute;top:12px;right:16px;background:none;border:0;color:#fff;font-size:34px;line-height:1;cursor:pointer;opacity:.85}
 .venue-past{margin-top:28px}
 .venue-past .scard{opacity:.88}
