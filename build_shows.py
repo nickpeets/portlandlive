@@ -630,6 +630,28 @@ def _tm_normalize(ev, venue_info):
             "contentType": "comedy" if ev.get("_ros_class") == "comedy" else ""}
 
 
+# Rows the venue's own page got wrong and never fixed (Sep 19 2026). Each
+# is (venue, date, first words of the title, lowercase). Matched rows are
+# dropped before the archive so they leave the past too. Add a line, run the
+# workflow; remove the line once the source has caught up.
+DROP_SHOWS = [
+    ("Keller Auditorium", "2026-09-19", "beck"),   # moved to Nov 10 2026; the evenue list kept the old date
+]
+
+
+def drop_wrong_rows(shows):
+    keep, dropped = [], 0
+    for r in shows:
+        t = (r.get("title") or "").strip().lower()
+        if any(r.get("venue") == v and r.get("date") == d and t.startswith(k) for v, d, k in DROP_SHOWS):
+            dropped += 1
+            continue
+        keep.append(r)
+    if dropped:
+        print(f"  Dropped {dropped} known-wrong row(s) (DROP_SHOWS)")
+    return keep
+
+
 _TM_RESALE = re.compile(r"ticketmaster\.com/event/Z", re.I)
 # Where to send a resale-only row. Named here when the venue's other rows
 # link to a ticketing host (an etix.com root is nowhere) or when Ticketmaster
@@ -678,6 +700,92 @@ def tm_resale_links(shows):
             r["ticketUrl"] = ""
         n += 1
     return n
+
+
+# ===== TICKETER (Sep 18 2026) ==============================================
+# Which ticketing agent a show actually sells through, read from its links.
+# Two jobs: Miracles appear ONLY on shows with a ticketer (a door bar has
+# nothing to hand off), and the day an affiliate program says yes its
+# tracking template goes in AFFILIATE_TEMPLATES and every matching show
+# gets an affiliateUrl on the next build -- nothing else to touch.
+_TICKETER_HOSTS = [
+    (r"(^|\.)ticketmaster\.com$", "ticketmaster"), (r"(^|\.)ticketweb\.com$", "ticketweb"),
+    (r"(^|\.)livenation\.com$", "ticketmaster"), (r"(^|\.)rosequarter\.com$", "ticketmaster"),
+    (r"(^|\.)etix\.com$", "etix"), (r"(^|\.)tixr\.com$", "tixr"), (r"(^|\.)eventbrite\.com$", "eventbrite"),
+    (r"(^|\.)axs\.com$", "axs"), (r"(^|\.)dice\.fm$", "dice"), (r"(^|\.)seetickets\.us$", "seetickets"),
+    (r"(^|\.)portland5\.com$", "evenue"), (r"(^|\.)evenue\.net$", "evenue"),
+    (r"(^|\.)aftontickets\.com$", "afton"), (r"(^|\.)crowdwork\.com$", "crowdwork"),
+    (r"(^|\.)turntabletickets\.com$", "turntable"), (r"(^|\.)heliumcomedy\.com$", "helium"),
+    (r"(^|\.)monqui\.com$", "monqui"), (r"(^|\.)showclix\.com$", "showclix"),
+    (r"(^|\.)freshtix\.com$", "freshtix"), (r"(^|\.)prekindle\.com$", "prekindle"),
+    (r"(^|\.)artspeople\.com$", "artspeople"), (r"(^|\.)ovationtix\.com$", "ovationtix"),
+    (r"(^|\.)lonelygodpdx\.com$", "lonelygod"), (r"(^|\.)opendate\.io$", "opendate"),
+    (r"(^|\.)eventim\.us$", "eventim"), (r"(^|\.)ra\.co$", "ra"),
+]
+# Tracking templates, filled in when a program approves. {url} is the
+# percent-encoded destination. Vivid (resale) is handled separately.
+AFFILIATE_TEMPLATES = {
+    "ticketmaster": None,   # Impact, applied Sep 14 2026 -- e.g. "https://ticketmaster.evyy.net/c/4969747/XXXX/YYYY?u={url}"
+    "ticketweb": None,      # same program as Ticketmaster
+    "etix": None,           # EDN partner id, if Etix says yes
+    "seatgeek": None,
+    "tixr": None, "eventbrite": None, "axs": None, "dice": None, "seetickets": None,
+}
+
+
+# Rooms that sell advance tickets on their OWN site, so their links carry no
+# agent to read. "venue" means ticketed, no affiliate. Everything else with
+# no agent in its links is a door room: no Miracles.
+VENUE_TICKETER = {
+    "Holocene": "venue", "Alberta Rose Theatre": "venue", "Wonder Ballroom": "venue",
+    "Crystal Ballroom": "venue", "Mission Theater": "venue", "White Eagle Saloon": "venue",
+    "Kennedy School": "venue", "McMenamins Edgefield": "venue", "McMenamins Grand Lodge": "venue",
+    "Polaris Hall": "venue", "The Old Church": "venue", "The Reser": "venue", "ilani": "venue",
+    "Hops Ballpark": "venue", "Revolution Hall (Show Bar)": "venue", "Cascades Amphitheater": "venue",
+    "Winningstad Theatre": "venue", "Brunish Theatre": "venue", "Chehalem Cultural Center": "venue",
+    "Walters Cultural Arts Center": "venue", "Old Liberty Theater": "venue", "Alberta Abbey": "venue",
+    "Realm": "venue", "The Headliners Club": "venue", "Trout Lake Hall": "venue",
+    "Aladdin Theater": "venue", "Hawthorne Theatre": "venue", "Revolution Hall": "venue",
+    "Bunk Bar": "venue", "The Siren Theater": "venue", "Tomorrow Theater": "venue",
+    "The Off Beat": "venue", "Trinity Episcopal Cathedral": "venue", "The Get Down": "venue",
+}
+
+
+def ticketer_of(row):
+    from urllib.parse import urlsplit
+    for u in (row.get("ticketUrl") or "", row.get("venueUrl") or ""):
+        if not u.startswith("http"):
+            continue
+        try:
+            host = urlsplit(u).netloc.lower()
+        except Exception:
+            continue
+        for pat, name in _TICKETER_HOSTS:
+            if re.search(pat, host):
+                return name
+    return VENUE_TICKETER.get(row.get("venue") or "")
+
+
+def apply_ticketers(shows):
+    """Set ticketer (or null) on every row; add affiliateUrl where a template
+    exists. Returns (ticketed_count, affiliate_count)."""
+    from urllib.parse import quote
+    n = a = 0
+    for r in shows:
+        t = ticketer_of(r)
+        r["ticketer"] = t
+        if t:
+            n += 1
+            tpl = AFFILIATE_TEMPLATES.get(t)
+            dest = r.get("ticketUrl") if _TICKETER_MATCHES(t, r.get("ticketUrl")) else r.get("venueUrl")
+            if tpl and dest:
+                r["affiliateUrl"] = tpl.format(url=quote(dest, safe=""))
+                a += 1
+    return n, a
+
+
+def _TICKETER_MATCHES(t, url):
+    return bool(url) and ticketer_of({"ticketUrl": url}) == t
 
 
 def _sv():
@@ -1390,7 +1498,10 @@ def main():
                 r["imageUrl"] = u; _n += 1
         print(f"  Posters: {_n} override(s) applied")
 
+    shows = drop_wrong_rows(shows)
     _fixed = tm_resale_links(shows)
+    _tk, _af = apply_ticketers(shows)
+    print(f"  Ticketers: {_tk} of {len(shows)} shows sell through a known agent; {_af} affiliate link(s)")
     if _fixed:
         print(f"  Ticketmaster: {_fixed} resale-only links replaced with the venue's own page")
 

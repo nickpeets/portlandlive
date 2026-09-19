@@ -3491,7 +3491,7 @@ function renderShowDetail(wrap, show, kind){
     actions = '<div class="show-actions">'
       // A Facebook event link is where a free show's details live, not a
       // ticket sale -- label it for what it is (Wild Hare, Sep 17 2026).
-      + (show.venueUrl ? '<a class="tix" href="'+esc(show.venueUrl)+'" target="_blank" rel="noopener">'
+      + ((show.affiliateUrl || show.venueUrl) ? '<a class="tix" href="'+esc(show.affiliateUrl || show.venueUrl)+'" target="_blank" rel="noopener">'
           + (/(^|\.)facebook\.com$/i.test((function(){ try{ return new URL(show.venueUrl).hostname; }catch(_){ return ''; } })()) ? 'More info' : 'Tickets')
           + '</a>' : '')
       + heartBtn(show)
@@ -3633,7 +3633,12 @@ function showIsTicketed(show){
   // off. The registry is the authority -- this stays correct for every
   // festival added later without touching DOOR_VENUES.
   if(typeof isFestivalShow === 'function' && isFestivalShow(show)) return false;
-  // The show decides before the venue does.
+  // Since Sep 18 2026 the build says which agent a show sells through
+  // (`ticketer`; "venue" = its own site). Present and set: ticketed.
+  // Present and null: a door room -- FAIL CLOSED, no Miracles (Nick: "only
+  // on show pages that are selling actual tickets, not the clubs").
+  if(Object.prototype.hasOwnProperty.call(show, 'ticketer')) return !!show.ticketer;
+  // Rows built before that field (the archive): the old evidence rules.
   if(showHasTicketEvidence(show)) return true;
   return DOOR_VENUES.indexOf(show.venue) === -1;
 }
