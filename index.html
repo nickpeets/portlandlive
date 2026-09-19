@@ -7920,7 +7920,7 @@ a.inbox-thread-who:hover{text-decoration:underline}
 .inbox-reply button:disabled{opacity:.45;cursor:default}
 .inbox-goshow{width:100%;border:0;background:none;cursor:pointer;font-family:'Oswald',sans-serif;font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#7c6a55;padding:6px 4px 2px}
 .inbox-goshow:hover{color:var(--rust-deep)}
-.quick-menu-list{position:absolute;top:calc(100% + 8px);right:0;background:var(--cream);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.25);overflow:hidden;min-width:180px;padding:6px;display:flex;flex-direction:column;gap:2px}
+.quick-menu-list{position:absolute;top:calc(100% + 8px);right:0;background:var(--cream);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.25);overflow:hidden auto;max-height:calc(100vh - 110px);max-height:calc(100dvh - 110px);min-width:180px;padding:6px;display:flex;flex-direction:column;gap:2px}  /* scrolls inside the screen (Sep 19 2026) */
 .quick-menu-list[hidden]{display:none}
 .quick-menu-pill{background:transparent;border:0;color:var(--ink);padding:9px 10px;border-radius:7px;width:100%;box-sizing:border-box}
 .quick-menu-pill:hover{background:rgba(74,53,38,.08)}
@@ -7941,8 +7941,10 @@ a.inbox-thread-who:hover{text-decoration:underline}
 .handle-edit-row input:focus{outline:2px solid var(--water-d);outline-offset:1px}
 .handle-edit-msg{font-family:'Bitter',Georgia,serif;font-size:10.5px;color:#7c6a55;min-height:1.1em;margin-top:4px}
 .ticker-edit input[type="text"],.ticker-edit input[type="date"]{width:100%;box-sizing:border-box;font-family:'Bitter',Georgia,serif;font-size:13px;color:var(--ink);background:#fff;border:1px solid rgba(74,53,38,.16);border-radius:8px;padding:6px 8px;margin-top:4px}
-.ticker-edit-row{display:flex;align-items:end;gap:6px;margin-top:6px}
-.ticker-edit-row .av-edit-note{white-space:nowrap;padding-bottom:6px}
+.ticker-edit-row{display:flex;align-items:center;gap:6px;margin-top:4px}
+.ticker-head{display:flex;justify-content:space-between;align-items:center}
+.ticker-caret{opacity:.7}
+.ticker-usage{margin:4px 8px 2px}
 .ticker-edit-row input[type="date"]{flex:1 1 auto;margin-top:0}
 .ticker-add{flex:0 0 auto;padding:6px 12px}
 .ticker-list{margin-top:8px;display:flex;flex-direction:column;gap:4px}

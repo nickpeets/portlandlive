@@ -262,27 +262,42 @@
   // of editing news.json. A line, the last day it runs, Add; the list below
   // shows what's on file with an x to delete. Rendered only when
   // is_moderator() says so.
+  let _tickerRun = 0;
   async function renderTickerEditor(userId) {
     const slot = el.tickerEditor;
     if (!slot) return;
-    if (!userId) { slot.hidden = true; slot.innerHTML = ""; return; }
+    if (!userId) { slot.hidden = true; slot.innerHTML = ""; slot.dataset.for = ""; return; }
+    // Once per signed-in user: refreshAuthUI runs several times as a session
+    // settles, and each pass was appending its own Media line (Sep 19 2026).
+    if (slot.dataset.for === userId && slot.innerHTML) return;
+    const run = ++_tickerRun;
     let isMod = false;
     try { const r = await sb.rpc("is_moderator"); isMod = !r.error && r.data === true; } catch (_) {}
+    if (run !== _tickerRun) return;
     if (!isMod) { slot.hidden = true; slot.innerHTML = ""; return; }
+    slot.dataset.for = userId;
     slot.hidden = false;
     const today = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Los_Angeles", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
     const twoWeeks = new Date(today + "T12:00:00"); twoWeeks.setDate(twoWeeks.getDate() + 14);
     const dflt = twoWeeks.toISOString().slice(0, 10);
+    // Folded behind a "Ticker" line so the menu stays short on a phone.
     slot.innerHTML =
-      '<div class="handle-edit ticker-edit">' +
-        '<label class="av-edit-note" style="padding:0" for="tkText">Ticker</label>' +
+      '<button type="button" class="quick-menu-pill ticker-head" data-tk-toggle aria-expanded="false">Ticker <span class="ticker-caret">&#9656;</span></button>' +
+      '<div class="handle-edit ticker-edit" hidden>' +
         '<input id="tkText" type="text" maxlength="200" placeholder="A line for the bar\u2026" data-tk-text>' +
-        '<div class="ticker-edit-row"><label class="av-edit-note" style="padding:0" for="tkUntil">Runs until</label>' +
+        '<label class="av-edit-note" style="padding:6px 0 0" for="tkUntil">Runs until</label>' +
+        '<div class="ticker-edit-row">' +
         '<input id="tkUntil" type="date" value="' + dflt + '" min="' + today + '" data-tk-until>' +
         '<button type="button" class="quick-menu-pill ticker-add" data-tk-add>Add</button></div>' +
         '<div class="handle-edit-msg" data-tk-msg></div>' +
         '<div class="ticker-list" data-tk-list></div>' +
       "</div>";
+    slot.querySelector("[data-tk-toggle]").onclick = function (e) {
+      e.stopPropagation();
+      const box = slot.querySelector(".ticker-edit"), open = box.hidden;
+      box.hidden = !open; this.setAttribute("aria-expanded", open ? "true" : "false");
+      this.querySelector(".ticker-caret").innerHTML = open ? "&#9662;" : "&#9656;";
+    };
     const msg = slot.querySelector("[data-tk-msg]"), list = slot.querySelector("[data-tk-list]");
     async function load() {
       try {
@@ -336,10 +351,12 @@
       if (rows.length) {
         const gb = function (b) { return (b / 1073741824).toFixed(2) + " GB"; };
         const total = rows.reduce(function (s, r) { return s + Number(r.bytes || 0); }, 0);
+        const old = slot.querySelector(".ticker-usage"); if (old) old.remove();
         const line = document.createElement("div");
         line.className = "handle-edit-msg ticker-usage";
-        line.textContent = "Media: " + rows.map(function (r) { return r.bucket + " " + r.files + " (" + gb(Number(r.bytes || 0)) + ")"; }).join(" \u00b7 ") + " \u00b7 " + gb(total) + " of 100 GB";
-        slot.querySelector(".ticker-edit").appendChild(line);
+        line.title = rows.map(function (r) { return r.bucket + ": " + r.files + " files, " + gb(Number(r.bytes || 0)); }).join("\n");
+        line.textContent = "Media " + gb(total) + " of 100 GB \u00b7 " + rows.reduce(function (s, r) { return s + Number(r.files || 0); }, 0) + " files";
+        slot.appendChild(line);
       }
     } catch (_) {}
   }
