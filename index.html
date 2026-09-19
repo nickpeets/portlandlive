@@ -7222,10 +7222,22 @@ $('#searchInput').addEventListener('input',e=>{state.q=e.target.value;if(state.q
   if(!box || !form || !inp || !btn || !('IntersectionObserver' in window)) return;
   // Phones get the same field as a second row of the masthead (Sep 19 2026,
   // Nick: "make the sticky masthead taller with the search bar underneath").
-  let away = false;
+  // Decided by scroll distance with a dead band, not by watching the box:
+  // showing the row makes the masthead taller, which moved the box back
+  // into view, which hid the row again -- a flicker loop (Sep 19 2026).
+  let away = false, ticking = false;
+  const anchor = box.closest('.pill') || box;
   function apply(){ form.hidden = !away; btn.hidden = true; }
-  new IntersectionObserver(function(es){ away = !es[0].isIntersecting && es[0].boundingClientRect.top < 0; apply(); }, { threshold: 0 }).observe(box.closest('.pill') || box);
-  window.addEventListener('resize', apply);
+  function measure(){
+    ticking = false;
+    const top = anchor.getBoundingClientRect().top + window.scrollY;   // page position, unaffected by the masthead's height
+    const y = window.scrollY;
+    if(!away && y > top + 120) { away = true; apply(); }
+    else if(away && y < top - 20) { away = false; apply(); }
+  }
+  window.addEventListener('scroll', function(){ if(!ticking){ ticking = true; requestAnimationFrame(measure); } }, { passive: true });
+  window.addEventListener('resize', measure);
+  measure();
   inp.addEventListener('input', function(){
     state.q = inp.value; box.value = inp.value;
     if(state.q && state.selectedVenue){ state.selectedVenue = null; state.view = 'shows'; }
