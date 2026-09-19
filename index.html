@@ -6253,7 +6253,7 @@ async function mountPhotoStrip(wrap){
         // A tile opens the photo/clip right here, with the show, room and
         // date under it and an "Open show" link for more (Sep 18 2026).
         return '<button type="button" class="ph-strip-item" data-strip-src="' + esc(phUrl(x.path)) + '"' + (x.kind === 'video' && x.video_path ? ' data-strip-video="' + esc(vdUrl(x.video_path)) + '"' : '')
-          + ' data-strip-title="' + esc(x.title || '') + '" data-strip-venue="' + esc(x.venue || '') + '" data-strip-date="' + esc(x.show_date || '') + '" data-strip-slug="' + esc(x.show_slug) + '" title="' + esc((x.title || '') + (x.venue ? ' at ' + x.venue : '')) + '">'
+          + ' data-strip-title="' + esc(x.title || '') + '" data-strip-venue="' + esc(x.venue || '') + '" data-strip-date="' + esc(x.show_date || '') + '" data-strip-by="' + esc(x.display_name || '') + '" data-strip-slug="' + esc(x.show_slug) + '" title="' + esc((x.title || '') + (x.venue ? ' at ' + x.venue : '')) + '">'
           + '<img src="' + esc(phUrl(x.path)) + '" alt="" loading="lazy">' + (x.kind === 'video' ? '<span class="ph-play ph-play-sm" aria-hidden="true">&#9654;</span>' : '')
           + '<span class="ph-strip-cap"><b>' + esc(x.title || 'A show') + '</b><i>' + esc([x.venue, x.show_date ? ordinalDate(x.show_date) : ''].filter(Boolean).join(' \u00b7 ')) + '</i></span>'
           + '</button>';
@@ -6263,7 +6263,7 @@ async function mountPhotoStrip(wrap){
     if(!t) return;
     e.preventDefault(); e.stopPropagation();
     phLightbox(t.getAttribute('data-strip-src'), t.getAttribute('data-strip-video'),
-      { title: t.getAttribute('data-strip-title'), venue: t.getAttribute('data-strip-venue'), date: t.getAttribute('data-strip-date') },
+      { title: t.getAttribute('data-strip-title'), venue: t.getAttribute('data-strip-venue'), date: t.getAttribute('data-strip-date'), by: t.getAttribute('data-strip-by') },
       t.getAttribute('data-strip-slug'));
   });
   host.querySelector('[data-strip-toggle]').addEventListener('click', function(){
@@ -6307,9 +6307,10 @@ function applyPosterOverrides(tries){
 function phLightbox(src, videoSrc, caption, slug){
   const box = document.createElement('div');
   box.className = 'ph-light';
-  const cap = caption && (caption.title || caption.venue) ? '<div class="ph-light-cap">'
-      + '<b>' + esc(caption.title || '') + '</b>'
+  const cap = caption && (caption.title || caption.venue || caption.by) ? '<div class="ph-light-cap">'
+      + (caption.title ? '<b>' + esc(caption.title) + '</b>' : '')
       + (caption.venue || caption.date ? '<span>' + esc([caption.venue, caption.date ? ordinalDate(caption.date) : ''].filter(Boolean).join(' \u00b7 ')) + '</span>' : '')
+      + (caption.by ? '<span class="ph-light-by">' + (videoSrc ? 'Clip' : 'Photo') + ' by ' + esc(caption.by) + '</span>' : '')
       + (slug ? '<a href="#/show/' + esc(slug) + '" class="ph-light-link">Open show \u2192</a>' : '')
     + '</div>' : '';
   box.innerHTML = '<div class="ph-light-inner">' + (videoSrc
@@ -6457,7 +6458,7 @@ async function mountPhotos(wrap, slug, show){
         const isMine = x.user_id === myId;
         const isVideo = x.kind === 'video' && x.video_path;
         return '<figure class="ph-item' + (isVideo ? ' ph-item-video' : '') + '">'
-          + '<button type="button" class="ph-open" data-ph-open="' + esc(phUrl(x.path)) + '"' + (isVideo ? ' data-ph-video="' + esc(vdUrl(x.video_path)) + '"' : '') + ' aria-label="' + (isVideo ? 'Play clip' : 'Open photo') + '"><img src="' + esc(phUrl(x.path)) + '" alt="" loading="lazy">' + (isVideo ? '<span class="ph-play" aria-hidden="true">&#9654;</span>' : '') + '</button>'
+          + '<button type="button" class="ph-open" data-ph-open="' + esc(phUrl(x.path)) + '"' + (isVideo ? ' data-ph-video="' + esc(vdUrl(x.video_path)) + '"' : '') + ' data-ph-by="' + esc(x.display_name || '') + '" aria-label="' + (isVideo ? 'Play clip' : 'Open photo') + '"><img src="' + esc(phUrl(x.path)) + '" alt="" loading="lazy">' + (isVideo ? '<span class="ph-play" aria-hidden="true">&#9654;</span>' : '') + '</button>'
           + '<figcaption class="ph-cap"><span class="ph-by">' + esc(x.display_name || 'Someone') + '</span>'
           + (isMine ? '<button type="button" class="ph-del" data-ph-del="' + esc(x.id) + '" data-ph-path="' + esc(x.path) + '" title="Delete photo" aria-label="Delete your photo">&times;</button>'
                     : (typeof rpButton === 'function' ? rpButton('photo', x.id, false, !!myId) : ''))
@@ -6523,7 +6524,7 @@ async function mountPhotos(wrap, slug, show){
     const open = e.target.closest('[data-ph-open]');
     if(open){
       e.preventDefault();
-      phLightbox(open.getAttribute('data-ph-open'), open.getAttribute('data-ph-video'), null, null);
+      phLightbox(open.getAttribute('data-ph-open'), open.getAttribute('data-ph-video'), { by: open.getAttribute('data-ph-by') }, null);
     }
   });
   await load();
@@ -7889,6 +7890,7 @@ a.inbox-thread-who:hover{text-decoration:underline}
 .ph-light-cap{color:#fff;font-family:'Oswald',sans-serif;font-size:14px;letter-spacing:.03em;text-align:center;display:flex;flex-direction:column;gap:3px;max-width:90vw}
 .ph-light-cap b{font-size:16px}
 .ph-light-cap span{opacity:.8}
+.ph-light-by{font-family:'Bitter',Georgia,serif;font-style:italic;font-size:13px;letter-spacing:0}
 .ph-light-link{color:var(--cream);text-decoration:underline;margin-top:4px;font-size:13px}
 .ph-strip-item img{width:150px;height:150px;object-fit:cover;display:block;background:#000}
 .ph-strip-cap{display:block;padding:5px 8px 7px;font-family:'Oswald',sans-serif;font-size:11.5px;line-height:1.25;letter-spacing:.03em}
