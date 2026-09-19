@@ -8056,6 +8056,15 @@ a.fest-artist:hover{text-decoration:underline}
 .pf-stubs{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:2px;background:#1a1a1c;background-image:repeating-linear-gradient(0deg,#232326 0 1px,transparent 1px 4px);padding:12px;border-radius:12px}
 .pf-stub{width:100%;height:auto;display:block}
 @media (max-width:520px){.pf-head{gap:12px}.pf-av.av-lg{width:56px;height:56px;font-size:22px}.pf-name{font-size:22px}}
+/* Phones (Sep 18 2026): the Follow / Message buttons drop to their own row
+   under the name instead of squeezing the name column to a few letters
+   (Nick's screenshots: "Anit / a / Pitt / a"). */
+@media (max-width:600px){
+  .pf-head{flex-wrap:wrap}
+  .pf-id{flex:1 1 0;min-width:0}
+  .pf-actions{flex-basis:100%;margin-top:2px}
+  .pf-actions .pf-follow{flex:1 1 0;text-align:center}
+}
 #authDisplayName{font-weight:600;color:var(--ink);text-transform:none;letter-spacing:normal}
 .quick-menu-divider{height:1px;background:rgba(74,53,38,.14);margin:4px 6px}
 .quick-menu-authitem{text-align:left;font-family:'Oswald',sans-serif;font-weight:600;font-size:13px;letter-spacing:.04em;text-transform:uppercase;cursor:pointer}
