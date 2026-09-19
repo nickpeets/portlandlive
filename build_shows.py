@@ -1683,7 +1683,7 @@ def main():
 SHOW_PAGES = os.path.join(HERE, "show")
 VENUE_PAGES = os.path.join(HERE, "venue")
 SITE = "https://rainorshows.com"
-DEFAULT_OG_IMAGE = SITE + "/logo.png"   # square, so Facebook draws the small logo card (Nick prefers it, Sep 19 2026); a show with a poster still gets its poster
+DEFAULT_OG_IMAGE = SITE + "/logo_share.png"   # square, so Facebook draws the small logo card (Nick prefers it, Sep 19 2026); a show with a poster still gets its poster
 
 
 def _venue_slug(name):
