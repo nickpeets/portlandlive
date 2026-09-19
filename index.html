@@ -108,6 +108,11 @@ body{
   display:flex;align-items:center;justify-content:space-between;gap:14px;
 }
 .masthead-brand{display:flex;align-items:center;gap:10px;cursor:pointer}
+.mast-search{flex:1 1 auto;max-width:360px;margin:0 6px}
+.mast-search input{width:100%;box-sizing:border-box;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.28);color:var(--cream);font-family:'Oswald',sans-serif;font-size:14px;padding:7px 12px;border-radius:999px;outline:none}
+.mast-search input::placeholder{color:rgba(243,234,215,.6)}
+.mast-search input:focus{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.5)}
+.mast-search-btn{padding:0 10px;min-height:34px}
 .masthead-brand:hover{opacity:.85}
 .masthead-logo{
   display:grid;place-items:center;width:38px;height:38px;border-radius:999px;
@@ -980,6 +985,15 @@ body{
         <span class="masthead-logo"><img src="/logo_color.png" alt=""></span>
         <span class="masthead-word">Rain Or Shows</span>
       </div>
+      <!-- Sep 19 2026: once the page scrolls past the real search box, a
+           compact one appears here (desktop) or a magnifier (phones) that
+           jumps back to it, so search is always one reach away. -->
+      <form class="mast-search" id="mastSearch" role="search" hidden onsubmit="return false">
+        <input type="text" id="mastSearchInput" autocomplete="off" placeholder="Search shows…" aria-label="Search shows">
+      </form>
+      <button type="button" class="auth-pill mast-search-btn" id="mastSearchBtn" hidden aria-label="Search">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      </button>
       <div class="header-utility" id="headerUtility">
         <!-- Unified menu (Aug 23 doc): one trigger, one dropdown, replacing the
              separate quick-menu + sign-in-gated account menu from the previous
@@ -7192,7 +7206,25 @@ window.addEventListener('resize', setSearchPlaceholder);
 
 // Redraw after a short pause in typing, not on every letter (Sep 17 2026).
 let _searchTimer = null;
-$('#searchInput').addEventListener('input',e=>{state.q=e.target.value;if(state.q && state.selectedVenue){state.selectedVenue=null;state.view='shows';}clearTimeout(_searchTimer);_searchTimer=setTimeout(render,150);});
+$('#searchInput').addEventListener('input',e=>{state.q=e.target.value;if(state.q && state.selectedVenue){state.selectedVenue=null;state.view='shows';}clearTimeout(_searchTimer);_searchTimer=setTimeout(render,150);const m=$('#mastSearchInput');if(m&&m.value!==state.q)m.value=state.q;});
+// Masthead search (Sep 19 2026): shows only while the real search box is
+// scrolled out of view. Desktop gets an input mirrored to the main one;
+// phones get a magnifier that scrolls up and focuses the main box.
+(function(){
+  const box = $('#searchInput'), form = $('#mastSearch'), inp = $('#mastSearchInput'), btn = $('#mastSearchBtn');
+  if(!box || !form || !inp || !btn || !('IntersectionObserver' in window)) return;
+  const phone = () => window.matchMedia('(max-width:600px)').matches;
+  let away = false;
+  function apply(){ form.hidden = !(away && !phone()); btn.hidden = !(away && phone()); }
+  new IntersectionObserver(function(es){ away = !es[0].isIntersecting && es[0].boundingClientRect.top < 0; apply(); }, { threshold: 0 }).observe(box.closest('.pill') || box);
+  window.addEventListener('resize', apply);
+  inp.addEventListener('input', function(){
+    state.q = inp.value; box.value = inp.value;
+    if(state.q && state.selectedVenue){ state.selectedVenue = null; state.view = 'shows'; }
+    clearTimeout(_searchTimer); _searchTimer = setTimeout(render, 150);
+  });
+  btn.addEventListener('click', function(){ window.scrollTo({ top: 0, behavior: 'smooth' }); setTimeout(function(){ box.focus(); }, 350); });
+})();;
 $('#byHoodToggle').addEventListener('click',()=>{const on=!state.byHood;leaveSections('byHood');state.byHood=on;$('#byHoodToggle').classList.toggle('on',state.byHood);render();});
         $('#venuesToggle').addEventListener('click',()=>{leaveSections('venues');const onDirectory=state.view==='venues'&&!state.selectedVenue;const on=!onDirectory;
           // Directory is addressable (#/venues); turning it off returns to the
