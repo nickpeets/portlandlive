@@ -11,18 +11,25 @@
    "until": "2026-11-01"
   },
   {
-   "text": "Festival added: Easyfolk Fest Sep 18-19.",
+   "text": "New venue: Portland Art Museum — 1 show on the calendar.",
    "auto": true,
-   "key": "fest:easyfolk-fest-2026",
-   "from": "2026-09-18",
-   "until": "2026-10-02"
+   "key": "venue:Portland Art Museum",
+   "from": "2026-09-19",
+   "until": "2026-10-03"
   },
   {
    "text": "Welcome Auprah, Kim, Chad, Jason The Apostle, Seth, Tamra and 3 more to Rain Or Shows.",
    "auto": true,
    "key": "members:rolling",
+   "from": "2026-09-19",
+   "until": "2026-09-19"
+  },
+  {
+   "text": "Festival added: Easyfolk Fest Sep 18-19.",
+   "auto": true,
+   "key": "fest:easyfolk-fest-2026",
    "from": "2026-09-18",
-   "until": "2026-09-18"
+   "until": "2026-10-02"
   },
   {
    "text": "24 new venues on the calendar: Alberta Abbey, CORNER14, Chehalem Cultural Center and 21 more.",
@@ -99,6 +106,7 @@
   "venue:Old Liberty Theater",
   "venue:Old Market Pub",
   "venue:Polaris Hall",
+  "venue:Portland Art Museum",
   "venue:Process",
   "venue:Realm",
   "venue:Revolution Hall",
