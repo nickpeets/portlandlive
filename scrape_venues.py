@@ -92,6 +92,7 @@ VENUE_INFO = {
     "The Reser": ("Beaverton", "12625 SW Crescent St, Beaverton, OR 97005"),
     "ilani": ("Ridgefield, WA", "1 Cowlitz Way, Ridgefield, WA 98642"),
     "Helium Comedy Club": ("Central Eastside", "1510 SE 9th Ave, Portland, OR 97214"),
+    "LaVerne's": ("Woodlawn", "700 NE Dekum St, Portland, OR 97211"),
     "Haymaker": ("Overlook", "1223 N Killingsworth St, Portland, OR 97217"),
     "Strum PDX": ("Buckman", "1415 SE Stark St #C, Portland, OR 97214"),
     "Tomorrow Theater": ("Richmond", "3530 SE Division St, Portland, OR 97202"),
@@ -5084,6 +5085,78 @@ def parse_helium(html, today):
     return out
 
 
+# ---- LaVerne's (700 NE Dekum, Woodlawn). A hand-typed Squarespace page:
+# each show is a text block -- <h2> title, then a line like
+# "Friday, September 18th | 8pm | 21+ | FREE" (doors and price vary), then a
+# blurb -- with the poster in the image block just before it and, for a
+# ticketed night, a TICKETS button after it (Ticket Tailor). Nick's ask, Sep
+# 19 2026. Shows of the Village Ballroom upstairs are listed on this page too
+# and kept under LaVerne's.
+_LAV_DATE = re.compile(r"(?i)\b(?:mon|tues?|wed(?:nes)?|thu(?:rs)?|fri|sat(?:ur)?|sun)day,?\s+([a-z]+)\s+(\d{1,2})(?:st|nd|rd|th)?")
+_LAV_TIME = re.compile(r"(?i)(?:doors\s*)?(\d{1,2}(?::\d{2})?\s*[ap]m)")
+
+
+def parse_lavernes(html, today):
+    from bs4 import BeautifulSoup
+    soup = BeautifulSoup(html or "", "html.parser")
+    main = soup.find("main") or soup
+    blocks = main.select(".sqs-block")
+    horizon = today + datetime.timedelta(days=HORIZON_DAYS)
+    out = []
+    for i, b in enumerate(blocks):
+        if "sqs-block-html" not in " ".join(b.get("class", [])):
+            continue
+        h2 = b.find(["h1", "h2", "h3"])
+        if not h2:
+            continue
+        title = _unhtml(h2.get_text(" ", strip=True))
+        line = ""
+        for ptag in b.find_all("p"):
+            t = ptag.get_text(" ", strip=True)
+            if _LAV_DATE.search(t):
+                line = t
+                break
+        m = _LAV_DATE.search(line)
+        if not title or not m:
+            continue
+        mon = MONTHS.get(m.group(1)[:3].title())
+        if not mon:
+            continue
+        day = int(m.group(2))
+        yr = infer_year(mon, today)
+        try:
+            d = datetime.date(yr, mon, day)
+        except ValueError:
+            continue
+        if not (today <= d <= horizon):
+            continue
+        tm = _LAV_TIME.search(line)
+        time_s = show_time(line) or (to_time(tm.group(1)) if tm else "")
+        age = _age_in_text(line)
+        # poster: the image block just before this one, else the one after
+        # (the page alternates; the anniversary card puts it after)
+        img = ""
+        for j in (i - 1, i + 1, i - 2, i + 2):
+            if 0 <= j < len(blocks) and "sqs-block-html" not in " ".join(blocks[j].get("class", [])):
+                im = blocks[j].find("img")
+                if im:
+                    img = im.get("data-src") or im.get("src") or ""
+                    break
+        # ticket link: a button after this block, before the next text block
+        url = "https://lavernespdx.com/events"
+        for j in range(i + 1, min(len(blocks), i + 4)):
+            cls = " ".join(blocks[j].get("class", []))
+            if "sqs-block-html" in cls:
+                break
+            if "sqs-block-button" in cls:
+                a = blocks[j].find("a", href=True)
+                if a and "ticket" in a.get_text(" ", strip=True).lower():
+                    url = a["href"]
+                break
+        out.append(_batch_row("LaVerne's", d.isoformat(), time_s, title, url, img, age))
+    return out
+
+
 SOURCES = [
     # CitySpark JSON API (single feed -> 2 venues). The parser ignores the
     # GET body below and drives the POST API itself; the URL is only a cheap
@@ -5137,6 +5210,8 @@ SOURCES = [
      "urls": ["https://www.corner14oc.com/event-list"]},
     {"name": "Helium Comedy Club (portland.heliumcomedy.com)", "parser": parse_helium,
      "urls": ["https://portland.heliumcomedy.com/"]},
+    {"name": "LaVerne's (lavernespdx.com)", "parser": parse_lavernes,
+     "urls": ["https://lavernespdx.com/events"]},
     {"name": "Haymaker (haymakerportland.com)", "parser": parse_haymaker,
      "urls": ["https://www.haymakerportland.com/events"]},
     # A watcher: their calendar is films and lectures, so nothing is normal.
