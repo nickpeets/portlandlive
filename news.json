@@ -11,21 +11,14 @@
    "until": "2026-11-01"
   },
   {
-   "text": "New venue: Portland Art Museum — 1 show on the calendar.",
+   "text": "2 new venues on the calendar: LaVerne's and Portland Art Museum.",
    "auto": true,
-   "key": "venue:Portland Art Museum",
+   "key": "venues:2026-09-19",
    "from": "2026-09-19",
    "until": "2026-10-03"
   },
   {
-   "text": "New venue: LaVerne's — 2 shows on the calendar.",
-   "auto": true,
-   "key": "venue:LaVerne's",
-   "from": "2026-09-19",
-   "until": "2026-10-03"
-  },
-  {
-   "text": "Welcome Auprah, Kim, Chad, Jason The Apostle, Seth, Tamra and 3 more to Rain Or Shows.",
+   "text": "Welcome Corbett Hill Jeremy, Auprah, Kim, Chad, Jason The Apostle, Seth and 4 more to Rain Or Shows.",
    "auto": true,
    "key": "members:rolling",
    "from": "2026-09-19",
@@ -157,6 +150,7 @@
   "venue:Wonder Ballroom",
   "venue:ilani",
   "venues:2026-09-16",
-  "venues:2026-09-17"
+  "venues:2026-09-17",
+  "venues:2026-09-19"
  ]
 }
