@@ -8289,10 +8289,14 @@ window.myPastGoing = myPastGoing;
 // cache and reloads -- but only when it won't lose anything: not while a
 // field is focused, the sign-in sheet is open, or an upload is running.
 (function(){
-  var BOOT = null, DUE = false;
+  // Stricter since Sep 19 2026 (Nick: "the auto update thing glitches the
+  // screen periodically"): ETag only (Last-Modified varies by edge node), a
+  // new value must be seen twice in a row, never within 30 minutes of the
+  // last self-reload, and only while the tab is visible.
+  var BOOT = null, SEEN = null, DUE = false;
   function fingerprint(){
     return fetch('/index.html', { method: 'HEAD', cache: 'no-store' })
-      .then(function(r){ return (r.headers.get('etag') || '') + '|' + (r.headers.get('last-modified') || ''); })
+      .then(function(r){ return r.headers.get('etag') || ''; })
       .catch(function(){ return null; });
   }
   function busy(){
@@ -8301,20 +8305,28 @@ window.myPastGoing = myPastGoing;
     var ov = document.getElementById('authOverlay');
     if(ov && ov.getAttribute('aria-hidden') === 'false') return true;
     if(document.querySelector('.ph-note') && /Uploading/.test(document.querySelector('.ph-note').textContent || '')) return true;
+    if(document.visibilityState !== 'visible') return true;
     return false;
+  }
+  function recently(){
+    try{ var t = +localStorage.getItem('pl_self_reload_at') || 0; return Date.now() - t < 30 * 60000; }catch(e){ return false; }
   }
   function reloadFresh(){
     if(busy()){ setTimeout(reloadFresh, 20000); return; }
+    try{ localStorage.setItem('pl_self_reload_at', String(Date.now())); }catch(e){}
     Promise.all([
       fetch('/index.html', { cache: 'reload' }).catch(function(){}),
       fetch('/auth.js', { cache: 'reload' }).catch(function(){})
     ]).then(function(){ location.reload(); });
   }
   function check(){
+    if(DUE || recently()) return;
     fingerprint().then(function(fp){
-      if(!fp || fp === '|') return;                       // no headers to compare; stay quiet
+      if(!fp) return;                                      // no ETag: stay quiet
       if(BOOT === null){ BOOT = fp; return; }
-      if(fp !== BOOT && !DUE){ DUE = true; reloadFresh(); }
+      if(fp === BOOT){ SEEN = null; return; }
+      if(SEEN !== fp){ SEEN = fp; return; }                // first sighting: wait for a second
+      DUE = true; reloadFresh();
     });
   }
   setTimeout(check, 60000);
