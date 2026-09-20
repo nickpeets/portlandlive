@@ -356,6 +356,7 @@ body{
 /* Age chip -- same shape as the neighborhood tag so the meta line stays one
    visual family, different ink so the two aren't confused at a glance. */
 .scard .s-age{font-family:'Oswald';font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;padding:4px 8px;border-radius:20px;font-weight:600}
+.scard .s-price{background:rgba(74,53,38,.08);color:var(--ink);text-transform:none;letter-spacing:.03em}
 .scard .s-age-all{background:rgba(181,86,43,.13);color:var(--rust-deep)}
 .scard .s-age-over{background:rgba(124,106,85,.15);color:#6b5a45}
     .scard .follow-reason{display:inline-flex;align-items:baseline;gap:4px;font-family:'Oswald';font-size:11px;letter-spacing:.02em;background:rgba(181,86,43,.1);color:var(--rust);padding:3px 9px;border-radius:20px;font-weight:600}
@@ -2595,9 +2596,11 @@ function listOf(items, showDate){
     // know", never "all ages". Deliberately display-only: there's no age
     // filter yet, because filtering on data this sparse would hide almost the
     // whole feed while implying the coverage is complete.
-    const ageBit = s.age
+    const ageBit = (s.age
       ? `<span class="s-age s-age-${s.age === 'all-ages' ? 'all' : 'over'}">${esc(s.age === 'all-ages' ? 'All Ages' : s.age)}</span>`
-      : '';
+      : '')
+      // Price when the source states one (Sep 20 2026). Absent means unknown.
+      + (s.price ? `<span class="s-age s-price">${esc(s.price)}</span>` : '');
 
     if(eff === 'b'){
       // VERTICAL: the big image on top; below it, the same row the main list
@@ -3502,7 +3505,8 @@ function renderShowDetail(wrap, show, kind){
       : '')
     + (show.neighborhood ? ' \u00b7 ' + esc(show.neighborhood) : '')
     // Only when known -- absence means unknown, not all-ages.
-    + (show.age ? ' \u00b7 ' + esc(show.age === 'all-ages' ? 'All Ages' : show.age) : '');
+    + (show.age ? ' \u00b7 ' + esc(show.age === 'all-ages' ? 'All Ages' : show.age) : '')
+    + (show.price ? ' \u00b7 ' + esc(show.price) : '');
   var _m = mapsHref(show.address, show.venue);
   var head = '<div class="venue-header">'
     + '<h2 class="venue-name">' + esc(show.title||'') + '</h2>'

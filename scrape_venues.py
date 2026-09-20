@@ -306,6 +306,38 @@ _AGE_TXT_21 = re.compile(r"(?<![$\d.])\b(?:ages?\s*)?21\s*(?:\+|&\s*(?:over|up)|
 _AGE_TXT_18 = re.compile(r"(?<![$\d.])\b(?:ages?\s*)?18\s*(?:\+|&\s*(?:over|up)|and\s+(?:over|up)|\s*over)", re.I)
 
 
+# ---- Price, when the source states one (Sep 20 2026, Nick's standing rule:
+# photos, times, prices where available). Returns a short display string:
+# "Free", "$12", "$10–15", "$20 adv / $25 door". Nothing when unsure.
+_PRICE_FREE = re.compile(r"\b(free(?:\s+(?:show|admission|entry|event))?|no cover)\b", re.I)
+_PRICE_RANGE = re.compile(r"\$\s?(\d{1,3}(?:\.\d{2})?)\s*(?:-|–|—|to)\s*\$?\s?(\d{1,3}(?:\.\d{2})?)")
+_PRICE_ADV_DOOR = re.compile(r"\$\s?(\d{1,3}(?:\.\d{2})?)\s*(?:adv(?:ance)?|presale)\b.{0,12}?\$\s?(\d{1,3}(?:\.\d{2})?)\s*(?:door|dos)\b", re.I)
+_PRICE_ONE = re.compile(r"\$\s?(\d{1,3}(?:\.\d{2})?)(?!\d)")
+
+
+def _fmt_money(x):
+    x = str(x)
+    return x[:-3] if x.endswith(".00") else x
+
+
+def _price_in_text(text):
+    t = _unhtml(text or "")
+    if not t:
+        return ""
+    m = _PRICE_ADV_DOOR.search(t)
+    if m:
+        return f"${_fmt_money(m.group(1))} adv / ${_fmt_money(m.group(2))} door"
+    m = _PRICE_RANGE.search(t)
+    if m:
+        return f"${_fmt_money(m.group(1))}\u2013{_fmt_money(m.group(2))}"
+    m = _PRICE_ONE.search(t)
+    if m:
+        return f"${_fmt_money(m.group(1))}"
+    if _PRICE_FREE.search(t):
+        return "Free"
+    return ""
+
+
 def _age_in_text(text):
     """Read an age restriction out of a longer event blurb, or ''.
 
@@ -4342,13 +4374,15 @@ def _unhtml(s):
     return re.sub(r"\s+", " ", re.sub(r"[\u2010-\u2015]", "-", s)).strip()
 
 
-def _batch_row(venue, date, tm, title, url, img="", age="", comedy=False):
+def _batch_row(venue, date, tm, title, url, img="", age="", comedy=False, price=""):
     nb, addr = VENUE_INFO.get(venue, ("", ""))
     row = {"title": title, "venue": venue, "neighborhood": nb, "address": addr,
            "date": date, "time": tm, "venueUrl": url,
            "imageUrl": img if str(img).startswith("http") else "", "age": age}
     if comedy:
         row["contentType"] = "comedy"
+    if price:
+        row["price"] = price
     return row
 
 
@@ -4385,9 +4419,11 @@ def _tribe_rows(text, today, venue, fallback_url, keep=None, skip=None,
         img = e.get("image") or ""
         if isinstance(img, dict):
             img = img.get("url") or ""
+        desc = _unhtml(e.get("description"))
+        price = _price_in_text(e.get("cost") or "") or _price_in_text(desc)
         out.append(_batch_row(venue, date, "" if e.get("all_day") else _pt_clock(dt), title,
                               e.get("url") or fallback_url, img,
-                              _age_in_text(_unhtml(e.get("description"))), is_comedy))
+                              _age_in_text(desc), is_comedy, price))
     return out
 
 
@@ -5080,9 +5116,11 @@ def parse_helium(html, today):
         img = e.get("image") or ""
         if isinstance(img, list):
             img = img[0] if img else ""
+        offer = e.get("offers") if isinstance(e.get("offers"), dict) else ((e.get("offers") or [{}])[0] if isinstance(e.get("offers"), list) else {})
+        hp = _price_in_text(("$" + str(offer.get("price"))) if offer and offer.get("price") not in (None, "", 0, "0") else "")
         out.append(_batch_row("Helium Comedy Club", dt.date().isoformat(), _pt_clock(dt), title,
                               e.get("url") or "https://portland.heliumcomedy.com/", img,
-                              _age_in_text(_unhtml(e.get("description"))), True))
+                              _age_in_text(_unhtml(e.get("description"))), True, hp))
     return out
 
 
@@ -5154,7 +5192,7 @@ def parse_lavernes(html, today):
                 if a and "ticket" in a.get_text(" ", strip=True).lower():
                     url = a["href"]
                 break
-        out.append(_batch_row("LaVerne's", d.isoformat(), time_s, title, url, img, age))
+        out.append(_batch_row("LaVerne's", d.isoformat(), time_s, title, url, img, age, price=_price_in_text(line)))
     return out
 
 

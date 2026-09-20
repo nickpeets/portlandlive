@@ -135,7 +135,7 @@ ARCHIVE = os.path.join(HERE, "archive.json")
 
 _ARCHIVE_SOURCE = "Append-only archive of past shows (accumulated across builds)"
 _ARCHIVE_FIELDS = ("title", "venue", "neighborhood", "address",
-                   "date", "time", "venueUrl", "ticketUrl", "imageUrl", "age", "contentType")
+                   "date", "time", "venueUrl", "ticketUrl", "imageUrl", "age", "contentType", "price")
 
 
 def make_slug(show):
@@ -587,6 +587,20 @@ def _tm_headliner(title):
     return frozenset(_tm_words(head))
 
 
+def _tm_price(ev):
+    """Ticketmaster's priceRanges -> "$35–65" or "$35" (standard type first;
+    Sep 20 2026). Empty when the API gives none."""
+    prs = ev.get("priceRanges") or []
+    if not prs:
+        return ""
+    pr = next((p for p in prs if (p.get("type") or "").lower() == "standard"), prs[0])
+    lo, hi = pr.get("min"), pr.get("max")
+    if lo is None:
+        return ""
+    f = lambda x: str(int(round(float(x))))          # fees are baked in; whole dollars read as a price
+    return f"${f(lo)}" if hi in (None, lo) or f(hi) == f(lo) else f"${f(lo)}\u2013{f(hi)}"
+
+
 def _tm_normalize(ev, venue_info):
     """One Discovery API event -> feed-shaped dict, or None if it is an add-on
     or at a venue the site does not know."""
@@ -623,6 +637,7 @@ def _tm_normalize(ev, venue_info):
     return {"title": name.strip(), "venue": venue, "neighborhood": nb, "address": addr,
             "date": date, "time": tm, "venueUrl": ev.get("url") or "",
             "ticketUrl": ev.get("url") or "", "imageUrl": pick,
+            "price": _tm_price(ev),
             "age": _sv().__dict__["_age_in_text"](note) if note else "", "_tm": True,
             # Ticketmaster says what this is; the app's keyword sniff never
             # has to guess whether "Matt Rife: Stay Golden World Tour" is a
@@ -895,7 +910,7 @@ def tm_apply(shows, events, today):
                 break
         if best is not None:
             matched += 1
-            for k in ("time", "imageUrl", "age", "ticketUrl", "contentType"):
+            for k in ("time", "imageUrl", "age", "ticketUrl", "contentType", "price"):
                 if not (best.get(k) or "").strip() and n.get(k):
                     best[k] = n[k]          # contentType: Ticketmaster's comedy pull labels a matched row too (Sep 18 2026)
             continue
