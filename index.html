@@ -2091,6 +2091,12 @@ function drawDaysInPieces(wrap, days, drawDay){
 
 function render(){
   stopFeedPager();
+  // Keep both search boxes showing the same thing (Sep 19 2026): anything
+  // that clears or sets state.q -- the logo, Following, a pill, a route --
+  // re-renders, so this is the one place to mirror it.
+  { const m = document.getElementById('mastSearchInput'), b = document.getElementById('searchInput');
+    if(m && m.value !== state.q) m.value = state.q;
+    if(b && b.value !== state.q && document.activeElement !== b) b.value = state.q; }
   try{ if(typeof trackView === 'function') trackView(viewPath()); }catch(_){}
   // A permanent show page owns #results while the URL points at one; route away
   // instead of racing it (e.g. a filter-pill click while viewing a show page).
