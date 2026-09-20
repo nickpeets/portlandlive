@@ -93,6 +93,7 @@ VENUE_INFO = {
     "ilani": ("Ridgefield, WA", "1 Cowlitz Way, Ridgefield, WA 98642"),
     "Helium Comedy Club": ("Central Eastside", "1510 SE 9th Ave, Portland, OR 97214"),
     "LaVerne's": ("Woodlawn", "700 NE Dekum St, Portland, OR 97211"),
+    "The Blue Diamond": ("Kerns", "2016 NE Sandy Blvd, Portland, OR 97232"),
     "Haymaker": ("Overlook", "1223 N Killingsworth St, Portland, OR 97217"),
     "Strum PDX": ("Buckman", "1415 SE Stark St #C, Portland, OR 97214"),
     "Tomorrow Theater": ("Richmond", "3530 SE Division St, Portland, OR 97202"),
@@ -5157,6 +5158,18 @@ def parse_lavernes(html, today):
     return out
 
 
+# ---- The Blue Diamond (2016 NE Sandy, Kerns): blues bar, live music most
+# nights. WordPress + The Events Calendar, read through its REST API like
+# Wilfs and the Headliners. The listing is sorted by date and dominated by
+# the weekly regulars (Kevin Selfe's Blues Jam Sundays, Fenix Rising
+# Thursdays, Soul Cookin' Wednesdays); Friday/Saturday bookings are posted
+# closer to the date and arrive on their own. Its host timed out from
+# GitHub's runners twice in Sep 2026 but answers from a Codespace in ~1 s,
+# so the source is on the tls tier. Nick's ask, Sep 20 2026.
+def parse_bluediamond(text, today):
+    return _tribe_rows(text, today, "The Blue Diamond", "https://bluediamondpdx.net/events/", horizon_days=HORIZON_DAYS)
+
+
 SOURCES = [
     # CitySpark JSON API (single feed -> 2 venues). The parser ignores the
     # GET body below and drives the POST API itself; the URL is only a cheap
@@ -5212,6 +5225,8 @@ SOURCES = [
      "urls": ["https://portland.heliumcomedy.com/"]},
     {"name": "LaVerne's (lavernespdx.com)", "parser": parse_lavernes,
      "urls": ["https://lavernespdx.com/events"]},
+    {"name": "The Blue Diamond (bluediamondpdx.net)", "parser": parse_bluediamond, "tls": True,
+     "urls": ["https://bluediamondpdx.net/wp-json/tribe/events/v1/events?per_page=100"]},
     {"name": "Haymaker (haymakerportland.com)", "parser": parse_haymaker,
      "urls": ["https://www.haymakerportland.com/events"]},
     # A watcher: their calendar is films and lectures, so nothing is normal.

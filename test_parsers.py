@@ -104,6 +104,7 @@ CASES = [
     ("chehalemcc.html",         sv.parse_chehalemcc,     11, {"time": 11, "imageUrl": 11, "contentType": 4}, "Squarespace carousel; 'October 16 & 17' makes two rows; early-bird slide skipped; comedy/vaudeville tagged"),
     ("trinity.html",            sv.parse_trinity,        17, {"time": 17, "imageUrl": 17},   "Wix Events, all three widgets from the warmup blob; worship services skipped"),
     ("corner14.html",           sv.parse_corner14,        6, {"time": 6, "imageUrl": 6},     "Wix Events warmup; trivia skipped"),
+    ("bluediamond-tribe.json",  sv.parse_bluediamond,    28, {"time": 28, "imageUrl": 28, "age": 28}, "Tribe REST, per_page=100; weekly regulars dominate the listing, Fri/Sat one-offs posted nearer the date (captured 2026-09-20)"),
     ("lavernes.html",           sv.parse_lavernes,        4, {"time": 4, "age": 4, "imageUrl": 4},  "hand-typed Squarespace page: h2 title + 'Day, Month Nth | 8pm | 21+ | $' line; poster in the neighbouring image block; TICKETS button link (captured 2026-09-19)"),
     ("helium.html",             sv.parse_helium,        197, {"time": 197, "imageUrl": 197, "contentType": 197}, "JSON-LD Place.Events on the homepage; UTC -> Pacific; Special Event/Helium Presents prefixes dropped; Neon Room sets tagged; all comedy (captured 2026-09-18)"),
     ("haymaker.html",           sv.parse_haymaker,      20, {"time": 20, "imageUrl": 20}, "Squarespace event list (shared reader with No Fun); comedy nights kept for the comedy bin"),
