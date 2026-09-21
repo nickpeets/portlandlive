@@ -668,7 +668,7 @@ _NOT_A_SHOW = re.compile(r"""(?ix)
   | \b(patriots|seahawks|blazers|timbers|thorns|ducks|beavers|49ers|nfl|nba|mlb|nhl|ufc|monday\s+night\s+football)\b
   | \b(vegan\s+market|farmers?\s+market|craft\s+(?:fair|market)|flea\s+market|swap\s+meet|clothing\s+swap|plant\s+swap|art\s+trail|art\s+walk|gallery\s+opening|maker'?s?\s+market|holiday\s+market|night\s+market)\b
   | \b(history\s*&\s*art\s+tour|art\s+tour|walking\s+tour|brewery\s+tour|history\s+tour|tour\s+of\s+the)\b
-  | \b(workshop|seminar|lecture|book\s+talk|book\s+club|author\s+(?:talk|event)|science\s+on\s+tap|storytime|story\s+time|panel\s+discussion)\b
+  | \b(workshop|seminar|lecture|book\s+talk|book\s+club|author\s+(?:talk|event)|science\s+on\s+tap|history\s+pub|storytime|story\s+time|panel\s+discussion)\b
   | \b(throwdown|cook-?off|chili\s+(?:feed|cook)|hot\s+sauce|wing\s+(?:challenge|night|eating)|pancake\s+breakfast|potluck|crawfish\s+boil|pie\s+contest)\b
   | \b(yoga|pilates|meditation|run\s+club|bike\s+ride|fitness)\b
   | \b(movie\s+night|film\s+screening|screening\s+of|cinema\s+night|documentary)\b
@@ -707,6 +707,82 @@ def drop_non_shows(shows):
         for r in dropped[:40]:
             print(f"      - {r.get('venue')}: {r.get('title')}")
     return keep
+
+
+# ===== LINK AUDIT (Sep 21 2026) =============================================
+# Every night, every show's outbound link is compared with its title. Only
+# links that spell out an event name are judged (Ticketmaster and Squarespace
+# ids say nothing). A mismatch is printed; a named link SHARED by two rows
+# with different titles is the strong signal (that is how The Get Down's
+# links were found one row off). Nick's rule: audit every show's external
+# link, and keep doing it every time a show is added.
+_LA_STOP = set("the and with feat featuring presents present live tour night show shows tickets event events music band "
+               "official concert plus more special guest guests an of at in on to for from vs a ticket portland pdx".split())
+_LA_ID_SEG = re.compile(r"(?i)^(event|events|e|show|shows|calendar|whats-on|listing|groups|production|tickets)$")
+
+
+def _la_words(t):
+    return {w for w in re.findall(r"[a-z0-9]+", (t or "").lower()) if len(w) >= 3 and w not in _LA_STOP}
+
+
+def _la_wordy(w):
+    return 3 <= len(w) <= 16 and re.search(r"[aeiouy]", w) and not re.search(r"\d", w) and not re.search(r"[bcdfghjklmnpqrstvwxz]{5}", w)
+
+
+def _la_slug_words(url):
+    """Words from the EVENT segment of a link (the one after /event/ or
+    /events/, else the last path segment). Empty for ids and listing pages."""
+    from urllib.parse import urlsplit, unquote
+    try:
+        segs = [unquote(x).lower() for x in urlsplit(url).path.split("/") if x]
+    except Exception:
+        return set()
+    if not segs:
+        return set()
+    seg = None
+    for i, x in enumerate(segs):
+        if _LA_ID_SEG.match(x) and i + 1 < len(segs):
+            seg = segs[i + 1]
+            break
+    if seg is None:
+        seg = segs[-1]
+        if "." in seg or "-" not in seg:        # a file (schedule.html, index.php) or a one-word page: not an event name
+            return set()
+    toks = [t for t in re.split(r"[-_.+ ]+", seg) if t]
+    good = {t for t in toks if _la_wordy(t) and t not in _LA_STOP}
+    return good if good and len(good) >= 1 and sum(1 for t in toks if not _la_wordy(t)) <= len(toks) // 2 else set()
+
+
+def link_audit(shows):
+    """Print mismatched links; returns the count. Never changes rows."""
+    import collections
+    byurl = collections.defaultdict(list)
+    for r in shows:
+        for k in ("venueUrl", "ticketUrl"):
+            u = r.get(k)
+            if u and u.startswith("http"):
+                byurl[(k, u)].append(r)
+    named = 0
+    flags = []
+    for (k, u), rows in byurl.items():
+        sw = _la_slug_words(u)
+        if not sw:
+            continue
+        for r in rows:
+            tw = _la_words(r.get("title"))
+            if not tw:
+                continue
+            named += 1
+            hit = bool(sw & tw) or any(a in b or b in a for a in sw for b in tw if len(a) >= 5 and len(b) >= 5)
+            if not hit:
+                shared = [x for x in rows if x is not r and (x.get("title") or "") != (r.get("title") or "")]
+                flags.append((bool(shared), r, k, u, shared[0].get("title") if shared else ""))
+    strong = sum(1 for f in flags if f[0])
+    print(f"  Link audit: {named} named link(s) checked; {len(flags)} mismatched, {strong} shared by two different shows")
+    for is_shared, r, k, u, other in sorted(flags, key=lambda f: (not f[0], f[1].get("venue") or "", f[1].get("date") or ""))[:60]:
+        tag = "SHARED" if is_shared else "review"
+        print(f"      [{tag}] {r.get('venue')} {r.get('date')} | {(r.get('title') or '')[:48]} | {u[:90]}" + (f"  (also: {other[:32]})" if other else ""))
+    return len(flags)
 
 
 def drop_wrong_rows(shows):
@@ -1570,6 +1646,7 @@ def main():
 
     shows = drop_wrong_rows(shows)
     shows = drop_non_shows(shows)
+    link_audit(shows)
     _fixed = tm_resale_links(shows)
     _tk, _af = apply_ticketers(shows)
     print(f"  Ticketers: {_tk} of {len(shows)} shows sell through a known agent; {_af} affiliate link(s)")
