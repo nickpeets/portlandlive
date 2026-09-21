@@ -1852,6 +1852,114 @@ SITE = "https://rainorshows.com"
 DEFAULT_OG_IMAGE = SITE + "/logo_share.png"   # square, so Facebook draws the small logo card (Nick prefers it, Sep 19 2026); a show with a poster still gets its poster
 
 
+# ---------------------------------------------------------------------------
+# Share cards: /og/<slug>.jpg, 1200x630, for upcoming shows.
+#
+# Facebook crops og:image to ~1.91:1 and scales it up, so a tall or small
+# poster previewed as a blurry, zoomed-in slice (Doom Gong, Sep 21 2026).
+# A card puts the WHOLE poster, uncropped, over a blurred, darkened copy of
+# itself filling the frame, so any poster shape reads cleanly.
+#
+# Kept small on purpose (the repo is the host): only shows in the next
+# OG_DAYS, and only posters that need it -- one already wide (>= 1.6:1) and
+# big (>= 1000px) is used as-is. og/index.json remembers each poster URL's
+# verdict, so a poster is downloaded once, not nightly. Cards for shows that
+# have passed are deleted. Any failure falls back to the raw poster URL.
+# ---------------------------------------------------------------------------
+OG_DIR = os.path.join(HERE, "og")
+OG_DAYS = 30
+OG_W, OG_H = 1200, 630
+
+
+def _og_card(im):
+    from io import BytesIO
+    from PIL import Image, ImageFilter, ImageEnhance, ImageOps
+    bg = ImageOps.fit(im, (OG_W, OG_H), Image.LANCZOS)
+    bg = bg.filter(ImageFilter.GaussianBlur(28))
+    bg = ImageEnhance.Brightness(bg).enhance(0.55)
+    fg = im.copy()
+    fg.thumbnail((OG_W, OG_H), Image.LANCZOS)          # never upscales
+    if fg.width < OG_W * 0.6 and fg.height < OG_H * 0.6:
+        # tiny poster: scale up to a readable size rather than a stamp
+        k = min(OG_W * 0.8 / fg.width, OG_H * 0.9 / fg.height)
+        fg = im.resize((max(1, int(im.width * k)), max(1, int(im.height * k))), Image.LANCZOS)
+    bg.paste(fg, ((OG_W - fg.width) // 2, (OG_H - fg.height) // 2))
+    out = BytesIO()
+    bg.save(out, "JPEG", quality=75, optimize=True, progressive=True)
+    return out.getvalue()
+
+
+def _needs_card(im):
+    return not (im.width / max(1, im.height) >= 1.6 and im.width >= 1000)
+
+
+def build_og_cards(shows):
+    """Render share cards for upcoming shows. Returns {slug: public_url}."""
+    import hashlib
+    try:
+        import requests
+        from io import BytesIO
+        from PIL import Image, ImageOps
+    except Exception as e:
+        print(f"WARN: share cards skipped ({e})")
+        return {}
+    os.makedirs(OG_DIR, exist_ok=True)
+    idx_path = os.path.join(OG_DIR, "index.json")
+    try:
+        idx = json.load(open(idx_path))      # slug -> {"src": url, "card": bool}
+    except Exception:
+        idx = {}
+    today = datetime.date.today()
+    last = (today + datetime.timedelta(days=OG_DAYS)).isoformat()
+    want = {}
+    for s in shows:
+        d = s.get("date") or ""
+        img = (s.get("imageUrl") or "").strip()
+        slug = make_slug(s)
+        if slug and img.startswith("http") and today.isoformat() <= d <= last:
+            want[slug] = img
+    made = kept = asis = failed = 0
+    urls, new_idx = {}, {}
+    sess = requests.Session()
+    sess.headers["User-Agent"] = ("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+                                  "(KHTML, like Gecko) Chrome/124.0 Safari/537.36")
+    for slug, src in want.items():
+        path = os.path.join(OG_DIR, slug + ".jpg")
+        e = idx.get(slug)
+        if not (isinstance(e, dict) and e.get("src") == src and (not e.get("card") or os.path.exists(path))):
+            try:
+                r = sess.get(src, timeout=20)
+                r.raise_for_status()
+                im = ImageOps.exif_transpose(Image.open(BytesIO(r.content))).convert("RGB")
+                if _needs_card(im):
+                    with open(path, "wb") as f:
+                        f.write(_og_card(im))
+                    e = {"src": src, "card": True}
+                    made += 1
+                else:
+                    e = {"src": src, "card": False}
+            except Exception:
+                failed += 1
+                continue          # not recorded: retried next build
+        elif e.get("card"):
+            kept += 1
+        new_idx[slug] = e
+        if e.get("card"):
+            v = hashlib.sha1(src.encode()).hexdigest()[:8]
+            urls[slug] = f"{SITE}/og/{slug}.jpg?v={v}"
+        else:
+            asis += 1
+    # prune cards for shows no longer upcoming / no longer needing one
+    for fn in os.listdir(OG_DIR):
+        if fn.endswith(".jpg") and fn[:-4] not in urls:
+            os.remove(os.path.join(OG_DIR, fn))
+    with open(idx_path, "w") as f:
+        json.dump(new_idx, f, indent=0, sort_keys=True)
+    print(f"Share cards: {made} rendered, {kept} unchanged, {asis} poster already fits, "
+          f"{failed} failed, {len(urls)} cards live (next {OG_DAYS} days)")
+    return urls
+
+
 def _venue_slug(name):
     return re.sub(r"\s+", "-", _norm_key(name)).strip("-")
 
@@ -1862,6 +1970,8 @@ def _esc(x):
 
 def _shell(title, desc, image, canonical, app_hash):
     """One clean-URL page. og:* for previews, a script for people."""
+    dims = ("<meta property=\"og:image:width\" content=\"1200\">"
+            "<meta property=\"og:image:height\" content=\"630\">") if "/og/" in (image or "") else ""
     return ("<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\">"
             f"<title>{_esc(title)}</title>"
             f"<meta name=\"description\" content=\"{_esc(desc)}\">"
@@ -1871,6 +1981,7 @@ def _shell(title, desc, image, canonical, app_hash):
             f"<meta property=\"og:title\" content=\"{_esc(title)}\">"
             f"<meta property=\"og:description\" content=\"{_esc(desc)}\">"
             f"<meta property=\"og:image\" content=\"{_esc(image)}\">"
+            f"{dims}"
             f"<meta property=\"og:url\" content=\"{_esc(canonical)}\">"
             f"<meta name=\"twitter:card\" content=\"{'summary_large_image' if image != DEFAULT_OG_IMAGE else 'summary'}\">"
             "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
@@ -1919,6 +2030,7 @@ def write_clean_urls(shows, venues):
     for d in (SHOW_PAGES, VENUE_PAGES):
         shutil.rmtree(d, ignore_errors=True)
         os.makedirs(d, exist_ok=True)
+    cards = build_og_cards(shows)
     n_show = 0
     seen = set()
     for s in rows:
@@ -1927,7 +2039,7 @@ def write_clean_urls(shows, venues):
             continue
         seen.add(slug)
         title = f"{s.get('title','')} at {s.get('venue','')} \u2014 Rain Or Shows"
-        img = (s.get("imageUrl") or "").strip()
+        img = cards.get(slug) or (s.get("imageUrl") or "").strip()
         if not img.startswith("http"):
             img = DEFAULT_OG_IMAGE
         os.makedirs(os.path.join(SHOW_PAGES, slug), exist_ok=True)
