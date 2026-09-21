@@ -103,6 +103,7 @@ VENUE_INFO = {
     "The Waypost": ("Boise/Eliot", "3120 N Williams Ave, Portland, OR 97227"),
     "Vino Veritas": ("Montavilla", "7835 SE Stark St, Portland, OR 97215"),
     "The Firkin Tavern": ("Hosford-Abernethy", "1937 SE 11th Ave, Portland, OR 97214"),
+    "Topaz Farm": ("Sauvie Island", "17100 NW Sauvie Island Rd, Portland, OR 97231"),
     "Haymaker": ("Overlook", "1223 N Killingsworth St, Portland, OR 97217"),
     "Strum PDX": ("Buckman", "1415 SE Stark St #C, Portland, OR 97214"),
     "Tomorrow Theater": ("Richmond", "3530 SE Division St, Portland, OR 97202"),
@@ -5288,6 +5289,67 @@ def parse_firkin(text, today):
     return _tribe_rows(text, today, "The Firkin Tavern", "https://firkintavern.com/upcoming-events/", horizon_days=HORIZON_DAYS)
 
 
+# ---- Topaz Farm (Sauvie Island): a summer concert series on the farm
+# (July-August). Its /live-music page is hand-laid Squarespace: per show, an
+# image block linked to tickets.topazfarm.com, then a text block that opens
+# "FRIDAY, JULY 10, 2026 6:30 PM <Title> [SOLD OUT] [WITH <Opener>] <blurb>".
+# Nick's ask, Sep 21 2026; the season had ended, so the reader waits for 2027.
+_TOPAZ_HEAD = re.compile(r"(?i)^\s*(?:mon|tues?|wednes|thurs?|fri|satur|sun)day,?\s+([a-z]+)\s+(\d{1,2}),?\s+(\d{4})\s+(\d{1,2}(?::\d{2})?\s*[ap]m)\s+(.*)$", re.S)
+
+
+def parse_topaz(html, today):
+    from bs4 import BeautifulSoup
+    soup = BeautifulSoup(html or "", "html.parser")
+    main = soup.find("main") or soup
+    blocks = main.select(".sqs-block")
+    horizon = today + datetime.timedelta(days=HORIZON_DAYS)
+    out = []
+    for i, b in enumerate(blocks):
+        if "sqs-block-html" not in " ".join(b.get("class", [])):
+            continue
+        text = _unhtml(b.get_text(" ", strip=True))
+        m = _TOPAZ_HEAD.match(text)
+        if not m:
+            continue
+        mon = MONTHS.get(m.group(1)[:3].title())
+        if not mon:
+            continue
+        try:
+            d = datetime.date(int(m.group(3)), mon, int(m.group(2)))
+        except ValueError:
+            continue
+        if not (today <= d <= horizon):
+            continue
+        rest = m.group(5)
+        # title runs to "SOLD OUT", "WITH <opener>", or the first sentence of the blurb
+        sold = bool(re.search(r"(?i)\bsold\s+out\b", rest[:120]))
+        rest_clean = re.sub(r"(?i)\s*\bsold\s+out\b", "", rest, count=1)
+        mm = re.match(r"(.+?)\s+WITH\s+([A-Z0-9][A-Z0-9 &'()/.,-]+?)(?=\s+[A-Z][a-z]|\s*$)", rest_clean)
+        if mm:
+            title = mm.group(1).strip()
+            opener = mm.group(2).strip().title()
+            title = f"{title} with {opener}"
+        else:
+            title = re.split(r"(?<=[a-z0-9)])\s+(?=[A-Z][a-z]+\s+[a-z])", rest_clean, maxsplit=1)[0].strip()
+        if sold:
+            title = "SOLD OUT: " + title
+        # poster + ticket link from the image block just above
+        img, url = "", "https://topazfarm.com/live-music"
+        for j in range(i - 1, max(-1, i - 3), -1):
+            if j < 0:
+                break
+            im = blocks[j].find("img")
+            if im:
+                img = im.get("data-src") or im.get("src") or ""
+                a = blocks[j].find("a", href=True)
+                if a and "topazfarm" in a["href"]:
+                    url = a["href"]
+                break
+        age = _age_in_text(text) or ("all-ages" if re.search(r"(?i)all-ages show", text) else "")
+        out.append(_batch_row("Topaz Farm", d.isoformat(), to_time(m.group(4)) or "", title, url, img, age, price=_price_in_text(text)))
+    return out
+
+
 SOURCES = [
     # CitySpark JSON API (single feed -> 2 venues). The parser ignores the
     # GET body below and drives the POST API itself; the URL is only a cheap
@@ -5359,6 +5421,8 @@ SOURCES = [
      "urls": ["https://www.vinoveritaspdx.com/events?format=json"]},
     {"name": "The Firkin Tavern (firkintavern.com)", "parser": parse_firkin,
      "urls": ["https://firkintavern.com/wp-json/tribe/events/v1/events?per_page=50"]},
+    {"name": "Topaz Farm (topazfarm.com)", "parser": parse_topaz,
+     "urls": ["https://topazfarm.com/live-music"]},
     {"name": "Haymaker (haymakerportland.com)", "parser": parse_haymaker,
      "urls": ["https://www.haymakerportland.com/events"]},
     # A watcher: their calendar is films and lectures, so nothing is normal.
