@@ -1955,10 +1955,16 @@ def parse_getdown(html, today):
         date = _gd_date(clean(doe.get_text(" ")) if doe else "", today)
         if not (title and date):
             continue
+        # The card carries no link; the Tixr button is a sibling, and which
+        # side it sits on has changed (Sep 21 2026: every show had its
+        # neighbour's link). Take the nearest Tixr link, before or after,
+        # whose address contains a word of this show's name; otherwise the
+        # venue page, never a guess.
         a = c.find("a", href=True)
         if not a:
-            sib = c.find_next("a", href=True)
-            a = sib if sib and "tixr" in sib.get("href", "") else None
+            words = {w for w in re.findall(r"[a-z0-9]{4,}", title.lower()) if w not in ("with", "feat", "presents", "night", "show", "live", "tour")}
+            cands = [x for x in (c.find_previous("a", href=True), c.find_next("a", href=True)) if x and "tixr" in x.get("href", "")]
+            a = next((x for x in cands if any(w in x["href"].lower() for w in words)), None)
         url = a["href"] if a else "https://thegetdownpdx.com/"
         key = (venue, date, title.lower())
         if key in seen:
