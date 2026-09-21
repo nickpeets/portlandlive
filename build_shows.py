@@ -917,7 +917,7 @@ _TICKETER_HOSTS = [
 # percent-encoded destination. Vivid (resale) is handled separately.
 AFFILIATE_TEMPLATES = {
     "ticketmaster": "https://ticketmaster.evyy.net/c/4969747/264167/4272?u={url}",   # Impact, approved Sep 21 2026 (campaign 264167, program 4272)
-    "ticketweb": "https://ticketmaster.evyy.net/c/4969747/264167/4272?u={url}",      # same program as Ticketmaster
+    "ticketweb": None,      # NOT in the Ticketmaster Impact contract (checked Sep 21 2026) -- plain links until Ticketmaster confirms
     "etix": None,           # EDN partner id, if Etix says yes
     "seatgeek": None,
     "tixr": None, "eventbrite": None, "axs": None, "dice": None, "seetickets": None,
