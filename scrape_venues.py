@@ -5312,7 +5312,7 @@ SOURCES = [
      "urls": ["https://bluediamondpdx.net/wp-json/tribe/events/v1/events?per_page=100"]},
     {"name": "Funhouse Lounge (Google Calendar)", "parser": parse_funhouse,
      "urls": ["https://calendar.google.com/calendar/ical/1d9rstj8str8khfubp6ckohvik%40group.calendar.google.com/public/basic.ics"]},
-    {"name": "Wolves & People Bar (Eventbrite)", "parser": parse_wolves,
+    {"name": "Wolves & People Bar (Eventbrite)", "parser": parse_wolves, "tls": True,   # plain fetches get Eventbrite's "listing failed" page (Sep 21 2026)
      "urls": ["https://www.eventbrite.com/o/wolves-people-bar-and-music-hall-121529882609"]},
     {"name": "HiFi Wine Bar (hifiwinebar.com)", "parser": parse_hifi,
      "urls": ["https://www.hifiwinebar.com/upcoming-events?format=json"]},
