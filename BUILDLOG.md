@@ -4,6 +4,10 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### (this commit) — Handoff count hidden from profiles
+
+Nick, Sep 21 2026: take "0 handoffs" off profiles until we know what handoffs are for and how to present them. The profile header now reads followers · following only. Nothing else changed: the `handoff_count` RPC and the Stage 5 reputation badge code stay in place, and the line is left commented out in `renderProfileRoute()` in `index.html`. Open question before restoring it: a handoff is a completed free ticket pass through Miracles, so the count only means something once people know the exchange exists; restore it with a short explanation (or show it only when it is above zero).
+
 ### b8430630 — Share pages: link previews now show the poster
 
 Removed `<meta http-equiv="refresh">` from the clean-URL shell in `build_shows.py` and from every existing `show/`, `venue/`, `festival/` page. Facebook's crawler followed it to `/#/…` (the homepage) and took the logo; confirmed in the Sharing Debugger before the fix. The `location.replace` script still sends people to the app.

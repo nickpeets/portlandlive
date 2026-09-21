@@ -3291,8 +3291,12 @@ async function renderProfileRoute(handle){
       + '<div class="pf-meta">Member since ' + esc(memberSince(p.created_at)) + '</div>'
       + '<div class="pf-counts">'
         + '<button type="button" class="pf-count" data-pf-list="followers" data-pf-followers>' + followers + (followers === 1 ? ' follower' : ' followers') + '</button> \u00b7 '
-        + '<button type="button" class="pf-count" data-pf-list="following" data-pf-following>' + following + ' following</button> \u00b7 '
-        + '<span data-pf-handoffs>' + handoffs + (handoffs === 1 ? ' handoff' : ' handoffs') + '</span>'
+        + '<button type="button" class="pf-count" data-pf-list="following" data-pf-following>' + following + ' following</button>'
+        // Handoff count hidden from profiles (Sep 21 2026, Nick): "0 handoffs"
+        // read as jargon to people who have never used the ticket exchange.
+        // The count (handoff_count RPC, Stage 5 reputation) is still fetched
+        // above; restore this line once handoffs are explained on the page.
+        // + ' \u00b7 <span data-pf-handoffs>' + handoffs + (handoffs === 1 ? ' handoff' : ' handoffs') + '</span>'
       + '</div>'
     + '</div>'
     + ((myId && !isMe)
