@@ -4,6 +4,10 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### b8430630 — Share pages: link previews now show the poster
+
+Removed `<meta http-equiv="refresh">` from the clean-URL shell in `build_shows.py` and from every existing `show/`, `venue/`, `festival/` page. Facebook's crawler followed it to `/#/…` (the homepage) and took the logo; confirmed in the Sharing Debugger before the fix. The `location.replace` script still sends people to the app.
+
 ### e337a90 — Nav reconciled with the Aug 23 design refresh: divider dropped, mobile Browse dropdown, unified header menu
 
 Second presentation-layer pass over the nav, reconciling what shipped in
