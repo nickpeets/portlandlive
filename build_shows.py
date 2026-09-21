@@ -785,6 +785,51 @@ def link_audit(shows):
     return len(flags)
 
 
+# ===== AFFILIATE AUDIT (Sep 21 2026) ========================================
+# Every tracked Tickets link, every night: the destination must be on the
+# program's own domain (a promoter page that leads there may not be
+# credited), must not be a resale listing, and must be this show's page.
+# Prints each misfit; the count line is the one to read.
+_AFF_DOMAINS = {
+    "ticketmaster": r"//(www\.)?(ticketmaster|ticketweb)\.com/",
+    "ticketweb": r"//(www\.)?(ticketmaster|ticketweb)\.com/",
+    "etix": r"//(www\.)?etix\.com/", "seatgeek": r"//(www\.)?seatgeek\.com/",
+}
+
+
+def affiliate_audit(shows):
+    from urllib.parse import urlsplit, parse_qs, unquote
+    n = 0
+    flags = []
+    for r in shows:
+        a = r.get("affiliateUrl")
+        if not a:
+            continue
+        n += 1
+        try:
+            dest = unquote((parse_qs(urlsplit(a).query).get("u") or [""])[0])
+        except Exception:
+            dest = ""
+        t = r.get("ticketer") or ""
+        why = None
+        if not dest:
+            why = "no destination"
+        elif _TM_RESALE.search(dest):
+            why = "resale listing"
+        elif not re.search(_AFF_DOMAINS.get(t, r"$^"), dest):
+            why = "off-program domain"
+        else:
+            sw, tw = _la_slug_words(dest), _la_words(r.get("title"))
+            if sw and tw and not (sw & tw) and not any(x in y or y in x for x in sw for y in tw if len(x) >= 5 and len(y) >= 5):
+                why = "name mismatch"
+        if why:
+            flags.append((why, r, dest))
+    print(f"  Affiliate audit: {n} tracked link(s); {len(flags)} need a look")
+    for why, r, dest in flags[:40]:
+        print(f"      [{why}] {r.get('venue')} {r.get('date')} | {(r.get('title') or '')[:44]} | {dest[:80]}")
+    return len(flags)
+
+
 def drop_wrong_rows(shows):
     keep, dropped = [], 0
     for r in shows:
@@ -933,6 +978,7 @@ def apply_ticketers(shows):
     from urllib.parse import quote
     n = a = 0
     for r in shows:
+        r.pop("affiliateUrl", None)                    # rebuilt from scratch every run; never carried over
         t = ticketer_of(r)
         r["ticketer"] = t
         if t:
@@ -941,7 +987,18 @@ def apply_ticketers(shows):
             # The destination is the primary link that belongs to this agent
             # (never a resale link); if the agent came from the venue link,
             # that is the destination.
-            dest = next((u for u in _primary_links(r) if ticketer_of({"venueUrl": u}) == t), None)
+            cands = [u for u in _primary_links(r) if ticketer_of({"venueUrl": u}) == t]
+            # Prefer the agent's own domain over a promoter page that leads
+            # there (Live Nation / Rose Quarter -> Ticketmaster): the program
+            # tracks purchases on ticketmaster.com, and it is one click
+            # closer to seats (Sep 21 2026, the B-52s at Cascades).
+            cands.sort(key=lambda u: 0 if re.search(r"//(www\.)?(ticketmaster|ticketweb|etix|seatgeek)\.", u) else 1)
+            dest = cands[0] if cands else None
+            # No tracked link unless the destination is on the program's own
+            # domain (Sep 21 2026): a promoter page may not be credited, and
+            # the disclosure would be there for nothing. Plain button instead.
+            if dest and not re.search(_AFF_DOMAINS.get(t, r"$^"), dest):
+                dest = None
             if tpl and dest:
                 r["affiliateUrl"] = tpl.format(url=quote(dest, safe=""))
                 a += 1
@@ -1668,6 +1725,7 @@ def main():
     _fixed = tm_resale_links(shows)
     _tk, _af = apply_ticketers(shows)
     print(f"  Ticketers: {_tk} of {len(shows)} shows sell through a known agent; {_af} affiliate link(s)")
+    affiliate_audit(shows)
     if _fixed:
         print(f"  Ticketmaster: {_fixed} resale-only links replaced with the venue's own page")
 
