@@ -107,6 +107,7 @@ VENUE_INFO = {
     "The Lyons Den": ("Seaside", "600 Broadway St, Ste 9, Seaside, OR 97138"),
     "Birch Street Uptown Lounge": ("Camas", "311 NE Birch St, Camas, WA 98607"),
     "Montavilla Station": ("Montavilla", "417 SE 80th Ave, Portland, OR 97215"),
+    "Winona Grange": ("Tualatin", "8340 SW Seneca St, Tualatin, OR 97062"),
     "Haymaker": ("Overlook", "1223 N Killingsworth St, Portland, OR 97217"),
     "Strum PDX": ("Buckman", "1415 SE Stark St #C, Portland, OR 97214"),
     "Tomorrow Theater": ("Richmond", "3530 SE Division St, Portland, OR 97202"),
@@ -5420,6 +5421,25 @@ def parse_montavilla(html, today):
     return out
 
 
+# ---- Winona Grange #271 (Tualatin): a community hall whose calendar
+# (Events Manager, /events.ics) is mostly rentals -- dog training, quilting,
+# choir rehearsals. Only the public music-and-dance nights are kept: ceilis,
+# square and contra dances, barn dances, concerts. Allow-list, not a drop list,
+# because the hall's routine bookings would otherwise flood the feed.
+_WINONA_KEEP = re.compile(r"(?i)\bceili|\bsquare dance|\bcontra\b|\bbarn dance|\bconcert\b|\blive music\b|\bsongwriter|\bbluegrass\b|\bjam\b(?!.*\bukulele)")
+
+
+def parse_winona(ics, today):
+    out = []
+    for r in parse_starday(ics, today):
+        if not _WINONA_KEEP.search(r.get("title") or ""):
+            continue
+        nb, addr = VENUE_INFO.get("Winona Grange", ("", ""))
+        r.update({"venue": "Winona Grange", "neighborhood": nb, "address": addr, "venueUrl": "https://winonagrange271.org/events/"})
+        out.append(r)
+    return out
+
+
 SOURCES = [
     # CitySpark JSON API (single feed -> 2 venues). The parser ignores the
     # GET body below and drives the POST API itself; the URL is only a cheap
@@ -5499,6 +5519,8 @@ SOURCES = [
      "urls": ["https://www.birchstreetuptownlounge.com/music-at-birch-street"]},
     {"name": "Montavilla Station (homepage lineup)", "parser": parse_montavilla,
      "urls": ["https://montavillastation.com/"]},
+    {"name": "Winona Grange (events.ics)", "parser": parse_winona,
+     "urls": ["https://winonagrange271.org/events.ics"]},
     {"name": "Haymaker (haymakerportland.com)", "parser": parse_haymaker,
      "urls": ["https://www.haymakerportland.com/events"]},
     # A watcher: their calendar is films and lectures, so nothing is normal.

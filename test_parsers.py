@@ -111,6 +111,7 @@ CASES = [
     ("lyonsden-sq.json",        sv.parse_lyonsden,        2, {"time": 2},                         "Squarespace events (captured 2026-09-21)"),
     ("birchstreet.html",        sv.parse_birchstreet,     9, {"time": 9},                         "hand-typed lineup page (captured 2026-09-21)"),
     ("montavilla.html",         sv.parse_montavilla,      1, {},                                  "homepage lineup ends 9/19; suite clock 9/14"),
+    ("winona.ics",              sv.parse_winona,          3, {"time": 3},                         "Events Manager ics, allow-list keeps ceili + square dances (captured 2026-09-21)"),
     ("lavernes.html",           sv.parse_lavernes,        4, {"time": 4, "age": 4, "imageUrl": 4},  "hand-typed Squarespace page: h2 title + 'Day, Month Nth | 8pm | 21+ | $' line; poster in the neighbouring image block; TICKETS button link (captured 2026-09-19)"),
     ("helium.html",             sv.parse_helium,        197, {"time": 197, "imageUrl": 197, "contentType": 197}, "JSON-LD Place.Events on the homepage; UTC -> Pacific; Special Event/Helium Presents prefixes dropped; Neon Room sets tagged; all comedy (captured 2026-09-18)"),
     ("haymaker.html",           sv.parse_haymaker,      20, {"time": 20, "imageUrl": 20}, "Squarespace event list (shared reader with No Fun); comedy nights kept for the comedy bin"),
