@@ -7251,6 +7251,10 @@ $('#searchInput').addEventListener('input',e=>{state.q=e.target.value;if(state.q
     else if(away && y < top - 20) { away = false; apply(); }
   }
   window.addEventListener('scroll', function(){ if(!ticking){ ticking = true; requestAnimationFrame(measure); } }, { passive: true });
+  // The masthead's bottom edge, for the phone panels (they are fixed to the screen).
+  function mastVar(){ const m = document.getElementById('siteHeader'); if(m) document.documentElement.style.setProperty('--mast-h', m.getBoundingClientRect().bottom + 'px'); }
+  window.addEventListener('scroll', mastVar, { passive: true }); window.addEventListener('resize', mastVar); mastVar();
+  ['inboxBtn','notifBtn','quickMenuBtn'].forEach(function(id){ const b = document.getElementById(id); if(b) b.addEventListener('click', mastVar, true); });
   window.addEventListener('resize', measure);
   measure();
   inp.addEventListener('input', function(){
@@ -7891,6 +7895,12 @@ load();
 .inbox-badge[hidden]{display:none}
 .inbox-list{position:absolute;top:calc(100% + 8px);right:0;background:var(--cream);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.25);overflow:hidden;width:290px;max-height:60vh;overflow-y:auto;padding:6px;display:flex;flex-direction:column;gap:2px;z-index:60}
 .inbox-list[hidden]{display:none}
+/* Phones (Sep 20 2026): the messages, bell and bookmark panels are pinned to
+   the screen, not to their icon, so nothing hangs off the left edge. They
+   span the width under the masthead and scroll inside. */
+@media(max-width:600px){
+  .inbox-list,.quick-menu-list{position:fixed;left:8px;right:8px;top:calc(var(--mast-h, 60px) + 8px);width:auto;max-width:none;max-height:calc(100vh - var(--mast-h, 60px) - 24px);max-height:calc(100dvh - var(--mast-h, 60px) - 24px)}
+}
 .inbox-state{font-family:'Bitter',Georgia,serif;font-size:12.5px;color:var(--ink);opacity:.75;padding:10px}
 .inbox-head{display:flex;align-items:center;justify-content:space-between;padding:6px 10px 8px;border-bottom:1px solid rgba(0,0,0,.08);margin-bottom:4px}
 .inbox-title{font-family:'Oswald',sans-serif;font-weight:600;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink);opacity:.8}
