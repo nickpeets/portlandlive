@@ -3590,6 +3590,9 @@ function renderShowDetail(wrap, show, kind){
   // exchange -- so, like Miracles, this only shows on upcoming shows. A past
   // show gets comments (recaps) but no Who's Going.
   if(kind === 'upcoming') mountWhosGoing(side, _slug);
+  // A past show lists who has its stub (Sep 20 2026, Nick), the people the
+  // viewer is allowed to see, in the same slot Who's Going used.
+  if(kind === 'past') mountWasThere(side, show);
   // Photos only make sense once the show has happened; that is also when
   // stubs exist, and a stub is what lets someone add (Sep 18 2026).
   if(kind === 'past') mountPhotos(grid, _slug, show);
@@ -5714,6 +5717,31 @@ const WG_MSG_MAX = 500;
 // participant's user id (not by thread id) -- every lookup in this UI is
 // "do I have a thread with THIS person," so that's the natural key.
 const WG_THREADS = { byUser: {}, latest: {}, _attendees: [] };
+
+async function mountWasThere(wrap, show){
+  const sb = txClient();
+  if(!sb || !show) return;
+  const host = document.createElement('section');
+  host.className = 'wg';
+  host.setAttribute('aria-label', 'Was there');
+  host.innerHTML = '<div class="tx-head"><h3>Was There</h3></div><div class="tx-state">Loading\u2026</div>';
+  wrap.appendChild(host);
+  let rows = [];
+  try{
+    const r = await sb.rpc('stub_holders', { p_stub_id: stubIdOf(show) });
+    if(r.error){ host.remove(); return; }
+    rows = r.data || [];
+  }catch(e){ host.remove(); return; }
+  if(!rows.length){ host.remove(); return; }              // nothing to say; the section just isn't there
+  try{ await avLoad(rows.map(function(r){ return r.user_id; })); }catch(_){}
+  let me = null;
+  try{ const s = (await sb.auth.getSession()).data.session; me = s && s.user ? s.user.id : null; }catch(_){}
+  host.innerHTML = '<div class="tx-head"><h3>Was There</h3><span class="tx-count">' + rows.length + (rows.length === 1 ? ' stub' : ' stubs') + '</span></div>'
+    + '<ul class="wg-list">' + rows.map(function(r){
+        return '<li class="wg-row">' + avImg(r.user_id, r.display_name)
+          + '<span class="wg-name">' + nameLink(r.display_name, r.handle) + (me === r.user_id ? ' (you)' : '') + '</span></li>';
+      }).join('') + '</ul>';
+}
 
 async function mountWhosGoing(wrap, slug){
   if(!slug) return;
