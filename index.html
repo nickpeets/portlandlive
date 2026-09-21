@@ -3491,11 +3491,15 @@ function mapsHref(address, venue){
 // decided disclosure beneath it.
 function resaleLine(show){
   const u = (show && show.resaleUrl) || '';
-  if(!/^https:\/\/vivid-seats\.pxf\.io\//.test(u)) return '';
+  const tracked = !!(show && show.affiliateUrl);      // the Tickets button itself is a tracked link (Ticketmaster/TicketWeb via Impact, Sep 21 2026)
+  if(!/^https:\/\/vivid-seats\.pxf\.io\//.test(u)){
+    // No resale line, but a tracked Tickets button still gets the disclosure.
+    return tracked ? '<div class="resale"><div class="aff-note">Tickets through this link support Rain Or Shows.</div></div>' : '';
+  }
   const from = show.resaleFrom ? ' \u2014 from $' + esc(String(Math.round(parseFloat(show.resaleFrom)))) : '';
   return '<div class="resale">'
     + '<a class="resale-link" href="' + esc(u) + '" target="_blank" rel="noopener sponsored">Resale tickets on Vivid Seats' + from + '</a>'
-    + '<div class="aff-note">Tickets through this link support Rain Or Shows.</div>'
+    + '<div class="aff-note">' + (tracked ? 'Tickets through these links support Rain Or Shows.' : 'Tickets through this link support Rain Or Shows.') + '</div>'
     + '</div>';
 }
 
@@ -3534,7 +3538,7 @@ function renderShowDetail(wrap, show, kind){
     actions = '<div class="show-actions">'
       // A Facebook event link is where a free show's details live, not a
       // ticket sale -- label it for what it is (Wild Hare, Sep 17 2026).
-      + ((show.affiliateUrl || show.venueUrl) ? '<a class="tix" href="'+esc(show.affiliateUrl || show.venueUrl)+'" target="_blank" rel="noopener">'
+      + ((show.affiliateUrl || show.venueUrl) ? '<a class="tix" href="'+esc(show.affiliateUrl || show.venueUrl)+'" target="_blank" rel="' + (show.affiliateUrl ? 'noopener sponsored' : 'noopener') + '">'
           + (/(^|\.)facebook\.com$/i.test((function(){ try{ return new URL(show.venueUrl).hostname; }catch(_){ return ''; } })()) ? 'More info' : 'Tickets')
           + '</a>' : '')
       + heartBtn(show)

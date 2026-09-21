@@ -871,8 +871,8 @@ _TICKETER_HOSTS = [
 # Tracking templates, filled in when a program approves. {url} is the
 # percent-encoded destination. Vivid (resale) is handled separately.
 AFFILIATE_TEMPLATES = {
-    "ticketmaster": None,   # Impact, applied Sep 14 2026 -- e.g. "https://ticketmaster.evyy.net/c/4969747/XXXX/YYYY?u={url}"
-    "ticketweb": None,      # same program as Ticketmaster
+    "ticketmaster": "https://ticketmaster.evyy.net/c/4969747/264167/4272?u={url}",   # Impact, approved Sep 21 2026 (campaign 264167, program 4272)
+    "ticketweb": "https://ticketmaster.evyy.net/c/4969747/264167/4272?u={url}",      # same program as Ticketmaster
     "etix": None,           # EDN partner id, if Etix says yes
     "seatgeek": None,
     "tixr": None, "eventbrite": None, "axs": None, "dice": None, "seetickets": None,
