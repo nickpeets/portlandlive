@@ -104,6 +104,9 @@ VENUE_INFO = {
     "Vino Veritas": ("Montavilla", "7835 SE Stark St, Portland, OR 97215"),
     "The Firkin Tavern": ("Hosford-Abernethy", "1937 SE 11th Ave, Portland, OR 97214"),
     "Topaz Farm": ("Sauvie Island", "17100 NW Sauvie Island Rd, Portland, OR 97231"),
+    "The Lyons Den": ("Seaside", "600 Broadway St, Ste 9, Seaside, OR 97138"),
+    "Birch Street Uptown Lounge": ("Camas", "311 NE Birch St, Camas, WA 98607"),
+    "Montavilla Station": ("Montavilla", "417 SE 80th Ave, Portland, OR 97215"),
     "Haymaker": ("Overlook", "1223 N Killingsworth St, Portland, OR 97217"),
     "Strum PDX": ("Buckman", "1415 SE Stark St #C, Portland, OR 97214"),
     "Tomorrow Theater": ("Richmond", "3530 SE Division St, Portland, OR 97202"),
@@ -5350,6 +5353,73 @@ def parse_topaz(html, today):
     return out
 
 
+def _next_date(today, month, day):
+    """Month/day with no year on a lineup page: this year, unless that is more
+    than 60 days behind today, in which case next year (a December page
+    listing January). None for impossible dates."""
+    for y in (today.year, today.year + 1):
+        try:
+            d = datetime.date(y, month, day)
+        except ValueError:
+            return None
+        if d >= today - datetime.timedelta(days=60):
+            return d
+    return None
+
+
+# ---- The Lyons Den (Seaside): Squarespace events at /events.
+def parse_lyonsden(text, today):
+    rows = _sqs_json_rows(text, today, "The Lyons Den", "https://www.lyonsdenevents.com/events")
+    for r in rows:
+        r["title"] = re.sub(r"(?i)\s*live\s*@\s*the lyons den\s*$", "", r["title"]).strip()
+    return rows
+
+
+# ---- Birch Street Uptown Lounge (Camas): a hand-typed lineup page,
+# "Friday, September 25th: Bass & Face" per line; music Fri/Sat 8-11 PM.
+_BIRCH_LINE = re.compile(r"(?i)\b(?:mon|tues|wednes|thurs|fri|satur|sun)day,?\s+([a-z]+)\s+(\d{1,2})(?:st|nd|rd|th)?\s*[:\-\u2013\u2014]\s*(.+?)(?=\s+(?:mon|tues|wednes|thurs|fri|satur|sun)day,?\s+[a-z]+\s+\d{1,2}|$)")
+
+
+def parse_birchstreet(html, today):
+    from bs4 import BeautifulSoup
+    text = re.sub(r"[\u200b\u00a0\s]+", " ", BeautifulSoup(html or "", "html.parser").get_text(" "))
+    horizon = today + datetime.timedelta(days=HORIZON_DAYS)
+    out = []
+    for m in _BIRCH_LINE.finditer(text):
+        mon = MONTHS.get(m.group(1)[:3].title())
+        if not mon:
+            continue
+        d = _next_date(today, mon, int(m.group(2)))
+        title = re.split(r"(?i)\s+bottom of page|\s+top of page|(?:\s+[A-Z]{1,2}\b){2,}", m.group(3))[0].strip(" .\u200b")
+        if not d or not title or len(title) > 90 or not (today <= d <= horizon):
+            continue
+        out.append(_batch_row("Birch Street Uptown Lounge", d.isoformat(), "8:00 PM", title,
+                              "https://www.birchstreetuptownlounge.com/music-at-birch-street", "", ""))
+    return out
+
+
+# ---- Montavilla Station (417 SE 80th): the homepage lists the month's bands
+# under a month heading, "9/4 Fun Guys 9/5 Rob and Josh ...".
+_MONTAVILLA_LINE = re.compile(r"\b(\d{1,2})/(\d{1,2})\s+(.+?)(?=\s+\d{1,2}/\d{1,2}\s|\s+(?:January|February|March|April|May|June|July|August|September|October|November|December)\b|\s+WANNA PLAY|$)")
+
+
+def parse_montavilla(html, today):
+    from bs4 import BeautifulSoup
+    text = re.sub(r"\s+", " ", BeautifulSoup(html or "", "html.parser").get_text(" "))
+    i = text.find("WANNA PLAY")
+    j = max(text.rfind(mname, 0, i if i > 0 else len(text)) for mname in ("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"))
+    segment = text[max(0, j - 4000):i if i > 0 else len(text)]
+    horizon = today + datetime.timedelta(days=HORIZON_DAYS)
+    out = []
+    for m in _MONTAVILLA_LINE.finditer(segment):
+        d = _next_date(today, int(m.group(1)), int(m.group(2)))
+        title = m.group(3).strip(" .")
+        if not d or not title or len(title) > 80 or not (today <= d <= horizon):
+            continue
+        out.append(_batch_row("Montavilla Station", d.isoformat(), "", title, "https://montavillastation.com/", "", ""))
+    return out
+
+
 SOURCES = [
     # CitySpark JSON API (single feed -> 2 venues). The parser ignores the
     # GET body below and drives the POST API itself; the URL is only a cheap
@@ -5423,6 +5493,12 @@ SOURCES = [
      "urls": ["https://firkintavern.com/wp-json/tribe/events/v1/events?per_page=50"]},
     {"name": "Topaz Farm (topazfarm.com)", "parser": parse_topaz,
      "urls": ["https://topazfarm.com/live-music"]},
+    {"name": "The Lyons Den (lyonsdenevents.com)", "parser": parse_lyonsden,
+     "urls": ["https://www.lyonsdenevents.com/events?format=json"]},
+    {"name": "Birch Street Uptown Lounge (lineup page)", "parser": parse_birchstreet,
+     "urls": ["https://www.birchstreetuptownlounge.com/music-at-birch-street"]},
+    {"name": "Montavilla Station (homepage lineup)", "parser": parse_montavilla,
+     "urls": ["https://montavillastation.com/"]},
     {"name": "Haymaker (haymakerportland.com)", "parser": parse_haymaker,
      "urls": ["https://www.haymakerportland.com/events"]},
     # A watcher: their calendar is films and lectures, so nothing is normal.
