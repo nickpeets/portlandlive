@@ -654,6 +654,61 @@ DROP_SHOWS = [
 ]
 
 
+# ===== NOT A SHOW (Sep 20 2026) ============================================
+# One gate for every source: things venues put on their calendars that are
+# not live music or comedy. A title that carries a music signal is kept even
+# if it also hits a drop word ("Square Dancing with Calling Lessons from Bex
+# Bee and Boondoggle String Band" stays; "Intermediate Two-Step Lessons"
+# goes). Nick's rule: be discreet -- drop only the obviously non-show, keep
+# anything borderline. Dropped titles are printed nightly so the list can be
+# tuned from the Actions log.
+_NOT_A_SHOW = re.compile(r"""(?ix)
+    \b(trivia|pub\s+quiz|quiz\s+night|bingo|cribbage|board\s+games?\s+night)\b
+  | \b(watch\s+party|game\s+day|viewing\s+party)\b
+  | \b(patriots|seahawks|blazers|timbers|thorns|ducks|beavers|49ers|nfl|nba|mlb|nhl|ufc|monday\s+night\s+football)\b
+  | \b(vegan\s+market|farmers?\s+market|craft\s+(?:fair|market)|flea\s+market|swap\s+meet|clothing\s+swap|plant\s+swap|art\s+trail|art\s+walk|gallery\s+opening|maker'?s?\s+market|holiday\s+market|night\s+market)\b
+  | \b(history\s*&\s*art\s+tour|art\s+tour|walking\s+tour|brewery\s+tour|history\s+tour|tour\s+of\s+the)\b
+  | \b(workshop|seminar|lecture|book\s+talk|book\s+club|author\s+(?:talk|event)|science\s+on\s+tap|storytime|story\s+time|panel\s+discussion)\b
+  | \b(throwdown|cook-?off|chili\s+(?:feed|cook)|hot\s+sauce|wing\s+(?:challenge|night|eating)|pancake\s+breakfast|potluck|crawfish\s+boil|pie\s+contest)\b
+  | \b(yoga|pilates|meditation|run\s+club|bike\s+ride|fitness)\b
+  | \b(movie\s+night|film\s+screening|screening\s+of|cinema\s+night|documentary)\b
+  | \b(networking|mixer|job\s+fair|blood\s+drive|vaccine\s+clinic|town\s+hall|community\s+meeting)\b
+  | ^\s*(?:beginner|intermediate|advanced|group)?\s*[\w\s'&-]{0,24}?\b(lessons?|classes?)\b
+""")
+_MUSIC_SIGNAL = re.compile(r"""(?ix)
+    \b(band|live\s+music|music|musical|dj|djs|jam|open\s+mic|concert|orchestra|symphony|quartet|trio|quintet|ensemble|choir|chorus
+      |acoustic|unplugged|songwriter|singer|sing[\s-]?along|shanty|karaoke\s+from\s+hell|record\s+release|album\s+release|listening\s+party
+      |comedy|comedian|stand[\s-]?up|improv|burlesque|drag\s+(?:show|brunch|night)|cabaret|showcase|tribute|tour\b|fest(?:ival)?|jazz|blues|bluegrass|punk|metal|hip[\s-]?hop|soul|funk|folk|rock)\b
+""")
+
+
+_TOUR_KIND = re.compile(r"(?i)\b(history\s*&\s*art\s+tour|art\s+tour|walking\s+tour|brewery\s+tour|history\s+tour|tour\s+of\s+the)\b")
+
+
+def is_not_a_show(title):
+    t = (title or "").strip()
+    if not t or not _NOT_A_SHOW.search(t):
+        return False
+    # "tour" is a music word (a band on tour) unless the hit WAS a tour of a
+    # building; then the word cannot rescue it.
+    probe = _TOUR_KIND.sub(" ", t) if _TOUR_KIND.search(t) else t
+    return not _MUSIC_SIGNAL.search(probe)
+
+
+def drop_non_shows(shows):
+    keep, dropped = [], []
+    for r in shows:
+        if is_not_a_show(r.get("title")):
+            dropped.append(r)
+        else:
+            keep.append(r)
+    if dropped:
+        print(f"  Not shows: {len(dropped)} row(s) dropped")
+        for r in dropped[:40]:
+            print(f"      - {r.get('venue')}: {r.get('title')}")
+    return keep
+
+
 def drop_wrong_rows(shows):
     keep, dropped = [], 0
     for r in shows:
@@ -1514,6 +1569,7 @@ def main():
         print(f"  Posters: {_n} override(s) applied")
 
     shows = drop_wrong_rows(shows)
+    shows = drop_non_shows(shows)
     _fixed = tm_resale_links(shows)
     _tk, _af = apply_ticketers(shows)
     print(f"  Ticketers: {_tk} of {len(shows)} shows sell through a known agent; {_af} affiliate link(s)")

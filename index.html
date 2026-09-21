@@ -2735,6 +2735,11 @@ function enterVenueState(name){
 
 async function router(){
   var route = parseRoute();
+  // A page you navigate INTO opens at its top (Sep 20 2026, Nick): a show
+  // tapped halfway down the feed used to open still scrolled halfway down.
+  if(route.type === 'show' || route.type === 'profile' || route.type === 'festival' || route.type === 'venue'){
+    try{ window.scrollTo({ top: 0, behavior: 'instant' }); }catch(_){ window.scrollTo(0, 0); }
+  }
   if(route.type === 'show'){ await renderShowRoute(route.slug); return; }
   if(route.type === 'profile'){ await renderProfileRoute(route.handle); return; }
   if(route.type === 'submit'){ renderSubmitRoute(); return; }

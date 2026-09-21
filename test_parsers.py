@@ -350,6 +350,18 @@ def main():
         sys.exit(1)
     print("ALL PASS")
 
+    # Not-a-show gate (Sep 20 2026): drop words lose to music words.
+    _nas = [("Beaumont Cribbage Club", True), ("New England Patriots", True), ("Mission Theater History & Art Tour", True),
+            ("Intermediate Two-Step Lessons with Peggy and Dillon", True), ("Science On Tap – Recycle! …or Not?", True), ("Flipside, Vegan Market", True),
+            ("Square Dancing with Calling Lessons from Bex Bee and Boondoggle String Band", False), ("Waylon Wyatt – Dustpiles World Tour", False),
+            ("Open Jam and Games", False), ("Sea Shanty Sing Along", False), ("PJCE Happy Hour Jazz w/ Christopher Brown Trio", False), ("Oktoberfest", False)]
+    _bad = [f"{ti!r} -> {bs.is_not_a_show(ti)}" for ti, want in _nas if bs.is_not_a_show(ti) != want]
+    if _bad:
+        fails += 1
+        print("  FAIL not-a-show gate              " + "; ".join(_bad))
+    else:
+        print("  ok   not-a-show gate               12 titles -- trivia/cribbage/sports/markets/tours/lessons out; anything with a music word stays")
+    print()
 
 if __name__ == "__main__":
     main()
