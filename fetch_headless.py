@@ -159,3 +159,45 @@ def fetch_headless_json(entry_url, json_url, wait_s=25):
                 return json.loads(raw[start:end + 1])
         finally:
             browser.close()
+
+
+def fetch_headless_capture(url, match, wait_s=25, settle_s=6, max_bodies=20):
+    """Render `url` and return the bodies of every response whose URL contains
+    `match` (a substring or a tuple of substrings), across all frames -- the
+    way to read an embedded app (Wix Events, Sep 21 2026) that fetches its
+    data from its own API after the page loads. Returns a list of
+    (response_url, status, body_text)."""
+    try:
+        from playwright.sync_api import sync_playwright
+    except ImportError as e:
+        raise HeadlessUnavailable("playwright not installed") from e
+    needles = (match,) if isinstance(match, str) else tuple(match)
+    got = []
+
+    def on_response(resp):
+        try:
+            u = resp.url
+            if any(n in u for n in needles) and len(got) < max_bodies:
+                ct = (resp.headers.get("content-type") or "").lower()
+                if "json" in ct or "javascript" in ct or "text" in ct or not ct:
+                    got.append((u, resp.status, resp.text()))
+        except Exception:
+            pass
+
+    with sync_playwright() as p:
+        browser = _launch(p)
+        try:
+            ctx = _new_context(browser)
+            page = ctx.new_page()
+            page.on("response", on_response)
+            page.goto(url, wait_until="domcontentloaded", timeout=45_000)
+            _wait_out_challenge(page, wait_s)
+            # Scroll once so lazy widgets below the fold load too.
+            try:
+                page.mouse.wheel(0, 1600)
+            except Exception:
+                pass
+            time.sleep(settle_s)
+            return got
+        finally:
+            browser.close()
