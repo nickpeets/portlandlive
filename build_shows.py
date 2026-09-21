@@ -830,6 +830,36 @@ def affiliate_audit(shows):
     return len(flags)
 
 
+# ===== OUT OF TOWN (Sep 21 2026, Nick) =====================================
+# "Only places it takes a while to get to": roughly an hour or more from
+# downtown Portland. These rooms' shows carry outOfTown: true; the site keeps
+# them out of the everyday feed and shows them under the Out of Town button
+# (and in search, on venue pages and show pages as usual). Newberg, Ridgefield,
+# Sauvie Island and the like stay local. McMinnville is the line (~1 hr).
+EUGENE_LATLONG = "44.0521,-123.0868"
+OUT_OF_TOWN_VENUES = {
+    "The Ruins",                  # Hood River
+    "Trout Lake Hall",            # Trout Lake WA
+    "The Lyons Den",              # Seaside
+    "HiFi Wine Bar",              # McMinnville
+    "McMenamins Hotel Oregon",    # McMinnville
+    "Matthew Knight Arena",       # Eugene
+    "McDonald Theatre",           # Eugene
+    "The Pickled Fish",           # Long Beach WA
+}
+
+
+def mark_out_of_town(shows):
+    n = 0
+    for r in shows:
+        if r.get("venue") in OUT_OF_TOWN_VENUES:
+            r["outOfTown"] = True
+            n += 1
+        else:
+            r.pop("outOfTown", None)
+    return n
+
+
 def drop_wrong_rows(shows):
     keep, dropped = [], 0
     for r in shows:
@@ -1020,7 +1050,7 @@ def _sv():
     return _sv.mod
 
 
-def tm_fetch(today, days=90, classification="music"):
+def tm_fetch(today, days=90, classification="music", latlong="45.5152,-122.6784", radius=35):
     key = os.environ.get("TM_API_KEY", "").strip()
     if not key:
         print("  note: Ticketmaster: TM_API_KEY not set; pass skipped")
@@ -1037,7 +1067,7 @@ def tm_fetch(today, days=90, classification="music"):
         # Forest Grove; 503 events where the city filter found 487, and no
         # venue in the result that TM_VENUE_MAP does not already know.
         q = urllib.parse.urlencode({
-            "apikey": key, "latlong": "45.5152,-122.6784", "radius": 35, "unit": "miles",
+            "apikey": key, "latlong": latlong, "radius": radius, "unit": "miles",
             "classificationName": classification,
             "size": 200, "page": page, "sort": "date,asc",
             "startDateTime": today.isoformat() + "T00:00:00Z",
@@ -1694,6 +1724,11 @@ def main():
     _pac = datetime.timezone(datetime.timedelta(hours=-8))
     _today = datetime.datetime.now(_pac).date()
     _tm_events = tm_fetch(_today) + tm_fetch(_today, classification="comedy")
+    # Out of town (Sep 21 2026, Nick): Eugene's big rooms. A second, small
+    # radius around downtown Eugene; only venues in VENUE_INFO / TM_VENUE_MAP
+    # are kept, so the rest of Lane County's listings count as "uncovered" in
+    # the log and nowhere else.
+    _tm_events += tm_fetch(_today, latlong=EUGENE_LATLONG, radius=8) + tm_fetch(_today, classification="comedy", latlong=EUGENE_LATLONG, radius=8)
     if _tm_events:
         _m, _a, _unc = tm_apply(shows, _tm_events, _today)
         _u = ", ".join(f"{v} ({c})" for v, c in _unc.most_common(6))
@@ -1723,6 +1758,7 @@ def main():
     shows = drop_non_shows(shows)
     link_audit(shows)
     _fixed = tm_resale_links(shows)
+    print(f"  Out of town: {mark_out_of_town(shows)} show(s) at {len(OUT_OF_TOWN_VENUES)} far rooms")
     _tk, _af = apply_ticketers(shows)
     print(f"  Ticketers: {_tk} of {len(shows)} shows sell through a known agent; {_af} affiliate link(s)")
     affiliate_audit(shows)

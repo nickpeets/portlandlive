@@ -108,6 +108,8 @@ VENUE_INFO = {
     "Birch Street Uptown Lounge": ("Camas", "311 NE Birch St, Camas, WA 98607"),
     "Montavilla Station": ("Montavilla", "417 SE 80th Ave, Portland, OR 97215"),
     "Winona Grange": ("Tualatin", "8340 SW Seneca St, Tualatin, OR 97062"),
+    "Matthew Knight Arena": ("Eugene", "1776 E 13th Ave, Eugene, OR 97403"),
+    "McDonald Theatre": ("Eugene", "1010 Willamette St, Eugene, OR 97401"),
     "Haymaker": ("Overlook", "1223 N Killingsworth St, Portland, OR 97217"),
     "Strum PDX": ("Buckman", "1415 SE Stark St #C, Portland, OR 97214"),
     "Tomorrow Theater": ("Richmond", "3530 SE Division St, Portland, OR 97202"),
