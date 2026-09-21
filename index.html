@@ -6444,7 +6444,9 @@ function swapPoster(card, url){
 // a desktop) it is declined before any upload -- checks the length, and grabs
 // a frame at one second as the thumbnail. Phones hand us H.264 MP4, so the
 // usual case just works.
-const VD_MAX_S = 20, VD_MAX_BYTES = 60 * 1024 * 1024;
+// Says 20, accepts 25 (Sep 20 2026, Nick): a clip trimmed "to 20" on a phone
+// often lands at 21-23 seconds, and the extra seconds shouldn't cost a post.
+const VD_MAX_S = 20, VD_ACCEPT_S = 25, VD_MAX_BYTES = 60 * 1024 * 1024;
 function vdUrl(path){ try{ return phClient().storage.from('videos').getPublicUrl(path).data.publicUrl; }catch(e){ return ''; } }
 function vdProbe(file){
   return new Promise(function(resolve, reject){
@@ -6453,7 +6455,7 @@ function vdProbe(file){
     const done = function(err, out){ URL.revokeObjectURL(url); err ? reject(err) : resolve(out); };
     v.onerror = function(){ done(new Error("This video can't play in your browser. Save it as an MP4 first.")); };
     v.onloadedmetadata = function(){
-      if(!isFinite(v.duration) || v.duration > VD_MAX_S + 0.5){ done(new Error('Clips are up to ' + VD_MAX_S + ' seconds. Trim it in your Photos app first.')); return; }
+      if(!isFinite(v.duration) || v.duration > VD_ACCEPT_S + 0.5){ done(new Error('Clips are up to ' + VD_MAX_S + ' seconds. Trim it in your Photos app first.')); return; }
       v.currentTime = Math.min(1, Math.max(0, v.duration / 2));
     };
     v.onseeked = function(){

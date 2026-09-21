@@ -68,7 +68,7 @@ begin
   select * into s from public.user_stubs where user_id = auth.uid() and stub_id = p_stub_id limit 1;
   if s.stub_id is null or s.date is null or s.date <> left(p_slug, 10) then raise exception 'no_stub' using errcode = 'P0001'; end if;
   if p_path not like auth.uid()::text || '/%' or p_video_path not like auth.uid()::text || '/%' then raise exception 'bad_path' using errcode = 'P0001'; end if;
-  if coalesce(p_duration, 0) > 21 then raise exception 'too_long' using errcode = 'P0001'; end if;
+  if coalesce(p_duration, 0) > 26 then raise exception 'too_long' using errcode = 'P0001'; end if;
   if (select count(*) from public.show_photos where user_id = auth.uid() and show_slug = p_slug) >= 12 then raise exception 'photo_limit' using errcode = 'P0001'; end if;
   insert into public.show_photos (show_slug, user_id, path, width, height, title, venue, show_date, kind, video_path, duration_s)
   values (p_slug, auth.uid(), p_path, p_width, p_height, coalesce(s.title, ''), coalesce(s.venue, ''), coalesce(s.date, ''), 'video', p_video_path, p_duration)
