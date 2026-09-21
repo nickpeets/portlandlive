@@ -99,6 +99,10 @@ VENUE_INFO = {
     "Funhouse Lounge": ("Hosford-Abernethy", "2432 SE 11th Ave, Portland, OR 97214"),
     "Wolves & People Bar": ("Newberg", "107 N Meridian St, Newberg, OR 97132"),
     "HiFi Wine Bar": ("McMinnville", "422 NE 3rd St, McMinnville, OR 97128"),
+    "Swan Dive": ("Central Eastside", "727 SE Grand Ave, Portland, OR 97214"),
+    "The Waypost": ("Boise/Eliot", "3120 N Williams Ave, Portland, OR 97227"),
+    "Vino Veritas": ("Montavilla", "7835 SE Stark St, Portland, OR 97215"),
+    "The Firkin Tavern": ("Hosford-Abernethy", "1937 SE 11th Ave, Portland, OR 97214"),
     "Haymaker": ("Overlook", "1223 N Killingsworth St, Portland, OR 97217"),
     "Strum PDX": ("Buckman", "1415 SE Stark St #C, Portland, OR 97214"),
     "Tomorrow Theater": ("Richmond", "3530 SE Division St, Portland, OR 97202"),
@@ -5253,6 +5257,37 @@ def parse_hifi(text, today):
     return _sqs_json_rows(text, today, "HiFi Wine Bar", "https://www.hifiwinebar.com/upcoming-events")
 
 
+# ---- Swan Dive (727 SE Grand): bands, DJs and karaoke most nights;
+# Squarespace events collection at /events-2-1 (22 upcoming, Sep 21 2026).
+def parse_swandive(text, today):
+    return _sqs_json_rows(text, today, "Swan Dive", "https://www.swandivepdx.com/events-2-1")
+
+
+# ---- The Waypost (3120 N Williams): its homepage embeds a public Google
+# Calendar; read as .ics like Starday's (recurring rules expanded). Booking
+# is in person ("come in on a Sunday"), so this calendar is the only listing.
+def parse_waypost(ics, today):
+    out = []
+    for r in parse_starday(ics, today):
+        nb, addr = VENUE_INFO.get("The Waypost", ("", ""))
+        r.update({"venue": "The Waypost", "neighborhood": nb, "address": addr, "venueUrl": "https://thewaypost.com/"})
+        out.append(r)
+    return out
+
+
+# ---- Vino Veritas (7835 SE Stark): wine bar, live music Wed & Sat;
+# Squarespace events collection at /events (nothing upcoming posted at
+# capture, Sep 21 2026 -- fills when they post).
+def parse_vinoveritas(text, today):
+    return _sqs_json_rows(text, today, "Vino Veritas", "https://www.vinoveritaspdx.com/events")
+
+
+# ---- The Firkin Tavern (1937 SE 11th): bands Fri/Sat/Mon, open mic Sun;
+# WordPress + The Events Calendar REST (empty at capture, Sep 21 2026).
+def parse_firkin(text, today):
+    return _tribe_rows(text, today, "The Firkin Tavern", "https://firkintavern.com/upcoming-events/", horizon_days=HORIZON_DAYS)
+
+
 SOURCES = [
     # CitySpark JSON API (single feed -> 2 venues). The parser ignores the
     # GET body below and drives the POST API itself; the URL is only a cheap
@@ -5316,6 +5351,14 @@ SOURCES = [
      "urls": ["https://www.eventbrite.com/o/wolves-people-bar-and-music-hall-121529882609"]},
     {"name": "HiFi Wine Bar (hifiwinebar.com)", "parser": parse_hifi,
      "urls": ["https://www.hifiwinebar.com/upcoming-events?format=json"]},
+    {"name": "Swan Dive (swandivepdx.com)", "parser": parse_swandive,
+     "urls": ["https://www.swandivepdx.com/events-2-1?format=json"]},
+    {"name": "The Waypost (Google Calendar)", "parser": parse_waypost,
+     "urls": ["https://calendar.google.com/calendar/ical/6ia5aftci3h6c5rdj2qt1te9fg%40group.calendar.google.com/public/basic.ics"]},
+    {"name": "Vino Veritas (vinoveritaspdx.com)", "parser": parse_vinoveritas,
+     "urls": ["https://www.vinoveritaspdx.com/events?format=json"]},
+    {"name": "The Firkin Tavern (firkintavern.com)", "parser": parse_firkin,
+     "urls": ["https://firkintavern.com/wp-json/tribe/events/v1/events?per_page=50"]},
     {"name": "Haymaker (haymakerportland.com)", "parser": parse_haymaker,
      "urls": ["https://www.haymakerportland.com/events"]},
     # A watcher: their calendar is films and lectures, so nothing is normal.
