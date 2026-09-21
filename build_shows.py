@@ -897,9 +897,24 @@ VENUE_TICKETER = {
 }
 
 
+def _primary_links(row):
+    """The links that actually sell this show, in order of trust: the
+    venue's own link first, then a Ticketmaster link ONLY if it is a primary
+    sale (ids starting with Z are resale echoes -- Sep 21 2026 fix: 166
+    Etix-room shows were being tagged ticketmaster and pointed at resale)."""
+    out = []
+    v = row.get("venueUrl") or ""
+    t = row.get("ticketUrl") or ""
+    if v.startswith("http") and not _TM_RESALE.search(v):
+        out.append(v)
+    if t.startswith("http") and not _TM_RESALE.search(t):
+        out.append(t)
+    return out
+
+
 def ticketer_of(row):
     from urllib.parse import urlsplit
-    for u in (row.get("ticketUrl") or "", row.get("venueUrl") or ""):
+    for u in _primary_links(row):
         if not u.startswith("http"):
             continue
         try:
@@ -923,7 +938,10 @@ def apply_ticketers(shows):
         if t:
             n += 1
             tpl = AFFILIATE_TEMPLATES.get(t)
-            dest = r.get("ticketUrl") if _TICKETER_MATCHES(t, r.get("ticketUrl")) else r.get("venueUrl")
+            # The destination is the primary link that belongs to this agent
+            # (never a resale link); if the agent came from the venue link,
+            # that is the destination.
+            dest = next((u for u in _primary_links(r) if ticketer_of({"venueUrl": u}) == t), None)
             if tpl and dest:
                 r["affiliateUrl"] = tpl.format(url=quote(dest, safe=""))
                 a += 1
