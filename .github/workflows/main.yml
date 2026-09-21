@@ -12,7 +12,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install deps
-        run: pip install requests beautifulsoup4 python-dateutil playwright curl_cffi
+        run: pip install requests beautifulsoup4 python-dateutil playwright curl_cffi pillow
       # Headless-browser tier for the two bot-walled venues (Goodfoot, Music
       # Millennium). Chromium + its system libs; ~1 min. Only sources flagged
       # walled use it -- the other 34 stay on plain requests. If this step
@@ -34,7 +34,7 @@ jobs:
         run: |
           git config user.name "portlandlive-bot"
           git config user.email "bot@portlandlive.local"
-          git add shows.json manual_shows.json venue_baselines.json archive.json show venue festival sitemap.xml news.json
+          git add shows.json manual_shows.json venue_baselines.json archive.json show venue festival sitemap.xml news.json og
           git diff --staged --quiet && echo "no changes" && exit 0
           git commit -m "Refresh listings $(date -u +%F)"
           pushed=0
