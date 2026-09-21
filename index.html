@@ -566,6 +566,22 @@ body{
   .list--b .s-title{font-size:19px}
   .scard .s-body{padding-left:14px;padding-right:14px}
   .listen{padding:6px 10px;font-size:10.5px}
+  /* Phone cards were cramped (Sep 21 2026, Nick): the Listen / Who's in /
+     heart column sat beside the text and squeezed titles into a ~140px strip,
+     and the date ran under the Listen button. On phones the buttons now form
+     one row under the text, full card width, and the text gets the whole
+     column beside the poster. */
+  .list--a .scard{display:grid;grid-template-columns:84px minmax(0,1fr);grid-template-rows:1fr auto;align-items:stretch}
+  .list--a .s-media{grid-column:1;grid-row:1 / span 2;width:auto;min-height:0}
+  .list--a .s-body{grid-column:2;grid-row:1;padding:12px 14px 6px;gap:5px;justify-content:flex-start}
+  .list--a .s-foot{grid-column:2;grid-row:2;flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:flex-start;gap:8px;padding:4px 14px 12px}
+  .list--a .s-foot .heart{order:9;margin-left:auto;align-self:center}
+  .list--a .s-foot .plan-btn{align-self:center}
+  .list--a .s-title{font-size:18px;line-height:1.12}
+  .list--a .s-sub{gap:4px 7px;font-size:13px}
+  .list--a .s-date{white-space:normal}
+  .list--a .scard.no-media{grid-template-columns:minmax(0,1fr)}
+  .list--a .scard.no-media .s-body,.list--a .scard.no-media .s-foot{grid-column:1;padding-left:16px}
 }
 
     /* Venue-page chips: tappable venue links surfaced above results on venue-name search match */
