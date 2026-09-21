@@ -94,6 +94,11 @@ VENUE_INFO = {
     "Helium Comedy Club": ("Central Eastside", "1510 SE 9th Ave, Portland, OR 97214"),
     "LaVerne's": ("Woodlawn", "700 NE Dekum St, Portland, OR 97211"),
     "The Blue Diamond": ("Kerns", "2016 NE Sandy Blvd, Portland, OR 97232"),
+    "McMenamins Hotel Oregon": ("McMinnville", "310 NE Evans St, McMinnville, OR 97128"),
+    "McMenamins Wilsonville Old Church & Pub": ("Wilsonville", "30340 SW Boones Ferry Rd, Wilsonville, OR 97070"),
+    "Funhouse Lounge": ("Hosford-Abernethy", "2432 SE 11th Ave, Portland, OR 97214"),
+    "Wolves & People Bar": ("Newberg", "107 N Meridian St, Newberg, OR 97132"),
+    "HiFi Wine Bar": ("McMinnville", "422 NE 3rd St, McMinnville, OR 97128"),
     "Haymaker": ("Overlook", "1223 N Killingsworth St, Portland, OR 97217"),
     "Strum PDX": ("Buckman", "1415 SE Stark St #C, Portland, OR 97214"),
     "Tomorrow Theater": ("Richmond", "3530 SE Division St, Portland, OR 97202"),
@@ -3326,6 +3331,8 @@ MCMENAMINS_VENUES = {
     "154": "Al's Den",
     "63": "Mission Theater",
     "6": "Kennedy School",
+    "5": "McMenamins Hotel Oregon",                   # McMinnville; locationID from its page (Sep 21 2026)
+    "152": "McMenamins Wilsonville Old Church & Pub",  # Wilsonville
 }
 # Kennedy School is a pub/hotel whose music-calendar entries are mostly NOT
 # music (the first live run was 8-of-10 non-music: building tours, bingo,
@@ -5214,6 +5221,38 @@ def parse_bluediamond(text, today):
     return _tribe_rows(text, today, "The Blue Diamond", "https://bluediamondpdx.net/events/", horizon_days=HORIZON_DAYS)
 
 
+# ---- Funhouse Lounge (2432 SE 11th): comedy, improv, karaoke, drag and the
+# odd band; its WordPress site embeds a public Google Calendar, read as an
+# .ics the way Starday's is (recurring rules expanded). Sep 21 2026.
+def parse_funhouse(ics, today):
+    out = []
+    for r in parse_starday(ics, today):
+        nb, addr = VENUE_INFO.get("Funhouse Lounge", ("", ""))
+        r.update({"venue": "Funhouse Lounge", "neighborhood": nb, "address": addr, "venueUrl": "https://www.funhouselounge.com/calendar/"})
+        out.append(r)
+    return out
+
+
+# ---- Wolves & People Bar (107 N Meridian, Newberg): the farm brewery's
+# downtown bar and music hall; its calendar is its Eventbrite organizer page,
+# read like Barrel Room's. Age unknown, so left blank. Sep 21 2026.
+def parse_wolves(html, today):
+    out = []
+    for r in parse_barrelroom(html, today):
+        nb, addr = VENUE_INFO.get("Wolves & People Bar", ("", ""))
+        r.update({"venue": "Wolves & People Bar", "neighborhood": nb, "address": addr, "age": ""})
+        if "barrel-room" in (r.get("venueUrl") or ""):
+            r["venueUrl"] = "https://www.eventbrite.com/o/wolves-people-bar-and-music-hall-121529882609"
+        out.append(r)
+    return out
+
+
+# ---- HiFi Wine Bar (422 NE 3rd, McMinnville): live DJs and the odd band;
+# Squarespace events collection at /upcoming-events. Sep 21 2026.
+def parse_hifi(text, today):
+    return _sqs_json_rows(text, today, "HiFi Wine Bar", "https://www.hifiwinebar.com/upcoming-events")
+
+
 SOURCES = [
     # CitySpark JSON API (single feed -> 2 venues). The parser ignores the
     # GET body below and drives the POST API itself; the URL is only a cheap
@@ -5271,6 +5310,12 @@ SOURCES = [
      "urls": ["https://lavernespdx.com/events"]},
     {"name": "The Blue Diamond (bluediamondpdx.net)", "parser": parse_bluediamond, "tls": True,
      "urls": ["https://bluediamondpdx.net/wp-json/tribe/events/v1/events?per_page=100"]},
+    {"name": "Funhouse Lounge (Google Calendar)", "parser": parse_funhouse,
+     "urls": ["https://calendar.google.com/calendar/ical/1d9rstj8str8khfubp6ckohvik%40group.calendar.google.com/public/basic.ics"]},
+    {"name": "Wolves & People Bar (Eventbrite)", "parser": parse_wolves,
+     "urls": ["https://www.eventbrite.com/o/wolves-people-bar-and-music-hall-121529882609"]},
+    {"name": "HiFi Wine Bar (hifiwinebar.com)", "parser": parse_hifi,
+     "urls": ["https://www.hifiwinebar.com/upcoming-events?format=json"]},
     {"name": "Haymaker (haymakerportland.com)", "parser": parse_haymaker,
      "urls": ["https://www.haymakerportland.com/events"]},
     # A watcher: their calendar is films and lectures, so nothing is normal.
