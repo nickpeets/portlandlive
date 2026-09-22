@@ -471,3 +471,5 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **2026-09-22 — Search phrase fix (607bc818)** — multi-word phrase match let the last word end mid-word; "billy st" had matched three shows via "St" in street addresses and missed Billy Strings.
 
 - **2026-09-22 — Heart redrawn (7dd7d1ed)** — symmetric about center; old path's dip sat left of center and the right lobe stopped short.
+
+- **2026-09-22 — PYMK live switch (f0f0fcdc)** — checking Show People you may know redraws the feed so the card appears at once; unchecking removes it at once.
