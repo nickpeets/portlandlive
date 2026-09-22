@@ -1979,6 +1979,16 @@ def main():
         json.dump(out, f, indent=2, ensure_ascii=False)
     venues = len(set(s.get("venue","") for s in deduped))
     print(f"Wrote {len(deduped)} shows across {venues} venues to shows.json")
+    # Artist audit (Sep 21 2026): which act each Listen button would search
+    # for, with the names that still look like a series label, a venue or a
+    # whole bill. Same resolver the site runs (sampler/artist-resolver.js).
+    try:
+        import subprocess
+        r = subprocess.run(["node", os.path.join(HERE, "sampler", "artist-audit.js"), OUT],
+                           capture_output=True, text=True, timeout=60)
+        print((r.stdout or r.stderr or "").rstrip() or "  Artist audit: no output")
+    except Exception as e:
+        print(f"  Artist audit skipped ({type(e).__name__})")
     write_clean_urls(out["shows"], out.get("venues") or [])
 
 
