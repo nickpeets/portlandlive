@@ -504,3 +504,5 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **2026-09-22 — Block (7e43543c)** — blocks table + block_user/unblock_user/my_blocks; triggers refuse follows, threads and messages across a block; dm_open, dm_threads_mine, profile_by_handle and people_you_may_know respect it. Page: ⋯ menu on profiles and threads, confirm, Blocked/Unblock header, Blocked people on your own profile; blocked comments and Who's Going rows hidden for the blocker. SQL: supabase/schema-blocks.sql.
 
 - **2026-09-22 — ?ref= tracking (349975d6)** — first ?ref= kept 30 days on the device (ros_ref), GoatCounter event ref/<name> per visit, record_signup_ref credits new accounts (made within a day) once; show/venue shells keep ?ref through the redirect. Report: SELECT in supabase/schema-signup-refs.sql.
+
+- **2026-09-22 — Giveaway (75082668)** — brothers-comatose-2026 (Aladdin, Oct 31; closes Oct 26 11:59 PM PT): 1 entry for I'm going in the window, +1 per invitee (?ref=inv-<handle>) who also marks going; moderators excluded; giveaway_draw weighted, once. Banner on the plain feed, #/giveaway page, line on the show page. SQL: supabase/schema-giveaway.sql.
