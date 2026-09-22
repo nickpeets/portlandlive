@@ -230,6 +230,8 @@
         // People you may know (Sep 22 2026): both on unless switched off.
         '<label class="av-edit-note" style="padding:6px 0 0;display:flex;gap:6px;align-items:center"><input type="checkbox" data-pymk-pref="suggest_me" checked> Suggest me to others</label>' +
         '<label class="av-edit-note" style="padding:2px 0 0;display:flex;gap:6px;align-items:center"><input type="checkbox" data-pymk-pref="show_card" checked> Show People you may know</label>' +
+        // Message emails (Sep 22 2026): one email per unread conversation.
+        '<label class="av-edit-note" style="padding:2px 0 0;display:flex;gap:6px;align-items:center"><input type="checkbox" data-dm-email checked> Email me about new messages</label>' +
       "</div>";
     const sel = slot.querySelector("[data-vis-select]");
     const msg = slot.querySelector("[data-vis-msg]");
@@ -239,6 +241,18 @@
       if (!row) return;
       pymkBoxes.forEach(function (b) { b.checked = row[b.getAttribute("data-pymk-pref")] !== false; });
     }).catch(function () {});
+    const dmEmailBox = slot.querySelector("[data-dm-email]");
+    Promise.resolve(sb.rpc("dm_email_pref_get")).then(function (r) {
+      if (r && !r.error && dmEmailBox) dmEmailBox.checked = r.data !== false;
+    }).catch(function () {});
+    if (dmEmailBox) dmEmailBox.addEventListener("change", async function () {
+      dmEmailBox.disabled = true;
+      try {
+        const { error } = await sb.rpc("dm_email_pref_set", { p_enabled: dmEmailBox.checked });
+        if (error) { dmEmailBox.checked = !dmEmailBox.checked; msg.textContent = "Couldn\u2019t save. Try again."; msg.classList.add("is-error"); }
+      } catch (err) { dmEmailBox.checked = !dmEmailBox.checked; }
+      finally { dmEmailBox.disabled = false; }
+    });
     pymkBoxes.forEach(function (b) {
       b.addEventListener("change", async function () {
         const key = b.getAttribute("data-pymk-pref");

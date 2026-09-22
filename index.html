@@ -2745,6 +2745,8 @@ function parseRoute(){
   if(/^#\/privacy\/?$/.test(h)) return {type:'privacy'};
   m = /^#\/review\/([0-9a-f-]{36})\/([0-9a-f-]{36})\/(approved|rejected)\/?$/.exec(h);
   if(m) return {type:'review', id:m[1], token:m[2], action:m[3]};
+  m = /^#\/unsubscribe\/([0-9a-f-]{36})\/?$/.exec(h);
+  if(m) return {type:'unsubscribe', token:m[1]};
   return {type:'feed'};
 }
 
@@ -2799,6 +2801,7 @@ async function router(){
     return;
   }
   if(route.type === 'review'){ await renderReviewRoute(route); return; }
+  if(route.type === 'unsubscribe'){ await renderUnsubscribeRoute(route); return; }
   if(route.type === 'venue'){
     var name = venueFromSlug(route.slug);
     if(name){ enterVenueState(name); }
@@ -3010,6 +3013,26 @@ async function renderReviewRoute(route){
   wrap.innerHTML = '<div class="sub-page"><h1 class="sub-title">' + verb + '</h1>'
     + '<p class="sub-lead"><strong>' + esc(row.title) + '</strong> at ' + esc(row.venue) + ', ' + esc(row.date) + '.</p>'
     + '<p class="sub-lead">' + after + '</p></div>';
+}
+
+// The "Turn off message emails" link in a DM notification email (Sep 22
+// 2026). No sign-in: the token in the link is the key. Waits briefly for
+// the Supabase client, which loads after this script.
+async function renderUnsubscribeRoute(route){
+  var wrap = $('#results');
+  $('#resultCount').textContent = '';
+  clearTogglePills();
+  wrap.innerHTML = '<div class="sub-page"><p class="sub-lead">One moment\u2026</p></div>';
+  var sb = txClient();
+  for(var i = 0; !sb && i < 25; i++){ await new Promise(function(r){ setTimeout(r, 200); }); sb = txClient(); }
+  if(!sb){ wrap.innerHTML = '<div class="sub-page"><h1 class="sub-title">Couldn\u2019t reach the server</h1><p class="sub-lead">Reload and try the link again.</p></div>'; return; }
+  var res = await safeRpc(sb.rpc('dm_email_unsubscribe', { p_token: route.token }));
+  if(res.error || res.data !== true){
+    wrap.innerHTML = '<div class="sub-page"><h1 class="sub-title">That link didn\u2019t work</h1><p class="sub-lead">Sign in and use the bookmark menu to turn off message emails instead.</p></div>';
+    return;
+  }
+  wrap.innerHTML = '<div class="sub-page"><h1 class="sub-title">Message emails are off</h1>'
+    + '<p class="sub-lead">You won\u2019t get emails about new messages. Messages still show under the envelope on the site. To turn emails back on, open the bookmark menu and check \u201cEmail me about new messages.\u201d</p></div>';
 }
 
 // ===== PROFILE PAGES (Fork Stage 10, Part 2) =====
