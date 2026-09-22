@@ -8108,7 +8108,11 @@ a.inbox-thread-who:hover{text-decoration:underline}
 .ticker-caret{opacity:.7}
 .ticker-usage{margin:4px 8px 2px}
 .ticker-edit-row input[type="date"]{flex:1 1 auto;margin-top:0}
-.ticker-add{flex:0 0 auto;padding:6px 12px}
+/* width:auto beats .quick-menu-pill's width:100%, which pushed Add (and
+   Save/Cancel) out past the panel's edge, invisible (Sep 21 2026). */
+.ticker-add{flex:0 0 auto;width:auto;padding:6px 12px;background:var(--rust);color:#fff;font-weight:600}
+.ticker-add[data-tk-cancel]{background:transparent;color:var(--ink);border:1px solid rgba(74,53,38,.3)}
+.ticker-add:disabled{opacity:.55}
 .ticker-list{margin-top:8px;display:flex;flex-direction:column;gap:4px}
 .ticker-line{display:flex;align-items:center;gap:6px;font-family:'Bitter',Georgia,serif;font-size:12px;color:var(--ink);background:rgba(74,53,38,.06);border-radius:6px;padding:5px 8px}
 .ticker-line.is-off{opacity:.55}
