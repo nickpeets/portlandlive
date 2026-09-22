@@ -469,3 +469,5 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **2026-09-22 — PYMK newest-members fallback (0b64dcf4)** — members who joined in the last 30 days fill leftover slots after mutuals/shared shows, labeled "New on Rain Or Shows"; same exclusions. SQL: people_you_may_know replaced in schema-pymk.sql.
 
 - **2026-09-22 — Search phrase fix (607bc818)** — multi-word phrase match let the last word end mid-word; "billy st" had matched three shows via "St" in street addresses and missed Billy Strings.
+
+- **2026-09-22 — Heart redrawn (7dd7d1ed)** — symmetric about center; old path's dip sat left of center and the right lobe stopped short.
