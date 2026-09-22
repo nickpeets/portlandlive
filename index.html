@@ -6493,8 +6493,17 @@ async function mountPymk(parent){
   });
   host.hidden = false;
 }
-// The bookmark menu turned the card back on: fetch again on the next draw.
-window.__pymkReset = function(){ PYMK_CACHE = { uid: null, at: 0, rows: null, off: false }; };
+// The bookmark menu switch (Sep 22 2026, Nick: it should come back without
+// a hard refresh). On: forget the cache and, if the plain feed is showing
+// without a card, redraw it so the card mounts now. Off: take it down now.
+window.__pymkReset = function(on){
+  PYMK_CACHE = { uid: null, at: 0, rows: null, off: false };
+  if(on === false){ document.querySelectorAll('.pymk').forEach(function(el){ el.remove(); }); return; }
+  if(document.querySelector('.pymk') || !document.querySelector('#results .daygroup')) return;
+  const rt = parseRoute().type;
+  if(rt !== 'feed') return;
+  render();
+};
 
 // Poster overrides on the FEED, live (Sep 18 2026 -- "the poster doesn't stay
 // put"): one read of show_overrides_all when the feed loads, patched onto

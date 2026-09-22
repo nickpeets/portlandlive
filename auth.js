@@ -247,7 +247,7 @@
         try {
           const { error } = await sb.rpc("pymk_prefs_set", args);
           if (error) { b.checked = !b.checked; msg.textContent = "Couldn\u2019t save. Try again."; msg.classList.add("is-error"); }
-          else if (key === "show_card" && typeof window.__pymkReset === "function") { window.__pymkReset(); }
+          else if (key === "show_card" && typeof window.__pymkReset === "function") { window.__pymkReset(b.checked); }
         } catch (err) { b.checked = !b.checked; }
         finally { b.disabled = false; }
       });
