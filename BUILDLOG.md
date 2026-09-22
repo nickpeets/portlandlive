@@ -482,3 +482,5 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **2026-09-22 — Message emails (2b66f663)** — pg_cron sweep every 5 min; one email per unread conversation after 15 min (last 24 h only); no message text; bookmark-menu switch + /#/unsubscribe/<token>. SQL: supabase/schema-dm-email.sql.
 
 - **2026-09-22 — Listen names (332eb04d)** — resolver splits 2+-and bills and lowercase x billings, reads hosted-by/plays/benefit/anniversary, cuts at a mid-title parenthetical; art openings, exhibitions, birthday bashes, burlesque, variety shows, student bands get no Listen. Audit 28 -> 10 flags; 84 cases.
+
+- **2026-09-22 — Talks out of music (92e6ae17)** — Jon Meacham (historian, Schnitzer) on FORCE_NON_MUSIC; _p5_detail returns kind comedy/other, _P5_TALK (Literary Arts, Arts & Lectures, lecture, historian, book tour, in conversation with, podcast, Pulitzer, bestselling author); app honors contentType other.
