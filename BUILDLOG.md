@@ -500,3 +500,5 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **2026-09-22 — Multi-show nights (f8352039)** — dedupe (now dedupe_shows) keeps times 75+ min apart in a `times` list on the one row (slug unchanged); closer times stay a doors-vs-show collision. Cards and show pages read "7:00 PM & 9:30 PM". Restores ~50 Helium/Kickstand late shows.
 
 - **2026-09-22 — Listed as (9bbfbc6f)** — moderators mark any show Music, Comedy or Not music on its page (show_kinds table, set_show_kind); page applies it live, build applies it after posters so it wins over every classifier. SQL: supabase/schema-show-kinds.sql.
+
+- **2026-09-22 — Block (7e43543c)** — blocks table + block_user/unblock_user/my_blocks; triggers refuse follows, threads and messages across a block; dm_open, dm_threads_mine, profile_by_handle and people_you_may_know respect it. Page: ⋯ menu on profiles and threads, confirm, Blocked/Unblock header, Blocked people on your own profile; blocked comments and Who's Going rows hidden for the blocker. SQL: supabase/schema-blocks.sql.
