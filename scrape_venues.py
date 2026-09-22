@@ -5509,7 +5509,9 @@ def parse_lolasroom(html, today):
 # also carries the hall's board and committee meetings; those are dropped.
 def parse_wowhall(text, today):
     rows = _tribe_rows(text, today, "WOW Hall", "https://wowhall.org/calendar/", horizon_days=HORIZON_DAYS)
-    return [r for r in rows if not re.search(r"(?i)\b(board|committee|membership)\b.*\bmeeting\b|\bmeeting\b.*\b(board|ccpa)\b|\bccpa\b", r.get("title") or "")]
+    # Also the hall's rentals: a weekly dance class, the City Club lunch
+    # meeting, the history museum's talk (first live pull, Sep 21 2026).
+    return [r for r in rows if not re.search(r"(?i)\bmeeting\b|\bccpa\b|dance empowered|\bcity club\b|history pubs?\b|\bclass(es)?\b|\bworkshop\b|\bboard\b|\blegislative\b", r.get("title") or "")]
 
 
 SOURCES = [
