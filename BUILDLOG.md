@@ -492,3 +492,5 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **2026-09-22 — Science Pub out (9c642f61)** — science pub added to the not-a-show gate beside Science On Tap and History Pub; drops OMSI Science Pub at the Mission Theater (3 nights). Gate test 16 -> 18 titles.
 
 - **2026-09-22 — Pins beat the gates (04960f29)** — pinned shows are added back after the music and Further Out gates in the Picks view; Billy Strings (Matthew Knight Arena, Eugene) was pinned but hidden.
+
+- **2026-09-22 — Search vs sections (58b13063)** — Nick picked A: leaveSections(section) clears the search box; typing calls leaveSections(null) so a search always covers every show (Following + an unfollowed band used to come up empty). Back from a show page keeps the search.
