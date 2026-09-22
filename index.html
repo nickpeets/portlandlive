@@ -1935,6 +1935,7 @@ function filtered(){
   // filters, so the default view is correct 24/7 regardless of when shows.json was built.
   const todayPacific = new Intl.DateTimeFormat('en-CA',{timeZone:'America/Los_Angeles',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
   let out = state.shows.filter(s => s.date >= todayPacific);
+  const _allUpcoming = out;   // Picks: pinned shows skip the gates below
   // Content-type gate: music only by default. Comedy toggle shows comedy.
   // The audit panel bypasses this gate so ALL buckets stay visible.
   if(!state.audit){
@@ -1999,6 +2000,11 @@ function filtered(){
    if(state.picks){
      // Picks overrides time-window / favorites filters: it is the showcase view.
      rebuildPickSet();
+     // A pin beats every other rule (Sep 22 2026, Nick pinned Billy Strings
+     // -- Eugene, a Further Out room -- and it never showed): put pinned
+     // shows back even if the music or Further Out gates above took them out.
+     const _have = new Set(out.map(function(x){ return x._slug; }));
+     _allUpcoming.forEach(function(x){ if(PICK_PINS[x._slug] === 'in' && !_have.has(x._slug)) out.push(x); });
      out = out.filter(isPick);
    } else {
      out = applyTimeFilters(out);
