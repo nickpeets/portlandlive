@@ -7380,10 +7380,14 @@ function favKey(s){ return (s.venue||'') + '|' + (s.date||'') + '|' + (s.title||
         if(state.favorites.has(k)) state.favorites.delete(k); else state.favorites.add(k);
         saveFavorites();
       }
+      // Symmetric about x = 12 (Sep 22 2026, Nick: the old one was
+      // "kadywompus" -- its dip sat left of center and the right lobe
+      // stopped short). Two mirrored arcs meeting at the center dip.
       function heartSvg(on){
+        const HEART_PATH = 'M12 20.3 4.6 13.1a4.9 4.9 0 0 1 0-7 4.9 4.9 0 0 1 7 0l.4.4.4-.4a4.9 4.9 0 0 1 7 0 4.9 4.9 0 0 1 0 7z';
         return on
-          ? '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.35-9.5-8.5C.5 9 2.5 5.5 6 5.5c2 0 3.2 1.1 4 2.3.8-1.2 2-2.3 4-2.3 3.5 0 5.5 3.5 3.5 7C19 16.65 12 21 12 21z"/></svg>'
-          : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.35-9.5-8.5C.5 9 2.5 5.5 6 5.5c2 0 3.2 1.1 4 2.3.8-1.2 2-2.3 4-2.3 3.5 0 5.5 3.5 3.5 7C19 16.65 12 21 12 21z"/></svg>';
+          ? '<svg viewBox="0 0 24 24" fill="currentColor"><path d="' + HEART_PATH + '"/></svg>'
+          : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="' + HEART_PATH + '"/></svg>';
       }
 
 /* events */
