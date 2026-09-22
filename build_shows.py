@@ -673,7 +673,7 @@ _NOT_A_SHOW = re.compile(r"""(?ix)
   | \b(patriots|seahawks|blazers|timbers|thorns|ducks|beavers|49ers|nfl|nba|mlb|nhl|ufc|monday\s+night\s+football)\b
   | \b(vegan\s+market|farmers?\s+market|craft\s+(?:fair|market)|flea\s+market|swap\s+meet|clothing\s+swap|plant\s+swap|art\s+trail|art\s+walk|gallery\s+opening|maker'?s?\s+market|holiday\s+market|night\s+market)\b
   | \b(history\s*&\s*art\s+tour|art\s+tour|walking\s+tour|brewery\s+tour|history\s+tour|tour\s+of\s+the)\b
-  | \b(workshop|seminar|lecture|book\s+talk|book\s+club|author\s+(?:talk|event)|science\s+on\s+tap|history\s+pub|storytime|story\s+time|panel\s+discussion)\b
+  | \b(workshop|seminar|lecture|book\s+talk|book\s+club|author\s+(?:talk|event)|science\s+on\s+tap|science\s+pub|history\s+pub|storytime|story\s+time|panel\s+discussion)\b
   | \b(throwdown|cook-?off|chili\s+(?:feed|cook)|hot\s+sauce|wing\s+(?:challenge|night|eating)|pancake\s+breakfast|potluck|crawfish\s+boil|pie\s+contest)\b
   | \b(yoga|pilates|meditation|run\s+club|bike\s+ride|fitness)\b
   | \b(movie\s+night|film\s+screening|screening\s+of|cinema\s+night|documentary)\b

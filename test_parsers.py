@@ -367,7 +367,8 @@ def main():
             ("Square Dancing with Calling Lessons from Bex Bee and Boondoggle String Band", False), ("Waylon Wyatt – Dustpiles World Tour", False),
             ("Open Jam and Games", False), ("Sea Shanty Sing Along", False), ("PJCE Happy Hour Jazz w/ Christopher Brown Trio", False), ("Oktoberfest", True),
             ("10th Annual Kennedy School Oktoberfest Brewfest", True), ("Oktoberfest with The Polka Kings", False),
-            ("Oktoberfest: Alpine Dave & the Lederhosen", False), ("Octoberfest Music Festival", True)]
+            ("Oktoberfest: Alpine Dave & the Lederhosen", False), ("Octoberfest Music Festival", True),
+            ("OMSI Science Pub: Smoke and Mirrors OMSI Science Pub", True), ("OMSI Science Pub", True)]
     _bad = [f"{ti!r} -> {bs.is_not_a_show(ti)}" for ti, want in _nas if bs.is_not_a_show(ti) != want]
     if _bad:
         fails += 1
@@ -377,7 +378,7 @@ def main():
         print("GATE FAILURE")
         import sys as _sys; _sys.exit(1)
     else:
-        print("  ok   not-a-show gate               16 titles -- trivia/cribbage/sports/markets/tours/lessons out; anything with a music word stays; beer fests only with a named act")
+        print("  ok   not-a-show gate               18 titles -- trivia/cribbage/sports/markets/tours/lessons out; anything with a music word stays; beer fests only with a named act")
     print()
 
 if __name__ == "__main__":
