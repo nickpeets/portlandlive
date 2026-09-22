@@ -9,6 +9,8 @@
 -- The card says why only as "Followed by X" or "At N of your shows".
 -- Off switches (bookmark menu): suggest_me = false -> never suggested;
 -- show_card = false -> no card in your feed. The x hides one person for good.
+-- Fallback (Sep 22 2026): members who joined in the last 30 days fill the
+-- leftover slots, labeled "New on Rain Or Shows".
 -- Depends on schema-follow-requests.sql and schema-profile-pages.sql.
 -- Run once, in full, in the Supabase SQL Editor. Re-running is safe.
 
@@ -61,11 +63,22 @@ begin
       join public.profiles pv on pv.id = a2.user_id and pv.upcoming_visibility <> 'private'
      where a1.user_id = v_me
      group by a2.user_id
-  ), c as (
+  ), linked as (
     select coalesce(fof.cand, shared.cand) as cand,
            coalesce(fof.n, 0) as m, coalesce(fof.names, '{}'::text[]) as names,
            coalesce(shared.n, 0) as s
       from fof full join shared on shared.cand = fof.cand
+  ), c as (
+    -- Newest-members fallback (Sep 22 2026): people who joined in the last
+    -- 30 days fill whatever slots the two real signals leave. They sort
+    -- after every linked person (score 0) and show as "New on Rain Or
+    -- Shows" on the card (mutuals = 0 and shared_shows = 0).
+    select * from linked
+    union all
+    select np.id, 0, '{}'::text[], 0
+      from public.profiles np
+     where np.created_at > now() - interval '30 days'
+       and not exists (select 1 from linked l where l.cand = np.id)
   )
   select p.id, p.handle, p.display_name, p.avatar_url, c.m, c.names, c.s
     from c
@@ -75,7 +88,7 @@ begin
      and not exists (select 1 from public.follows f where f.follower_id = v_me and f.followee_id = c.cand)
      and not exists (select 1 from public.pymk_hidden h where h.user_id = v_me and h.hidden_id = c.cand)
      and not exists (select 1 from public.pymk_prefs x where x.user_id = c.cand and not x.suggest_me)
-   order by (c.m * 3 + c.s * 2) desc, c.m desc, lower(p.handle)
+   order by (c.m * 3 + c.s * 2) desc, c.m desc, p.created_at desc, lower(p.handle)
    limit greatest(1, least(coalesce(p_limit, 12), 25));
 end;
 $$;
