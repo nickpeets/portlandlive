@@ -1,13 +1,6 @@
 {
  "items": [
   {
-   "text": "2 new venues on the calendar: Swan Dive and The Waypost.",
-   "auto": true,
-   "key": "venues:2026-09-21",
-   "from": "2026-09-21",
-   "until": "2026-10-05"
-  },
-  {
    "text": "Coming up: Northwest Roots Fest Oct 3-4. Full lineup on the site.",
    "auto": true,
    "key": "fest:northwest-roots-fest-2026",
@@ -16,42 +9,31 @@
    "url": "#/festival/northwest-roots-fest-2026"
   },
   {
-   "text": "Welcome Asher Fulero, Chelsea Joy Joy, Tim, Corbett Hill Jeremy, Auprah, Kim and 6 more to Rain Or Shows.",
+   "text": "3 new venues on the calendar: Birch Street Uptown Lounge, Lola's Room and Winona Grange.",
+   "auto": true,
+   "key": "venues:2026-09-21:2026-09-22T06:19:49+00:00",
+   "from": "2026-09-21",
+   "until": "2026-09-28",
+   "at": "2026-09-22T06:19:49+00:00"
+  },
+  {
+   "text": "Further Out: WOW Hall, McDonald Theatre, Hayden Homes Amphitheater and 4 more — new on the calendar. Tap Further Out.",
+   "auto": true,
+   "key": "far:2026-09-21:2026-09-22T06:19:49+00:00",
+   "from": "2026-09-21",
+   "until": "2026-09-28",
+   "at": "2026-09-22T06:19:49+00:00"
+  },
+  {
+   "text": "Welcome Simoon, Asher Fulero, Chelsea Joy Joy, Tim, Corbett Hill Jeremy, Auprah and 7 more to Rain Or Shows.",
    "auto": true,
    "key": "members:rolling",
    "from": "2026-09-21",
    "until": "2026-09-21"
-  },
-  {
-   "text": "New venue: The Blue Diamond — 29 shows on the calendar.",
-   "auto": true,
-   "key": "venue:The Blue Diamond",
-   "from": "2026-09-20",
-   "until": "2026-10-04"
-  },
-  {
-   "text": "2 new venues on the calendar: LaVerne's and Portland Art Museum.",
-   "auto": true,
-   "key": "venues:2026-09-19",
-   "from": "2026-09-19",
-   "until": "2026-10-03"
-  },
-  {
-   "text": "24 new venues on the calendar: Alberta Abbey, CORNER14, Chehalem Cultural Center and 21 more.",
-   "auto": true,
-   "key": "venues:2026-09-17",
-   "from": "2026-09-17",
-   "until": "2026-10-01"
-  },
-  {
-   "text": "3 new venues on the calendar: The Haven, The Reser and Tomorrow Theater.",
-   "auto": true,
-   "key": "venues:2026-09-16",
-   "from": "2026-09-16",
-   "until": "2026-09-30"
   }
  ],
  "announced": [
+  "far:2026-09-21:2026-09-22T06:19:49+00:00",
   "fest:easyfolk-fest-2026",
   "fest:northwest-roots-fest-2026",
   "fest:st-johns-music-fest-2026",
@@ -74,6 +56,7 @@
   "venue:Arlene Schnitzer Concert Hall",
   "venue:Artichoke Music",
   "venue:Barrel Room",
+  "venue:Birch Street Uptown Lounge",
   "venue:Brunish Theatre",
   "venue:Bunk Bar",
   "venue:CORNER14",
@@ -82,12 +65,15 @@
   "venue:Chehalem Valley Brewing",
   "venue:Crystal Ballroom",
   "venue:Curious Comedy Theater",
+  "venue:Cuthbert Amphitheater",
   "venue:Dante's",
   "venue:Dublin Pub",
   "venue:Funhouse Lounge",
+  "venue:Gorge Amphitheatre",
   "venue:Havalina",
   "venue:Hawthorne Lounge",
   "venue:Hawthorne Theatre",
+  "venue:Hayden Homes Amphitheater",
   "venue:Haymaker",
   "venue:Helium Comedy Club",
   "venue:Holocene",
@@ -100,6 +86,9 @@
   "venue:Kickstand Comedy",
   "venue:LaVerne's",
   "venue:Laurelthirst Public House",
+  "venue:Lola's Room",
+  "venue:Matthew Knight Arena",
+  "venue:McDonald Theatre",
   "venue:McMenamins Edgefield",
   "venue:McMenamins Grand Lodge",
   "venue:McMenamins Hotel Oregon",
@@ -137,6 +126,7 @@
   "venue:The Goodfoot",
   "venue:The Haven",
   "venue:The Headliners Club",
+  "venue:The Lyons Den",
   "venue:The Off Beat",
   "venue:The Old Church",
   "venue:The Reser",
@@ -154,16 +144,19 @@
   "venue:Turn! Turn! Turn!",
   "venue:Twilight Cafe & Bar",
   "venue:Veterans Memorial Coliseum",
+  "venue:WOW Hall",
   "venue:Walters Cultural Arts Center",
   "venue:White Eagle Saloon",
   "venue:Wilfs",
   "venue:Winningstad Theatre",
+  "venue:Winona Grange",
   "venue:Wolves & People Bar",
   "venue:Wonder Ballroom",
   "venue:ilani",
   "venues:2026-09-16",
   "venues:2026-09-17",
   "venues:2026-09-19",
-  "venues:2026-09-21"
+  "venues:2026-09-21",
+  "venues:2026-09-21:2026-09-22T06:19:49+00:00"
  ]
 }
