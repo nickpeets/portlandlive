@@ -887,6 +887,7 @@ body{
    attendee-list row itself needs new structure. */
 .wg-head{display:flex;align-items:baseline;gap:10px;margin-bottom:6px}
 .wg-head h3{font-family:'Alfa Slab One',serif;font-weight:400;font-size:19px;color:var(--cream);margin:0}
+.wg-others{margin:-6px 0 14px;padding:0 2px}
 .wg-list{list-style:none;margin:0 0 14px;padding:0;display:flex;flex-direction:column;gap:8px}
 .wg-row{background:var(--cream);border-radius:12px;padding:11px 14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;box-shadow:0 6px 14px rgba(20,40,30,.14)}
 .wg-name{font-family:'Bitter',Georgia,serif;font-size:14px;color:var(--ink);flex:1 1 auto;min-width:0;overflow-wrap:anywhere}
@@ -5840,7 +5841,11 @@ async function renderWhosGoing(host, slug){
     return;
   }
 
-  const rows = data || [];
+  // People set to "No one" come back unnamed (user_id null) -- counted,
+  // never listed (Sep 22 2026, Nick: "Nicky Sweets (and 25 others)").
+  const allRows = data || [];
+  const rows = allRows.filter(function(r){ return !!r.user_id; });
+  const others = allRows.length - rows.length;
   WG_THREADS._attendees = rows;
   await avLoad(rows.map(function(r){ return r.user_id; }));
   const iAmGoing = !!(myUserId && rows.some(function(r){ return r.user_id === myUserId; }));
@@ -5856,11 +5861,14 @@ async function renderWhosGoing(host, slug){
   }
 
   let html = '<div class="tx-head"><h3>Who\u2019s Going</h3>'
-    + '<span class="tx-count">' + rows.length + (rows.length === 1 ? ' person' : ' people') + '</span></div>';
+    + '<span class="tx-count">' + allRows.length + (allRows.length === 1 ? ' person' : ' people') + '</span></div>';
 
   html += rows.length
     ? '<ul class="wg-list">' + rows.map(function(r){ return wgRow(r, myUserId, iAmGoing); }).join('') + '</ul>'
-    : '<div class="tx-state">No one\u2019s marked themselves going yet.</div>';
+      + (others ? '<div class="tx-state wg-others">and ' + others + (others === 1 ? ' other' : ' others') + '</div>' : '')
+    : others
+      ? '<div class="tx-state wg-others">' + others + (others === 1 ? ' person is' : ' people are') + ' going.</div>'
+      : '<div class="tx-state">No one\u2019s marked themselves going yet.</div>';
 
   if(myUserId){
     html += iAmGoing
