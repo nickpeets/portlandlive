@@ -690,8 +690,19 @@ _MUSIC_SIGNAL = re.compile(r"""(?ix)
 _TOUR_KIND = re.compile(r"(?i)\b(history\s*&\s*art\s+tour|art\s+tour|walking\s+tour|brewery\s+tour|history\s+tour|tour\s+of\s+the)\b")
 
 
+# Beer festivals (Nick, Sep 22 2026): "we are excluding Oktoberfests unless
+# there is an explicit band playing." A music word is NOT enough here (an
+# "Oktoberfest Music Festival" with no act named still goes); an act has to
+# be named after w/, with, feat., featuring, "music by", "live music from",
+# or a colon ("Oktoberfest: The Polka Kings").
+_BEER_FEST = re.compile(r"(?i)\b(?:ok|oc)toberfest|\bbrewfest|\bbeer\s*fest|\bcider\s*fest|\bhopfest|\bbrew\s*fest")
+_NAMED_ACT = re.compile(r"(?i)(?:\bw/\s*|\bwith\s+|\bfeat\.?\s+|\bfeaturing\s+|\bft\.?\s+|\bmusic\s+(?:by|from)\s+|\bperformances?\s+by\s+|:\s+)(?!(?:food|beer|games|friends|family|kids)\b)[A-Z0-9\"'\u201c]")
+
+
 def is_not_a_show(title):
     t = (title or "").strip()
+    if t and _BEER_FEST.search(t):
+        return not _NAMED_ACT.search(t)
     if not t or not _NOT_A_SHOW.search(t):
         return False
     # "tour" is a music word (a band on tour) unless the hit WAS a tour of a
