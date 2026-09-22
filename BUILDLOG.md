@@ -494,3 +494,5 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **2026-09-22 — Pins beat the gates (04960f29)** — pinned shows are added back after the music and Further Out gates in the Picks view; Billy Strings (Matthew Knight Arena, Eugene) was pinned but hidden.
 
 - **2026-09-22 — Search vs sections (58b13063)** — Nick picked A: leaveSections(section) clears the search box; typing calls leaveSections(null) so a search always covers every show (Following + an unfollowed band used to come up empty). Back from a show page keeps the search.
+
+- **2026-09-22 — Alberta Rose event pages (f77b6e26)** — _ar_enrich reads each event page (text after the title, cut at More events) with _page_kind: comedy words -> comedy, talk words -> other. Talk list gains author of, a conversation about/with, memoir, Oregon Humanities, book signing, keynote. Fixture alberta-rose-event.html (Stephanie Land) must read as a talk.
