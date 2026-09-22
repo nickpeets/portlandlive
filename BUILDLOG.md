@@ -508,3 +508,5 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **2026-09-22 — Giveaway (75082668)** — brothers-comatose-2026 (Aladdin, Oct 31; closes Oct 26 11:59 PM PT): 1 entry for I'm going in the window, +1 per invitee (?ref=inv-<handle>) who also marks going; moderators excluded; giveaway_draw weighted, once. Banner on the plain feed, #/giveaway page, line on the show page. SQL: supabase/schema-giveaway.sql.
 
 - **2026-09-22 — Condensed feed top on phones (5606454f)** — giveaway banner one line (Halloween at the Aladdin hidden on phones), photo and PYMK fold headers slimmer and 8px apart; banner-to-first-day 211px -> 147px on a 393px screen.
+
+- **2026-09-22 — Search row tightened (a345e0d7)** — phones: controls bottom padding 30 -> 10, results top 8 -> 4 (search-row-to-banner 38px -> 14px); Browse 130 -> 108px, search 221 -> 243px.
