@@ -488,3 +488,5 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **2026-09-22 — Picks rebuilt (d51c6ade)** — build marks pickable + buzz (Deezer nb_fan, exact-name match only) for big rooms / in town / 14 days / affiliateUrl or resaleUrl; page ranks log10(buzz)+0.5*hearts, max 2 per room, 12; pick_pins (in/out) set by moderators from the Picks feed or show page; supports-the-site chip on Pick cards. SQL: supabase/schema-picks.sql.
 
 - **2026-09-22 — Phone controls + PYMK panel (ca2b6358)** — phones: search shares a row with #phoneBrowse (All shows, Tonight, This Week, Picks, Venues, Comedy, Following, All Ages, Festivals, Further Out), pill rows hidden; desktop unchanged. PYMK moved out of the listings to a folding panel under Latest photos & clips, folded on every draw.
+
+- **2026-09-22 — Science Pub out (9c642f61)** — science pub added to the not-a-show gate beside Science On Tap and History Pub; drops OMSI Science Pub at the Mission Theater (3 nights). Gate test 16 -> 18 titles.
