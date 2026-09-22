@@ -110,6 +110,8 @@ VENUE_INFO = {
     "Winona Grange": ("Tualatin", "8340 SW Seneca St, Tualatin, OR 97062"),
     "Matthew Knight Arena": ("Eugene", "1776 E 13th Ave, Eugene, OR 97403"),
     "McDonald Theatre": ("Eugene", "1010 Willamette St, Eugene, OR 97401"),
+    "Hayden Homes Amphitheater": ("Bend", "344 SW Shevlin-Hixon Dr, Bend, OR 97702"),
+    "Gorge Amphitheatre": ("George, WA", "754 Silica Rd NW, George, WA 98848"),
     "Haymaker": ("Overlook", "1223 N Killingsworth St, Portland, OR 97217"),
     "Strum PDX": ("Buckman", "1415 SE Stark St #C, Portland, OR 97214"),
     "Tomorrow Theater": ("Richmond", "3530 SE Division St, Portland, OR 97202"),

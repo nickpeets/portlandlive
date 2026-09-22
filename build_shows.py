@@ -837,6 +837,15 @@ def affiliate_audit(shows):
 # (and in search, on venue pages and show pages as usual). Newberg, Ridgefield,
 # Sauvie Island and the like stay local. McMinnville is the line (~1 hr).
 EUGENE_LATLONG = "44.0521,-123.0868"
+# Ticketmaster pulls outside the Portland radius, one small circle per town.
+# Only venues in VENUE_INFO (or TM_VENUE_MAP) are kept; everything else in the
+# circle is logged as "uncovered", which is the list to pick the next rooms
+# from. Big rooms first (Nick, Sep 21 2026).
+OUT_OF_TOWN_TM_AREAS = [
+    ("Eugene", EUGENE_LATLONG, 8),                    # Matthew Knight Arena (+ whatever else TM sells there)
+    ("Bend", "44.0582,-121.3153", 8),                 # Hayden Homes Amphitheater
+    ("George WA", "47.0959,-119.9827", 5),            # Gorge Amphitheatre
+]
 OUT_OF_TOWN_VENUES = {
     "The Ruins",                  # Hood River
     "Trout Lake Hall",            # Trout Lake WA
@@ -846,6 +855,8 @@ OUT_OF_TOWN_VENUES = {
     "Matthew Knight Arena",       # Eugene
     "McDonald Theatre",           # Eugene
     "The Pickled Fish",           # Long Beach WA
+    "Hayden Homes Amphitheater",  # Bend
+    "Gorge Amphitheatre",         # George WA
 }
 
 
@@ -1728,10 +1739,11 @@ def main():
     # radius around downtown Eugene; only venues in VENUE_INFO / TM_VENUE_MAP
     # are kept, so the rest of Lane County's listings count as "uncovered" in
     # the log and nowhere else.
-    _tm_events += tm_fetch(_today, latlong=EUGENE_LATLONG, radius=8) + tm_fetch(_today, classification="comedy", latlong=EUGENE_LATLONG, radius=8)
+    for _area, _ll, _rad in OUT_OF_TOWN_TM_AREAS:
+        _tm_events += tm_fetch(_today, latlong=_ll, radius=_rad) + tm_fetch(_today, classification="comedy", latlong=_ll, radius=_rad)
     if _tm_events:
         _m, _a, _unc = tm_apply(shows, _tm_events, _today)
-        _u = ", ".join(f"{v} ({c})" for v, c in _unc.most_common(6))
+        _u = ", ".join(f"{v} ({c})" for v, c in _unc.most_common(15))
         print(f"  Ticketmaster: {len(_tm_events)} events -> {_m} matched, {_a} added"
               + (f"; {sum(_unc.values())} at venues not covered: {_u}" if _unc else ""))
 
