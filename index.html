@@ -3337,7 +3337,7 @@ async function renderThreadRoute(handle){
   const o = await dmSafe(sb.rpc('dm_open', { p_other: p.id }));
   if(o && o.error){
     const msg = String(o.error.message || o.error);
-    wrap.innerHTML = '<div class="empty">' + (/not_allowed/.test(msg) ? 'You can message ' + esc(p.display_name || p.handle) + ' once one of you follows the other. <a href="#/u/' + encodeURIComponent(p.handle) + '">Their profile</a>' : 'Couldn\u2019t open this conversation. Reload to try again.') + '</div>';
+    wrap.innerHTML = '<div class="empty">' + (/blocked/.test(msg) ? 'You can\u2019t message ' + esc(p.display_name || p.handle) + '. <a href="#/messages">Back to messages</a>' : /not_allowed/.test(msg) ? 'You can message ' + esc(p.display_name || p.handle) + ' once one of you follows the other. <a href="#/u/' + encodeURIComponent(p.handle) + '">Their profile</a>' : 'Couldn\u2019t open this conversation. Reload to try again.') + '</div>';
     return;
   }
   const threadId = o.data;
@@ -3351,6 +3351,8 @@ async function renderThreadRoute(handle){
     + '<div class="dm-msgs" id="dmMsgs"><div class="empty">Loading\u2026</div></div>'
     + '<form class="dm-compose" id="dmCompose"><textarea id="dmBody" rows="2" maxlength="2000" placeholder="Write a message\u2026"></textarea><button type="submit" class="tx-send">Send</button></form>';
   wrap.appendChild(page);
+  // Block from inside the conversation (Sep 22 2026).
+  blockMenu(page.querySelector('.dm-head'), p, function(){ location.hash = '#/messages'; });
   // Feels like texting (Nick, Sep 2026): new messages appear on their own
   // while the thread is open (a poll every 4s, only repainting when
   // something changed), day dividers, and "Seen" under your last message
@@ -3458,6 +3460,61 @@ function renderPeopleSearch(q){
   }, 220);
 }
 
+// ===== BLOCK (Sep 22 2026, Nick's design) =====
+// Block lives in a small ⋯ menu on someone's profile and in a message
+// thread. The database removes follows both ways and refuses new follows,
+// conversations and messages across a block (schema-blocks.sql); here we hide
+// a blocked person's comments and Who's Going entries for YOU. They aren't
+// told. Undo from "Blocked people" on your own profile.
+let MY_BLOCKS = new Set();
+async function loadMyBlocks(){
+  const sb = window.__plAuth;
+  if(!sb || !state._signedIn){ MY_BLOCKS = new Set(); return; }
+  const r = await safeRpc(sb.rpc('my_blocks'));
+  MY_BLOCKS = new Set(((r && !r.error && r.data) || []).map(function(x){ return x.id; }));
+}
+// The ⋯ button plus its menu and confirm step, placed after `anchor`.
+function blockMenu(anchor, person, onBlocked){
+  const wrap = document.createElement('span');
+  wrap.className = 'blk-wrap';
+  wrap.innerHTML = '<button type="button" class="blk-more" aria-label="More" aria-expanded="false">&#8943;</button>';
+  anchor.appendChild(wrap);
+  const btn = wrap.querySelector('.blk-more');
+  let panel = null;
+  function close(){ if(panel){ panel.remove(); panel = null; } btn.setAttribute('aria-expanded', 'false'); }
+  btn.addEventListener('click', function(e){
+    e.preventDefault(); e.stopPropagation();
+    if(panel){ close(); return; }
+    btn.setAttribute('aria-expanded', 'true');
+    panel = document.createElement('div');
+    panel.className = 'blk-panel';
+    panel.innerHTML = '<button type="button" class="blk-item" data-blk-ask>Block @' + esc(person.handle) + '</button>';
+    wrap.appendChild(panel);
+  });
+  wrap.addEventListener('click', async function(e){
+    if(e.target.closest('[data-blk-ask]')){
+      e.preventDefault(); e.stopPropagation();
+      panel.innerHTML = '<div class="blk-confirm"><b>Block @' + esc(person.handle) + '?</b>'
+        + '<p>They won\u2019t be able to follow you, message you, or see your profile, and you\u2019ll stop following each other. Their comments are hidden for you. They aren\u2019t told.</p>'
+        + '<div class="blk-row"><button type="button" class="blk-cancel" data-blk-cancel>Cancel</button><button type="button" class="blk-go" data-blk-go>Block</button></div></div>';
+      return;
+    }
+    if(e.target.closest('[data-blk-cancel]')){ e.preventDefault(); e.stopPropagation(); close(); return; }
+    const go = e.target.closest('[data-blk-go]');
+    if(go){
+      e.preventDefault(); e.stopPropagation();
+      go.disabled = true;
+      const sb = window.__plAuth;
+      const r = sb ? await safeRpc(sb.rpc('block_user', { p_other: person.id })) : { error: 'no client' };
+      if(r.error){ go.disabled = false; go.textContent = 'Try again'; return; }
+      MY_BLOCKS.add(person.id);
+      close();
+      if(onBlocked) onBlocked();
+    }
+  });
+  document.addEventListener('click', function(e){ if(panel && !wrap.contains(e.target)) close(); });
+}
+
 async function renderProfileRoute(handle){
   try{ if(typeof trackView === 'function') trackView('/' + (location.hash||'')); }catch(_){}
   var wrap = $('#results');
@@ -3552,7 +3609,10 @@ async function renderProfileRoute(handle){
         // + ' \u00b7 <span data-pf-handoffs>' + handoffs + (handoffs === 1 ? ' handoff' : ' handoffs') + '</span>'
       + '</div>'
     + '</div>'
-    + ((myId && !isMe)
+    + ((myId && !isMe && MY_BLOCKS.has(p.id))
+        ? '<div class="pf-actions"><span class="pf-blocked">Blocked</span><button type="button" class="pf-follow" data-pf-unblock>Unblock</button></div>'
+        : '')
+    + ((myId && !isMe && !MY_BLOCKS.has(p.id))
         ? '<div class="pf-actions">'
           + '<button type="button" class="pf-follow' + (iFollow ? ' is-following' : '') + (iRequested ? ' is-requested' : '') + '" data-pf-follow="' + followAction + '"'
             + (iFollow ? ' title="Unfollow"' : '') + '>' + followLabel + '</button>'
@@ -3570,6 +3630,21 @@ async function renderProfileRoute(handle){
   // change together, and the page should say what the database says.
   var msgBtn = page.querySelector('[data-pf-message]');
   if(msgBtn){ msgBtn.addEventListener('click', function(){ location.hash = '#/messages/' + encodeURIComponent(p.handle); }); }
+  // Block (Sep 22 2026): the ⋯ menu beside Follow and Message.
+  var pfActions = page.querySelector('.pf-actions');
+  if(pfActions && myId && !isMe && !MY_BLOCKS.has(p.id)){
+    blockMenu(pfActions, p, function(){ if(parseRoute().handle === handle) renderProfileRoute(handle); });
+  }
+  var unblockBtn = page.querySelector('[data-pf-unblock]');
+  if(unblockBtn){
+    unblockBtn.addEventListener('click', async function(){
+      unblockBtn.disabled = true;
+      var r = await safe(sb.rpc('unblock_user', { p_other: p.id }));
+      if(r && r.error){ unblockBtn.disabled = false; return; }
+      MY_BLOCKS.delete(p.id);
+      if(parseRoute().handle === handle) renderProfileRoute(handle);
+    });
+  }
   var followBtn = page.querySelector('[data-pf-follow]');
   if(followBtn){
     followBtn.addEventListener('click', async function(){
@@ -3732,6 +3807,37 @@ async function renderProfileRoute(handle){
       : (withheld('stubs') || 'No stubs yet.')) + '</div>';
   }
   page.appendChild(st);
+
+  // Blocked people (Sep 22 2026): only on your own page, only when there are any.
+  if(isMe){
+    var bl = await safe(sb.rpc('my_blocks'));
+    var blocked = (bl && !bl.error && Array.isArray(bl.data)) ? bl.data : [];
+    if(parseRoute().handle !== handle) return;
+    if(blocked.length){
+      var bsec = document.createElement('section');
+      bsec.className = 'pf-section pf-blocks';
+      bsec.innerHTML = '<h3 class="pf-sec-title">Blocked people <span class="count">' + blocked.length + '</span></h3>'
+        + '<div class="people-list">' + blocked.map(function(u){
+            AV_CACHE[u.id] = { id: u.id, display_name: u.display_name, avatar_url: u.avatar_url };
+            return '<div class="pl-row">' + avImg(u.id, u.display_name, 'av-sm')
+              + '<span class="pl-name">' + esc(u.display_name || u.handle) + ' <span class="pl-handle">@' + esc(u.handle) + '</span></span>'
+              + '<button type="button" class="pf-follow" data-unblock-id="' + esc(u.id) + '">Unblock</button></div>';
+          }).join('') + '</div>';
+      bsec.addEventListener('click', async function(e){
+        var b = e.target.closest('[data-unblock-id]');
+        if(!b) return;
+        b.disabled = true;
+        var id = b.getAttribute('data-unblock-id');
+        var r = await safe(sb.rpc('unblock_user', { p_other: id }));
+        if(r && r.error){ b.disabled = false; return; }
+        MY_BLOCKS.delete(id);
+        var row = b.closest('.pl-row'); if(row) row.remove();
+        var left = bsec.querySelectorAll('.pl-row').length;
+        if(!left) bsec.remove(); else bsec.querySelector('.count').textContent = left;
+      });
+      page.appendChild(bsec);
+    }
+  }
 
   wrap.innerHTML = '';
   wrap.appendChild(page);
@@ -6069,7 +6175,7 @@ async function renderWhosGoing(host, slug){
   // People set to "No one" come back unnamed (user_id null) -- counted,
   // never listed (Sep 22 2026, Nick: "Nicky Sweets (and 25 others)").
   const allRows = data || [];
-  const rows = allRows.filter(function(r){ return !!r.user_id; });
+  const rows = allRows.filter(function(r){ return !!r.user_id && !MY_BLOCKS.has(r.user_id); });
   const others = allRows.length - rows.length;
   WG_THREADS._attendees = rows;
   await avLoad(rows.map(function(r){ return r.user_id; }));
@@ -6536,6 +6642,7 @@ async function cmtAuthors(ids){
 }
 
 function cmtRow(c, myUserId, hidden, resolved, authorHandle){
+  if(c && MY_BLOCKS.has(c.user_id)) return '';   // someone you blocked (Sep 22 2026)
   const mine = myUserId && c.user_id === myUserId;
   // A reported comment keeps its byline but loses its body. Showing who wrote
   // it and when preserves the thread's shape; showing the text would defeat
@@ -8314,6 +8421,7 @@ $('.masthead-brand').addEventListener('click', goHome);
       // Avatars are per-account only insofar as WHOSE editor shows; the cache
       // itself is keyed by user id so it stays valid across a sign-out.
       avRenderEditor();
+      await loadMyBlocks();
       await plLoadUserData();
       // The people half of ★ Following is per-account (Stage 10 Part 5):
       // drop the previous account's map, reload only if the pill is on.
@@ -8429,6 +8537,23 @@ a.inbox-thread-who:hover{text-decoration:underline}
 .pick-mod{display:flex;gap:8px;padding:8px 12px 10px;border-top:1px dashed rgba(74,53,38,.25)}
 .pick-mod-btn{border:1px solid var(--rust);background:none;color:var(--rust);border-radius:999px;padding:4px 10px;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.05em;text-transform:uppercase;cursor:pointer}
 .pick-mod-btn.on{background:var(--rust);color:var(--cream)}
+.blk-wrap{position:relative;display:inline-flex;margin-left:auto}
+.dm-head .blk-wrap{margin-left:auto}
+.blk-more{width:32px;height:32px;border-radius:50%;border:1px solid rgba(243,234,215,.5);background:none;color:var(--cream);font-size:18px;line-height:1;cursor:pointer;padding:0}
+.dm-head .blk-more{color:var(--ink);border-color:rgba(74,53,38,.35)}
+.blk-panel{position:absolute;right:0;top:38px;z-index:30;min-width:220px;max-width:280px;background:var(--cream);color:var(--ink);border-radius:10px;padding:6px;box-shadow:0 10px 24px rgba(0,0,0,.25);text-align:left}
+.blk-item{display:block;width:100%;text-align:left;background:none;border:0;border-radius:6px;padding:9px 10px;font:500 14px 'Bitter',Georgia,serif;color:#A32D2D;cursor:pointer}
+.blk-item:hover{background:rgba(163,45,45,.08)}
+.blk-confirm{padding:6px 8px;font-size:13px;line-height:1.45}
+.blk-confirm b{display:block;font-size:15px;margin-bottom:4px}
+.blk-confirm p{margin:0}
+.blk-row{display:flex;gap:8px;margin-top:10px}
+.blk-row button{flex:1;border-radius:999px;padding:7px;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
+.blk-cancel{background:none;border:1px solid var(--ink);color:var(--ink)}
+.blk-go{background:#A32D2D;border:1px solid #A32D2D;color:#fff}
+.pf-blocked{font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--cream);opacity:.8;align-self:center}
+.pf-blocks .pl-row{display:flex;align-items:center;gap:10px;padding:6px 0}
+.pf-blocks .pl-name{flex:1;min-width:0}
 .kind-edit{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
 .kind-label{font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--cream);opacity:.75;margin-right:2px}
 .poster-edit-btn.kind-on{background:var(--cream);color:var(--ink);border-color:var(--cream)}
