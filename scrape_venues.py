@@ -1412,10 +1412,15 @@ _P5_TIME = re.compile(r"\b(\d{1,2}:\d{2}\s*[AP]\.?M\.?)", re.I)
 # Nick). Only the unambiguous words: "funny"/"laugh"/"jokes" turn up in
 # music blurbs too and are left to the app's title sniff.
 _P5_COMEDY = re.compile(r"\bcomedian\b|\bstand[\s-]?up\b|\bcomedy\b|\bimprov\b|\bcomic\b", re.I)
+# Talks (Sep 22 2026, Nick: "Jon Meacham is not music"). The Schnitzer and
+# the Newmark host authors and historians -- Literary Arts' lecture series,
+# book tours -- that Portland'5 lists like any concert. Checked after comedy.
+_P5_TALK = re.compile(r"\bliterary arts\b|\barts (?:&|and) lectures\b|\blecture\b|\bhistorian\b|"
+                      r"\bbook tour\b|\bin conversation with\b|\bpodcast\b|\bbestselling author\b|\bpulitzer\b", re.I)
 
 
 def _p5_detail(html):
-    """age, time, image, date, comedy from one portland5.com event page.
+    """age, time, image, date, kind (comedy/other) from one portland5.com event page.
 
     The page is a <dl>: <dt class="event-details__detail-key">Age Restriction
     or Recommendation</dt><dd class="event-details__detail-value">All ages
@@ -1426,7 +1431,9 @@ def _p5_detail(html):
     age, doors, img, date = "", "", "", ""
     desc = " ".join((m.get("content") or "") for m in soup.find_all("meta", attrs={"name": "description"}) + soup.find_all("meta", property="og:description"))
     main = soup.find("main") or soup.body
-    comedy = bool(_P5_COMEDY.search(desc + " " + (main.get_text(" ", strip=True) if main else "")))
+    text = desc + " " + (main.get_text(" ", strip=True) if main else "")
+    # kind: "comedy", "other" (a talk) or "" -- the event page decides.
+    kind = "comedy" if _P5_COMEDY.search(text) else ("other" if _P5_TALK.search(text) else "")
     # The event page's own date: <div class="event-hero__date">Saturday,
     # September 19, 2026 8:00 PM</div>. The LISTING card for Beck said
     # Tuesday, November 10 while this page, Live Nation, Ticketmaster and
@@ -1450,7 +1457,7 @@ def _p5_detail(html):
     og = soup.find("meta", property="og:image")
     if og and og.get("content", "").startswith("http"):
         img = og["content"]
-    return age, doors, img, date, comedy
+    return age, doors, img, date, kind
 
 
 def _p5_enrich(rows, today=None):
@@ -1478,11 +1485,11 @@ def _p5_enrich(rows, today=None):
         except Exception:
             continue
         try:
-            age, doors, img, ddate, comedy = _p5_detail(h)
+            age, doors, img, ddate, kind = _p5_detail(h)
         except Exception:
             continue
-        if comedy and not r.get("contentType"):
-            r["contentType"] = "comedy"
+        if kind and not r.get("contentType"):
+            r["contentType"] = kind
         if ddate and ddate != r.get("date"):
             print(f"  note: Portland5: listing said {r.get('date')} but the event page says {ddate} -- {r.get('title','')[:40]!r}; using the event page")
             r["date"] = ddate

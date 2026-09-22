@@ -1405,6 +1405,7 @@ const FORCE_NON_MUSIC = [
   ["ali wong", "comedy"],
   ["off book", "comedy"],
   ["tits up", "comedy"],   // recurring comedy night at Alberta Street Pub
+  ["jon meacham", "other"], // historian's talk at the Schnitzer, Sep 22 2026 (Nick: "not music")
   "poetry slam",
   "drag brunch",
 ];
@@ -1621,6 +1622,9 @@ function classifyType(s){
   // TM classifies its own catalog, so a touring comic lands in the comedy
   // bin without the keyword sniff having to recognise the name (Sep 2026).
   if(s && s.contentType === 'comedy') return 'comedy';
+  // ...and a talk: the build marks Portland'5 lectures and book events
+  // "other" from the event page (Sep 22 2026, Jon Meacham).
+  if(s && s.contentType === 'other') return 'other';
   const nt = _normTitle(s && s.title);
   for(const e of FORCE_MUSIC){ if(e && nt.includes(_normTitle(e))) return "music"; }
   for(const e of FORCE_NON_MUSIC){
