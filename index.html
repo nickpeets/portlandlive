@@ -228,6 +228,7 @@ body{
 .pill-when:has(.toggle.on){background:var(--cream);border-color:var(--cream);color:var(--ink)}
 .pill-narrow:has(.toggle.on){background:var(--cream);border-color:var(--cream);color:var(--ink)}
 .browse-pill{display:none}
+.phone-browse{display:none}
 
 .search-pill{flex:1 1 auto;min-width:220px;background:rgba(255,255,255,.14)}
 .search-pill input{flex:1;width:100%}
@@ -521,6 +522,14 @@ body{
     .controls-inner .ctl-row + .ctl-row .browse-pill svg{pointer-events:none}
     .controls-inner .ctl-row + .ctl-row .browse-pill select{position:absolute;inset:0;width:100%;height:100%;
       box-sizing:border-box;padding:0 14px 0 36px;margin:0;z-index:1;cursor:pointer}
+    /* Sep 22 2026 (Nick): search + one Browse dropdown on a single row; the
+       pill rows are gone on phones -- every section is in the dropdown. */
+    .controls-inner .ctl-row + .ctl-row{display:none}
+    .controls-inner .phone-browse{display:inline-flex;position:relative;flex:0 0 auto;min-height:44px;box-sizing:border-box;padding:0;align-items:center}
+    .controls-inner .phone-browse svg{position:absolute;left:12px;pointer-events:none}
+    .controls-inner .phone-browse select{height:44px;box-sizing:border-box;padding:0 8px 0 34px;margin:0;cursor:pointer;width:128px}
+    .controls-inner .ctl-row:first-child{flex-wrap:nowrap}
+    .controls-inner .ctl-row:first-child .search-pill{flex:1 1 auto;min-width:0;width:auto;min-height:44px;box-sizing:border-box}
   .results{overflow-x:hidden}
   .results-inner{padding:0 16px}
   .row{gap:11px;padding:9px 10px}
@@ -1115,6 +1124,25 @@ body{
            place, dormant, rather than deleted — see the render() branch
            gated on state.byHood. Nothing re-wires it. -->
       <span class="toggle" id="byHoodToggle" hidden aria-hidden="true"></span>
+      <!-- Phones (Sep 22 2026, Nick): one dropdown beside the search box holds
+           every section; the pill rows below are hidden there. Each option
+           presses the matching toggle, so the filter logic is unchanged. -->
+      <div class="pill sort-pill phone-browse" title="Browse">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+        <select id="phoneBrowse" aria-label="Browse">
+          <option value="" selected>Browse</option>
+          <option value="all">All shows</option>
+          <option value="tonight">Tonight</option>
+          <option value="thisweek">This Week</option>
+          <option value="picks">Picks</option>
+          <option value="venues">Venues</option>
+          <option value="comedy">Comedy</option>
+          <option value="following">&#9733; Following</option>
+          <option value="allages">All Ages</option>
+          <option value="festivals" id="phoneBrowseFestivals" hidden>Festivals</option>
+          <option value="outoftown">Further Out</option>
+        </select>
+      </div>
     </div>
 
     <div class="ctl-row">
@@ -2254,6 +2282,14 @@ function render(){
   syncTogglePills();
   // Keep the mobile Browse dropdown matched to whichever of
   // Venues/Comedy is actually on, however it got there (pill click, Reset, etc).
+  const _phoneSel = document.getElementById('phoneBrowse');
+  if(_phoneSel){
+    _phoneSel.value = state.tonight ? 'tonight' : state.thisWeek ? 'thisweek' : state.picks ? 'picks'
+      : state.view === 'venues' ? 'venues' : state.comedy ? 'comedy' : state.following ? 'following'
+      : state.allAges ? 'allages' : state.festivals ? 'festivals' : state.outOfTown ? 'outoftown' : '';
+    const _pf = document.getElementById('phoneBrowseFestivals'), _bf = document.getElementById('browseFestivals');
+    if(_pf && _bf) _pf.hidden = _bf.hidden;
+  }
   const _browseSel = document.getElementById('browseSelect');
   if(_browseSel){
     _browseSel.value = state.picks ? 'picks' : state.allAges ? 'allages' : state.festivals ? 'festivals' : state.outOfTown ? 'outoftown' : '';
@@ -2295,6 +2331,9 @@ function render(){
   const plainHome = !state.q.trim() && !state.tonight && !state.thisWeek && !state.picks && !state.myShows
     && !state.festivals && !state.allAges && !state.following && !state.byHood && !state.comedy && !state.selectedVenue && state.view === 'shows';
   if(plainHome) mountPhotoStrip(wrap);
+  // People you may know (Sep 22 2026, Nick): a folding panel right under
+  // Latest photos & clips, folded on every draw -- no longer in the listings.
+  if(plainHome) mountPymk(wrap);
 
   if(!list.length){
     wrap.innerHTML = state.picks ? '<div class="empty"><h2>No picks right now</h2><p>Picks refresh every night.</p></div>' : state.following ? '<div class="empty"><h2>Nothing here yet</h2><p>Heart some bands and venues, or follow people from their profiles, to see their shows here.</p></div>' : state.myShows ? '<div class="empty"><h2>No favorites yet</h2><p>Tap the heart on a show to save it.</p></div>' : '<div class="empty"><h2>No Results Found.</h2><p>Try widening your dates or clearing the search.</p></div>';
@@ -2356,16 +2395,10 @@ function render(){
     const groups = {};
     list.forEach(s=>{(groups[s.date]=groups[s.date]||[]).push(s);});
     const days = Object.keys(groups).sort().map(date => [date, groups[date]]);
-    // People you may know (Sep 22 2026): one card, in line, between two
-    // days -- after the first day that brings the count to PYMK_AFTER shows,
-    // so a thin Tonight never puts it at the top. Plain home feed only.
-    let _pymkShown = 0, _pymkPlaced = !plainHome;
     drawDaysInPieces(wrap, days, function(date, shows){
       const g = document.createElement('div'); g.className='daygroup';
       g.innerHTML = `<div class="dayhead">${ordinalDate(date)}<span class="count">${shows.length} shows</span></div>`;
       g.appendChild(listOf(shows));
-      _pymkShown += shows.length;
-      if(!_pymkPlaced && _pymkShown >= PYMK_AFTER){ _pymkPlaced = true; mountPymk(g); }
       return g;
     });
   } else {
@@ -6584,8 +6617,12 @@ async function mountPymk(parent){
   }
   if(!host.isConnected || !rows.length){ host.remove(); return; }
   rows.forEach(function(u){ AV_CACHE[u.id] = { id: u.id, display_name: u.display_name, avatar_url: u.avatar_url }; });
-  host.innerHTML = '<div class="pymk-head"><span class="pymk-title">People you may know</span>'
-      + '<button type="button" class="pymk-off" data-pymk-off>Don\u2019t show this</button></div>'
+  // Folded every time the feed is drawn, like the photos panel (Nick).
+  host.innerHTML = '<button type="button" class="ph-strip-head pymk-fold" data-pymk-toggle aria-expanded="false">'
+      + '<span class="ph-strip-caret">&#9656;</span><span class="ph-strip-title">People you may know <span class="pf-count">' + rows.length + '</span></span>'
+      + '<span class="ph-strip-pill">Show</span></button>'
+    + '<div class="pymk-body" hidden>'
+    + '<div class="pymk-head"><button type="button" class="pymk-off" data-pymk-off>Don\u2019t show this</button></div>'
     + '<div class="pymk-row">' + rows.map(function(u){
         const nm = u.display_name || u.handle;
         return '<div class="pymk-card" data-pymk-id="' + esc(u.id) + '">'
@@ -6598,14 +6635,25 @@ async function mountPymk(parent){
           + '</a>'
           + '<button type="button" class="pymk-follow" data-pymk-follow="' + esc(u.id) + '">Follow</button>'
           + '</div>';
-      }).join('') + '</div>';
+      }).join('') + '</div></div>';
   function drop(id){
     PYMK_CACHE.rows = (PYMK_CACHE.rows || []).filter(function(x){ return x.id !== id; });
     const c = host.querySelector('[data-pymk-id="' + id + '"]');
     if(c) c.remove();
-    if(!host.querySelector('.pymk-card')) host.remove();
+    if(!host.querySelector('.pymk-card')){ host.remove(); return; }
+    const cnt = host.querySelector('.pymk-fold .pf-count');
+    if(cnt) cnt.textContent = host.querySelectorAll('.pymk-card').length;
   }
   host.addEventListener('click', async function(e){
+    const tg = e.target.closest('[data-pymk-toggle]');
+    if(tg){
+      const body = host.querySelector('.pymk-body'), open = body.hidden;
+      body.hidden = !open;
+      tg.setAttribute('aria-expanded', open ? 'true' : 'false');
+      tg.querySelector('.ph-strip-caret').innerHTML = open ? '&#9662;' : '&#9656;';
+      tg.querySelector('.ph-strip-pill').textContent = open ? 'Hide' : 'Show';
+      return;
+    }
     const fb = e.target.closest('[data-pymk-follow]'), hb = e.target.closest('[data-pymk-hide]'), ob = e.target.closest('[data-pymk-off]');
     if(!fb && !hb && !ob) return;
     e.preventDefault(); e.stopPropagation();
@@ -7544,7 +7592,7 @@ function setSearchPlaceholder(){
   const el = $('#searchInput');
   if(!el) return;
   el.placeholder = (window.innerWidth <= 600)
-    ? 'bands, venues, dates, @people\u2026'
+    ? 'bands, venues, dates\u2026'   // shares its row with Browse since Sep 22 2026
     : 'bands, venues, neighborhoods, dates, @people\u2026';
 }
 setSearchPlaceholder();
@@ -7785,6 +7833,17 @@ $('#followingToggle').addEventListener('click',()=>{
 // Browse (phones) holds Picks / All Ages / Festivals since Sep 18 2026;
 // Tonight, Venues and Comedy are their own pills there. Each option just
 // presses the matching pill, so the filter logic is unchanged.
+// Phones: one dropdown for every section (Sep 22 2026). Picking a section
+// presses its toggle if it isn't already on; "All shows" is the logo.
+$('#phoneBrowse').addEventListener('change', e => {
+  const v = e.target.value;
+  const ids = { tonight:'tonightToggle', thisweek:'thisWeekToggle', picks:'picksToggle', venues:'venuesToggle',
+                comedy:'comedyToggle', following:'followingToggle', allages:'allAgesToggle',
+                festivals:'festivalsToggle', outoftown:'outOfTownToggle' };
+  if(v === 'all' || !v){ goHome(); return; }
+  const t = ids[v] && document.getElementById(ids[v]);
+  if(t && !t.classList.contains('on')) t.click();
+});
 $('#browseSelect').addEventListener('change', e => {
   const v = e.target.value;
   const on = id => $('#' + id).classList.contains('on');
@@ -8296,13 +8355,15 @@ a.inbox-thread-who:hover{text-decoration:underline}
 .pick-mod{display:flex;gap:8px;padding:8px 12px 10px;border-top:1px dashed rgba(74,53,38,.25)}
 .pick-mod-btn{border:1px solid var(--rust);background:none;color:var(--rust);border-radius:999px;padding:4px 10px;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.05em;text-transform:uppercase;cursor:pointer}
 .pick-mod-btn.on{background:var(--rust);color:var(--cream)}
-.pymk{margin:26px 0 4px;background:var(--forest);border:1px solid rgba(243,234,215,.45);border-radius:10px;padding:12px 0 14px;color:var(--cream)}
+.pymk{margin:0 0 22px;color:var(--cream)}
+.pymk .pymk-fold{margin:0 0 10px}
+.pymk-body[hidden]{display:none}
 .pymk[hidden]{display:none}
-.pymk-head{display:flex;align-items:center;gap:10px;padding:0 12px 10px}
+.pymk-head{display:flex;justify-content:flex-end;padding:0 2px 8px}
 .pymk-title{flex:1 1 auto;font-family:'Alfa Slab One',serif;font-size:17px;font-weight:400}
 .pymk-off{background:none;border:0;color:var(--cream);opacity:.7;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.04em;cursor:pointer;padding:2px 0}
 .pymk-off:hover{opacity:1;text-decoration:underline}
-.pymk-row{display:flex;gap:10px;overflow-x:auto;padding:0 12px 4px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
+.pymk-row{display:flex;gap:10px;overflow-x:auto;padding:0 0 8px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
 .pymk-row::-webkit-scrollbar{height:6px}
 .pymk-row::-webkit-scrollbar-thumb{background:rgba(243,234,215,.35);border-radius:3px}
 .pymk-card{position:relative;flex:0 0 136px;scroll-snap-align:start;background:rgba(243,234,215,.08);border:1px solid rgba(243,234,215,.25);border-radius:8px;padding:14px 8px 10px;text-align:center;display:flex;flex-direction:column;align-items:center}
