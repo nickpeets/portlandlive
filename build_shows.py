@@ -135,7 +135,71 @@ ARCHIVE = os.path.join(HERE, "archive.json")
 
 _ARCHIVE_SOURCE = "Append-only archive of past shows (accumulated across builds)"
 _ARCHIVE_FIELDS = ("title", "venue", "neighborhood", "address",
-                   "date", "time", "venueUrl", "ticketUrl", "imageUrl", "age", "contentType", "price")
+                   "date", "time", "times", "venueUrl", "ticketUrl", "imageUrl", "age", "contentType", "price")
+
+
+def dedupe_shows(shows):
+    """One row per (title, venue, date); extra show times go in `times`.
+    Returns (deduped, time_collisions)."""
+    # dedupe on (normalized title, normalized venue, date)
+    seen, deduped = {}, []
+    time_collisions = []
+    for s in shows:
+        k = (_norm_title(s.get("title","")),
+             _norm_venue(s.get("venue","")),
+             s.get("date",""))
+        if not (s.get("title") and s.get("date")):
+            continue
+        if k not in seen:
+            seen[k] = s; deduped.append(s)
+        else:
+            # Same title/venue/date already kept. If BOTH rows carry a
+            # non-empty, differing time they may be two real shows that day
+            # -> flag instead of silently dropping.
+            kept = seen[k]
+            t_new = (s.get("time") or "").strip()
+            t_old = (kept.get("time") or "").strip()
+            if t_new and t_old and t_new != t_old:
+                # Two shows the same night (Sep 22 2026: Helium's 7:00 and
+                # 9:30 were merged and every late show vanished). Times 75+
+                # minutes from every time already kept are another show and
+                # go in `times`; closer ones are doors-vs-show from two
+                # sources and stay a collision. One row either way -- the
+                # slug is date + venue + title, and slugs are sacred.
+                have = kept.get("_times") or [t_old]
+                mins = [_time_min(t) for t in have]
+                tn = _time_min(t_new)
+                if tn is not None and all(m is not None and abs(tn - m) >= 75 for m in mins):
+                    kept["_times"] = have + [t_new]
+                elif t_new not in have:
+                    time_collisions.append((s.get("title"), s.get("venue"), s.get("date"), t_old, t_new))
+            # Field-merge: the dropped duplicate may carry data the kept row
+            # lacks. Adopt the dup's value for any field the kept row left
+            # empty so dedupe never discards information (e.g. a missing time,
+            # image, or ticket link filled in by a second listing of the show).
+            for _f in ("time", "imageUrl", "venueUrl", "ticketUrl"):
+                if not (kept.get(_f) or "").strip() and (s.get(_f) or "").strip():
+                    kept[_f] = s[_f]
+
+    multi = 0
+    for s in deduped:
+        ts = s.pop("_times", None)
+        if ts:
+            ts = sorted(set(ts), key=lambda t: _time_min(t) if _time_min(t) is not None else 9999)
+            s["time"], s["times"] = ts[0], ts
+            multi += 1
+    if multi:
+        print(f"  Multi-show nights: {multi} row(s) carry more than one show time (early + late)")
+    return deduped, time_collisions
+
+
+def _time_min(t):
+    """'9:30 PM' -> 570 minutes after midnight; None when it isn't a time."""
+    m = re.match(r"^\s*(\d{1,2}):(\d{2})\s*([AP])M\s*$", t or "", re.I)
+    if not m:
+        return None
+    h = int(m.group(1)) % 12 + (12 if m.group(3).upper() == "P" else 0)
+    return h * 60 + int(m.group(2))
 
 
 def make_slug(show):
@@ -2000,34 +2064,7 @@ def main():
         if not (s.get("age") or "").strip():
             s["age"] = VENUE_AGE_DEFAULT.get(s.get("venue", ""), "")
 
-    # dedupe on (normalized title, normalized venue, date)
-    seen, deduped = {}, []
-    time_collisions = []
-    for s in shows:
-        k = (_norm_title(s.get("title","")),
-             _norm_venue(s.get("venue","")),
-             s.get("date",""))
-        if not (s.get("title") and s.get("date")):
-            continue
-        if k not in seen:
-            seen[k] = s; deduped.append(s)
-        else:
-            # Same title/venue/date already kept. If BOTH rows carry a
-            # non-empty, differing time they may be two real shows that day
-            # -> flag instead of silently dropping.
-            kept = seen[k]
-            t_new = (s.get("time") or "").strip()
-            t_old = (kept.get("time") or "").strip()
-            if t_new and t_old and t_new != t_old:
-                time_collisions.append((s.get("title"), s.get("venue"), s.get("date"), t_old, t_new))
-            # Field-merge: the dropped duplicate may carry data the kept row
-            # lacks. Adopt the dup's value for any field the kept row left
-            # empty so dedupe never discards information (e.g. a missing time,
-            # image, or ticket link filled in by a second listing of the show).
-            for _f in ("time", "imageUrl", "venueUrl", "ticketUrl"):
-                if not (kept.get(_f) or "").strip() and (s.get(_f) or "").strip():
-                    kept[_f] = s[_f]
-
+    deduped, time_collisions = dedupe_shows(shows)
     deduped.sort(key=lambda s: (s["date"], s.get("venue",""), s.get("title","")))
     for i, s in enumerate(deduped, 1):
         s["id"] = i

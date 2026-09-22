@@ -395,6 +395,25 @@ def talk_page_check():
     print("  ok   alberta-rose-event.html       author talk (Oregon Humanities, Stephanie Land) read as a talk")
 
 
+def multi_time_check():
+    """Early and late shows (Sep 22 2026): Helium's 9:30 must survive dedupe."""
+    bspec = importlib.util.spec_from_file_location("bs", os.path.join(HERE, "build_shows.py"))
+    bs = importlib.util.module_from_spec(bspec)
+    bspec.loader.exec_module(bs)
+    rows = [dict(title="Mark Normand", venue="Helium Comedy Club", date="2026-10-24", time=t) for t in ("4:00 PM", "7:00 PM", "9:30 PM")]
+    rows += [dict(title="Band X", venue="V", date="2026-10-01", time="8:00 PM"), dict(title="Band X", venue="V", date="2026-10-01", time="7:30 PM")]
+    d, c = bs.dedupe_shows(rows)
+    by = {r["title"]: r for r in d}
+    ok = (len(d) == 2 and by["Mark Normand"].get("times") == ["4:00 PM", "7:00 PM", "9:30 PM"]
+          and by["Mark Normand"]["time"] == "4:00 PM" and "times" not in by["Band X"] and len(c) == 1)
+    if not ok:
+        print(f"  FAIL multi-show nights           {[(r['title'], r.get('time'), r.get('times')) for r in d]} collisions={c}")
+        print("GATE FAILURE")
+        sys.exit(1)
+    print("  ok   multi-show nights             4:00/7:00/9:30 kept on one row; 7:30 vs 8:00 (doors vs show) stays one time")
+
+
 if __name__ == "__main__":
     main()
     talk_page_check()
+    multi_time_check()

@@ -2767,7 +2767,7 @@ function listOf(items, showDate){
     const media = smediaFor(s);
     if(!media) c.classList.add('no-media');
     const dateBit = showDate ? `<span class="s-date rdate">${ordinalDate(s.date)}</span>` : '';
-    const timeBit = s.time ? `<span class="s-time">${esc(s.time)}</span>` : '';
+    const timeBit = s.time ? `<span class="s-time">${esc(showTimes(s))}</span>` : '';
     const sep1 = (dateBit && timeBit) ? `<span class="rdot">\u00b7</span>` : '';
     // The title goes to the show's own page, not the venue's site. The card
     // body already navigates there on click; making the title a real anchor to
@@ -2838,6 +2838,12 @@ function slugHtmlUnescape(s){
 function slugStripTags(s){ return (s||'').replace(/<[^>]+>/g, ''); }
 function slugCleanTitle(t){ t = slugHtmlUnescape(t||''); t = slugStripTags(t); t = slugHtmlUnescape(t); return t.replace(/\s+/g,' ').trim(); }
 function slugNormKey(s){ s = slugStripTags(slugHtmlUnescape(s||'')); s = s.replace(/[‐-―]/g,'-').toLowerCase(); return s.replace(/[^0-9a-z]+/g,' ').trim(); }
+// Early and late shows (Sep 22 2026): the build keeps one row per show per
+// night and lists every time in `times` -- "7:00 PM & 9:30 PM".
+function showTimes(s){
+  const ts = (s && Array.isArray(s.times) && s.times.length > 1) ? s.times : null;
+  return ts ? ts.join(' & ') : ((s && s.time) || '');
+}
 function makeSlug(show){
   var date = ((show && show.date) || '').trim();
   var venue = slugNormKey((show && show.venue) || '');
@@ -3725,7 +3731,7 @@ function renderShowDetail(wrap, show, kind){
   // Three lines instead of one run-on: when, where, then the address as a
   // directions link. The venue is a link to its own page, using the same
   // [data-venue] delegation the feed cards use.
-  var when = ordinalDate(show.date) + (show.time ? ' \u00b7 ' + esc(show.time) : '');
+  var when = ordinalDate(show.date) + (show.time ? ' \u00b7 ' + esc(showTimes(show)) : '');
   var where = (show.venue
       ? '<a class="s-venue" href="#" data-venue="' + esc(show.venue) + '" title="View this venue">' + esc(show.venue) + '</a>'
       : '')
