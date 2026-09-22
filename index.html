@@ -1443,6 +1443,53 @@ async function mountPickControls(wrap){
     card.appendChild(box);
   });
 }
+// Music / Comedy / Not music (Sep 22 2026, Nick: "Consider This with
+// Stephanie Land -- not a music event"). A moderator sets it on the show
+// page; everyone sees it at once, and the nightly build bakes it in.
+let SHOW_KINDS = {};
+function applyShowKinds(tries){
+  const sb = window.__plAuth;
+  if(!sb){ if((tries || 0) < 25) setTimeout(function(){ applyShowKinds((tries || 0) + 1); }, 200); return; }
+  Promise.resolve(sb.rpc('show_kinds_all')).then(function(r){
+    const rows = (r && !r.error && r.data) || [];
+    SHOW_KINDS = {};
+    rows.forEach(function(x){ if(x.slug && x.kind) SHOW_KINDS[x.slug] = x.kind; });
+    let n = 0;
+    state.shows.forEach(function(s){ const k = SHOW_KINDS[s._slug]; if(k && s.contentType !== k){ s.contentType = k; n++; } });
+    if(n && parseRoute().type !== 'show') render();
+  }).catch(function(){});
+}
+async function mountKindControl(card, show, slug){
+  if(!slug || typeof rpIsModerator !== 'function' || !(await rpIsModerator())) return;
+  if(!card.isConnected) return;
+  const box = document.createElement('div');
+  box.className = 'poster-edit kind-edit';
+  const cur = function(){ return SHOW_KINDS[slug] || show.contentType || classifyType(show); };
+  function draw(msg){
+    const k = cur();
+    box.innerHTML = '<span class="kind-label">Listed as</span>'
+      + [['music', 'Music'], ['comedy', 'Comedy'], ['other', 'Not music']].map(function(o){
+          return '<button type="button" class="poster-edit-btn' + (k === o[0] ? ' kind-on' : '') + '" data-kind="' + o[0] + '">' + o[1] + '</button>';
+        }).join('')
+      + (msg ? '<span class="kind-msg">' + esc(msg) + '</span>' : '');
+  }
+  draw('');
+  card.insertAdjacentElement('afterend', box);
+  box.addEventListener('click', async function(e){
+    const b = e.target.closest('[data-kind]');
+    if(!b) return;
+    e.preventDefault(); e.stopPropagation();
+    const kind = b.getAttribute('data-kind'), sb = window.__plAuth;
+    if(!sb || kind === cur()) return;
+    b.disabled = true;
+    const r = await safeRpc(sb.rpc('set_show_kind', { p_slug: slug, p_kind: kind }));
+    if(r.error){ draw('Couldn\u2019t save.'); return; }
+    SHOW_KINDS[slug] = kind;
+    state.shows.forEach(function(s){ if(s._slug === slug) s.contentType = kind; });
+    show.contentType = kind;
+    draw(kind === 'music' ? 'On the music feed.' : kind === 'comedy' ? 'Moved to Comedy.' : 'Off the music feed.');
+  });
+}
 // "Pin to Picks" on a show page, moderators only.
 async function mountPickPin(card, show, slug){
   if(!slug || typeof rpIsModerator !== 'function' || !(await rpIsModerator())) return;
@@ -1749,6 +1796,8 @@ function classifyType(s){
   // ...and a talk: the build marks Portland'5 lectures and book events
   // "other" from the event page (Sep 22 2026, Jon Meacham).
   if(s && s.contentType === 'other') return 'other';
+  // ...and a moderator's "Music" on the show page (Sep 22 2026).
+  if(s && s.contentType === 'music') return 'music';
   const nt = _normTitle(s && s.title);
   for(const e of FORCE_MUSIC){ if(e && nt.includes(_normTitle(e))) return "music"; }
   for(const e of FORCE_NON_MUSIC){
@@ -1851,6 +1900,7 @@ async function load(){
     classifyAll(); // tag each show with s.contentType
     applyPosterOverrides();  // moderator-set posters, live (the build bakes them in nightly too)
     loadPicksData();         // Picks: moderator pins + heart counts
+    applyShowKinds();        // Music / Comedy / Not music, set on show pages
     state.stamp = data.generated || "";
     buildNeighborhoods();
     if(state.stamp){
@@ -3794,6 +3844,7 @@ function renderShowDetail(wrap, show, kind){
   const _slug = show._slug || show.slug || makeSlug(show);
   mountPosterEditor(card, show, _slug);
   mountPickPin(card, show, _slug);
+  mountKindControl(card, show, _slug);
   // Appended in mobile reading order. mountExchange/mountComments each attach
   // their host synchronously before their first await, so the resulting DOM
   // order is deterministic even though both are async.
@@ -8378,6 +8429,10 @@ a.inbox-thread-who:hover{text-decoration:underline}
 .pick-mod{display:flex;gap:8px;padding:8px 12px 10px;border-top:1px dashed rgba(74,53,38,.25)}
 .pick-mod-btn{border:1px solid var(--rust);background:none;color:var(--rust);border-radius:999px;padding:4px 10px;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.05em;text-transform:uppercase;cursor:pointer}
 .pick-mod-btn.on{background:var(--rust);color:var(--cream)}
+.kind-edit{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.kind-label{font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--cream);opacity:.75;margin-right:2px}
+.poster-edit-btn.kind-on{background:var(--cream);color:var(--ink);border-color:var(--cream)}
+.kind-msg{font-size:12.5px;color:var(--cream);opacity:.85;margin-left:4px}
 .pymk{margin:0 0 22px;color:var(--cream)}
 .pymk .pymk-fold{margin:0 0 10px}
 .pymk-body[hidden]{display:none}

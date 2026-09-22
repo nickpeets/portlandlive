@@ -1669,6 +1669,25 @@ def fetch_show_overrides():
         return {}
 
 
+def fetch_show_kinds():
+    """slug -> 'music' | 'comedy' | 'other' set by a moderator on the show
+    page (show_kinds_all RPC, readable by anyone). Never raises."""
+    url, key = _supabase_public_config()
+    if not url or not key:
+        return {}
+    try:
+        import urllib.request
+        req = urllib.request.Request(f"{url}/rest/v1/rpc/show_kinds_all", data=b"{}",
+                                     headers={"apikey": key, "Authorization": "Bearer " + key,
+                                              "Content-Type": "application/json"})
+        with urllib.request.urlopen(req, timeout=20) as r:
+            rows = json.loads(r.read().decode("utf-8")) or []
+        return {x["slug"]: x["kind"] for x in rows if x.get("slug") and x.get("kind") in ("music", "comedy", "other")}
+    except Exception as e:
+        print(f"  note: show kinds not fetched ({type(e).__name__})")
+        return {}
+
+
 def fetch_miracles():
     """Open miracles. ticket_posts is readable by anyone (its select policy
     is `to anon, authenticated using (true)`), so the build reads it with
@@ -1974,6 +1993,17 @@ def main():
             if u and r.get("imageUrl") != u:
                 r["imageUrl"] = u; _n += 1
         print(f"  Posters: {_n} override(s) applied")
+    # Music / Comedy / Not music, set by a moderator on the show page (Sep 22
+    # 2026). Wins over every classifier; "music" is written out so the page's
+    # title sniff can't re-file it.
+    _kinds = fetch_show_kinds()
+    if _kinds:
+        _n = 0
+        for r in shows:
+            k = _kinds.get(make_slug(r))
+            if k and r.get("contentType") != k:
+                r["contentType"] = k; _n += 1
+        print(f"  Show kinds: {_n} moderator override(s) applied")
 
     shows = drop_wrong_rows(shows)
     shows = drop_non_shows(shows)
