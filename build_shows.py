@@ -1942,7 +1942,11 @@ def main():
                          if not k.startswith("_") and not (k == "contentType" and not v)}
                         for s in out["shows"]]
         out["festivals"] = festival_summaries(out["shows"])
-        update_news(out["shows"], out.get("venues") or [], datetime.date.today())
+        # Portland's date, not the runner's: GitHub's clock is UTC, so a build
+        # after 5 PM Pacific stamped tomorrow's date and the day's Welcome
+        # line (from = until = that date) sat hidden all evening (Sep 21 2026).
+        from zoneinfo import ZoneInfo
+        update_news(out["shows"], out.get("venues") or [], datetime.datetime.now(ZoneInfo("America/Los_Angeles")).date())
     with open(OUT, "w") as f:
         json.dump(out, f, indent=2, ensure_ascii=False)
     venues = len(set(s.get("venue","") for s in deduped))
