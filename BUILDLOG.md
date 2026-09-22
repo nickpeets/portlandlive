@@ -465,3 +465,5 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **My Favorites vs ★ Following pill naming (UX)** — the two share the same heart data but behave differently: *My Favorites* is a collection view (everything hearted, grouped) while *★ Following* is a feed filter (collapse listings to hearted matches). The pill names don't communicate this split. Candidate fix: rename (e.g. "Saved" vs "Following") or eventually merge the two. Display/naming only; no behavior change decided yet.
 
 - **2026-09-22 — People you may know (46831bab)** — inline card on the plain home feed after the first day reaching 4 shows; mutual follows + shared Who's Going (No-one profiles excluded); x hides a person; "Don't show this" plus two bookmark-menu switches. SQL: supabase/schema-pymk.sql.
+
+- **2026-09-22 — PYMK newest-members fallback (0b64dcf4)** — members who joined in the last 30 days fill leftover slots after mutuals/shared shows, labeled "New on Rain Or Shows"; same exclusions. SQL: people_you_may_know replaced in schema-pymk.sql.
