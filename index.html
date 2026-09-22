@@ -1333,10 +1333,106 @@ let CARD_LAYOUT = 'a';
     function pickDomain(u){ try{ return new URL(u).hostname.replace(/^www\./,''); }catch(e){ return ''; } }
     function isAffiliateTicketing(u){ const h=pickDomain(u); return AFFILIATE_TICKETING.some(d => h.includes(d)); }
     // A show is a Pick if manual OR (affiliate-able ticketing domain AND marquee venue).
+    // Picks (Sep 22 2026, Nick): the build marks candidates nightly (big
+    // room, in town, next 14 days, carries our Ticketmaster or Vivid link)
+    // with a Deezer buzz score. Here they're ranked by buzz + hearts, max 2
+    // per room, 12 in all; moderator pins ('in'/'out', pick_pins) win.
     function isPick(s){
       if(MANUAL_PICKS.has(s.id)) return true;
-      return isAffiliateTicketing(s.venueUrl) && MARQUEE_VENUES.has(s.venue);
+      return PICK_SET.has(s._slug);
     }
+const PICK_MAX = 12, PICK_PER_ROOM = 2, PICK_DAYS = 14;
+let PICK_SET = new Set();
+let PICK_PINS = {};     // slug -> 'in' | 'out'
+let PICK_HEARTS = {};   // favKey -> count
+let PICK_LOADED = false;
+function rebuildPickSet(){
+  const today = pacificTodayISO();
+  const last = new Date(today + 'T12:00:00'); last.setDate(last.getDate() + PICK_DAYS);
+  const hi = last.toISOString().slice(0, 10);
+  const up = state.shows.filter(function(s){ return s.date >= today; });
+  const out = new Set(), perRoom = {};
+  // Pinned in: always, while upcoming.
+  up.forEach(function(s){ if(PICK_PINS[s._slug] === 'in') out.add(s._slug); });
+  const ranked = up.filter(function(s){
+      return s.pickable && s.date <= hi && PICK_PINS[s._slug] !== 'out' && !out.has(s._slug);
+    }).map(function(s){
+      const hearts = PICK_HEARTS[favKey(s)] || 0;
+      return { s: s, score: Math.log10((s.buzz || 0) + 1) + 0.5 * hearts };
+    }).sort(function(a, b){ return b.score - a.score || (a.s.date < b.s.date ? -1 : 1); });
+  for(const r of ranked){
+    if(out.size >= PICK_MAX) break;
+    const v = r.s.venue || '';
+    if((perRoom[v] || 0) >= PICK_PER_ROOM) continue;
+    perRoom[v] = (perRoom[v] || 0) + 1;
+    out.add(r.s._slug);
+  }
+  PICK_SET = out;
+}
+// Pins and heart counts, once per page load (and again after a pin change).
+// Waits briefly for the Supabase client, which loads after this script.
+function loadPicksData(tries){
+  const sb = window.__plAuth;
+  if(!sb){ if((tries || 0) < 25) setTimeout(function(){ loadPicksData((tries || 0) + 1); }, 200); return; }
+  const keys = state.shows.filter(function(s){ return s.pickable; }).map(favKey);
+  Promise.all([
+    Promise.resolve(sb.rpc('pick_pins_all')).catch(function(e){ return { error: e }; }),
+    Promise.resolve(sb.rpc('pick_hearts', { p_keys: keys })).catch(function(e){ return { error: e }; })
+  ]).then(function(res){
+    const pins = {}, hearts = {};
+    ((res[0] && !res[0].error && res[0].data) || []).forEach(function(r){ pins[r.slug] = r.state; });
+    ((res[1] && !res[1].error && res[1].data) || []).forEach(function(r){ hearts[r.fav_key] = r.n; });
+    PICK_PINS = pins; PICK_HEARTS = hearts; PICK_LOADED = true;
+    if(state.picks) render();
+  });
+}
+async function setPickPin(slug, pinState){
+  const sb = window.__plAuth;
+  if(!sb) return false;
+  const r = await safeRpc(sb.rpc('pick_pin_set', { p_slug: slug, p_state: pinState }));
+  if(r.error){ console.warn('[picks] pin failed:', r.error.message || r.error); return false; }
+  if(pinState) PICK_PINS[slug] = pinState; else delete PICK_PINS[slug];
+  return true;
+}
+// Moderator controls on each card while Picks is showing.
+async function mountPickControls(wrap){
+  if(typeof rpIsModerator !== 'function' || !(await rpIsModerator())) return;
+  if(!state.picks || !wrap.isConnected) return;
+  wrap.querySelectorAll('.scard[data-slug]').forEach(function(card){
+    if(card.querySelector('.pick-mod')) return;
+    const slug = card.dataset.slug, pinned = PICK_PINS[slug] === 'in';
+    const box = document.createElement('div');
+    box.className = 'pick-mod';
+    box.innerHTML = '<button type="button" class="pick-mod-btn' + (pinned ? ' on' : '') + '" data-pick-pin>' + (pinned ? '&#128204; Pinned' : '&#128204; Pin') + '</button>'
+      + '<button type="button" class="pick-mod-btn" data-pick-drop>&times; Drop</button>';
+    box.addEventListener('click', async function(e){
+      const pin = e.target.closest('[data-pick-pin]'), drop = e.target.closest('[data-pick-drop]');
+      if(!pin && !drop) return;
+      e.preventDefault(); e.stopPropagation();
+      const next = drop ? 'out' : (PICK_PINS[slug] === 'in' ? null : 'in');
+      if(await setPickPin(slug, next)) render();
+    });
+    card.appendChild(box);
+  });
+}
+// "Pin to Picks" on a show page, moderators only.
+async function mountPickPin(card, show, slug){
+  if(!slug || typeof rpIsModerator !== 'function' || !(await rpIsModerator())) return;
+  if(!card.isConnected || (show.date || '') < pacificTodayISO()) return;
+  const box = document.createElement('div');
+  box.className = 'poster-edit';
+  function label(){ const st = PICK_PINS[slug]; return st === 'in' ? '&#128204; Pinned to Picks \u2014 unpin' : st === 'out' ? 'Dropped from Picks \u2014 pin instead' : '&#128204; Pin to Picks'; }
+  box.innerHTML = '<button type="button" class="poster-edit-btn" data-pick-page>' + label() + '</button>';
+  card.insertAdjacentElement('afterend', box);
+  box.addEventListener('click', async function(e){
+    const b = e.target.closest('[data-pick-page]');
+    if(!b) return;
+    e.preventDefault(); e.stopPropagation();
+    b.disabled = true;
+    if(await setPickPin(slug, PICK_PINS[slug] === 'in' ? null : 'in')) b.innerHTML = label();
+    b.disabled = false;
+  });
+}
 // Favorites/stubs used to live in localStorage under these keys, with no
 // notion of an account -- so signing out didn't clear them, and two accounts
 // in the same browser shared one list. They're now per-account rows in
@@ -1726,6 +1822,7 @@ async function load(){
     state.shows.forEach(s => { s._slug = makeSlug(s); }); // permanent per-show page identity
     classifyAll(); // tag each show with s.contentType
     applyPosterOverrides();  // moderator-set posters, live (the build bakes them in nightly too)
+    loadPicksData();         // Picks: moderator pins + heart counts
     state.stamp = data.generated || "";
     buildNeighborhoods();
     if(state.stamp){
@@ -1873,6 +1970,7 @@ function filtered(){
    if(state.following){ const _normFav = new Set([...state.favorites].map(function(k){ var i=k.indexOf('::'); return i<0 ? k : k.slice(0,i+2)+_normTitle(k.slice(i+2)); })); out = out.filter(s => _normFav.has('band::'+_normTitle(s.title)) || _normFav.has('venue::'+_normTitle(s.venue)) || followPeopleFor(s).length > 0); }
    if(state.picks){
      // Picks overrides time-window / favorites filters: it is the showcase view.
+     rebuildPickSet();
      out = out.filter(isPick);
    } else {
      out = applyTimeFilters(out);
@@ -2199,7 +2297,7 @@ function render(){
   if(plainHome) mountPhotoStrip(wrap);
 
   if(!list.length){
-    wrap.innerHTML = state.picks ? '<div class="empty"><h2>No picks this week</h2><p>Check back soon — fresh picks are curated weekly.</p></div>' : state.following ? '<div class="empty"><h2>Nothing here yet</h2><p>Heart some bands and venues, or follow people from their profiles, to see their shows here.</p></div>' : state.myShows ? '<div class="empty"><h2>No favorites yet</h2><p>Tap the heart on a show to save it.</p></div>' : '<div class="empty"><h2>No Results Found.</h2><p>Try widening your dates or clearing the search.</p></div>';
+    wrap.innerHTML = state.picks ? '<div class="empty"><h2>No picks right now</h2><p>Picks refresh every night.</p></div>' : state.following ? '<div class="empty"><h2>Nothing here yet</h2><p>Heart some bands and venues, or follow people from their profiles, to see their shows here.</p></div>' : state.myShows ? '<div class="empty"><h2>No favorites yet</h2><p>Tap the heart on a show to save it.</p></div>' : '<div class="empty"><h2>No Results Found.</h2><p>Try widening your dates or clearing the search.</p></div>';
     return;
   }
 
@@ -2272,6 +2370,7 @@ function render(){
     });
   } else {
     wrap.appendChild(listOf(list, true));
+    if(state.picks) mountPickControls(wrap);
   }
 }
 
@@ -2650,7 +2749,9 @@ function listOf(items, showDate){
       ? `<span class="s-age s-age-${s.age === 'all-ages' ? 'all' : 'over'}">${esc(s.age === 'all-ages' ? 'All Ages' : s.age)}</span>`
       : '')
       // Price when the source states one (Sep 20 2026). Absent means unknown.
-      + (s.price ? `<span class="s-age s-price">${esc(s.price)}</span>` : '');
+      + (s.price ? `<span class="s-age s-price">${esc(s.price)}</span>` : '')
+      // Every Pick carries one of our links (Sep 14 2026 label design).
+      + (state.picks && (s.affiliateUrl || s.resaleUrl) ? `<span class="s-age s-support">supports the site</span>` : '');
 
     if(eff === 'b'){
       // VERTICAL: the big image on top; below it, the same row the main list
@@ -3647,6 +3748,7 @@ function renderShowDetail(wrap, show, kind){
   wrap.appendChild(grid);
   const _slug = show._slug || show.slug || makeSlug(show);
   mountPosterEditor(card, show, _slug);
+  mountPickPin(card, show, _slug);
   // Appended in mobile reading order. mountExchange/mountComments each attach
   // their host synchronously before their first await, so the resulting DOM
   // order is deterministic even though both are async.
@@ -8191,6 +8293,9 @@ a.inbox-thread-who:hover{text-decoration:underline}
 .poster-edit-btn{border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.1);color:var(--cream);font-family:'Oswald',sans-serif;font-size:12.5px;letter-spacing:.04em;text-transform:uppercase;padding:6px 10px;border-radius:999px;cursor:pointer}
 .poster-edit-btn:hover{background:rgba(255,255,255,.2)}
 .poster-edit-clear{opacity:.7}
+.pick-mod{display:flex;gap:8px;padding:8px 12px 10px;border-top:1px dashed rgba(74,53,38,.25)}
+.pick-mod-btn{border:1px solid var(--rust);background:none;color:var(--rust);border-radius:999px;padding:4px 10px;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.05em;text-transform:uppercase;cursor:pointer}
+.pick-mod-btn.on{background:var(--rust);color:var(--cream)}
 .pymk{margin:26px 0 4px;background:var(--forest);border:1px solid rgba(243,234,215,.45);border-radius:10px;padding:12px 0 14px;color:var(--cream)}
 .pymk[hidden]{display:none}
 .pymk-head{display:flex;align-items:center;gap:10px;padding:0 12px 10px}

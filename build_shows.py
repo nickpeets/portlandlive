@@ -769,6 +769,90 @@ def _la_slug_words(url):
     return good if good and len(good) >= 1 and sum(1 for t in toks if not _la_wordy(t)) <= len(toks) // 2 else set()
 
 
+# ---- Picks (Sep 22 2026) ----------------------------------------------------
+# Nick: Picks is a nightly list of shows that (a) carry one of our links --
+# the Ticketmaster affiliate link or the Vivid resale link -- at (b) a big
+# room, in town, in the next 14 days, ranked by buzz and, as the site grows,
+# hearts. The build marks each candidate `pickable` and gives it `buzz`: the
+# act's Deezer fan count (public search, no key), counted ONLY on an exact
+# name match so a local band never borrows a famous namesake's fans. The
+# page ranks candidates by buzz + hearts, max 2 per room, 12 in all, and
+# applies moderator pins live (pick_pins in Supabase).
+PICK_ROOMS = {
+    "Roseland Theater", "Aladdin Theater", "Revolution Hall", "Revolution Hall (Show Bar)",
+    "Wonder Ballroom", "Crystal Ballroom", "Star Theater", "Arlene Schnitzer Concert Hall",
+    "Keller Auditorium", "Newmark Theatre", "Winningstad Theatre", "Alberta Rose Theatre",
+    "Hawthorne Theatre", "Moda Center", "Theater of the Clouds", "Cascades Amphitheater",
+    "McMenamins Crystal Ballroom", "Mission Theater", "Veterans Memorial Coliseum",
+}
+PICK_DAYS = 14
+
+
+def _pick_norm(name):
+    n = re.sub(r"[^a-z0-9]+", " ", (name or "").lower()).strip()
+    return re.sub(r"^the ", "", n)
+
+
+def _deezer_fans(act, get=None):
+    """Deezer fan count for an exact name match, else 0. Never raises."""
+    try:
+        if get is None:
+            import urllib.request, urllib.parse
+            def get(u):
+                req = urllib.request.Request(u, headers={"User-Agent": "Mozilla/5.0 (RainOrShows picks)"})
+                with urllib.request.urlopen(req, timeout=10) as r:
+                    return json.loads(r.read().decode("utf-8"))
+        import urllib.parse
+        data = get("https://api.deezer.com/search/artist?limit=5&q=" + urllib.parse.quote(act))
+        want = _pick_norm(act)
+        for a in (data or {}).get("data") or []:
+            if _pick_norm(a.get("name")) == want:
+                return int(a.get("nb_fan") or 0)
+    except Exception:
+        pass
+    return 0
+
+
+def mark_pick_candidates(shows, today, get=None, acts=None):
+    """Flag Picks candidates in place; returns how many. `get`/`acts` are for tests."""
+    import time as _time
+    lo, hi = today.isoformat(), (today + datetime.timedelta(days=PICK_DAYS)).isoformat()
+    cands = [s for s in shows
+             if s.get("venue") in PICK_ROOMS and lo <= (s.get("date") or "") <= hi
+             and not s.get("outOfTown") and s.get("contentType") not in ("comedy", "other")
+             and (s.get("affiliateUrl") or s.get("resaleUrl"))]
+    if not cands:
+        print("  Picks: 0 candidates")
+        return 0
+    if acts is None:
+        try:
+            import subprocess
+            r = subprocess.run(["node", os.path.join(HERE, "sampler", "acts.js")],
+                               input=json.dumps([[s.get("title", ""), s.get("venue", "")] for s in cands]),
+                               capture_output=True, text=True, timeout=60)
+            acts = json.loads(r.stdout or "[]")
+        except Exception as e:
+            print(f"  Picks: act names unavailable ({type(e).__name__}); buzz left at 0")
+            acts = [None] * len(cands)
+    fans_by_act, found = {}, 0
+    for s, act in zip(cands, acts):
+        fans = 0
+        if act:
+            key = _pick_norm(act)
+            if key not in fans_by_act:
+                fans_by_act[key] = _deezer_fans(act, get)
+                if get is None:
+                    _time.sleep(0.15)
+            fans = fans_by_act[key]
+        s["pickable"] = True
+        s["buzz"] = fans
+        found += 1 if fans else 0
+    top = sorted(cands, key=lambda s: -s["buzz"])[:5]
+    print(f"  Picks: {len(cands)} candidates, {found} with a Deezer match; top buzz: "
+          + "; ".join(f"{s.get('title','')[:28]} ({s['buzz']:,})" for s in top))
+    return len(cands)
+
+
 def link_audit(shows):
     """Print mismatched links; returns the count. Never changes rows."""
     import collections
@@ -1990,6 +2074,11 @@ def main():
                          if not k.startswith("_") and not (k == "contentType" and not v)}
                         for s in out["shows"]]
         out["festivals"] = festival_summaries(out["shows"])
+        try:
+            from zoneinfo import ZoneInfo as _ZI
+            mark_pick_candidates(out["shows"], datetime.datetime.now(_ZI("America/Los_Angeles")).date())
+        except Exception as e:
+            print(f"  Picks skipped ({type(e).__name__}: {e})")
         # Portland's date, not the runner's: GitHub's clock is UTC, so a build
         # after 5 PM Pacific stamped tomorrow's date and the day's Welcome
         # line (from = until = that date) sat hidden all evening (Sep 21 2026).
