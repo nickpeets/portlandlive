@@ -9,20 +9,20 @@
    "url": "#/festival/northwest-roots-fest-2026"
   },
   {
-   "text": "3 new venues on the calendar: Birch Street Uptown Lounge, Lola's Room and Winona Grange.",
+   "text": "New venue: 45 East — 7 shows on the calendar.",
    "auto": true,
-   "key": "venues:2026-09-21:2026-09-22T06:19:49+00:00",
+   "key": "venues:2026-09-21:2026-09-22T06:43:15+00:00",
    "from": "2026-09-21",
    "until": "2026-09-28",
-   "at": "2026-09-22T06:19:49+00:00"
+   "at": "2026-09-22T06:43:15+00:00"
   },
   {
-   "text": "Further Out: WOW Hall, McDonald Theatre, Hayden Homes Amphitheater and 4 more — new on the calendar. Tap Further Out.",
+   "text": "Further Out: Tower Theatre, Volcanic Theatre Pub, Midtown Music Hall and 1 more — new on the calendar. Tap Further Out.",
    "auto": true,
-   "key": "far:2026-09-21:2026-09-22T06:19:49+00:00",
+   "key": "far:2026-09-21:2026-09-22T06:43:15+00:00",
    "from": "2026-09-21",
    "until": "2026-09-28",
-   "at": "2026-09-22T06:19:49+00:00"
+   "at": "2026-09-22T06:43:15+00:00"
   },
   {
    "text": "Welcome Simoon, Asher Fulero, Chelsea Joy Joy, Tim, Corbett Hill Jeremy, Auprah and 7 more to Rain Or Shows.",
@@ -34,6 +34,7 @@
  ],
  "announced": [
   "far:2026-09-21:2026-09-22T06:19:49+00:00",
+  "far:2026-09-21:2026-09-22T06:43:15+00:00",
   "fest:easyfolk-fest-2026",
   "fest:northwest-roots-fest-2026",
   "fest:st-johns-music-fest-2026",
@@ -47,6 +48,7 @@
   "member:2026-09-18:auprah",
   "members:rolling",
   "miracle:2026-09-18-mississippi-pizza-lucky-beaucoup",
+  "venue:45 East",
   "venue:Al's Den",
   "venue:Aladdin Theater",
   "venue:Alberta Abbey",
@@ -67,6 +69,7 @@
   "venue:Curious Comedy Theater",
   "venue:Cuthbert Amphitheater",
   "venue:Dante's",
+  "venue:Domino Room",
   "venue:Dublin Pub",
   "venue:Funhouse Lounge",
   "venue:Gorge Amphitheatre",
@@ -93,6 +96,7 @@
   "venue:McMenamins Grand Lodge",
   "venue:McMenamins Hotel Oregon",
   "venue:McMenamins Wilsonville Old Church & Pub",
+  "venue:Midtown Music Hall",
   "venue:Mission Theater",
   "venue:Mississippi Pizza",
   "venue:Mississippi Studios",
@@ -139,11 +143,13 @@
   "venue:Tigardville Station",
   "venue:Tomorrow Theater",
   "venue:Tomorrow's Verse",
+  "venue:Tower Theatre",
   "venue:Trinity Episcopal Cathedral",
   "venue:Trout Lake Hall",
   "venue:Turn! Turn! Turn!",
   "venue:Twilight Cafe & Bar",
   "venue:Veterans Memorial Coliseum",
+  "venue:Volcanic Theatre Pub",
   "venue:WOW Hall",
   "venue:Walters Cultural Arts Center",
   "venue:White Eagle Saloon",
@@ -157,6 +163,7 @@
   "venues:2026-09-17",
   "venues:2026-09-19",
   "venues:2026-09-21",
-  "venues:2026-09-21:2026-09-22T06:19:49+00:00"
+  "venues:2026-09-21:2026-09-22T06:19:49+00:00",
+  "venues:2026-09-21:2026-09-22T06:43:15+00:00"
  ]
 }
