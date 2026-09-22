@@ -7389,11 +7389,12 @@ function favKey(s){ return (s.venue||'') + '|' + (s.date||'') + '|' + (s.title||
         if(state.favorites.has(k)) state.favorites.delete(k); else state.favorites.add(k);
         saveFavorites();
       }
-      // Symmetric about x = 12 (Sep 22 2026, Nick: the old one was
-      // "kadywompus" -- its dip sat left of center and the right lobe
-      // stopped short). Two mirrored arcs meeting at the center dip.
+      // The original rounded heart, rebuilt symmetric about x = 12 (Sep 22
+      // 2026, Nick: the old one was "kadywompus" -- its dip sat left of
+      // center and the right lobe stopped short; then "more like the last
+      // heart but without the weird side"). Curved sides into the point.
       function heartSvg(on){
-        const HEART_PATH = 'M12 20.3 4.6 13.1a4.9 4.9 0 0 1 0-7 4.9 4.9 0 0 1 7 0l.4.4.4-.4a4.9 4.9 0 0 1 7 0 4.9 4.9 0 0 1 0 7z';
+        const HEART_PATH = 'M12 20.5C12 20.5 5 16.15 2.5 12C.5 8.5 2.5 4.5 6.2 4.5C8.7 4.5 11 6 12 8C13 6 15.3 4.5 17.8 4.5C21.5 4.5 23.5 8.5 21.5 12C19 16.15 12 20.5 12 20.5z';
         return on
           ? '<svg viewBox="0 0 24 24" fill="currentColor"><path d="' + HEART_PATH + '"/></svg>'
           : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="' + HEART_PATH + '"/></svg>';
