@@ -112,6 +112,9 @@ VENUE_INFO = {
     "McDonald Theatre": ("Eugene", "1010 Willamette St, Eugene, OR 97401"),
     "Hayden Homes Amphitheater": ("Bend", "344 SW Shevlin-Hixon Dr, Bend, OR 97702"),
     "Gorge Amphitheatre": ("George, WA", "754 Silica Rd NW, George, WA 98848"),
+    "Cuthbert Amphitheater": ("Eugene", "2300 Leo Harris Pkwy, Eugene, OR 97401"),
+    "WOW Hall": ("Eugene", "291 W 8th Ave, Eugene, OR 97401"),
+    "Lola's Room": ("Downtown", "1332 W Burnside St (upstairs at the Crystal)"),
     "Haymaker": ("Overlook", "1223 N Killingsworth St, Portland, OR 97217"),
     "Strum PDX": ("Buckman", "1415 SE Stark St #C, Portland, OR 97214"),
     "Tomorrow Theater": ("Richmond", "3530 SE Division St, Portland, OR 97202"),
@@ -5444,6 +5447,71 @@ def parse_winona(ics, today):
     return out
 
 
+# ---- Cascade Tickets (cascadetickets.com): Kesey Enterprises / Double Tee's
+# box office, a Rockhouse (RHP) event site with one listing page per room.
+# Same markup as Alberta Rose: .rhp-event__info--list per show, the date in
+# .singleEventDate, "Show: 7:30 pm" in .eventDateDetails, age in
+# .eventAgeRestriction. One reader, one page per room (Sep 21 2026).
+def _cascade_rows(html, today, venue):
+    soup = BeautifulSoup(html or "", "html.parser")
+    img_by_url = _img_map_by_event_url(soup)
+    out, seen = [], set()
+    for info in soup.select(".rhp-event__info--list"):
+        row = info.find_parent(class_="row") or info.parent
+        # the date and image sit in the sibling column; climb to the row that holds both
+        outer = row
+        for _ in range(3):
+            if outer is not None and not outer.select_one(".singleEventDate"):
+                outer = outer.find_parent(class_="row")
+        a = info.find("a", href=True)
+        if not a:
+            continue
+        te = info.select_one(".rhp-event__title--list")
+        title = clean(te.get_text(" ")) if te else clean(a.get_text(" "))
+        title = re.sub(r"^(SOLD OUT|CANCELLED|POSTPONED)[:\s-]*", "", title, flags=re.I).strip()
+        de = outer.select_one(".singleEventDate") if outer is not None else None
+        date = _ar_date(clean(de.get_text(" ")) if de else "", today)
+        if not (title and date):
+            continue
+        url = a["href"]
+        showtime = ""
+        det = info.select_one(".eventDateDetails")
+        if det:
+            sm = re.search(r"Show:?\s*([\d:]+\s*[ap]m)", clean(det.get_text(" ")), re.I)
+            if sm:
+                showtime = to_time(sm.group(1))
+        ae = info.select_one(".eventAgeRestriction")
+        age = _age_in_text(clean(ae.get_text(" "))) if ae else ""
+        key = (date, title.lower())
+        if key in seen:
+            continue
+        seen.add(key)
+        nb, addr = VENUE_INFO.get(venue, ("", ""))
+        out.append({"title": title, "venue": venue, "neighborhood": nb, "address": addr,
+                    "date": date, "time": showtime, "venueUrl": url, "age": age,
+                    "imageUrl": img_by_url.get((url or "").split("?")[0], "")})
+    return out
+
+
+def parse_mcdonald(html, today):
+    return _cascade_rows(html, today, "McDonald Theatre")
+
+
+def parse_cuthbert(html, today):
+    return _cascade_rows(html, today, "Cuthbert Amphitheater")
+
+
+def parse_lolasroom(html, today):
+    return _cascade_rows(html, today, "Lola's Room")
+
+
+# ---- WOW Hall (Eugene): WordPress + The Events Calendar REST. The calendar
+# also carries the hall's board and committee meetings; those are dropped.
+def parse_wowhall(text, today):
+    rows = _tribe_rows(text, today, "WOW Hall", "https://wowhall.org/calendar/", horizon_days=HORIZON_DAYS)
+    return [r for r in rows if not re.search(r"(?i)\b(board|committee|membership)\b.*\bmeeting\b|\bmeeting\b.*\b(board|ccpa)\b|\bccpa\b", r.get("title") or "")]
+
+
 SOURCES = [
     # CitySpark JSON API (single feed -> 2 venues). The parser ignores the
     # GET body below and drives the POST API itself; the URL is only a cheap
@@ -5525,6 +5593,14 @@ SOURCES = [
      "urls": ["https://montavillastation.com/"]},
     {"name": "Winona Grange (events.ics)", "parser": parse_winona,
      "urls": ["https://winonagrange271.org/events.ics"]},
+    {"name": "McDonald Theatre (cascadetickets.com)", "parser": parse_mcdonald,
+     "urls": ["https://cascadetickets.com/mcdonald-theatre/"]},
+    {"name": "Cuthbert Amphitheater (cascadetickets.com)", "parser": parse_cuthbert,
+     "urls": ["https://cascadetickets.com/cuthbert-amphitheater/"]},
+    {"name": "Lola's Room (cascadetickets.com)", "parser": parse_lolasroom,
+     "urls": ["https://cascadetickets.com/mcmenamins-lolas-room/"]},
+    {"name": "WOW Hall (wowhall.org)", "parser": parse_wowhall,
+     "urls": ["https://wowhall.org/wp-json/tribe/events/v1/events?per_page=50"]},
     {"name": "Haymaker (haymakerportland.com)", "parser": parse_haymaker,
      "urls": ["https://www.haymakerportland.com/events"]},
     # A watcher: their calendar is films and lectures, so nothing is normal.

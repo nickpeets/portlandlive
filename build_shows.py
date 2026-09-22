@@ -854,6 +854,8 @@ OUT_OF_TOWN_VENUES = {
     "McMenamins Hotel Oregon",    # McMinnville
     "Matthew Knight Arena",       # Eugene
     "McDonald Theatre",           # Eugene
+    "Cuthbert Amphitheater",      # Eugene
+    "WOW Hall",                   # Eugene
     "The Pickled Fish",           # Long Beach WA
     "Hayden Homes Amphitheater",  # Bend
     "Gorge Amphitheatre",         # George WA
