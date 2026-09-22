@@ -554,6 +554,11 @@ def _venue_directory(shows):
 # pass is skipped with a note; a failed fetch is a WARN. Never fatal.
 # ---------------------------------------------------------------------------
 TM_VENUE_MAP = {
+    # From the Sep 22 2026 build's "venues not covered" list.
+    "Tower Theatre - OR": "Tower Theatre",          # Bend
+    "Midtown": "Midtown Music Hall",                 # Bend (Midtown Ballroom renamed)
+    "Wow Hall": "WOW Hall",
+    "McMenamins Historic Edgefield Manor": "McMenamins Edgefield",
     # Ridgefield WA, a half-hour up I-5 -- in range since the pull went to a
     # radius rather than city=Portland/OR (Sep 2026).
     "Ilani Cowlitz Ballroom": "ilani",
@@ -859,6 +864,10 @@ OUT_OF_TOWN_VENUES = {
     "The Pickled Fish",           # Long Beach WA
     "Hayden Homes Amphitheater",  # Bend
     "Gorge Amphitheatre",         # George WA
+    "Volcanic Theatre Pub",       # Bend
+    "Tower Theatre",              # Bend
+    "Midtown Music Hall",         # Bend
+    "Domino Room",                # Bend
 }
 
 
