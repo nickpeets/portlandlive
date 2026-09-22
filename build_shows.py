@@ -1619,10 +1619,17 @@ def update_news(shows, venues, today):
     elif fresh:
         new_lines["venues:" + today.isoformat()] = _venue_line(fresh)
         seen |= {"venue:" + v for v in fresh}        # never announced singly later
+    # Festivals (Sep 22 2026, Nick: Easyfolk stayed on the bar a fortnight
+    # after it ended while Northwest Roots, two weeks out, wasn't on it). A
+    # festival is on the bar from 30 days before it starts until its last
+    # day, then off -- rebuilt every run, not announced once.
+    fest_live = set()
     for f in load_festivals():
         key = "fest:" + f["slug"]
-        if key in seen or (f.get("end") or f.get("start") or "") < today.isoformat():
+        start, end = f.get("start") or "", f.get("end") or f.get("start") or ""
+        if not start or end < today.isoformat() or start > (today + datetime.timedelta(days=30)).isoformat():
             continue
+        fest_live.add(key)
         when = ""
         try:
             a = datetime.date.fromisoformat(f["start"])
@@ -1632,7 +1639,8 @@ def update_news(shows, venues, today):
                 when += f"-{b.day}" if b.month == a.month else f" \u2013 {b.strftime('%b')} {b.day}"
         except Exception:
             pass
-        new_lines[key] = f"Festival added: {f['name']}{when}."
+        new_lines[key] = {"text": f"{'This weekend' if start <= (today + datetime.timedelta(days=6)).isoformat() else 'Coming up'}: {f['name']}{when}. Full lineup on the site.",
+                          "until": end, "url": f"#/festival/{f['slug']}"}
 
     # Miracles: a spare ticket is news only while the show is ahead, so these
     # run until the show rather than a fortnight -- and they link to it. The
@@ -1694,6 +1702,9 @@ def update_news(shows, venues, today):
                      "from": today.isoformat(), "until": line.get("until") or until}
         if line.get("url"):
             auto[key]["url"] = line["url"]
+    # A festival line lives exactly while its festival does (see above).
+    for k in [k for k in auto if str(k).startswith("fest:") and k not in fest_live]:
+        del auto[k]
     kept = [i for i in auto.values() if (i.get("until") or "9999") >= today.isoformat()
             # Miracles went free-only Sep 17 2026: retire any face-value line already running.
             and not (str(i.get("key", "")).startswith("miracle:") and "at face value" in (i.get("text") or ""))]
