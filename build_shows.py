@@ -1478,7 +1478,8 @@ def _row_is_ticketed(r):
 
 
 NEWS_FILE = os.path.join(HERE, "news.json")
-NEWS_RUN_DAYS = 14          # how long a venue/festival line stays up
+NEWS_RUN_DAYS = 14          # default run for an automatic line
+VENUE_RUN_DAYS = 7          # a new-venue batch runs a week (Sep 21 2026)
 
 
 def fetch_show_overrides():
@@ -1611,14 +1612,29 @@ def update_news(shows, venues, today):
     # New venues go up as ONE line per day (Sep 17 2026). A batch of twelve
     # used to write twelve lines, which crowded everything else out for two
     # weeks, and each line's show count froze on the day it was written.
-    fresh = [v for v in sorted(live) if "venue:" + v not in seen and "venue:" + v not in grouped_venues]
-    if len(fresh) == 1:
-        v = fresh[0]
-        n = live[v]
-        new_lines["venue:" + v] = f"New venue: {v} \u2014 {n} show{'s' if n != 1 else ''} on the calendar."
-    elif fresh:
-        new_lines["venues:" + today.isoformat()] = _venue_line(fresh)
-        seen |= {"venue:" + v for v in fresh}        # never announced singly later
+    # Sep 21 2026 (Nick: the venue lines were days old and the new Further
+    # Out rooms were buried): a batch runs VENUE_RUN_DAYS, only the newest
+    # batch of each kind is on the bar (a newer one retires the older), the
+    # Further Out rooms get their own line, and names are listed busiest
+    # first so "and N more" hides the small rooms, not the big ones.
+    fresh = [v for v in live if "venue:" + v not in seen and "venue:" + v not in grouped_venues]
+    fresh.sort(key=lambda v: (-live[v], v))
+    stamp = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
+    v_until = (today + datetime.timedelta(days=VENUE_RUN_DAYS)).isoformat()
+    for kind, names in (("venues", [v for v in fresh if v not in OUT_OF_TOWN_VENUES]),
+                        ("far", [v for v in fresh if v in OUT_OF_TOWN_VENUES])):
+        if not names:
+            continue
+        if kind == "far":
+            text = ("Further Out: " + (names[0] if len(names) == 1 else _venue_line(names).split(": ", 1)[1].rstrip("."))
+                    + " \u2014 new on the calendar. Tap Further Out.")
+        elif len(names) == 1:
+            n = live[names[0]]
+            text = f"New venue: {names[0]} \u2014 {n} show{'s' if n != 1 else ''} on the calendar."
+        else:
+            text = _venue_line(names)
+        new_lines[f"{kind}:{today.isoformat()}:{stamp}"] = {"text": text, "until": v_until, "at": stamp}
+        seen |= {"venue:" + v for v in names}        # never announced again
     # Festivals (Sep 22 2026, Nick: Easyfolk stayed on the bar a fortnight
     # after it ended while Northwest Roots, two weeks out, wasn't on it). A
     # festival is on the bar from 30 days before it starts until its last
@@ -1700,8 +1716,20 @@ def update_news(shows, venues, today):
         line = {"text": val} if isinstance(val, str) else dict(val)
         auto[key] = {"text": line["text"], "auto": True, "key": key,
                      "from": today.isoformat(), "until": line.get("until") or until}
+        if line.get("at"):
+            auto[key]["at"] = line["at"]
         if line.get("url"):
             auto[key]["url"] = line["url"]
+    # Venue lines: newest batch of each kind only, and never past a week.
+    for prefix in (("venues:", "venue:"), ("far:",)):
+        ks = [k for k in auto if str(k).startswith(prefix)]
+        ks.sort(key=lambda k: (auto[k].get("from") or "", auto[k].get("at") or "", k))
+        for k in ks[:-1]:
+            del auto[k]
+        for k in ks[-1:]:
+            cap = (datetime.date.fromisoformat(auto[k]["from"]) + datetime.timedelta(days=VENUE_RUN_DAYS)).isoformat()
+            if (auto[k].get("until") or "9999") > cap:
+                auto[k]["until"] = cap
     # A festival line lives exactly while its festival does (see above).
     for k in [k for k in auto if str(k).startswith("fest:") and k not in fest_live]:
         del auto[k]

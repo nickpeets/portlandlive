@@ -1,13 +1,6 @@
 {
  "items": [
   {
-   "text": "10 new venues on the calendar: Birch Street Uptown Lounge, Cuthbert Amphitheater, Gorge Amphitheatre and 7 more.",
-   "auto": true,
-   "key": "venues:2026-09-22",
-   "from": "2026-09-22",
-   "until": "2026-10-06"
-  },
-  {
    "text": "2 new venues on the calendar: Swan Dive and The Waypost.",
    "auto": true,
    "key": "venues:2026-09-21",
@@ -81,7 +74,6 @@
   "venue:Arlene Schnitzer Concert Hall",
   "venue:Artichoke Music",
   "venue:Barrel Room",
-  "venue:Birch Street Uptown Lounge",
   "venue:Brunish Theatre",
   "venue:Bunk Bar",
   "venue:CORNER14",
@@ -90,15 +82,12 @@
   "venue:Chehalem Valley Brewing",
   "venue:Crystal Ballroom",
   "venue:Curious Comedy Theater",
-  "venue:Cuthbert Amphitheater",
   "venue:Dante's",
   "venue:Dublin Pub",
   "venue:Funhouse Lounge",
-  "venue:Gorge Amphitheatre",
   "venue:Havalina",
   "venue:Hawthorne Lounge",
   "venue:Hawthorne Theatre",
-  "venue:Hayden Homes Amphitheater",
   "venue:Haymaker",
   "venue:Helium Comedy Club",
   "venue:Holocene",
@@ -111,9 +100,6 @@
   "venue:Kickstand Comedy",
   "venue:LaVerne's",
   "venue:Laurelthirst Public House",
-  "venue:Lola's Room",
-  "venue:Matthew Knight Arena",
-  "venue:McDonald Theatre",
   "venue:McMenamins Edgefield",
   "venue:McMenamins Grand Lodge",
   "venue:McMenamins Hotel Oregon",
@@ -151,7 +137,6 @@
   "venue:The Goodfoot",
   "venue:The Haven",
   "venue:The Headliners Club",
-  "venue:The Lyons Den",
   "venue:The Off Beat",
   "venue:The Old Church",
   "venue:The Reser",
@@ -169,19 +154,16 @@
   "venue:Turn! Turn! Turn!",
   "venue:Twilight Cafe & Bar",
   "venue:Veterans Memorial Coliseum",
-  "venue:WOW Hall",
   "venue:Walters Cultural Arts Center",
   "venue:White Eagle Saloon",
   "venue:Wilfs",
   "venue:Winningstad Theatre",
-  "venue:Winona Grange",
   "venue:Wolves & People Bar",
   "venue:Wonder Ballroom",
   "venue:ilani",
   "venues:2026-09-16",
   "venues:2026-09-17",
   "venues:2026-09-19",
-  "venues:2026-09-21",
-  "venues:2026-09-22"
+  "venues:2026-09-21"
  ]
 }
