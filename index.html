@@ -3527,7 +3527,7 @@ async function mountGiveawayBanner(wrap){
   wrap.insertBefore(host, wrap.firstChild);
   const g = await giveawayLoad();
   if(!host.isConnected || !giveawayOpen(g)) { host.remove(); return; }
-  host.innerHTML = '<span class="gw-ticket">&#127903;&#65039;</span><span class="gw-text"><b>Win a pair to ' + esc(g.title) + '</b> \u00b7 Halloween at the Aladdin</span><span class="gw-go">Enter &rarr;</span>';
+  host.innerHTML = '<span class="gw-ticket">&#127903;&#65039;</span><span class="gw-text"><b>Win a pair to ' + esc(g.title) + '</b><span class="gw-sub"> \u00b7 Halloween at the Aladdin</span></span><span class="gw-go">Enter &rarr;</span>';
   host.hidden = false;
 }
 // A line on the giveaway show's own page.
@@ -8756,6 +8756,19 @@ a.inbox-thread-who:hover{text-decoration:underline}
 .ph-strip-caret{font-size:22px;line-height:1;opacity:.9;width:22px;text-align:center}
 .ph-strip-pill{flex:0 0 auto;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.06em;text-transform:uppercase;border:1px solid rgba(255,255,255,.4);border-radius:999px;padding:4px 10px;opacity:.9}
 @media(max-width:600px){.ph-strip-head{font-size:15px;padding:8px 10px;gap:8px}.ph-strip-caret{font-size:18px;width:18px}.ph-strip-head .pf-count{font-size:12px}}
+/* Tighter top of the feed on phones (Sep 22 2026, Nick: "condense the photos
+   and pymk"): the giveaway banner, Latest photos and People you may know
+   stack 8px apart with slimmer headers; an open panel gets its gap back. */
+@media(max-width:600px){
+  .gw-banner{margin:0 0 8px;padding:8px 12px;gap:8px}
+  .gw-banner .gw-text{font-size:13.5px}
+  .gw-banner .gw-sub{display:none}
+  .gw-banner .gw-ticket{font-size:17px}
+  .ph-strip,.pymk{margin:0 0 8px}
+  .ph-strip-head,.pymk .pymk-fold{margin:0;padding:6px 10px;font-size:14.5px}
+  .ph-strip-head[aria-expanded="true"],.pymk .pymk-fold[aria-expanded="true"]{margin:0 0 8px}
+  .ph-strip-pill{padding:2px 9px;font-size:11px}
+}
 .ph-strip-row{display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
 .ph-strip-row[hidden]{display:none}  /* the flex rule outranks the hidden attribute otherwise (Sep 18 2026) */
 .ph-strip-row::-webkit-scrollbar{height:6px}
