@@ -477,3 +477,6 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **2026-09-22 — Heart, round version (eecb91cb)** — back to the original rounded shape with curved sides, rebuilt symmetric (no bulge on the right).
 
 - **2026-09-22 — Listen fix (27d5662a)** — the Listen button carries data-venue since 6d9303fd, which the feed's venue-link rule caught first; the rule now skips .listen.
+
+- **2026-09-22 — Who's Going respects No one (ad255aae)** — No-one rows come back unnamed; page lists everyone else plus "and N others". SQL: supabase/schema-whos-going-private.sql.
+- **2026-09-22 — Message emails (2b66f663)** — pg_cron sweep every 5 min; one email per unread conversation after 15 min (last 24 h only); no message text; bookmark-menu switch + /#/unsubscribe/<token>. SQL: supabase/schema-dm-email.sql.
