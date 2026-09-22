@@ -1264,10 +1264,32 @@ body{
   // no_onload: the first count comes from the app too, so nothing double-counts.
   window.goatcounter = { no_onload: true };
   var _gcLast = '';
+  // Where a visitor came from (Sep 22 2026): rainorshows.com/?ref=fb-weekend.
+  // The first ref wins and is kept 30 days on this device; it's counted in
+  // GoatCounter as a visit (ref/<name>) and reported once when the visitor
+  // creates an account (record_signup_ref). The ?ref= is then tidied out of
+  // the address bar so shared links stay clean.
+  (function(){
+    try{
+      var m = /[?&]ref=([A-Za-z0-9_-]{1,60})/.exec(location.search || '');
+      if(!m) return;
+      var ref = m[1].toLowerCase(), now = Date.now(), cur = null;
+      try{ cur = JSON.parse(localStorage.getItem('ros_ref') || 'null'); }catch(_){ cur = null; }
+      if(!cur || !cur.ref || (now - (cur.at || 0)) > 30 * 864e5){
+        localStorage.setItem('ros_ref', JSON.stringify({ ref: ref, at: now }));
+      }
+      window.__rosRefVisit = ref;
+      var clean = location.search.replace(/([?&])ref=[^&]*(&|$)/, function(_, a, b){ return b ? a : ''; }).replace(/[?&]$/, '');
+      history.replaceState(null, '', location.pathname + clean + location.hash);
+    }catch(_){}
+  })();
   function trackView(path){
     if(!path || path === _gcLast) return;
     _gcLast = path;
-    if(window.goatcounter && window.goatcounter.count) window.goatcounter.count({ path: path });
+    if(window.goatcounter && window.goatcounter.count){
+      window.goatcounter.count({ path: path });
+      if(window.__rosRefVisit){ window.goatcounter.count({ path: 'ref/' + window.__rosRefVisit, title: 'Arrived from ' + window.__rosRefVisit, event: true }); window.__rosRefVisit = null; }
+    }
   }
 </script>
 <script data-goatcounter="https://rainorshows.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
@@ -3458,6 +3480,20 @@ function renderPeopleSearch(q){
     wrap.innerHTML = rows.length ? '<div class="people-list">' + rows.map(peopleRow).join('') + '</div>'
                                  : '<div class="empty">No one matching \u201c@' + esc(term) + '\u201d yet.</div>';
   }, 220);
+}
+
+// Report the ?ref= a new member arrived with, once (Sep 22 2026). The server
+// only credits accounts made in the last day, so calling this on every sign-in
+// is harmless; a stored ref is cleared once it has been sent.
+function reportSignupRef(){
+  try{
+    const sb = window.__plAuth;
+    const cur = JSON.parse(localStorage.getItem('ros_ref') || 'null');
+    if(!sb || !state._signedIn || !cur || !cur.ref) return;
+    Promise.resolve(sb.rpc('record_signup_ref', { p_ref: cur.ref, p_first_seen: new Date(cur.at || Date.now()).toISOString() }))
+      .then(function(r){ if(r && !r.error){ try{ localStorage.removeItem('ros_ref'); }catch(_){} } })
+      .catch(function(){});
+  }catch(_){}
 }
 
 // ===== BLOCK (Sep 22 2026, Nick's design) =====
@@ -8421,6 +8457,7 @@ $('.masthead-brand').addEventListener('click', goHome);
       // Avatars are per-account only insofar as WHOSE editor shows; the cache
       // itself is keyed by user id so it stays valid across a sign-out.
       avRenderEditor();
+      reportSignupRef();
       await loadMyBlocks();
       await plLoadUserData();
       // The people half of ★ Following is per-account (Stage 10 Part 5):

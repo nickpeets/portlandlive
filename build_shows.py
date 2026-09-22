@@ -2322,7 +2322,8 @@ def _shell(title, desc, image, canonical, app_hash):
             f"<meta property=\"og:url\" content=\"{_esc(canonical)}\">"
             f"<meta name=\"twitter:card\" content=\"{'summary_large_image' if image != DEFAULT_OG_IMAGE else 'summary'}\">"
             "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
-            f"<script>location.replace({json.dumps(SITE + '/' + app_hash)});</script>"
+            # Keep ?ref=... on the way through (Sep 22 2026: per-post sign-up tracking).
+            f"<script>location.replace({json.dumps(SITE + '/')} + location.search + {json.dumps(app_hash)});</script>"
             "</head><body style=\"font-family:Georgia,serif;background:#2f5a4a;color:#f3ead7;padding:24px\">"
             f"<p>{_esc(title)}</p><p>{_esc(desc)}</p>"
             f"<p><a style=\"color:#f3ead7\" href=\"{_esc(SITE + '/' + app_hash)}\">Open on Rain Or Shows</a></p>"
