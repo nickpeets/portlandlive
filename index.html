@@ -527,7 +527,12 @@ body{
     .controls-inner .ctl-row + .ctl-row{display:none}
     .controls-inner .phone-browse{display:inline-flex;position:relative;flex:0 0 auto;min-height:44px;box-sizing:border-box;padding:0;align-items:center}
     .controls-inner .phone-browse svg{position:absolute;left:12px;pointer-events:none}
-    .controls-inner .phone-browse select{height:44px;box-sizing:border-box;padding:0 8px 0 34px;margin:0;cursor:pointer;width:128px}
+    .controls-inner .phone-browse select{height:44px;box-sizing:border-box;padding:0 4px 0 30px;margin:0;cursor:pointer;width:106px}
+    .controls-inner .phone-browse svg{left:9px}
+    /* Pull the feed up under the search row (Sep 22 2026, Nick). */
+    .controls{padding-bottom:10px}
+    .results-wrap{padding-top:4px}
+    .results-inner > .daygroup:first-child{margin-top:10px}
     .controls-inner .ctl-row:first-child{flex-wrap:nowrap}
     .controls-inner .ctl-row:first-child .search-pill{flex:1 1 auto;min-width:0;width:auto;min-height:44px;box-sizing:border-box}
   .results{overflow-x:hidden}
