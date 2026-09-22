@@ -2409,6 +2409,7 @@ function render(){
   const plainHome = !state.q.trim() && !state.tonight && !state.thisWeek && !state.picks && !state.myShows
     && !state.festivals && !state.allAges && !state.following && !state.byHood && !state.comedy && !state.selectedVenue && state.view === 'shows';
   if(plainHome) mountPhotoStrip(wrap);
+  if(plainHome) mountGiveawayBanner(wrap);
   // People you may know (Sep 22 2026, Nick): a folding panel right under
   // Latest photos & clips, folded on every draw -- no longer in the listings.
   if(plainHome) mountPymk(wrap);
@@ -2967,6 +2968,7 @@ function parseRoute(){
   if(/^#\/privacy\/?$/.test(h)) return {type:'privacy'};
   m = /^#\/review\/([0-9a-f-]{36})\/([0-9a-f-]{36})\/(approved|rejected)\/?$/.exec(h);
   if(m) return {type:'review', id:m[1], token:m[2], action:m[3]};
+  if(/^#\/giveaway\/?$/.test(h)) return {type:'giveaway'};
   m = /^#\/unsubscribe\/([0-9a-f-]{36})\/?$/.exec(h);
   if(m) return {type:'unsubscribe', token:m[1]};
   return {type:'feed'};
@@ -3024,6 +3026,7 @@ async function router(){
   }
   if(route.type === 'review'){ await renderReviewRoute(route); return; }
   if(route.type === 'unsubscribe'){ await renderUnsubscribeRoute(route); return; }
+  if(route.type === 'giveaway'){ await renderGiveawayRoute(); return; }
   if(route.type === 'venue'){
     var name = venueFromSlug(route.slug);
     if(name){ enterVenueState(name); }
@@ -3494,6 +3497,109 @@ function reportSignupRef(){
       .then(function(r){ if(r && !r.error){ try{ localStorage.removeItem('ros_ref'); }catch(_){} } })
       .catch(function(){});
   }catch(_){}
+}
+
+// ===== TICKET GIVEAWAY (Sep 22 2026, Nick + Anita) =====
+// A pair to The Brothers Comatose (Aladdin, Oct 31). 1 entry for tapping
+// "I'm going" on any show during the window; +1 for each friend who joins
+// through your invite link (?ref=inv-<handle>) and taps "I'm going" too.
+// Everything is counted by the database (schema-giveaway.sql).
+let GIVEAWAY = null, GIVEAWAY_ASKED = false;
+async function giveawayLoad(){
+  if(GIVEAWAY_ASKED) return GIVEAWAY;
+  GIVEAWAY_ASKED = true;
+  let sb = window.__plAuth;
+  for(let i = 0; !sb && i < 25; i++){ await new Promise(function(r){ setTimeout(r, 200); }); sb = window.__plAuth; }
+  if(!sb) return null;
+  const r = await safeRpc(sb.rpc('giveaway_current'));
+  const row = r && !r.error && Array.isArray(r.data) ? r.data[0] : null;
+  GIVEAWAY = row || null;
+  return GIVEAWAY;
+}
+function giveawayOpen(g){ return !!(g && !g.drawn && new Date(g.ends_at).getTime() > Date.now()); }
+function giveawayCloses(g){
+  return new Date(g.ends_at).toLocaleString('en-US', { timeZone: 'America/Los_Angeles', weekday: 'long', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+}
+// Slim banner on the plain feed while entries are open.
+async function mountGiveawayBanner(wrap){
+  const host = document.createElement('a');
+  host.className = 'gw-banner'; host.href = '#/giveaway'; host.hidden = true;
+  wrap.insertBefore(host, wrap.firstChild);
+  const g = await giveawayLoad();
+  if(!host.isConnected || !giveawayOpen(g)) { host.remove(); return; }
+  host.innerHTML = '<span class="gw-ticket">&#127903;&#65039;</span><span class="gw-text"><b>Win a pair to ' + esc(g.title) + '</b> \u00b7 Halloween at the Aladdin</span><span class="gw-go">Enter &rarr;</span>';
+  host.hidden = false;
+}
+// A line on the giveaway show's own page.
+async function mountGiveawayBadge(card, slug){
+  const g = await giveawayLoad();
+  if(!giveawayOpen(g) || g.show_slug !== slug || !card.isConnected) return;
+  const a = document.createElement('a');
+  a.className = 'gw-banner gw-badge'; a.href = '#/giveaway';
+  a.innerHTML = '<span class="gw-ticket">&#127903;&#65039;</span><span class="gw-text"><b>We\u2019re giving away a pair to this show.</b></span><span class="gw-go">Enter &rarr;</span>';
+  card.insertAdjacentElement('afterend', a);
+}
+async function renderGiveawayRoute(){
+  const wrap = $('#results');
+  $('#resultCount').textContent = 'Giveaway';
+  clearTogglePills();
+  wrap.innerHTML = '<div class="sub-page"><p class="sub-lead">One moment\u2026</p></div>';
+  try{ if(typeof trackView === 'function') trackView('/#/giveaway'); }catch(_){}
+  GIVEAWAY_ASKED = false;
+  const g = await giveawayLoad();
+  if(parseRoute().type !== 'giveaway') return;
+  if(!g){ wrap.innerHTML = '<div class="sub-page"><h1 class="sub-title">No giveaway right now</h1><p class="sub-lead">Check back soon.</p></div>'; return; }
+  const show = state.shows.find(function(s){ return s._slug === g.show_slug; });
+  const open = giveawayOpen(g);
+  const poster = show && show.imageUrl ? '<img class="gw-poster" src="' + esc(show.imageUrl) + '" alt="">' : '';
+  let html = '<div class="sub-page gw-page">'
+    + '<div class="gw-kicker">&#127903;&#65039; Ticket giveaway</div>'
+    + '<h1 class="sub-title">Win a pair to ' + esc(g.title) + '</h1>'
+    + (show ? '<p class="sub-lead"><a href="#/show/' + esc(g.show_slug) + '">' + esc(ordinalDate(show.date)) + (show.time ? ' \u00b7 ' + esc(show.time) : '') + ' \u00b7 ' + esc(show.venue) + '</a></p>' : '')
+    + poster
+    + (g.drawn ? '<p class="sub-lead"><b>Entries are closed and the winner has been drawn.</b> Thanks to everyone who entered.</p>'
+       : open ? '<p class="sub-lead">Entries close <b>' + esc(giveawayCloses(g)) + '</b>.</p>'
+       : '<p class="sub-lead"><b>Entries are closed.</b> The winner will be drawn shortly.</p>')
+    + '<h3 class="gw-h">How to enter</h3>'
+    + '<ol class="gw-steps"><li><b>Sign up</b> for a free Rain Or Shows account.</li>'
+    + '<li><b>Tap \u201cI\u2019m going\u201d</b> on any show before entries close. That\u2019s your first entry.</li>'
+    + '<li><b>Share your invite link.</b> Every friend who joins through it and taps \u201cI\u2019m going\u201d on a show earns you one more entry.</li></ol>'
+    + '<div class="gw-me" data-gw-me></div>'
+    + '<h3 class="gw-h">The rules</h3>'
+    + '<div class="gw-rules"><p>Free to enter; no purchase necessary. Open to anyone 18 or older who can attend the show in Portland on October 31, 2026. One winner, drawn at random after entries close, with each entry counting once. The prize is one pair of tickets to ' + esc(g.title) + ' at the Aladdin Theater on October 31, 2026; it can\u2019t be exchanged for cash, and the winner must meet the show\u2019s own age rules. We\u2019ll message the winner on Rain Or Shows and by email; if we don\u2019t hear back within 48 hours we\u2019ll draw again. Rain Or Shows moderators can\u2019t win. Questions: nick@rainorshows.com.</p></div>'
+    + '</div>';
+  wrap.innerHTML = html;
+  const me = wrap.querySelector('[data-gw-me]');
+  const sb = window.__plAuth;
+  if(!state._signedIn || !sb){
+    me.innerHTML = open ? '<div class="gw-box"><p>Sign in to see your entries and get your invite link.</p><button type="button" class="tx-signin-btn" data-gw-signin>Sign In</button></div>' : '';
+    const b = me.querySelector('[data-gw-signin]');
+    if(b) b.addEventListener('click', function(){ const x = document.getElementById('authSignInBtn'); if(x) x.click(); });
+    return;
+  }
+  const r = await safeRpc(sb.rpc('giveaway_my_status', { p_slug: g.slug }));
+  const st = r && !r.error && Array.isArray(r.data) ? r.data[0] : null;
+  if(!st || parseRoute().type !== 'giveaway') return;
+  if(st.won){ me.innerHTML = '<div class="gw-box gw-won"><b>You won!</b> Check your messages \u2014 we\u2019ll sort out the tickets.</div>'; return; }
+  if(st.is_moderator){ me.innerHTML = '<div class="gw-box">You\u2019re running this one, so you can\u2019t win it. Share the page!</div>'; return; }
+  const link = 'https://rainorshows.com/?ref=inv-' + String(st.handle || '').toLowerCase();
+  me.innerHTML = '<div class="gw-box">'
+    + '<div class="gw-count"><span class="gw-num">' + (st.total | 0) + '</span> ' + ((st.total | 0) === 1 ? 'entry' : 'entries') + '</div>'
+    + '<ul class="gw-break">'
+    + '<li>' + (st.base ? '&#10003; You\u2019re going to a show \u2014 1 entry' : 'Tap \u201cI\u2019m going\u201d on any show to get your first entry') + '</li>'
+    + '<li>' + (st.invites | 0) + ' friend' + ((st.invites | 0) === 1 ? '' : 's') + ' joined and marked going \u2014 ' + (st.invites | 0) + ' more</li>'
+    + ((st.pending | 0) ? '<li>' + st.pending + ' joined but haven\u2019t tapped \u201cI\u2019m going\u201d yet</li>' : '')
+    + '</ul>'
+    + (st.handle && open ? '<div class="gw-invite"><label>Your invite link</label><div class="gw-linkrow"><input type="text" readonly value="' + esc(link) + '"><button type="button" class="gw-copy" data-gw-copy>Copy</button></div></div>' : '')
+    + (!st.handle ? '<p>Pick a handle in the bookmark menu to get your invite link.</p>' : '')
+    + '</div>';
+  const cp = me.querySelector('[data-gw-copy]');
+  if(cp) cp.addEventListener('click', async function(){
+    const inp = me.querySelector('.gw-linkrow input');
+    try{ await navigator.clipboard.writeText(inp.value); cp.textContent = 'Copied'; }
+    catch(_){ inp.select(); document.execCommand && document.execCommand('copy'); cp.textContent = 'Copied'; }
+    setTimeout(function(){ cp.textContent = 'Copy'; }, 1800);
+  });
 }
 
 // ===== BLOCK (Sep 22 2026, Nick's design) =====
@@ -3987,6 +4093,7 @@ function renderShowDetail(wrap, show, kind){
   mountPosterEditor(card, show, _slug);
   mountPickPin(card, show, _slug);
   mountKindControl(card, show, _slug);
+  mountGiveawayBadge(card, _slug);
   // Appended in mobile reading order. mountExchange/mountComments each attach
   // their host synchronously before their first await, so the resulting DOM
   // order is deterministic even though both are async.
@@ -8574,6 +8681,29 @@ a.inbox-thread-who:hover{text-decoration:underline}
 .pick-mod{display:flex;gap:8px;padding:8px 12px 10px;border-top:1px dashed rgba(74,53,38,.25)}
 .pick-mod-btn{border:1px solid var(--rust);background:none;color:var(--rust);border-radius:999px;padding:4px 10px;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.05em;text-transform:uppercase;cursor:pointer}
 .pick-mod-btn.on{background:var(--rust);color:var(--cream)}
+.gw-banner{display:flex;align-items:center;gap:10px;margin:0 0 16px;padding:11px 14px;border-radius:10px;background:var(--rust);color:var(--cream);text-decoration:none;box-shadow:0 6px 14px rgba(20,40,30,.18)}
+.gw-banner[hidden]{display:none}
+.gw-banner .gw-ticket{font-size:20px;flex:0 0 auto}
+.gw-banner .gw-text{flex:1 1 auto;min-width:0;font-family:'Bitter',Georgia,serif;font-size:14.5px;line-height:1.3}
+.gw-banner .gw-go{flex:0 0 auto;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
+.gw-badge{margin:12px 0 0}
+.gw-kicker{font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--cream);opacity:.85;margin-bottom:6px}
+.gw-page .sub-lead a{color:var(--cream)}
+.gw-poster{display:block;width:100%;max-width:420px;border-radius:10px;margin:0 0 16px}
+.gw-h{font-family:'Alfa Slab One',serif;font-weight:400;font-size:19px;color:var(--cream);margin:22px 0 8px}
+.gw-steps{margin:0 0 14px;padding-left:20px;color:var(--cream);font-family:'Bitter',Georgia,serif;font-size:15px;line-height:1.55}
+.gw-steps li{margin-bottom:6px}
+.gw-box{background:var(--cream);color:var(--ink);border-radius:12px;padding:14px 16px;margin:10px 0;font-family:'Bitter',Georgia,serif;font-size:14.5px;line-height:1.5}
+.gw-box p{margin:0 0 10px}
+.gw-count{font-family:'Alfa Slab One',serif;font-size:18px;margin-bottom:6px}
+.gw-num{font-size:34px;color:var(--rust)}
+.gw-break{margin:0 0 12px;padding-left:18px}
+.gw-invite label{display:block;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+.gw-linkrow{display:flex;gap:8px}
+.gw-linkrow input{flex:1 1 auto;min-width:0;border:1px solid rgba(74,53,38,.35);border-radius:8px;padding:8px 10px;font-size:14px;background:#fff;color:var(--ink)}
+.gw-copy{flex:0 0 auto;border:0;border-radius:999px;background:var(--rust);color:var(--cream);padding:0 16px;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+.gw-won{background:#f4e1b8}
+.gw-rules{font-family:'Bitter',Georgia,serif;font-size:13px;line-height:1.55;color:rgba(243,234,215,.8)}
 .blk-wrap{position:relative;display:inline-flex;margin-left:auto}
 .dm-head .blk-wrap{margin-left:auto}
 .blk-more{width:32px;height:32px;border-radius:50%;border:1px solid rgba(243,234,215,.5);background:none;color:var(--cream);font-size:18px;line-height:1;cursor:pointer;padding:0}
