@@ -23,7 +23,10 @@ var NON_ARTIST = [
   'trivia','quiz night','karaoke','open mic','open jam','bingo','music bingo',
   'comedy show','comedy night','stand-up','standup','drag brunch','drag show',
   'dj night','silent disco','line dancing','salsa night','speed dating',
-  'paint night','game night','book club','story slam'
+  'paint night','game night','book club','story slam',
+  // Sep 22 2026 audit: nights with no act to play.
+  'art opening','art exhibition','birthday bash','hall of fame','induction ceremony',
+  'variety show','burlesque','student band'
 ];
 // Generic recurring "social" labels. BUGFIX (a): only reject when the generic term
 // IS essentially the whole derived name, not when it is a substring of a real band
@@ -51,7 +54,7 @@ var NOISE = /[:!]|\bhosted by\b|\bvariety show\b|\bvs\b|\bpresents?\b|\bannivers
 var DAYS = '(?:mon|tues?|wednes|thurs?|fri|satur|sun)days?';
 var LABEL = new RegExp('\\b' + DAYS + '\\b|\\bni(?:ght|te)s?\\s*[!.]*$|\\bnight (?:special|social)\\b|\\w*fest\\b|\\bresidency\\b|\\blive music\\b|\\blive from\\b|' +
   '\\bhappy[- ]hour\\b|\\bsuperjam\\b|\\bvaudeville\\b|\\bsounds of\\b|\\bseries\\b|\\bshowcase\\b|\\bpresents?\\b|' +
-  '\\bspecial\\b|\\bsocial\\b|\\bbrunch\\b|\\bjam session\\b|\\bopen stage\\b|\\bfest(ival)?\\b|' +
+  '\\bspecial\\b|\\bsocial\\b|\\bbenefit\\b|\\banniversary\\b|\\bfundraiser\\b|\\bbrunch\\b|\\bjam session\\b|\\bopen stage\\b|\\bfest(ival)?\\b|' +
   '^live\\s+(?:music|bluegrass|jazz|blues|country|folk|band|dj)\\b|^djs?$', 'i');
 function isLabel(s){
   s = (s || '').trim();
@@ -66,7 +69,7 @@ var NIGHT_END = /\b(night|party|social|scaries|brewfest|oktoberfest|festival|fes
 // Bill separators: headliner is the FIRST act before any of these.
 var BILL_SPLIT = /\s+(?:with|feat\.?|featuring|ft\.?|and\s+(?:special\s+)?guests?)\s+|\s+w\/\s*|\s*(?:\/\/?|\+|&|,|•|\u00b7|\||\s\*\s)\s*/i;
 // Series separators: the first of these splits "label: act" or "act - label".
-var SERIES_SPLIT = /\s*:\s+|\s+\|\s+|\s+[-\u2013\u2014]+\s+|\s+presented by\s+|\s+presents?\b\s*[-\u2013\u2014:]*\s*|\s+(?:with|featuring|feat\.?)\s+|\s+w\/\s*/i;
+var SERIES_SPLIT = /\s*:\s+|\s+\|\s+|\s+\/\s+|\s+hosted by\s+|\s+[-\u2013\u2014]+\s+|\s+presented by\s+|\s+presents?\b\s*[-\u2013\u2014:]*\s*|\s+(?:with|featuring|feat\.?)\s+|\s+w\/\s*/i;
 // Tails that are about the night, not the act.
 var TAILS = [
   /\s+(?:and|&)\s+(?:dance\s+)?lessons\b.*$/i,
@@ -80,16 +83,23 @@ var TAILS = [
   /\s+on vocals\b.*$/i,
   /\s*[-\u2013]\s*live music\b.*$/i,                         // "Mango Twist- Live Music & Dancing!"
   /\s*-\s*performing\b.*$/i, /\s+performs?\b.*$/i,
-  /\s+live$/i                                                  // "Tree Frogs Live (at Tomorrow's Verse)"
+  /\s+live$/i,                                                 // "Tree Frogs Live (at Tomorrow's Verse)"
+  /\s+plays\s+\S.*$/i,                                        // "The Blasting Company plays Over The Garden Wall"
+  /\s+brings?\s+\S.*$/i,                                      // "... bring No Requests!"
+  /\s+(?:halloween|holiday|christmas|new year[’']?s(?: eve)?)\s+(?:concert|show|party|bash)\b.*$/i
 ];
 // What's left after a series label that still isn't an act.
 var NOT_ACT = /^(?:cigars?|dominos?|music|dancing|food|drinks|games|djs?|friends|special guests?|guests?|tba|tbd|and more|lessons?|karaoke)$/i;
 
 function stripPromo(s){
+  // A parenthetical with more act-text after it ends the first act (Sep 22
+  // 2026: "Constant Debauchery (Depeche Mode tribute) Kiss Me Kiss Me Kiss").
+  s = s.replace(/^([^(]*\w[^(]*?)\s+\([^)]*\)\s+(?=[A-Za-z]).*$/, '$1');
   s = s.replace(/\([^)]*\)/g, ' ').replace(/\[[^\]]*\]/g, ' ');
   s = s.replace(/["\u201c\u201d][^"\u201c\u201d]*["\u201c\u201d]/g, ' ');       // quoted show titles
   s = s.replace(/\s+[-\u2013\u2014]\s*(?:ages\s+)?(?:all ages|21\+|18\+)(?:\s+event)?\s*$/i, ' ');
   s = s.replace(/^\s*moved to [^:]+:\s*/i, ' ');
+  s = s.replace(/^\s*(?:portland|pdx)[- ]based\s+/i, ' ');
   s = s.replace(/^\s*(?:canceled|cancelled|postponed|sold out|moved)\s*[:!\-\u2013]+\s*/i, ' ');
   s = s.replace(/\bdoors\s+\d{1,2}(?::\d\d)?\s*[ap]m\b/ig, ' ');
   s = s.replace(/[-\u2013:]\s*[^-\u2013:]*\b(tour|all ages|seated show|phase\s*\d+|record release|album release|matinee)\b.*$/i, ' ');
@@ -133,7 +143,12 @@ function deriveArtist(rawTitle, venue){
   }
   var hadBill = BILL_SPLIT.test(work);
   var head = cleanup(work.split(BILL_SPLIT)[0]).replace(/^the music of\s+/i,'').trim();
+  // Two or more "and"s is a bill, not a band name ("Jackstraw and The Last
+  // Wild Buffalo and Mark Tegio"); one "and" can be a band ("Jackson Warner
+  // and the Damn Well Please"), so it stays. A lowercase " x " joins two DJs.
+  head = cleanup(head.split(/\s+x\s+/)[0]);
   head = stripTails(head);
+  if ((head.match(/\s+and\s+/gi) || []).length >= 2) head = stripTails(cleanup(head.split(/\s+and\s+/i)[0]));
   if (!head || head.length < 2) return none('empty-after-clean');
   var letters = (head.match(/[a-z]/ig)||[]).length;
   if (letters < 2) return none('no-letters');
