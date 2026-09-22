@@ -1416,7 +1416,12 @@ _P5_COMEDY = re.compile(r"\bcomedian\b|\bstand[\s-]?up\b|\bcomedy\b|\bimprov\b|\
 # the Newmark host authors and historians -- Literary Arts' lecture series,
 # book tours -- that Portland'5 lists like any concert. Checked after comedy.
 _P5_TALK = re.compile(r"\bliterary arts\b|\barts (?:&|and) lectures\b|\blecture\b|\bhistorian\b|"
-                      r"\bbook tour\b|\bin conversation with\b|\bpodcast\b|\bbestselling author\b|\bpulitzer\b", re.I)
+                      r"\bbook tour\b|\bin conversation with\b|\bpodcast\b|\bbestselling author\b|\bpulitzer\b|"
+                      # Sep 22 2026 (Alberta Rose, "Consider This with Stephanie
+                      # Land": "Join Oregon Humanities for a conversation about
+                      # trust ... author of the books Maid and Class").
+                      r"\bauthor of\b|\ba conversation (?:about|with|on)\b|\bmemoirs?\b|\boregon humanities\b|"
+                      r"\bbook signing\b|\breading and signing\b|\bkeynote\b", re.I)
 
 
 def _p5_detail(html):
@@ -1547,6 +1552,49 @@ def _ar_date(txt, today):
     return f"{year}-{mon:02d}-{int(m.group(2)):02d}"
 
 
+def _page_kind(html, title=""):
+    """comedy / other (a talk) / "" from one venue event page's own words.
+
+    Only the stretch right after the event's title is read (1,200 chars, cut
+    at "More events" and the like), so menus and sidebars can't tip it."""
+    soup = BeautifulSoup(html, "html.parser")
+    text = (soup.body or soup).get_text(" ", strip=True)
+    i = text.lower().find((title or "").lower()[:40]) if title else -1
+    if i >= 0:
+        text = text[i:i + 1200]
+    # Stop where the page moves on to other shows.
+    m = re.search(r"(?i)\b(?:more events|upcoming events|you may also like|related events|also at|share this event)\b", text)
+    if m:
+        text = text[:m.start()]
+    if _P5_COMEDY.search(text):
+        return "comedy"
+    return "other" if _P5_TALK.search(text) else ""
+
+
+def _ar_enrich(rows, today=None):
+    """Alberta Rose (Sep 22 2026): the calendar gives only titles, and the
+    room books talks, film and burlesque beside concerts. Each event's own
+    page says which in plain words, so read it -- same idea as Portland'5.
+    Any failure leaves the row as the listing had it. Never raises."""
+    floor = today.isoformat() if today else ""
+    ceil = (today + datetime.timedelta(days=HORIZON_DAYS)).isoformat() if today else ""
+    n = 0
+    for r in rows:
+        u, d = r.get("venueUrl") or "", r.get("date") or ""
+        if "albertarosetheatre.com/event/" not in u or (floor and d < floor) or (ceil and d > ceil):
+            continue
+        try:
+            kind = _page_kind(fetch(u), r.get("title", ""))
+        except Exception:
+            continue
+        if kind and not r.get("contentType"):
+            r["contentType"] = kind
+            n += 1
+        time.sleep(0.3)
+    if n:
+        print(f"  Alberta Rose: {n} row(s) filed as comedy/talk from their event pages")
+
+
 def parse_albertarose(html, today):
     soup = BeautifulSoup(html, "html.parser")
     img_by_url = _img_map_by_event_url(soup)  # 51/51 on the captured page
@@ -1582,6 +1630,7 @@ def parse_albertarose(html, today):
         shows.append({"title": title, "venue": venue, "neighborhood": nb,
                       "address": addr, "date": date, "time": showtime, "venueUrl": url,
                       "imageUrl": img_by_url.get((url or "").split("?")[0], "")})
+    _ar_enrich(shows, today)
     return shows
 
 

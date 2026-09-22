@@ -381,5 +381,20 @@ def main():
         print("  ok   not-a-show gate               18 titles -- trivia/cribbage/sports/markets/tours/lessons out; anything with a music word stays; beer fests only with a named act")
     print()
 
+def talk_page_check():
+    """Alberta Rose event pages (Sep 22 2026): an author talk reads as a talk."""
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fixtures", "alberta-rose-event.html")
+    if not os.path.exists(path):
+        print("  --   alberta-rose-event.html       (fixture not present; skipped)")
+        return
+    kind = sv._page_kind(open(path, encoding="utf-8", errors="replace").read(), "Consider This with Stephanie Land")
+    if kind != "other":
+        print(f"  FAIL alberta-rose-event.html       Consider This with Stephanie Land -> {kind!r} (want 'other')")
+        print("GATE FAILURE")
+        sys.exit(1)
+    print("  ok   alberta-rose-event.html       author talk (Oregon Humanities, Stephanie Land) read as a talk")
+
+
 if __name__ == "__main__":
     main()
+    talk_page_check()
