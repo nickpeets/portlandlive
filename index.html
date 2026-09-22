@@ -7606,7 +7606,7 @@ window.addEventListener('resize', setSearchPlaceholder);
 
 // Redraw after a short pause in typing, not on every letter (Sep 17 2026).
 let _searchTimer = null;
-$('#searchInput').addEventListener('input',e=>{state.q=e.target.value;if(state.q && state.selectedVenue){state.selectedVenue=null;state.view='shows';}clearTimeout(_searchTimer);_searchTimer=setTimeout(render,150);const m=$('#mastSearchInput');if(m&&m.value!==state.q)m.value=state.q;});
+$('#searchInput').addEventListener('input',e=>{state.q=e.target.value;searchLeavesSections();if(state.q && state.selectedVenue){state.selectedVenue=null;state.view='shows';}clearTimeout(_searchTimer);_searchTimer=setTimeout(render,150);const m=$('#mastSearchInput');if(m&&m.value!==state.q)m.value=state.q;});
 // Masthead search (Sep 19 2026): shows only while the real search box is
 // scrolled out of view. Desktop gets an input mirrored to the main one;
 // phones get a magnifier that scrolls up and focuses the main box.
@@ -7637,6 +7637,7 @@ $('#searchInput').addEventListener('input',e=>{state.q=e.target.value;if(state.q
   measure();
   inp.addEventListener('input', function(){
     state.q = inp.value; box.value = inp.value;
+    searchLeavesSections();
     if(state.q && state.selectedVenue){ state.selectedVenue = null; state.view = 'shows'; }
     clearTimeout(_searchTimer); _searchTimer = setTimeout(render, 150);
   });
@@ -7716,7 +7717,17 @@ function leaveSections(except){
     state.view = 'shows'; state.selectedVenue = null;
     const v = document.getElementById('venuesToggle'); if(v) v.classList.remove('on');
   }
+  // Search and sections don't mix (Sep 22 2026, Nick picked "A"): entering a
+  // section clears the search box; typing leaves every section (below).
+  if(except && state.q){
+    state.q = '';
+    const b = document.getElementById('searchInput'), m = document.getElementById('mastSearchInput');
+    if(b) b.value = ''; if(m) m.value = '';
+  }
 }
+// Typing a search leaves whatever section was on, so a search always covers
+// every show (Following + a band you don't follow used to come up empty).
+function searchLeavesSections(){ if(state.q && state.q.trim()) leaveSections(null); }
 $('#tonightToggle').addEventListener('click',()=>{leaveSections('tonight');state.picks=false;$('#picksToggle').classList.remove('on');state.tonight=!state.tonight;if(state.tonight){state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');}$('#tonightToggle').classList.toggle('on',state.tonight);render();});
 $('#thisWeekToggle').addEventListener('click',()=>{leaveSections('thisWeek');state.picks=false;$('#picksToggle').classList.remove('on');state.thisWeek=!state.thisWeek;if(state.thisWeek){state.tonight=false;$('#tonightToggle').classList.remove('on');state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');}$('#thisWeekToggle').classList.toggle('on',state.thisWeek);render();});
 /* Audit (dev) toggle retired from the UI; audit view still reachable via ?audit=1 for dev. */
