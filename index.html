@@ -1600,7 +1600,11 @@ function filterByQuery(items, q, textOf){
   const norm = _srchNorm(q), toks = norm.trim().split(' ').filter(Boolean);
   if(!toks.length) return items;
   if(toks.length > 1){
-    const phrase = items.filter(x => textOf(x).includes(norm));
+    // The last word may still be half-typed (Sep 22 2026: "billy st" found
+    // three other shows and not Billy Strings), so the phrase must start on
+    // a word but may end mid-word.
+    const phraseQ = norm.replace(/ $/, '');
+    const phrase = items.filter(x => textOf(x).includes(phraseQ));
     if(phrase.length) return phrase;
   }
   return items.filter(x => queryMatches(textOf(x), q));
