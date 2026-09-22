@@ -307,6 +307,7 @@
           const live = l.run_from <= today && l.run_until >= today;
           return '<div class="ticker-line' + (live ? "" : " is-off") + '"><span class="ticker-line-text">' + esc(l.text) + '</span>' +
                  '<span class="ticker-line-until">' + (live ? "until " : (l.run_until < today ? "ended " : "from " + esc(l.run_from) + " to ")) + esc(l.run_until) + '</span>' +
+                 '<button type="button" class="ticker-line-del" data-tk-edit="' + esc(l.id) + '" data-tk-edit-text="' + esc(l.text) + '" data-tk-edit-until="' + esc(l.run_until) + '" title="Edit line" aria-label="Edit this ticker line">&#9998;</button>' +
                  '<button type="button" class="ticker-line-del" data-tk-del="' + esc(l.id) + '" title="Delete line" aria-label="Delete this ticker line">&times;</button></div>';
         }).join("") : '<div class="handle-edit-msg">No lines of yours on file.</div>';
       } catch (_) {}
@@ -315,19 +316,52 @@
     // Assigned, not added: refreshAuthUI re-renders this editor on every auth
     // event, and stacked listeners fired Add (and the delete confirm) once per
     // render -- three rows from one click (Sep 18 2026).
+    // Editing (Sep 21 2026, Nick: "modify the stubs for prizes on the ticker"):
+    // the pencil loads a line into the boxes above and Add becomes Save. Save
+    // writes the new line, then removes the old one, so a failed save never
+    // loses the line that was there.
+    let editingId = null;
+    function stopEditing() {
+      editingId = null;
+      const b = slot.querySelector("[data-tk-add]"); if (b) b.textContent = "Add";
+      const c = slot.querySelector("[data-tk-cancel]"); if (c) c.remove();
+    }
     slot.onclick = async function (e) {
       e.stopPropagation();
+      const ed = e.target.closest("[data-tk-edit]");
+      if (ed) {
+        editingId = ed.getAttribute("data-tk-edit");
+        slot.querySelector("[data-tk-text]").value = ed.getAttribute("data-tk-edit-text") || "";
+        const u = ed.getAttribute("data-tk-edit-until") || "";
+        const ui = slot.querySelector("[data-tk-until]"); if (u) { if (u < ui.min) ui.min = u; ui.value = u; }
+        const b = slot.querySelector("[data-tk-add]"); b.textContent = "Save";
+        if (!slot.querySelector("[data-tk-cancel]")) {
+          const c = document.createElement("button"); c.type = "button"; c.className = "quick-menu-pill ticker-add"; c.setAttribute("data-tk-cancel", ""); c.textContent = "Cancel";
+          b.parentNode.appendChild(c);
+        }
+        msg.textContent = "Editing \u2014 change the line or the date, then Save.";
+        slot.querySelector("[data-tk-text]").focus();
+        return;
+      }
+      if (e.target.closest("[data-tk-cancel]")) { stopEditing(); slot.querySelector("[data-tk-text]").value = ""; msg.textContent = ""; return; }
       const add = e.target.closest("[data-tk-add]");
       if (add) {
         const text = slot.querySelector("[data-tk-text]").value.trim(), until = slot.querySelector("[data-tk-until]").value;
         if (!text) { msg.textContent = "Type the line first."; return; }
         if (!until) { msg.textContent = "Pick the last day it runs."; return; }
-        add.disabled = true; msg.textContent = "Adding\u2026";
+        const wasEditing = editingId;
+        add.disabled = true; msg.textContent = wasEditing ? "Saving\u2026" : "Adding\u2026";
         try {
           const r = await sb.rpc("ticker_add", { p_text: text, p_until: until });
-          if (r.error) { msg.textContent = "Couldn\u2019t add: " + r.error.message; }
-          else { msg.textContent = "On the bar the next time the site loads."; slot.querySelector("[data-tk-text]").value = ""; await load(); }
-        } catch (err) { msg.textContent = "Couldn\u2019t add. Try again."; }
+          if (r.error) { msg.textContent = "Couldn\u2019t " + (wasEditing ? "save" : "add") + ": " + r.error.message; }
+          else {
+            if (wasEditing) {
+              try { const d = await sb.rpc("ticker_delete", { p_id: wasEditing }); if (d.error) msg.textContent = "Saved, but the old line is still there: " + d.error.message; } catch (_) {}
+            }
+            if (!/still there/.test(msg.textContent)) msg.textContent = (wasEditing ? "Saved. " : "") + "On the bar the next time the site loads.";
+            slot.querySelector("[data-tk-text]").value = ""; stopEditing(); await load();
+          }
+        } catch (err) { msg.textContent = "Couldn\u2019t " + (wasEditing ? "save" : "add") + ". Try again."; }
         add.disabled = false;
         return;
       }
