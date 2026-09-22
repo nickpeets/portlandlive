@@ -467,3 +467,5 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **2026-09-22 — People you may know (46831bab)** — inline card on the plain home feed after the first day reaching 4 shows; mutual follows + shared Who's Going (No-one profiles excluded); x hides a person; "Don't show this" plus two bookmark-menu switches. SQL: supabase/schema-pymk.sql.
 
 - **2026-09-22 — PYMK newest-members fallback (0b64dcf4)** — members who joined in the last 30 days fill leftover slots after mutuals/shared shows, labeled "New on Rain Or Shows"; same exclusions. SQL: people_you_may_know replaced in schema-pymk.sql.
+
+- **2026-09-22 — Search phrase fix (607bc818)** — multi-word phrase match let the last word end mid-word; "billy st" had matched three shows via "St" in street addresses and missed Billy Strings.
