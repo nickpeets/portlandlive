@@ -227,9 +227,31 @@
           '<option value="private">No one</option>' +
         "</select>" +
         '<div class="handle-edit-msg" data-vis-msg>Your upcoming shows, saved shows and stubs.</div>' +
+        // People you may know (Sep 22 2026): both on unless switched off.
+        '<label class="av-edit-note" style="padding:6px 0 0;display:flex;gap:6px;align-items:center"><input type="checkbox" data-pymk-pref="suggest_me" checked> Suggest me to others</label>' +
+        '<label class="av-edit-note" style="padding:2px 0 0;display:flex;gap:6px;align-items:center"><input type="checkbox" data-pymk-pref="show_card" checked> Show People you may know</label>' +
       "</div>";
     const sel = slot.querySelector("[data-vis-select]");
     const msg = slot.querySelector("[data-vis-msg]");
+    const pymkBoxes = slot.querySelectorAll("[data-pymk-pref]");
+    Promise.resolve(sb.rpc("pymk_prefs_get")).then(function (r) {
+      const row = r && !r.error && r.data ? (Array.isArray(r.data) ? r.data[0] : r.data) : null;
+      if (!row) return;
+      pymkBoxes.forEach(function (b) { b.checked = row[b.getAttribute("data-pymk-pref")] !== false; });
+    }).catch(function () {});
+    pymkBoxes.forEach(function (b) {
+      b.addEventListener("change", async function () {
+        const key = b.getAttribute("data-pymk-pref");
+        const args = key === "suggest_me" ? { p_suggest_me: b.checked } : { p_show_card: b.checked };
+        b.disabled = true;
+        try {
+          const { error } = await sb.rpc("pymk_prefs_set", args);
+          if (error) { b.checked = !b.checked; msg.textContent = "Couldn\u2019t save. Try again."; msg.classList.add("is-error"); }
+          else if (key === "show_card" && typeof window.__pymkReset === "function") { window.__pymkReset(); }
+        } catch (err) { b.checked = !b.checked; }
+        finally { b.disabled = false; }
+      });
+    });
     sel.value = visibility;
     sel.addEventListener("change", async () => {
       const next = sel.value === "public" ? "public" : sel.value === "private" ? "private" : "followers";

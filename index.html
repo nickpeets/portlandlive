@@ -2249,10 +2249,16 @@ function render(){
     const groups = {};
     list.forEach(s=>{(groups[s.date]=groups[s.date]||[]).push(s);});
     const days = Object.keys(groups).sort().map(date => [date, groups[date]]);
+    // People you may know (Sep 22 2026): one card, in line, between two
+    // days -- after the first day that brings the count to PYMK_AFTER shows,
+    // so a thin Tonight never puts it at the top. Plain home feed only.
+    let _pymkShown = 0, _pymkPlaced = !plainHome;
     drawDaysInPieces(wrap, days, function(date, shows){
       const g = document.createElement('div'); g.className='daygroup';
       g.innerHTML = `<div class="dayhead">${ordinalDate(date)}<span class="count">${shows.length} shows</span></div>`;
       g.appendChild(listOf(shows));
+      _pymkShown += shows.length;
+      if(!_pymkPlaced && _pymkShown >= PYMK_AFTER){ _pymkPlaced = true; mountPymk(g); }
       return g;
     });
   } else {
@@ -6396,6 +6402,96 @@ async function mountPhotoStrip(wrap){
   host.hidden = false;
 }
 
+// ===== PEOPLE YOU MAY KNOW (Sep 22 2026) =====
+// Nick: people use names that aren't their own, so @-search only finds
+// someone whose handle you already know. One card in the feed suggests
+// people by what they do: followed by people you follow, or in Who's Going
+// on the same shows (supabase/schema-pymk.sql, people_you_may_know). Signed
+// in only; nothing when there's no one to suggest. The x hides one person
+// for good (pymk_hide); "Don't show this" turns the card off (pymk_prefs_set,
+// and back on from the bookmark menu). Follow sends a request, like a
+// profile's Follow button.
+var PYMK_AFTER = 4;
+var PYMK_CACHE = { uid: null, at: 0, rows: null, off: false };
+function pymkWhy(u){
+  const n = u.mutuals || 0, names = (u.mutual_names || []).filter(Boolean);
+  if(n > 0 && names.length){
+    if(n === 1) return 'Followed by ' + names[0];
+    if(n === 2 && names.length === 2) return 'Followed by ' + names[0] + ' and ' + names[1];
+    return 'Followed by ' + names[0] + ' +' + (n - 1);
+  }
+  const s = u.shared_shows || 0;
+  return s ? ('At ' + s + ' of your shows') : '';
+}
+async function mountPymk(parent){
+  const sb = profileClient();
+  if(!sb || !state._signedIn) return;
+  const host = document.createElement('section');
+  host.className = 'pymk'; host.hidden = true;
+  parent.appendChild(host);
+  let uid = null;
+  try{ const ss = (await sb.auth.getSession()).data.session; uid = ss && ss.user ? ss.user.id : null; }catch(_){ uid = null; }
+  if(!uid || !host.isConnected){ host.remove(); return; }
+  if(PYMK_CACHE.uid !== uid) PYMK_CACHE = { uid: uid, at: 0, rows: null, off: false };
+  if(PYMK_CACHE.off){ host.remove(); return; }
+  let rows = PYMK_CACHE.rows;
+  if(!rows || Date.now() - PYMK_CACHE.at > 5 * 60000){
+    const r = await safeRpc(sb.rpc('people_you_may_know', { p_limit: 12 }));
+    if(r.error){ console.warn('[pymk] failed:', r.error.message || r.error); host.remove(); return; }
+    rows = r.data || [];
+    PYMK_CACHE.rows = rows; PYMK_CACHE.at = Date.now();
+  }
+  if(!host.isConnected || !rows.length){ host.remove(); return; }
+  rows.forEach(function(u){ AV_CACHE[u.id] = { id: u.id, display_name: u.display_name, avatar_url: u.avatar_url }; });
+  host.innerHTML = '<div class="pymk-head"><span class="pymk-title">People you may know</span>'
+      + '<button type="button" class="pymk-off" data-pymk-off>Don\u2019t show this</button></div>'
+    + '<div class="pymk-row">' + rows.map(function(u){
+        const nm = u.display_name || u.handle;
+        return '<div class="pymk-card" data-pymk-id="' + esc(u.id) + '">'
+          + '<button type="button" class="pymk-x" data-pymk-hide="' + esc(u.id) + '" title="Hide" aria-label="Hide ' + esc(nm) + '">&times;</button>'
+          + '<a class="pymk-who" href="#/u/' + encodeURIComponent(u.handle) + '">'
+          +   avImg(u.id, u.display_name, 'av-lg')
+          +   '<span class="pymk-name">' + esc(nm) + '</span>'
+          +   '<span class="pymk-handle">@' + esc(u.handle) + '</span>'
+          +   '<span class="pymk-why">' + esc(pymkWhy(u)) + '</span>'
+          + '</a>'
+          + '<button type="button" class="pymk-follow" data-pymk-follow="' + esc(u.id) + '">Follow</button>'
+          + '</div>';
+      }).join('') + '</div>';
+  function drop(id){
+    PYMK_CACHE.rows = (PYMK_CACHE.rows || []).filter(function(x){ return x.id !== id; });
+    const c = host.querySelector('[data-pymk-id="' + id + '"]');
+    if(c) c.remove();
+    if(!host.querySelector('.pymk-card')) host.remove();
+  }
+  host.addEventListener('click', async function(e){
+    const fb = e.target.closest('[data-pymk-follow]'), hb = e.target.closest('[data-pymk-hide]'), ob = e.target.closest('[data-pymk-off]');
+    if(!fb && !hb && !ob) return;
+    e.preventDefault(); e.stopPropagation();
+    if(fb){
+      const id = fb.getAttribute('data-pymk-follow');
+      fb.disabled = true;
+      const r = await safeRpc(sb.from('follows').insert({ followee_id: id }));
+      if(r && r.error){ console.warn('[pymk] follow failed:', r.error.message || r.error); fb.disabled = false; return; }
+      fb.textContent = 'Requested'; fb.classList.add('is-requested');
+      // Gone from the next draw (people_you_may_know skips anyone you've
+      // asked to follow); this card stays until then so the tap reads.
+      PYMK_CACHE.rows = (PYMK_CACHE.rows || []).filter(function(x){ return x.id !== id; });
+    } else if(hb){
+      const id = hb.getAttribute('data-pymk-hide');
+      drop(id);
+      safeRpc(sb.rpc('pymk_hide', { p_other: id }));
+    } else if(ob){
+      PYMK_CACHE.off = true; PYMK_CACHE.rows = [];
+      host.remove();
+      safeRpc(sb.rpc('pymk_prefs_set', { p_show_card: false }));
+    }
+  });
+  host.hidden = false;
+}
+// The bookmark menu turned the card back on: fetch again on the next draw.
+window.__pymkReset = function(){ PYMK_CACHE = { uid: null, at: 0, rows: null, off: false }; };
+
 // Poster overrides on the FEED, live (Sep 18 2026 -- "the poster doesn't stay
 // put"): one read of show_overrides_all when the feed loads, patched onto
 // the rows by slug and redrawn. Waits briefly for the Supabase client, which
@@ -8038,6 +8134,27 @@ a.inbox-thread-who:hover{text-decoration:underline}
 .poster-edit-btn{border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.1);color:var(--cream);font-family:'Oswald',sans-serif;font-size:12.5px;letter-spacing:.04em;text-transform:uppercase;padding:6px 10px;border-radius:999px;cursor:pointer}
 .poster-edit-btn:hover{background:rgba(255,255,255,.2)}
 .poster-edit-clear{opacity:.7}
+.pymk{margin:26px 0 4px;background:var(--forest);border:1px solid rgba(243,234,215,.45);border-radius:10px;padding:12px 0 14px;color:var(--cream)}
+.pymk[hidden]{display:none}
+.pymk-head{display:flex;align-items:center;gap:10px;padding:0 12px 10px}
+.pymk-title{flex:1 1 auto;font-family:'Alfa Slab One',serif;font-size:17px;font-weight:400}
+.pymk-off{background:none;border:0;color:var(--cream);opacity:.7;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.04em;cursor:pointer;padding:2px 0}
+.pymk-off:hover{opacity:1;text-decoration:underline}
+.pymk-row{display:flex;gap:10px;overflow-x:auto;padding:0 12px 4px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
+.pymk-row::-webkit-scrollbar{height:6px}
+.pymk-row::-webkit-scrollbar-thumb{background:rgba(243,234,215,.35);border-radius:3px}
+.pymk-card{position:relative;flex:0 0 136px;scroll-snap-align:start;background:rgba(243,234,215,.08);border:1px solid rgba(243,234,215,.25);border-radius:8px;padding:14px 8px 10px;text-align:center;display:flex;flex-direction:column;align-items:center}
+.pymk-who{display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--cream);text-decoration:none;width:100%;min-width:0}
+.pymk-who .av{margin-bottom:6px}
+.pymk-name{font-family:'Oswald',sans-serif;font-size:14px;font-weight:500;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pymk-handle{font-size:12px;opacity:.7;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pymk-why{font-size:11.5px;opacity:.85;margin-top:4px;line-height:1.25;min-height:2.5em}
+.pymk-follow{margin-top:8px;width:100%;background:var(--rust);color:var(--cream);border:0;border-radius:999px;padding:6px 0;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+.pymk-follow:hover{background:var(--rust-deep)}
+.pymk-follow.is-requested{background:none;border:1px solid rgba(243,234,215,.5);font-style:italic}
+.pymk-follow:disabled{cursor:default}
+.pymk-x{position:absolute;top:2px;right:6px;background:none;border:0;color:var(--cream);opacity:.6;font-size:18px;line-height:1;cursor:pointer;padding:2px}
+.pymk-x:hover{opacity:1}
 .ph-strip{margin:0 0 22px}
 .ph-strip-head{display:flex;align-items:center;gap:10px;width:100%;font-family:'Alfa Slab One',serif;font-weight:400;font-size:19px;color:var(--cream);margin:0 0 10px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.22);border-radius:8px;padding:10px 12px;cursor:pointer;text-align:left}
 .ph-strip-head:hover{background:rgba(255,255,255,.14)}
