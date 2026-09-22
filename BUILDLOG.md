@@ -490,3 +490,5 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **2026-09-22 — Phone controls + PYMK panel (ca2b6358)** — phones: search shares a row with #phoneBrowse (All shows, Tonight, This Week, Picks, Venues, Comedy, Following, All Ages, Festivals, Further Out), pill rows hidden; desktop unchanged. PYMK moved out of the listings to a folding panel under Latest photos & clips, folded on every draw.
 
 - **2026-09-22 — Science Pub out (9c642f61)** — science pub added to the not-a-show gate beside Science On Tap and History Pub; drops OMSI Science Pub at the Mission Theater (3 nights). Gate test 16 -> 18 titles.
+
+- **2026-09-22 — Pins beat the gates (04960f29)** — pinned shows are added back after the music and Further Out gates in the Picks view; Billy Strings (Matthew Knight Arena, Eugene) was pinned but hidden.
