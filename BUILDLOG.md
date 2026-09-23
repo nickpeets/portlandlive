@@ -562,3 +562,5 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **2026-09-23 — Picks cards stay in Picks (f99f8b4c)** — listOf uses list--b only when state.picks AND the route is the feed; a profile opened from Picks drew its wall with giant poster cards.
 
 - **2026-09-23 — Stories part 2 (f28eb080)** — new blocks: audio (upload to stories bucket, 25 MB, MP3/M4A) and embed (srEmbed builds players from recognised YouTube/Vimeo/Spotify/SoundCloud/Apple Music ids only; Bandcamp and other links become link cards). Live hint as you paste. SQL: supabase/schema-stories-media.sql.
+
+- **2026-09-23 — Story editor safety (e30cc3e1)** — reRenderCurrentView() never touches #/stories/edit (hourly token refresh reopened the editor from the last saved copy and erased Nick's work); editor keeps a localStorage backup (ros_story_backup_<id>) as you type and restores it on open if newer than the saved copy; cleared on save/delete.
