@@ -548,3 +548,5 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **2026-09-23 — Stories part 1 (dabfbce5)** — writers table (moderators + timstout), app_flags.stories_public (false = writers only), stories table + stories_list/story_get/story_save/story_publish/story_delete, stories photo bucket. Page #/stories, reader #/story/<slug>, editor #/stories/edit/<id|new>: text (light markdown), photo, show-card blocks; feed strip 5 days. Pill/Browse/footer hidden unless visible. SQL: supabase/schema-stories.sql.
 
 - **2026-09-23 — Stories last (f5f0873e)** — Stories pill order 8 (after Further Out); phone Browse option moved to the end.
+
+- **2026-09-23 — Follow-request emails (1632895b)** — follow_email_sweep (pg_cron follow-email-sweep */5): pending requests 10 min to 7 days old, each emailed once (follow_email_state), bundled per person; shares dm_email_prefs switch + unsubscribe. #/requests lands on the feed with the bell open. Switch label: Email me about messages and follow requests. SQL: supabase/schema-follow-email.sql.
