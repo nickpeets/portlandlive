@@ -9420,6 +9420,13 @@ a.inbox-thread-who:hover{text-decoration:underline}
 .poster-edit-btn.kind-on{background:var(--cream);color:var(--ink);border-color:var(--cream)}
 .kind-msg{font-size:12.5px;color:var(--cream);opacity:.85;margin-left:4px}
 .pymk{margin:0 0 22px;color:var(--cream)}
+/* The top-of-feed stack -- giveaway, story strip, Latest photos, People you
+   may know -- sits 8px apart everywhere (Sep 23 2026, Nick: "I want it that
+   close between all of those"). A folded panel's header carries no bottom
+   margin; an open one gets its gap back above its contents. */
+#results .gw-banner, #results .sr-strip, #results .ph-strip, #results .pymk{margin-bottom:8px}
+#results .ph-strip-head, #results .pymk .pymk-fold{margin-bottom:0}
+#results .ph-strip-head[aria-expanded="true"], #results .pymk .pymk-fold[aria-expanded="true"]{margin-bottom:8px}
 .pymk .pymk-fold{margin:0 0 10px}
 .pymk-body[hidden]{display:none}
 .pymk[hidden]{display:none}
