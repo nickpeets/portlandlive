@@ -530,3 +530,5 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **2026-09-23 — Giveaway odds (49070dfe)** — members see "your chance right now: X in N (about 1 in K)"; visitors see "join now: 1 in N+1, bring a friend: 2 in N+3"; members with no entry see "tap I'm going: 1 in N+1". All from giveaway_totals.
 
 - **2026-09-23 — Odds as 1 in K (3daed816)** — every odds line reads "odds of winning ... 1 in K" (K = entries / yours; one decimal under 10); members also see bring-a-friend odds; no friend line when you hold every entry.
+
+- **2026-09-23 — Further Out clean (93b98ff6)** — plainHome now excludes state.outOfTown, so the banner/photos/PYMK stack only shows on the plain feed.
