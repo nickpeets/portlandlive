@@ -3827,7 +3827,7 @@ async function renderStoryEditRoute(id){
       + '<div class="se-bar"><span class="se-msg" data-se-msg>' + esc(msg || '') + '</span>'
       + (st.id && st.status !== 'published' ? '<button type="button" data-se-delete>Delete draft</button>' : '')
       + '<button type="button" data-se-save>' + (st.status === 'published' ? 'Save changes' : 'Save draft') + '</button>'
-      + (st.id ? '<a class="se-btn" href="#/story/' + esc(st.slug || st.id) + '">Preview</a>' : '')
+      + '<button type="button" data-se-preview>Preview</button>'
       + '<button type="button" class="se-pub" data-se-publish>' + (st.status === 'published' ? 'Unpublish' : 'Publish') + '</button></div>'
       + '<input type="file" accept="image/*" data-se-file hidden><input type="file" accept="audio/mpeg,audio/mp4,audio/x-m4a,.mp3,.m4a" data-se-afile hidden></div>';
   }
@@ -3910,6 +3910,10 @@ async function renderStoryEditRoute(id){
     if((el = q('data-se-photo'))){ upTarget = +el.getAttribute('data-se-photo'); root.querySelector('[data-se-file]').click(); return; }
     if((el = q('data-se-audio'))){ upTarget = +el.getAttribute('data-se-audio'); root.querySelector('[data-se-afile]').click(); return; }
     if((el = q('data-se-save'))){ el.disabled = true; if(await save()) draw('Saved.'); return; }
+    // Preview shows what you see in the editor, so it saves first (Sep 23
+    // 2026, Nick: a YouTube block he'd just added wasn't in his preview --
+    // Preview used to open the last saved copy).
+    if((el = q('data-se-preview'))){ el.disabled = true; if(await save()) location.hash = '#/story/' + encodeURIComponent(st.slug || st.id); return; }
     if((el = q('data-se-delete'))){
       if(!confirm('Delete this draft? This can\u2019t be undone.')) return;
       const r = await safeRpc(sb.rpc('story_delete', { p_id: st.id }));
