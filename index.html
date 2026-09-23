@@ -2379,7 +2379,7 @@ function render(){
   // write, so this doesn't re-enter router() and double-render.
   var rt = parseRoute().type;
   if(state.view !== 'venues' && (rt === 'venue' || rt === 'venues')){
-    history.replaceState(null, '', location.pathname);
+    history.replaceState(null, '', '/');
   }
   // Pill visuals are derived, not hand-managed. This sits AFTER the show-page
   // bail above so it never re-lights a pill that renderShowRoute() cleared.
@@ -2568,7 +2568,7 @@ function renderFestivals(){
 let _festivalsFull = null;
 async function loadFestivalsFull(){
   if(_festivalsFull) return _festivalsFull;
-  const r = await fetch(`festivals.json?v=${Math.floor(Date.now()/60000)}`, {cache:'no-store'});
+  const r = await fetch(`/festivals.json?v=${Math.floor(Date.now()/60000)}`, {cache:'no-store'});
   const d = await r.json();
   _festivalsFull = Array.isArray(d.festivals) ? d.festivals : [];
   return _festivalsFull;
@@ -3031,8 +3031,23 @@ function enterVenueState(name){
   state.tonight=false; state.thisWeek=false; state.following=false;
 }
 
+// Share the right link (Sep 22 2026, Nick: texting a show from the phone's
+// share sheet unfurled with our logo, not the poster). A link preview never
+// sees the #/show/... part, so it read the home page. While a show or venue
+// is open, the address bar now shows its real page -- /show/<slug>/, which
+// the build writes with that show's poster as the preview -- and the
+// routing hash stays on the end. Every other view goes back to "/".
+function syncSharePath(route){
+  try{
+    var want = '/';
+    if(route.type === 'show' && route.slug) want = '/show/' + encodeURIComponent(route.slug) + '/';
+    else if(route.type === 'venue' && route.slug) want = '/venue/' + encodeURIComponent(route.slug) + '/';
+    if(location.pathname !== want) history.replaceState(history.state, '', want + location.search + location.hash);
+  }catch(_){}
+}
 async function router(){
   var route = parseRoute();
+  syncSharePath(route);
   // A page you navigate INTO opens at its top (Sep 20 2026, Nick): a show
   // tapped halfway down the feed used to open still scrolled halfway down.
   if(route.type === 'show' || route.type === 'profile' || route.type === 'festival' || route.type === 'venue'){
@@ -3060,7 +3075,7 @@ async function router(){
       // Unknown venue slug: fall back to the directory rather than an empty
       // page, and drop the bad hash so back/forward doesn't loop on it.
       enterVenueState(null);
-      history.replaceState(null, '', location.pathname + '#/venues');
+      history.replaceState(null, '', '/#/venues');
     }
     render();
     return;
@@ -7983,7 +7998,7 @@ $('#byHoodToggle').addEventListener('click',()=>{const on=!state.byHood;leaveSec
           const target = on ? '#/venues' : '';
           if((location.hash||'') === target){ state.view=on?'venues':'shows'; state.selectedVenue=null; render(); }
           else if(on){ location.hash = target; }
-          else { state.view='shows'; state.selectedVenue=null; history.replaceState(null,'',location.pathname); render(); }
+          else { state.view='shows'; state.selectedVenue=null; history.replaceState(null,'','/'); render(); }
         });
       $('#myShowsToggle').addEventListener('click',async e=>{
         // Saved lives on your profile now. Signed in with a handle: go there.
@@ -8100,7 +8115,7 @@ $('#outOfTownToggle') && $('#outOfTownToggle').addEventListener('click',()=>{
   if(!bar || !el) return;
   let items = [];
   try{
-    const r = await fetch(`news.json?v=${Math.floor(Date.now()/60000)}`, {cache:'no-store'});
+    const r = await fetch(`/news.json?v=${Math.floor(Date.now()/60000)}`, {cache:'no-store'});
     const d = await r.json();
     const today = new Intl.DateTimeFormat('en-CA',{timeZone:'America/Los_Angeles',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
     items = (d.items || []).filter(i => i && i.text && (!i.from || i.from <= today) && (!i.until || i.until >= today));
@@ -8197,7 +8212,7 @@ $('#followingToggle').addEventListener('click',()=>{
     // leave any profile or show page for the feed.
     state.q=''; $('#searchInput').value='';
     if(typeof window.quickMenuClose === 'function') window.quickMenuClose();
-    if(location.hash){ history.replaceState(null, '', location.pathname); }
+    if(location.hash){ history.replaceState(null, '', '/'); }
   }
   $('#followingToggle').classList.toggle('on',state.following);
   render();
