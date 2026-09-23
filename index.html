@@ -3636,11 +3636,48 @@ function srByline(s){
   const who = s.author_handle ? '<a href="#/u/' + encodeURIComponent(s.author_handle) + '">' + name + '</a>' : name;
   return 'by ' + who + (s.published_at ? ' \u00b7 ' + esc(srWhen(s.published_at)) : '');
 }
+// Links that become players (Sep 23 2026, Stories part 2). Only the parts
+// pulled out of a recognised address are used to build the player, never the
+// pasted text itself. Anything else becomes a plain link card.
+function srEmbed(raw){
+  const u = String(raw || '').trim();
+  let m;
+  if((m = /(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/|live\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/.exec(u)))
+    return { kind: 'YouTube', src: 'https://www.youtube-nocookie.com/embed/' + m[1], ratio: '16/9' };
+  if((m = /vimeo\.com\/(?:video\/)?(\d{5,12})/.exec(u)))
+    return { kind: 'Vimeo', src: 'https://player.vimeo.com/video/' + m[1], ratio: '16/9' };
+  if((m = /open\.spotify\.com\/(?:intl-[a-z-]+\/)?(track|album|playlist|episode|show|artist)\/([A-Za-z0-9]{10,40})/.exec(u)))
+    return { kind: 'Spotify', src: 'https://open.spotify.com/embed/' + m[1] + '/' + m[2], height: (m[1] === 'track' || m[1] === 'episode') ? 152 : 352 };
+  if((m = /^https:\/\/(?:www\.|m\.)?soundcloud\.com\/[A-Za-z0-9_-]+(?:\/[A-Za-z0-9_\/-]+)?/.exec(u)))
+    return { kind: 'SoundCloud', src: 'https://w.soundcloud.com/player/?url=' + encodeURIComponent(m[0]) + '&color=%23b5562b&visual=false', height: /\/sets\//.test(m[0]) ? 350 : 166 };
+  if((m = /^https:\/\/music\.apple\.com\/([a-z]{2}\/(?:album|playlist|song)\/[A-Za-z0-9._%-]+\/[A-Za-z0-9.]+(?:\?i=\d+)?)/.exec(u)))
+    return { kind: 'Apple Music', src: 'https://embed.music.apple.com/' + m[1], height: /\?i=|\/song\//.test(m[1]) ? 175 : 450 };
+  if(/^https?:\/\/[^\s]+$/.test(u)){
+    let host = ''; try{ host = new URL(u).hostname.replace(/^www\./, ''); }catch(_){}
+    return { kind: /bandcamp\.com$/.test(host) ? 'Bandcamp' : 'Link', href: u, host: host };
+  }
+  return null;
+}
+function srEmbedHtml(b){
+  const e = srEmbed(b.url);
+  if(!e) return '';
+  const cap = b.caption ? '<figcaption>' + esc(b.caption) + '</figcaption>' : '';
+  if(e.src){
+    const box = e.ratio ? 'aspect-ratio:' + e.ratio + ';height:auto' : 'height:' + e.height + 'px';
+    return '<figure class="sr-embed"><iframe src="' + esc(e.src) + '" style="width:100%;' + box + ';border:0;border-radius:10px" loading="lazy" '
+      + 'allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" allowfullscreen title="' + esc(e.kind) + ' player"></iframe>' + cap + '</figure>';
+  }
+  const label = e.kind === 'Bandcamp' ? 'Listen on Bandcamp' : 'Open ' + e.host;
+  return '<figure class="sr-embed"><a class="sr-linkcard" href="' + esc(e.href) + '" target="_blank" rel="noopener">'
+    + '<span class="sr-linkcard-k">' + esc(e.kind === 'Bandcamp' ? 'Bandcamp' : e.host) + '</span><b>' + esc(b.caption || label) + '</b><span class="sr-linkcard-go">\u2197</span></a></figure>';
+}
 function srBlocksHtml(blocks){
   return (blocks || []).map(function(b, i){
     if(b.type === 'text') return srText(b.md);
     if(b.type === 'photo' && b.url) return '<figure class="sr-fig"><img src="' + esc(b.url) + '" alt="' + esc(b.caption || '') + '" loading="lazy">' + (b.caption ? '<figcaption>' + esc(b.caption) + '</figcaption>' : '') + '</figure>';
     if(b.type === 'show' && b.slug) return '<div class="sr-show" data-sr-show="' + esc(srShowSlug(b.slug)) + '"></div>';
+    if(b.type === 'audio' && b.url) return '<figure class="sr-audio"><audio controls preload="none" src="' + esc(b.url) + '"></audio>' + (b.caption ? '<figcaption>' + esc(b.caption) + '</figcaption>' : '') + '</figure>';
+    if(b.type === 'embed' && b.url) return srEmbedHtml(b);
     return '';
   }).join('');
 }
@@ -3742,6 +3779,16 @@ async function renderStoryEditRoute(id){
     if(b.type === 'photo') return '<div class="se-block"><div class="se-bh">Photo' + tools + '</div>'
       + (b.url ? '<img class="se-img" src="' + esc(b.url) + '" alt="">' : '<button type="button" class="se-upload" data-se-photo="' + i + '">Choose a photo</button>')
       + '<input type="text" data-se-cap="' + i + '" placeholder="Caption (optional)" value="' + esc(b.caption || '') + '"></div>';
+    if(b.type === 'audio') return '<div class="se-block"><div class="se-bh">Audio' + tools + '</div>'
+      + (b.url ? '<audio controls preload="none" src="' + esc(b.url) + '" style="width:100%;margin:0 0 8px"></audio>' : '<button type="button" class="se-upload" data-se-audio="' + i + '">Choose an MP3</button><div class="se-hint">MP3 or M4A, up to 25 MB (about 20 minutes).</div>')
+      + '<input type="text" data-se-cap="' + i + '" placeholder="Caption, e.g. song and band (optional)" value="' + esc(b.caption || '') + '"></div>';
+    if(b.type === 'embed'){
+      const e = srEmbed(b.url);
+      const note = !b.url ? 'YouTube, Vimeo, Spotify, SoundCloud or Apple Music links become a player. Anything else (Bandcamp too) becomes a link.'
+        : !e ? 'That doesn\u2019t look like a link.' : e.src ? '\u2713 ' + e.kind + ' player' : '\u2713 ' + (e.kind === 'Bandcamp' ? 'Bandcamp link' : 'Link to ' + e.host);
+      return '<div class="se-block"><div class="se-bh">Video / music link' + tools + '</div><input type="text" data-se-embed="' + i + '" placeholder="Paste a YouTube, Vimeo, Spotify, SoundCloud or Bandcamp link" value="' + esc(b.url || '') + '">'
+        + '<div class="se-hint">' + esc(note) + '</div><input type="text" data-se-cap="' + i + '" placeholder="Caption (optional)" value="' + esc(b.caption || '') + '" style="margin-top:8px"></div>';
+    }
     if(b.type === 'show') return '<div class="se-block"><div class="se-bh">Show' + tools + '</div><input type="text" data-se-show="' + i + '" placeholder="Paste a Rain Or Shows show link" value="' + esc(b.slug || '') + '"><div class="se-hint">Becomes a live show card: poster, Listen, Who\u2019s in, heart.</div></div>';
     return '';
   }
@@ -3751,23 +3798,24 @@ async function renderStoryEditRoute(id){
       + '<input type="text" class="se-title" data-se-title placeholder="Title" value="' + esc(st.title) + '">'
       + '<div class="se-cover">' + (st.cover_url ? '<img src="' + esc(st.cover_url) + '" alt=""><button type="button" data-se-cover-clear>Remove cover</button>' : '') + '<button type="button" class="se-upload" data-se-cover>' + (st.cover_url ? 'Change cover photo' : 'Add a cover photo') + '</button></div>'
       + st.body.map(blockHtml).join('')
-      + '<div class="se-add"><span>Add</span><button type="button" data-se-add="text">Text</button><button type="button" data-se-add="photo">Photo</button><button type="button" data-se-add="show">Show</button></div>'
+      + '<div class="se-add"><span>Add</span><button type="button" data-se-add="text">Text</button><button type="button" data-se-add="photo">Photo</button><button type="button" data-se-add="show">Show</button><button type="button" data-se-add="audio">Audio</button><button type="button" data-se-add="embed">Video / music link</button></div>'
       + '<div class="se-bar"><span class="se-msg" data-se-msg>' + esc(msg || '') + '</span>'
       + (st.id && st.status !== 'published' ? '<button type="button" data-se-delete>Delete draft</button>' : '')
       + '<button type="button" data-se-save>' + (st.status === 'published' ? 'Save changes' : 'Save draft') + '</button>'
       + (st.id ? '<a class="se-btn" href="#/story/' + esc(st.slug || st.id) + '">Preview</a>' : '')
       + '<button type="button" class="se-pub" data-se-publish>' + (st.status === 'published' ? 'Unpublish' : 'Publish') + '</button></div>'
-      + '<input type="file" accept="image/*" data-se-file hidden></div>';
+      + '<input type="file" accept="image/*" data-se-file hidden><input type="file" accept="audio/mpeg,audio/mp4,audio/x-m4a,.mp3,.m4a" data-se-afile hidden></div>';
   }
   function collect(){
     const t = root.querySelector('[data-se-title]'); if(t) st.title = t.value;
     root.querySelectorAll('[data-se-md]').forEach(function(el){ st.body[+el.getAttribute('data-se-md')].md = el.value; });
     root.querySelectorAll('[data-se-cap]').forEach(function(el){ st.body[+el.getAttribute('data-se-cap')].caption = el.value; });
     root.querySelectorAll('[data-se-show]').forEach(function(el){ st.body[+el.getAttribute('data-se-show')].slug = srShowSlug(el.value); });
+    root.querySelectorAll('[data-se-embed]').forEach(function(el){ st.body[+el.getAttribute('data-se-embed')].url = el.value.trim(); });
   }
   async function save(){
     collect();
-    const body = st.body.filter(function(b){ return (b.type === 'text' && (b.md || '').trim()) || (b.type === 'photo' && b.url) || (b.type === 'show' && b.slug); });
+    const body = st.body.filter(function(b){ return (b.type === 'text' && (b.md || '').trim()) || (b.type === 'photo' && b.url) || (b.type === 'show' && b.slug) || (b.type === 'audio' && b.url) || (b.type === 'embed' && srEmbed(b.url)); });
     const r = await safeRpc(sb.rpc('story_save', { p_id: st.id, p_title: st.title, p_cover_url: st.cover_url || '', p_body: body }));
     if(r.error){ draw('Couldn\u2019t save: ' + (r.error.message || r.error)); return false; }
     const isNew = !st.id; st.id = r.data; dirty = false;
@@ -3775,6 +3823,15 @@ async function renderStoryEditRoute(id){
     return true;
   }
   let upTarget = null;   // 'cover' or a block index
+  async function uploadAudio(file){
+    if(file.size > 25 * 1024 * 1024) throw new Error('that file is over 25 MB');
+    const ext = /\.m4a$/i.test(file.name) ? 'm4a' : 'mp3';
+    const uid = ((await sb.auth.getSession()).data.session || {}).user;
+    const path = (uid ? uid.id : 'x') + '/' + Date.now() + '.' + ext;
+    const up = await sb.storage.from('stories').upload(path, file, { contentType: ext === 'm4a' ? 'audio/mp4' : 'audio/mpeg', upsert: false });
+    if(up.error) throw new Error(up.error.message);
+    return sb.storage.from('stories').getPublicUrl(path).data.publicUrl;
+  }
   async function upload(file){
     const out = await phResize(file);
     const uid = ((await sb.auth.getSession()).data.session || {}).user;
@@ -3785,7 +3842,24 @@ async function renderStoryEditRoute(id){
   }
   draw('');
   root.addEventListener('input', function(){ dirty = true; });
+  // The link block's hint updates as you type, without redrawing (a redraw
+  // would steal focus from the caption box you just tapped into).
+  root.addEventListener('input', function(e){
+    const inp = e.target.closest && e.target.closest('[data-se-embed]'); if(!inp) return;
+    const hint = inp.parentNode.querySelector('.se-hint'); if(!hint) return;
+    const v = inp.value.trim(), x = srEmbed(v);
+    hint.textContent = !v ? 'YouTube, Vimeo, Spotify, SoundCloud or Apple Music links become a player. Anything else (Bandcamp too) becomes a link.'
+      : !x ? 'That doesn\u2019t look like a link.' : x.src ? '\u2713 ' + x.kind + ' player' : '\u2713 ' + (x.kind === 'Bandcamp' ? 'Bandcamp link' : 'Link to ' + x.host);
+  });
   root.addEventListener('change', async function(e){
+    const af = e.target.closest('[data-se-afile]');
+    if(af){
+      const file = af.files && af.files[0]; af.value = ''; if(!file || upTarget == null) return;
+      collect(); draw('Uploading audio\u2026');
+      try{ st.body[upTarget].url = await uploadAudio(file); dirty = true; draw('Audio added. Save to keep it.'); }
+      catch(err){ draw('Upload failed: ' + (err && err.message || err)); }
+      return;
+    }
     const f = e.target.closest('[data-se-file]'); if(!f) return;
     const file = f.files && f.files[0]; f.value = ''; if(!file) return;
     collect(); draw('Uploading\u2026');
@@ -3798,13 +3872,14 @@ async function renderStoryEditRoute(id){
   root.addEventListener('click', async function(e){
     const q = function(a){ return e.target.closest('[' + a + ']'); };
     let el;
-    if((el = q('data-se-add'))){ collect(); const t = el.getAttribute('data-se-add'); st.body.push(t === 'text' ? { type: 'text', md: '' } : t === 'photo' ? { type: 'photo', url: '', caption: '' } : { type: 'show', slug: '' }); dirty = true; draw(''); return; }
+    if((el = q('data-se-add'))){ collect(); const t = el.getAttribute('data-se-add'); st.body.push(t === 'text' ? { type: 'text', md: '' } : t === 'photo' ? { type: 'photo', url: '', caption: '' } : t === 'audio' ? { type: 'audio', url: '', caption: '' } : t === 'embed' ? { type: 'embed', url: '', caption: '' } : { type: 'show', slug: '' }); dirty = true; draw(''); return; }
     if((el = q('data-se-up'))){ collect(); const i = +el.getAttribute('data-se-up'); if(i > 0){ const x = st.body.splice(i, 1)[0]; st.body.splice(i - 1, 0, x); dirty = true; draw(''); } return; }
     if((el = q('data-se-down'))){ collect(); const i = +el.getAttribute('data-se-down'); if(i < st.body.length - 1){ const x = st.body.splice(i, 1)[0]; st.body.splice(i + 1, 0, x); dirty = true; draw(''); } return; }
     if((el = q('data-se-del'))){ collect(); st.body.splice(+el.getAttribute('data-se-del'), 1); if(!st.body.length) st.body.push({ type: 'text', md: '' }); dirty = true; draw(''); return; }
     if((el = q('data-se-cover'))){ upTarget = 'cover'; root.querySelector('[data-se-file]').click(); return; }
     if((el = q('data-se-cover-clear'))){ collect(); st.cover_url = ''; dirty = true; draw(''); return; }
     if((el = q('data-se-photo'))){ upTarget = +el.getAttribute('data-se-photo'); root.querySelector('[data-se-file]').click(); return; }
+    if((el = q('data-se-audio'))){ upTarget = +el.getAttribute('data-se-audio'); root.querySelector('[data-se-afile]').click(); return; }
     if((el = q('data-se-save'))){ el.disabled = true; if(await save()) draw('Saved.'); return; }
     if((el = q('data-se-delete'))){
       if(!confirm('Delete this draft? This can\u2019t be undone.')) return;
@@ -9251,6 +9326,13 @@ a.inbox-thread-who:hover{text-decoration:underline}
 .se-bar{display:flex;align-items:center;flex-wrap:wrap;gap:8px;justify-content:flex-end;border-top:1px solid rgba(243,234,215,.25);padding-top:12px}
 .se-bar .se-pub{background:var(--cream);color:var(--ink)}
 .se-msg{margin-right:auto;font-size:13.5px;font-family:'Bitter',Georgia,serif}
+.sr-audio,.sr-embed{margin:18px 0}
+.sr-audio audio{width:100%}
+.sr-audio figcaption,.sr-embed figcaption{font-size:13.5px;font-style:italic;opacity:.75;margin-top:6px}
+.sr-linkcard{display:flex;align-items:center;gap:10px;border:1px solid rgba(74,53,38,.2);border-radius:10px;padding:12px 14px;text-decoration:none;color:var(--ink);background:#fffdf7}
+.sr-linkcard b{flex:1 1 auto;min-width:0}
+.sr-linkcard-k{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--rust)}
+.sr-linkcard-go{color:var(--rust);font-size:18px}
 
 .gw-banner{display:flex;align-items:center;gap:10px;margin:0 0 16px;padding:11px 14px;border-radius:10px;background:var(--rust);color:var(--cream);text-decoration:none;box-shadow:0 6px 14px rgba(20,40,30,.18)}
 .gw-banner[hidden]{display:none}
