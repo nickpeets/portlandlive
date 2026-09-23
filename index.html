@@ -3655,34 +3655,35 @@ function stubBadges(stubs){
   const doubles = Object.keys(days).some(function(k){ return days[k] >= 2; }) ? 1 : 0;
   const across = Object.keys(sidesByMonth).some(function(k){ return sidesByMonth[k].size === 2; }) ? 1 : 0;
   let run = 0, best = 0; Array.from(weeks).sort(function(a, b){ return a - b; }).forEach(function(w, i, arr){ run = (i && w === arr[i - 1] + 1) ? run + 1 : 1; best = Math.max(best, run); });
+  // [id, name, emoji, have, need, unit, how you earn it]
   const defs = [
-    ['first', 'First Stub', '\u{1F39F}\uFE0F', n, 1, ''],
-    ['regular', 'Regular', '\u{1F327}\uFE0F', n, 10, 'shows'],
-    ['lifer', 'Lifer', '\u{1F3B8}', n, 50, 'shows'],
-    ['century', 'Century', '\u{1F4AF}', n, 100, 'shows'],
-    ['hopper', 'Room Hopper', '\u{1F5FA}\uFE0F', nVenues, 5, 'venues'],
-    ['mapmaker', 'Map Maker', '\u{1F9ED}', nVenues, 15, 'venues'],
-    ['allover', 'All Over Town', '\u{1F3D8}\uFE0F', hoods.size, 8, 'neighborhoods'],
-    ['roadtrip', 'Road Trip', '\u{1F697}', far, 1, ''],
-    ['across', 'Across the River', '\u{1F309}', across, 1, ''],
-    ['school', 'School Night', '\u{1F319}', school, 1, ''],
-    ['warrior', 'Weeknight Warrior', '\u{1F4AA}', weeknight, 10, 'weeknights'],
-    ['owl', 'Night Owl', '\u{1F989}', owl, 3, 'late shows'],
-    ['matinee', 'Matinee', '\u2600\uFE0F', matinee, 1, ''],
-    ['double', 'Double Header', '\u270C\uFE0F', doubles, 1, ''],
-    ['month', 'Month of Music', '\u{1F4C5}', best, 4, 'weeks in a row'],
-    ['laugh', 'Laugh Track', '\u{1F602}', comedy, 1, ''],
-    ['fest', 'Fest Goer', '\u{1F3AA}', fest, 1, ''],
-    ['halloween', 'Halloween', '\u{1F383}', halloween, 1, ''],
-    ['nye', 'New Year\u2019s Eve', '\u{1F386}', nye, 1, '']
+    ['first', 'First Stub', '\u{1F39F}\uFE0F', n, 1, '', 'Keep your first stub'],
+    ['regular', 'Regular', '\u{1F327}\uFE0F', n, 10, 'shows', 'Go to 10 shows'],
+    ['lifer', 'Lifer', '\u{1F3B8}', n, 50, 'shows', 'Go to 50 shows'],
+    ['century', 'Century', '\u{1F4AF}', n, 100, 'shows', 'Go to 100 shows'],
+    ['hopper', 'Room Hopper', '\u{1F5FA}\uFE0F', nVenues, 5, 'venues', 'Shows at 5 different venues'],
+    ['mapmaker', 'Map Maker', '\u{1F9ED}', nVenues, 15, 'venues', 'Shows at 15 different venues'],
+    ['allover', 'All Over Town', '\u{1F3D8}\uFE0F', hoods.size, 8, 'neighborhoods', 'Shows in 8 different neighborhoods'],
+    ['roadtrip', 'Road Trip', '\u{1F697}', far, 1, '', 'A show in Further Out, an hour or more away'],
+    ['across', 'Across the River', '\u{1F309}', across, 1, '', 'East side and west side shows in the same month'],
+    ['school', 'School Night', '\u{1F319}', school, 1, '', 'A show on a Monday, Tuesday or Wednesday'],
+    ['warrior', 'Weeknight Warrior', '\u{1F4AA}', weeknight, 10, 'weeknights', '10 shows Monday through Thursday'],
+    ['owl', 'Night Owl', '\u{1F989}', owl, 3, 'late shows', '3 shows starting at 10 PM or later'],
+    ['matinee', 'Matinee', '\u2600\uFE0F', matinee, 1, '', 'A show that starts before 5 PM'],
+    ['double', 'Double Header', '\u270C\uFE0F', doubles, 1, '', 'Two shows on the same day'],
+    ['month', 'Month of Music', '\u{1F4C5}', best, 4, 'weeks in a row', 'A show every week for 4 weeks straight'],
+    ['laugh', 'Laugh Track', '\u{1F602}', comedy, 1, '', 'Go to a comedy show'],
+    ['fest', 'Fest Goer', '\u{1F3AA}', fest, 1, '', 'Catch a set at a festival'],
+    ['halloween', 'Halloween', '\u{1F383}', halloween, 1, '', 'A show on October 31'],
+    ['nye', 'New Year\u2019s Eve', '\u{1F386}', nye, 1, '', 'A show on December 31']
   ];
   const out = defs.map(function(d, i){
-    return { id: d[0], name: d[1], emoji: d[2], have: d[3], need: d[4], unit: d[5], earned: d[3] >= d[4], ring: BADGE_RINGS[i % 3] };
+    return { id: d[0], name: d[1], emoji: d[2], have: d[3], need: d[4], unit: d[5], how: d[6], earned: d[3] >= d[4], ring: BADGE_RINGS[i % 3] };
   });
   // One Regular badge per room with 5+ stubs; the closest room so far is the
   // one to aim for.
   Object.keys(venues).sort(function(a, b){ return venues[b] - venues[a]; }).forEach(function(v, i){
-    if(venues[v] >= 5 || i === 0) out.push({ id: 'room:' + v, name: v + ' Regular', emoji: '\u{1F37A}', have: venues[v], need: 5, unit: 'shows', earned: venues[v] >= 5, ring: BADGE_RINGS[(out.length) % 3] });
+    if(venues[v] >= 5 || i === 0) out.push({ id: 'room:' + v, name: v + ' Regular', emoji: '\u{1F37A}', have: venues[v], need: 5, unit: 'shows', how: '5 shows at ' + v, earned: venues[v] >= 5, ring: BADGE_RINGS[(out.length) % 3] });
   });
   return out;
 }
@@ -3693,9 +3694,12 @@ function badgesSectionHtml(stubs){
     .sort(function(a, b){ return (b.have / b.need) - (a.have / a.need); }).slice(0, 4);
   const total = all.filter(function(b){ return b.id.indexOf('room:') !== 0; }).length + all.filter(function(b){ return b.id.indexOf('room:') === 0 && b.earned; }).length;
   const pin = function(b){
-    const sub = b.earned ? (b.need > 1 && b.unit ? b.need + ' ' + b.unit : '') : (b.need > 1 ? b.have + ' of ' + b.need : 'Not yet');
-    return '<div class="bdg' + (b.earned ? '' : ' bdg-lock') + '" title="' + esc(b.name) + '"><div class="bdg-pin" style="background:' + (b.earned ? b.ring : '#9aa89f') + '"><div class="bdg-face"><span>' + b.emoji + '</span></div></div>'
-      + '<div class="bdg-n">' + esc(b.name) + (sub ? '<span class="bdg-s">' + esc(sub) + '</span>' : '') + '</div></div>';
+    // Every badge says how it's earned; a locked one also shows how close.
+    const prog = !b.earned && b.need > 1 ? b.have + ' of ' + b.need : '';
+    return '<div class="bdg' + (b.earned ? '' : ' bdg-lock') + '" title="' + esc(b.name + ': ' + b.how) + '"><div class="bdg-pin" style="background:' + (b.earned ? b.ring : '#9aa89f') + '"><div class="bdg-face"><span>' + b.emoji + '</span></div></div>'
+      + '<div class="bdg-n">' + esc(b.name) + '</div>'
+      + '<div class="bdg-how">' + esc(b.how) + '</div>'
+      + (prog ? '<div class="bdg-s">' + esc(prog) + '</div>' : '') + '</div>';
   };
   return '<h3 class="pf-section-head">Badges <span class="pf-count">' + earned.length + ' of ' + total + '</span></h3>'
     + '<div class="bdg-grid">' + earned.concat(next).map(pin).join('') + '</div>';
@@ -4581,18 +4585,6 @@ async function renderProfileRoute(handle){
     return '';
   }
 
-  // Badges (Sep 23 2026): worked out from the stubs this viewer can see, so
-  // they follow the same visibility. The archive is loaded first so comedy,
-  // festival and Further Out stubs from past months count.
-  if(stubs.length){
-    if(!ARCHIVE_ROWS){ try{ const _a = await loadArchive(); ARCHIVE_ROWS = ((_a && _a.shows) || []).map(function(s){ s._slug = s._slug || makeSlug(s); return s; }); }catch(_){ ARCHIVE_ROWS = []; } }
-    if(parseRoute().handle !== handle) return;
-    var bsecB = document.createElement('section');
-    bsecB.className = 'pf-section pf-badges';
-    bsecB.innerHTML = badgesSectionHtml(stubs);
-    page.appendChild(bsecB);
-  }
-
   // The stub grid -- the main body.
   var st = document.createElement('section');
   st.className = 'pf-section';
@@ -4614,6 +4606,19 @@ async function renderProfileRoute(handle){
       : (withheld('stubs') || 'No stubs yet.')) + '</div>';
   }
   page.appendChild(st);
+
+  // Badges (Sep 23 2026), under the stubs they come from: worked out from the
+  // stubs this viewer can see, so they follow the same visibility. The
+  // archive is loaded first so comedy, festival and Further Out stubs from
+  // past months count.
+  if(stubs.length){
+    if(!ARCHIVE_ROWS){ try{ const _a = await loadArchive(); ARCHIVE_ROWS = ((_a && _a.shows) || []).map(function(s){ s._slug = s._slug || makeSlug(s); return s; }); }catch(_){ ARCHIVE_ROWS = []; } }
+    if(parseRoute().handle !== handle) return;
+    var bsecB = document.createElement('section');
+    bsecB.className = 'pf-section pf-badges';
+    bsecB.innerHTML = badgesSectionHtml(stubs);
+    page.appendChild(bsecB);
+  }
 
   // Blocked people (Sep 22 2026): only on your own page, only when there are any.
   if(isMe){
@@ -9457,12 +9462,13 @@ a.inbox-thread-who:hover{text-decoration:underline}
 .pick-mod-btn{border:1px solid var(--rust);background:none;color:var(--rust);border-radius:999px;padding:4px 10px;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.05em;text-transform:uppercase;cursor:pointer}
 .pick-mod-btn.on{background:var(--rust);color:var(--cream)}
 /* Badges (Sep 23 2026) */
-.bdg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:14px 10px;margin:4px 0 6px}
+.bdg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:16px 12px;margin:4px 0 6px}
 .bdg{text-align:center}
 .bdg-pin{width:70px;height:70px;margin:0 auto;border-radius:50%;padding:5px;box-sizing:border-box;box-shadow:0 3px 8px rgba(0,0,0,.18)}
 .bdg-face{width:100%;height:100%;border-radius:50%;background:var(--cream);display:flex;align-items:center;justify-content:center;font-size:34px;line-height:1}
 .bdg-n{font-family:'Bitter',Georgia,serif;font-weight:600;font-size:13.5px;color:#fbf6ea;margin-top:8px;line-height:1.2;text-shadow:0 1px 2px rgba(0,0,0,.25);word-break:break-word}
-.bdg-s{display:block;font-family:'Oswald',sans-serif;font-weight:400;font-size:11.5px;letter-spacing:.04em;opacity:.85;margin-top:2px}
+.bdg-how{font-family:'Bitter',Georgia,serif;font-size:12px;line-height:1.3;color:#fbf6ea;opacity:.82;margin-top:3px}
+.bdg-s{display:block;font-family:'Oswald',sans-serif;font-weight:500;font-size:11.5px;letter-spacing:.06em;color:#ffff00;margin-top:3px}
 .bdg-lock{opacity:.55}
 .bdg-lock .bdg-face{background:rgba(243,234,215,.55)}
 .bdg-lock .bdg-face span{filter:grayscale(1)}
