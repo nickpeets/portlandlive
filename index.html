@@ -95,7 +95,16 @@ body{
 .ticker-link{color:var(--cream);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .ticker-item{color:var(--cream);text-decoration:none;cursor:default;font-family:'Oswald',sans-serif;font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;line-height:1.3;padding:7px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;transition:opacity .35s}
 .ticker-item.fade{opacity:0}
-@media(max-width:600px){.ticker-inner{padding:0 16px}.ticker-item{white-space:normal;font-size:12px}}
+@media(max-width:600px){.ticker-inner{padding:0 16px}.ticker-item{font-size:12px}}
+/* Phones (Sep 22 2026, Nick picked 3): the ticker is always ONE line. Short
+   lines sit centered; a long line slides across once so all of it can be
+   read, then the next line comes in. Wrapping made the bar change height
+   every rotation and the page jump. */
+@media(max-width:600px){
+  .ticker-item{white-space:nowrap;text-overflow:clip;width:100%}
+  .ticker-run{display:inline-block;white-space:nowrap;will-change:transform}
+  .ticker-item.is-long{text-align:left}
+}
 .masthead{
   position:relative;
   background:var(--water-dd);
@@ -1022,7 +1031,7 @@ body{
   <div class="masthead" id="masthead">
     <div class="masthead-inner">
       <div class="masthead-brand">
-        <span class="masthead-logo"><img src="/logo_color.png" alt=""></span>
+        <span class="masthead-logo"><img src="/logo_mark.svg" alt=""></span>
         <span class="masthead-word">Rain Or Shows</span>
       </div>
       <!-- Sep 19 2026: once the page scrolls past the real search box, a
@@ -8101,24 +8110,53 @@ $('#outOfTownToggle') && $('#outOfTownToggle').addEventListener('click',()=>{
   }catch(_){}
   if(!items.length) return;
   let k = 0;
+  const phone = window.matchMedia ? window.matchMedia('(max-width:600px)') : { matches: false };
+  // Returns how long this line should stay up (ms).
   function show(){
     // Text, unless the line carries a url -- only the build's miracle lines
     // do, because a spare ticket is worth a tap. Nick's hand-written lines
     // and the venue/festival lines stay text (Sep 2026).
     const i = items[k % items.length];
     el.innerHTML = '';
+    const run = document.createElement('span');
+    run.className = 'ticker-run';
     if(i.url){
       const a = document.createElement('a');
       a.className = 'ticker-link'; a.href = i.url; a.textContent = i.text;
-      el.appendChild(a);
+      run.appendChild(a);
     } else {
-      el.textContent = i.text;
+      run.textContent = i.text;
     }
+    el.appendChild(run);
+    el.classList.remove('is-long');
     el.classList.remove('fade');
+    // Phones: one line always; a line too long to fit slides across once
+    // (pause 1.5s, ~45px a second, pause 1.5s), then the rotation moves on.
+    if(phone.matches && run.animate){
+      const over = run.scrollWidth - el.clientWidth;
+      if(over > 4){
+        el.classList.add('is-long');
+        const travel = Math.round(over / 45 * 1000), hold = 1500, total = hold + travel + hold;
+        run.animate([
+          { transform: 'translateX(0)' },
+          { transform: 'translateX(0)', offset: hold / total },
+          { transform: 'translateX(' + (-over) + 'px)', offset: (hold + travel) / total },
+          { transform: 'translateX(' + (-over) + 'px)' }
+        ], { duration: total, fill: 'forwards', easing: 'linear' });
+        return Math.max(7000, total + 400);
+      }
+    }
+    return 7000;
   }
-  show(); bar.hidden = false;
+  bar.hidden = false;
+  let stay = show();
   if(items.length > 1){
-    setInterval(function(){ el.classList.add('fade'); setTimeout(function(){ k++; show(); }, 350); }, 7000);
+    (function next(){
+      setTimeout(function(){
+        el.classList.add('fade');
+        setTimeout(function(){ k++; stay = show(); next(); }, 350);
+      }, stay);
+    })();
   }
 })();
 function revealFestivalsPill(){
