@@ -568,3 +568,5 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **2026-09-23 — No reload while writing (c3f11202)** — the new-build check treats an open story editor as busy; it wiped Nick's edits when it reloaded mid-story.
 
 - **2026-09-23 — Preview saves first (e858da9b)** — the editor's Preview button saves, then opens the story; it used to open the last saved copy (a new YouTube block was missing).
+
+- **2026-09-23 — Liner Notes (6029f73a)** — the Stories section is now called Liner Notes everywhere it shows; routes stay #/stories and #/story/<slug>; pieces inside are still stories.
