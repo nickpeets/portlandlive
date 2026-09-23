@@ -1001,7 +1001,13 @@ body{
 .name-link{color:var(--rust);text-decoration:none}
 .name-link:hover{text-decoration:underline;text-underline-offset:2px}
 .cmt-body .mention:hover{text-decoration:underline;text-underline-offset:2px}
-.cmt-form{background:var(--cream);border-radius:12px;padding:12px 14px;box-shadow:0 6px 14px rgba(20,40,30,.14)}
+.cmt-form{background:var(--cream);border-radius:12px;padding:12px 14px;box-shadow:0 6px 14px rgba(20,40,30,.14);position:relative}
+.mac-list{position:absolute;left:14px;right:14px;z-index:40;background:#fff;border:1px solid rgba(74,53,38,.25);border-radius:10px;box-shadow:0 10px 24px rgba(20,40,30,.22);overflow:hidden;margin-top:4px}
+.mac-list[hidden]{display:none}
+.mac-row{display:flex;align-items:center;gap:8px;width:100%;border:0;background:none;padding:8px 10px;text-align:left;cursor:pointer;font-family:'Bitter',Georgia,serif;color:var(--ink)}
+.mac-row.on,.mac-row:hover{background:#f3ead7}
+.mac-name{font-weight:600;font-size:14px}
+.mac-handle{font-size:13px;opacity:.65}
 .cmt-input{width:100%;box-sizing:border-box;resize:vertical;min-height:74px;font-family:'Bitter',Georgia,serif;font-size:14px;line-height:1.5;color:var(--ink);background:#fff;border:1px solid rgba(74,53,38,.25);border-radius:9px;padding:10px 12px}
 .cmt-input:focus{outline:2px solid rgba(181,86,43,.45);outline-offset:1px;border-color:transparent}
 .cmt-form-foot{display:flex;align-items:center;gap:12px;margin-top:9px}
@@ -3611,6 +3617,74 @@ function reportSignupRef(){
       .then(function(r){ if(r && !r.error){ try{ localStorage.removeItem('ros_ref'); }catch(_){} } })
       .catch(function(){});
   }catch(_){}
+}
+
+
+// ===== @-mention autocomplete (Sep 23 2026, Nick) =====
+// Type "@" and a couple of letters in a comment and matching people drop
+// down (search_profiles: handle prefix first, then names). Arrow keys or a
+// tap picks one; it fills in "@handle " at the cursor. Enter posts as usual
+// when the list is closed.
+function mentionAutocomplete(input, after){
+  if(!input || input.__mentionAc) return;
+  input.__mentionAc = true;
+  const box = document.createElement('div');
+  box.className = 'mac-list'; box.hidden = true; box.setAttribute('role', 'listbox');
+  input.insertAdjacentElement('afterend', box);
+  let rows = [], sel = 0, timer = null, lastQ = '', token = null;
+  function tokenAtCaret(){
+    const pos = input.selectionStart || 0;
+    const before = input.value.slice(0, pos);
+    const m = /(^|[\s(])@([A-Za-z0-9_]{2,20})$/.exec(before);
+    return m ? { start: pos - m[2].length - 1, end: pos, q: m[2] } : null;
+  }
+  function close(){ box.hidden = true; rows = []; token = null; }
+  function draw(){
+    if(!rows.length){ close(); return; }
+    box.innerHTML = rows.map(function(u, i){
+      return '<button type="button" class="mac-row' + (i === sel ? ' on' : '') + '" data-mac="' + i + '" role="option">'
+        + (typeof avImg === 'function' ? avImg(u.id, u.display_name, 'av-sm') : '')
+        + '<span class="mac-name">' + esc(u.display_name || u.handle) + '</span><span class="mac-handle">@' + esc(u.handle) + '</span></button>';
+    }).join('');
+    box.hidden = false;
+  }
+  function pick(i){
+    const u = rows[i]; if(!u || !token) return;
+    const v = input.value;
+    const ins = '@' + u.handle + ' ';
+    input.value = v.slice(0, token.start) + ins + v.slice(token.end).replace(/^\s/, '');
+    const caret = token.start + ins.length;
+    input.focus(); input.setSelectionRange(caret, caret);
+    close();
+    if(typeof after === 'function') after();
+  }
+  input.addEventListener('input', function(){
+    token = tokenAtCaret();
+    if(!token){ close(); return; }
+    const q = token.q.toLowerCase();
+    if(q === lastQ && rows.length){ draw(); return; }
+    clearTimeout(timer);
+    timer = setTimeout(async function(){
+      const sb = window.__plAuth; if(!sb) return;
+      lastQ = q;
+      const r = await safeRpc(sb.rpc('search_profiles', { p_q: q, p_limit: 6 }));
+      const cur = tokenAtCaret();
+      if(!cur || cur.q.toLowerCase() !== q) return;          // typed on
+      rows = ((r && !r.error && r.data) || []);
+      rows.forEach(function(u){ if(typeof AV_CACHE !== 'undefined') AV_CACHE[u.id] = { id: u.id, display_name: u.display_name, avatar_url: u.avatar_url }; });
+      sel = 0; token = cur; draw();
+    }, 160);
+  });
+  input.addEventListener('keydown', function(e){
+    if(box.hidden) return;
+    if(e.key === 'ArrowDown'){ e.preventDefault(); sel = (sel + 1) % rows.length; draw(); }
+    else if(e.key === 'ArrowUp'){ e.preventDefault(); sel = (sel - 1 + rows.length) % rows.length; draw(); }
+    else if(e.key === 'Enter' || e.key === 'Tab'){ e.preventDefault(); pick(sel); }
+    else if(e.key === 'Escape'){ e.preventDefault(); close(); }
+  });
+  box.addEventListener('mousedown', function(e){ e.preventDefault(); });   // keep focus in the box
+  box.addEventListener('click', function(e){ const b = e.target.closest('[data-mac]'); if(b) pick(+b.getAttribute('data-mac')); });
+  input.addEventListener('blur', function(){ setTimeout(close, 150); });
 }
 
 // ===== BADGES (Sep 23 2026, Nick) =====
@@ -8065,6 +8139,7 @@ function bindComments(host, slug, myUserId){
     };
     input.addEventListener('input', sync);
     sync();
+    mentionAutocomplete(input, sync);
 
     form.addEventListener('submit', async function(e){
       e.preventDefault();
