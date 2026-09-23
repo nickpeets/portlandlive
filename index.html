@@ -243,8 +243,9 @@ body{
    All Ages, Further Out. The group wrapper is flattened so one order runs
    across the whole row. */
 .controls-inner .ctl-row + .ctl-row .ctl-group{display:contents}
-#venuesPill{order:1} #picksPill{order:2} #comedyPill{order:3} #festivalsPill{order:4}
-#allAgesPill{order:5} #outOfTownPill{order:6} .controls-inner .ctl-row + .ctl-row .browse-pill{order:9}
+#venuesPill{order:1} #picksPill{order:2} #storiesPill{order:3} #comedyPill{order:4} #festivalsPill{order:5}
+#allAgesPill{order:6} #outOfTownPill{order:7}
+#storiesPill{text-decoration:none} #storiesPill[hidden]{display:none} .controls-inner .ctl-row + .ctl-row .browse-pill{order:9}
 
 .search-pill{flex:1 1 auto;min-width:220px;background:rgba(255,255,255,.14)}
 .search-pill input{flex:1;width:100%}
@@ -1158,6 +1159,7 @@ body{
           <option value="following">&#9733; Following</option>
           <option value="venues">Venues</option>
           <option value="picks">Picks</option>
+          <option value="stories" id="phoneBrowseStories" hidden>Stories</option>
           <option value="comedy">Comedy</option>
           <option value="festivals" id="phoneBrowseFestivals" hidden>Festivals</option>
           <option value="allages">All Ages</option>
@@ -1181,6 +1183,8 @@ body{
         <span class="toggle" id="picksToggle"></span>
         <span>Picks</span>
       </label>
+      <!-- Stories (Sep 23 2026): writers only until it goes public. -->
+      <a class="pill pill-when" id="storiesPill" href="#/stories" hidden><span>Stories</span></a>
       <!-- All Ages: a door-policy filter, not a taste judgement. Deliberately
            narrows to shows we KNOW are all-ages; it never hides 21+ shows on the
            strength of a guess, because most of the feed has no age published at
@@ -1275,7 +1279,7 @@ body{
   <div>Every night of live music in Portland, OR · Updated every morning from the venues&rsquo; own calendars</div>
   <div style="margin-top:8px;opacity:.7">Always confirm dates &amp; times with the venue before heading out.</div>
   <div class="foot-correct">Know a show we&rsquo;re missing? <a href="#/submit">Send it in</a>. Got a correction? <a id="footCorrectLink" href="mailto:corrections@rainorshows.com?subject=%5BROS%5D%20Correction">Let us know</a>.</div>
-  <div class="foot-links"><a href="#/about">About</a> &middot; <a href="#/privacy">Privacy</a> &middot; <a href="#/venues">Venues</a> &middot; <a href="#/submit">Submit a show</a></div>
+  <div class="foot-links"><a href="#/about">About</a> &middot; <a href="#/privacy">Privacy</a> &middot; <a href="#/venues">Venues</a> &middot; <a href="#/submit">Submit a show</a><span id="footStories" hidden> &middot; <a href="#/stories">Stories</a></span></div>
 </footer>
 <!-- GoatCounter: visit counts, no cookies, no identification. The code is
      Nick's site code from goatcounter.com. -->
@@ -2449,6 +2453,7 @@ function render(){
     && !state.festivals && !state.allAges && !state.following && !state.byHood && !state.comedy && !state.outOfTown && !state.selectedVenue && state.view === 'shows';
   if(plainHome) mountPhotoStrip(wrap);
   if(plainHome) mountGiveawayBanner(wrap);
+  if(plainHome) mountStoryStrip(wrap);
   // People you may know (Sep 22 2026, Nick): a folding panel right under
   // Latest photos & clips, folded on every draw -- no longer in the listings.
   if(plainHome) mountPymk(wrap);
@@ -3008,6 +3013,11 @@ function parseRoute(){
   m = /^#\/review\/([0-9a-f-]{36})\/([0-9a-f-]{36})\/(approved|rejected)\/?$/.exec(h);
   if(m) return {type:'review', id:m[1], token:m[2], action:m[3]};
   if(/^#\/giveaway\/?$/.test(h)) return {type:'giveaway'};
+  if(/^#\/stories\/?$/.test(h)) return {type:'stories'};
+  m = /^#\/stories\/edit\/([A-Za-z0-9-]+)\/?$/.exec(h);
+  if(m) return {type:'storyedit', id:m[1]};
+  m = /^#\/story\/([A-Za-z0-9-]+)\/?$/.exec(h);
+  if(m) return {type:'story', key:m[1]};
   m = /^#\/unsubscribe\/([0-9a-f-]{36})\/?$/.exec(h);
   if(m) return {type:'unsubscribe', token:m[1]};
   return {type:'feed'};
@@ -3087,6 +3097,9 @@ async function router(){
   if(route.type === 'review'){ await renderReviewRoute(route); return; }
   if(route.type === 'unsubscribe'){ await renderUnsubscribeRoute(route); return; }
   if(route.type === 'giveaway'){ await renderGiveawayRoute(); return; }
+  if(route.type === 'stories'){ await renderStoriesRoute(); return; }
+  if(route.type === 'story'){ await renderStoryRoute(route.key); return; }
+  if(route.type === 'storyedit'){ await renderStoryEditRoute(route.id); return; }
   if(route.type === 'venue'){
     var name = venueFromSlug(route.slug);
     if(name){ enterVenueState(name); }
@@ -3557,6 +3570,263 @@ function reportSignupRef(){
       .then(function(r){ if(r && !r.error){ try{ localStorage.removeItem('ros_ref'); }catch(_){} } })
       .catch(function(){});
   }catch(_){}
+}
+
+// ===== STORIES (Sep 23 2026, Nick + Tim) =====
+// A small magazine inside the site. Hidden to start: only writers (Nick and
+// @timstout) see the section until app_flags.stories_public is switched on
+// (schema-stories.sql). A story is a title, a cover photo and a list of
+// blocks -- text (light markdown), photo, and a live show card.
+let STORIES_VISIBLE = false, STORIES_WRITER = false;
+let SR_DIRTY = function(){ return false; };   // the open editor has unsaved changes
+window.addEventListener('beforeunload', function(ev){ if(SR_DIRTY()){ ev.preventDefault(); ev.returnValue = ''; } });
+async function storiesCheck(){
+  const sb = window.__plAuth;
+  if(!sb){ STORIES_VISIBLE = STORIES_WRITER = false; storiesNav(); return; }
+  const [v, w] = await Promise.all([safeRpc(sb.rpc('stories_visible')), safeRpc(sb.rpc('is_writer'))]);
+  STORIES_VISIBLE = !!(v && !v.error && v.data);
+  STORIES_WRITER = !!(w && !w.error && w.data);
+  storiesNav();
+}
+function storiesNav(){
+  const p = document.getElementById('storiesPill'); if(p) p.hidden = !STORIES_VISIBLE;
+  const o = document.getElementById('phoneBrowseStories'); if(o) o.hidden = !STORIES_VISIBLE;
+  const f = document.getElementById('footStories'); if(f) f.hidden = !STORIES_VISIBLE;
+}
+function srInline(t){
+  // esc() first, then the few marks writers use: **bold**, *italic*, [text](url)
+  return esc(t)
+    .replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>')
+    .replace(/\*([^*]+)\*/g, '<i>$1</i>')
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+|#\/[^\s)]+)\)/g, function(_, txt, url){
+      const ext = /^https?:/.test(url);
+      return '<a href="' + url + '"' + (ext ? ' target="_blank" rel="noopener"' : '') + '>' + txt + '</a>';
+    });
+}
+function srText(md){
+  // Blank lines split paragraphs; "## " is a heading, "> " a pull quote.
+  return String(md || '').split(/\n{2,}/).map(function(p){
+    p = p.trim(); if(!p) return '';
+    if(/^##\s+/.test(p)) return '<h3 class="sr-h">' + srInline(p.replace(/^##\s+/, '')) + '</h3>';
+    if(/^>\s?/.test(p)) return '<blockquote class="sr-quote">' + srInline(p.replace(/^>\s?/gm, '')) + '</blockquote>';
+    return '<p>' + srInline(p).replace(/\n/g, '<br>') + '</p>';
+  }).join('');
+}
+function srShowSlug(v){
+  const m = /(?:#\/show\/|\/show\/)([^\/?#\s]+)/.exec(String(v || ''));
+  return m ? decodeURIComponent(m[1]) : String(v || '').trim();
+}
+function srWhen(iso){
+  try{ return new Date(iso).toLocaleDateString('en-US', { timeZone: 'America/Los_Angeles', month: 'short', day: 'numeric', year: 'numeric' }); }catch(_){ return ''; }
+}
+function srByline(s){
+  const name = esc(s.author_name || s.author_handle || 'Rain Or Shows');
+  const who = s.author_handle ? '<a href="#/u/' + encodeURIComponent(s.author_handle) + '">' + name + '</a>' : name;
+  return 'by ' + who + (s.published_at ? ' \u00b7 ' + esc(srWhen(s.published_at)) : '');
+}
+function srBlocksHtml(blocks){
+  return (blocks || []).map(function(b, i){
+    if(b.type === 'text') return srText(b.md);
+    if(b.type === 'photo' && b.url) return '<figure class="sr-fig"><img src="' + esc(b.url) + '" alt="' + esc(b.caption || '') + '" loading="lazy">' + (b.caption ? '<figcaption>' + esc(b.caption) + '</figcaption>' : '') + '</figure>';
+    if(b.type === 'show' && b.slug) return '<div class="sr-show" data-sr-show="' + esc(srShowSlug(b.slug)) + '"></div>';
+    return '';
+  }).join('');
+}
+function srMountShows(root){
+  root.querySelectorAll('[data-sr-show]').forEach(function(host){
+    const slug = host.getAttribute('data-sr-show');
+    const s = state.shows.find(function(x){ return x._slug === slug; });
+    if(s){ host.appendChild(listOf([s], true)); }
+    else { host.innerHTML = '<a class="sr-showlink" href="#/show/' + esc(slug) + '">Open the show \u2192</a>'; }
+  });
+}
+function srNotFound(wrap){
+  wrap.innerHTML = '<div class="sub-page"><h1 class="sub-title">Nothing here</h1><p class="sub-lead">That page isn\u2019t available. <a href="#">Back to shows</a></p></div>';
+}
+async function renderStoriesRoute(){
+  const wrap = $('#results');
+  $('#resultCount').textContent = 'Stories';
+  clearTogglePills();
+  try{ if(typeof trackView === 'function') trackView('/#/stories'); }catch(_){}
+  wrap.innerHTML = '<div class="sub-page"><p class="sub-lead">One moment\u2026</p></div>';
+  await storiesCheck();
+  if(parseRoute().type !== 'stories') return;
+  if(!STORIES_VISIBLE){ srNotFound(wrap); return; }
+  const sb = window.__plAuth;
+  const r = await safeRpc(sb.rpc('stories_list'));
+  if(parseRoute().type !== 'stories') return;
+  const rows = (r && !r.error && r.data) || [];
+  const pub = rows.filter(function(s){ return s.status === 'published'; });
+  const drafts = rows.filter(function(s){ return s.status !== 'published'; });
+  let html = '<div class="sr-page"><div class="sr-kicker">Stories</div>';
+  if(STORIES_WRITER){
+    html += '<div class="sr-desk"><a class="sr-new" href="#/stories/edit/new">+ New story</a>'
+      + '<span class="sr-desk-note">Only writers can see this section until it goes public.</span></div>';
+    if(drafts.length){
+      html += '<div class="sr-drafts"><div class="sr-drafts-h">Drafts <span class="count">' + drafts.length + '</span></div>'
+        + drafts.map(function(s){
+            return '<a class="sr-draft" href="#/stories/edit/' + esc(s.id) + '"><b>' + esc(s.title || 'Untitled') + '</b><span>' + esc(s.author_name || s.author_handle || '') + ' \u00b7 edited ' + esc(srWhen(s.updated_at)) + '</span></a>';
+          }).join('') + '</div>';
+    }
+  }
+  if(!pub.length){
+    html += '<p class="sub-lead">No stories yet.' + (STORIES_WRITER ? ' Start one with <b>New story</b>.' : '') + '</p>';
+  } else {
+    html += pub.map(function(s, i){
+      const href = '#/story/' + esc(s.slug);
+      const cover = s.cover_url ? '<div class="sr-card-cover" style="background-image:url(\'' + esc(s.cover_url) + '\')"></div>' : '';
+      return '<a class="sr-card' + (i === 0 ? ' sr-card-lead' : '') + '" href="' + href + '">' + cover
+        + '<div class="sr-card-body"><div class="sr-card-title">' + esc(s.title) + '</div>'
+        + '<div class="sr-card-by">by ' + esc(s.author_name || s.author_handle || '') + ' \u00b7 ' + esc(srWhen(s.published_at)) + '</div></div></a>';
+    }).join('');
+  }
+  html += '</div>';
+  wrap.innerHTML = html;
+}
+async function renderStoryRoute(key){
+  const wrap = $('#results');
+  $('#resultCount').textContent = 'Story';
+  clearTogglePills();
+  wrap.innerHTML = '<div class="sub-page"><p class="sub-lead">One moment\u2026</p></div>';
+  await storiesCheck();
+  const sb = window.__plAuth;
+  const r = sb ? await safeRpc(sb.rpc('story_get', { p_key: key })) : null;
+  if(parseRoute().type !== 'story') return;
+  const s = r && !r.error && Array.isArray(r.data) ? r.data[0] : null;
+  if(!s){ srNotFound(wrap); return; }
+  try{ if(typeof trackView === 'function') trackView('/#/story/' + (s.slug || s.id)); }catch(_){}
+  wrap.innerHTML = '<article class="sr-page sr-article">'
+    + '<div class="sr-kicker"><a href="#/stories">Stories</a>' + (s.status !== 'published' ? ' \u00b7 <span class="sr-draftflag">Draft preview</span>' : '') + '</div>'
+    + '<h1 class="sr-title">' + esc(s.title || 'Untitled') + '</h1>'
+    + '<div class="sr-by">' + srByline(s) + (s.can_edit ? ' \u00b7 <a href="#/stories/edit/' + esc(s.id) + '">Edit</a>' : '') + '</div>'
+    + (s.cover_url ? '<img class="sr-cover" src="' + esc(s.cover_url) + '" alt="">' : '')
+    + '<div class="sr-paper">' + srBlocksHtml(s.body) + '</div>'
+    + '</article>';
+  srMountShows(wrap);
+}
+async function renderStoryEditRoute(id){
+  const wrap = $('#results');
+  $('#resultCount').textContent = 'Write';
+  clearTogglePills();
+  wrap.innerHTML = '<div class="sub-page"><p class="sub-lead">One moment\u2026</p></div>';
+  await storiesCheck();
+  if(parseRoute().type !== 'storyedit') return;
+  if(!STORIES_WRITER){ srNotFound(wrap); return; }
+  const sb = window.__plAuth;
+  let st = { id: null, title: '', cover_url: '', body: [{ type: 'text', md: '' }], status: 'draft', slug: null };
+  if(id && id !== 'new'){
+    const r = await safeRpc(sb.rpc('story_get', { p_key: id }));
+    const s = r && !r.error && Array.isArray(r.data) ? r.data[0] : null;
+    if(!s){ srNotFound(wrap); return; }
+    st = { id: s.id, title: s.title || '', cover_url: s.cover_url || '', body: Array.isArray(s.body) && s.body.length ? s.body : [{ type: 'text', md: '' }], status: s.status, slug: s.slug };
+  }
+  if(parseRoute().type !== 'storyedit') return;
+  // Draw into a fresh element so listeners never stack up on #results.
+  const root = document.createElement('div'); wrap.innerHTML = ''; wrap.appendChild(root);
+  let dirty = false;
+  function blockHtml(b, i){
+    const tools = '<span class="se-tools"><button type="button" data-se-up="' + i + '" aria-label="Move up">\u2191</button><button type="button" data-se-down="' + i + '" aria-label="Move down">\u2193</button><button type="button" data-se-del="' + i + '" aria-label="Remove">\u2715</button></span>';
+    if(b.type === 'text') return '<div class="se-block"><div class="se-bh">Text' + tools + '</div><textarea data-se-md="' + i + '" rows="6" placeholder="Write here. Blank line = new paragraph. ## Heading  > Pull quote  **bold**  *italic*  [link text](https://\u2026)">' + esc(b.md || '') + '</textarea></div>';
+    if(b.type === 'photo') return '<div class="se-block"><div class="se-bh">Photo' + tools + '</div>'
+      + (b.url ? '<img class="se-img" src="' + esc(b.url) + '" alt="">' : '<button type="button" class="se-upload" data-se-photo="' + i + '">Choose a photo</button>')
+      + '<input type="text" data-se-cap="' + i + '" placeholder="Caption (optional)" value="' + esc(b.caption || '') + '"></div>';
+    if(b.type === 'show') return '<div class="se-block"><div class="se-bh">Show' + tools + '</div><input type="text" data-se-show="' + i + '" placeholder="Paste a Rain Or Shows show link" value="' + esc(b.slug || '') + '"><div class="se-hint">Becomes a live show card: poster, Listen, Who\u2019s in, heart.</div></div>';
+    return '';
+  }
+  function draw(msg){
+    root.innerHTML = '<div class="sr-page se-page">'
+      + '<div class="sr-kicker"><a href="#/stories">Stories</a> \u00b7 ' + (st.status === 'published' ? 'Published' : 'Draft') + '</div>'
+      + '<input type="text" class="se-title" data-se-title placeholder="Title" value="' + esc(st.title) + '">'
+      + '<div class="se-cover">' + (st.cover_url ? '<img src="' + esc(st.cover_url) + '" alt=""><button type="button" data-se-cover-clear>Remove cover</button>' : '') + '<button type="button" class="se-upload" data-se-cover>' + (st.cover_url ? 'Change cover photo' : 'Add a cover photo') + '</button></div>'
+      + st.body.map(blockHtml).join('')
+      + '<div class="se-add"><span>Add</span><button type="button" data-se-add="text">Text</button><button type="button" data-se-add="photo">Photo</button><button type="button" data-se-add="show">Show</button></div>'
+      + '<div class="se-bar"><span class="se-msg" data-se-msg>' + esc(msg || '') + '</span>'
+      + (st.id && st.status !== 'published' ? '<button type="button" data-se-delete>Delete draft</button>' : '')
+      + '<button type="button" data-se-save>' + (st.status === 'published' ? 'Save changes' : 'Save draft') + '</button>'
+      + (st.id ? '<a class="se-btn" href="#/story/' + esc(st.slug || st.id) + '">Preview</a>' : '')
+      + '<button type="button" class="se-pub" data-se-publish>' + (st.status === 'published' ? 'Unpublish' : 'Publish') + '</button></div>'
+      + '<input type="file" accept="image/*" data-se-file hidden></div>';
+  }
+  function collect(){
+    const t = root.querySelector('[data-se-title]'); if(t) st.title = t.value;
+    root.querySelectorAll('[data-se-md]').forEach(function(el){ st.body[+el.getAttribute('data-se-md')].md = el.value; });
+    root.querySelectorAll('[data-se-cap]').forEach(function(el){ st.body[+el.getAttribute('data-se-cap')].caption = el.value; });
+    root.querySelectorAll('[data-se-show]').forEach(function(el){ st.body[+el.getAttribute('data-se-show')].slug = srShowSlug(el.value); });
+  }
+  async function save(){
+    collect();
+    const body = st.body.filter(function(b){ return (b.type === 'text' && (b.md || '').trim()) || (b.type === 'photo' && b.url) || (b.type === 'show' && b.slug); });
+    const r = await safeRpc(sb.rpc('story_save', { p_id: st.id, p_title: st.title, p_cover_url: st.cover_url || '', p_body: body }));
+    if(r.error){ draw('Couldn\u2019t save: ' + (r.error.message || r.error)); return false; }
+    const isNew = !st.id; st.id = r.data; dirty = false;
+    if(isNew){ history.replaceState(null, '', '/#/stories/edit/' + st.id); }
+    return true;
+  }
+  let upTarget = null;   // 'cover' or a block index
+  async function upload(file){
+    const out = await phResize(file);
+    const uid = ((await sb.auth.getSession()).data.session || {}).user;
+    const path = (uid ? uid.id : 'x') + '/' + Date.now() + '.jpg';
+    const up = await sb.storage.from('stories').upload(path, out.blob, { contentType: 'image/jpeg', upsert: false });
+    if(up.error) throw new Error(up.error.message);
+    return sb.storage.from('stories').getPublicUrl(path).data.publicUrl;
+  }
+  draw('');
+  root.addEventListener('input', function(){ dirty = true; });
+  root.addEventListener('change', async function(e){
+    const f = e.target.closest('[data-se-file]'); if(!f) return;
+    const file = f.files && f.files[0]; f.value = ''; if(!file) return;
+    collect(); draw('Uploading\u2026');
+    try{
+      const url = await upload(file);
+      if(upTarget === 'cover') st.cover_url = url; else if(upTarget != null) st.body[upTarget].url = url;
+      dirty = true; draw('Photo added. Save to keep it.');
+    }catch(err){ draw('Upload failed: ' + (err && err.message || err)); }
+  });
+  root.addEventListener('click', async function(e){
+    const q = function(a){ return e.target.closest('[' + a + ']'); };
+    let el;
+    if((el = q('data-se-add'))){ collect(); const t = el.getAttribute('data-se-add'); st.body.push(t === 'text' ? { type: 'text', md: '' } : t === 'photo' ? { type: 'photo', url: '', caption: '' } : { type: 'show', slug: '' }); dirty = true; draw(''); return; }
+    if((el = q('data-se-up'))){ collect(); const i = +el.getAttribute('data-se-up'); if(i > 0){ const x = st.body.splice(i, 1)[0]; st.body.splice(i - 1, 0, x); dirty = true; draw(''); } return; }
+    if((el = q('data-se-down'))){ collect(); const i = +el.getAttribute('data-se-down'); if(i < st.body.length - 1){ const x = st.body.splice(i, 1)[0]; st.body.splice(i + 1, 0, x); dirty = true; draw(''); } return; }
+    if((el = q('data-se-del'))){ collect(); st.body.splice(+el.getAttribute('data-se-del'), 1); if(!st.body.length) st.body.push({ type: 'text', md: '' }); dirty = true; draw(''); return; }
+    if((el = q('data-se-cover'))){ upTarget = 'cover'; root.querySelector('[data-se-file]').click(); return; }
+    if((el = q('data-se-cover-clear'))){ collect(); st.cover_url = ''; dirty = true; draw(''); return; }
+    if((el = q('data-se-photo'))){ upTarget = +el.getAttribute('data-se-photo'); root.querySelector('[data-se-file]').click(); return; }
+    if((el = q('data-se-save'))){ el.disabled = true; if(await save()) draw('Saved.'); return; }
+    if((el = q('data-se-delete'))){
+      if(!confirm('Delete this draft? This can\u2019t be undone.')) return;
+      const r = await safeRpc(sb.rpc('story_delete', { p_id: st.id }));
+      if(r.error){ draw('Couldn\u2019t delete: ' + (r.error.message || r.error)); return; }
+      location.hash = '#/stories'; return;
+    }
+    if((el = q('data-se-publish'))){
+      el.disabled = true;
+      const going = st.status !== 'published';
+      if(going && !(st.title || '').trim() && !((root.querySelector('[data-se-title]') || {}).value || '').trim()){ draw('Give it a title first.'); return; }
+      if(!(await save())) return;
+      const r = await safeRpc(sb.rpc('story_publish', { p_id: st.id, p_publish: going }));
+      if(r.error){ draw('Couldn\u2019t ' + (going ? 'publish' : 'unpublish') + ': ' + (r.error.message || r.error)); return; }
+      st.status = going ? 'published' : 'draft'; st.slug = r.data || st.slug;
+      if(going){ location.hash = '#/story/' + encodeURIComponent(st.slug); return; }
+      draw('Unpublished. It\u2019s a draft again.');
+    }
+  });
+  SR_DIRTY = function(){ return dirty && root.isConnected; };
+}
+// The feed strip: the newest story, for 5 days after it's published.
+async function mountStoryStrip(wrap){
+  if(!STORIES_VISIBLE) return;
+  const host = document.createElement('a'); host.className = 'sr-strip'; host.hidden = true;
+  const anchor = wrap.querySelector('.gw-banner'); if(anchor) anchor.insertAdjacentElement('afterend', host); else wrap.insertBefore(host, wrap.firstChild);
+  const sb = window.__plAuth; if(!sb){ host.remove(); return; }
+  const r = await safeRpc(sb.rpc('stories_list'));
+  const s = ((r && !r.error && r.data) || []).find(function(x){ return x.status === 'published'; });
+  if(!host.isConnected || !s || Date.now() - new Date(s.published_at).getTime() > 5 * 864e5){ host.remove(); return; }
+  host.href = '#/story/' + encodeURIComponent(s.slug);
+  host.innerHTML = (s.cover_url ? '<span class="sr-strip-img" style="background-image:url(\'' + esc(s.cover_url) + '\')"></span>' : '')
+    + '<span class="sr-strip-text"><span class="sr-strip-k">New story</span><b>' + esc(s.title) + '</b></span><span class="sr-strip-go">Read \u2192</span>';
+  host.hidden = false;
 }
 
 // ===== TICKET GIVEAWAY (Sep 22 2026, Nick + Anita) =====
@@ -8308,6 +8578,7 @@ $('#phoneBrowse').addEventListener('change', e => {
                 comedy:'comedyToggle', following:'followingToggle', allages:'allAgesToggle',
                 festivals:'festivalsToggle', outoftown:'outOfTownToggle' };
   if(v === 'all' || !v){ goHome(); return; }
+  if(v === 'stories'){ location.hash = '#/stories'; return; }
   const t = ids[v] && document.getElementById(ids[v]);
   if(t && !t.classList.contains('on')) t.click();
 });
@@ -8708,6 +8979,7 @@ $('.masthead-brand').addEventListener('click', goHome);
       // itself is keyed by user id so it stays valid across a sign-out.
       avRenderEditor();
       reportSignupRef();
+      storiesCheck().then(function(){ if(STORIES_VISIBLE && parseRoute().type === 'feed') render(); });
       await loadMyBlocks();
       await plLoadUserData();
       // The people half of ★ Following is per-account (Stage 10 Part 5):
@@ -8824,6 +9096,67 @@ a.inbox-thread-who:hover{text-decoration:underline}
 .pick-mod{display:flex;gap:8px;padding:8px 12px 10px;border-top:1px dashed rgba(74,53,38,.25)}
 .pick-mod-btn{border:1px solid var(--rust);background:none;color:var(--rust);border-radius:999px;padding:4px 10px;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.05em;text-transform:uppercase;cursor:pointer}
 .pick-mod-btn.on{background:var(--rust);color:var(--cream)}
+/* ===== Stories (Sep 23 2026) ===== */
+.sr-page{max-width:680px;margin:0 auto;padding:6px 0 40px;color:var(--cream)}
+.sr-kicker{font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:.12em;text-transform:uppercase;opacity:.85;margin:0 0 8px}
+.sr-kicker a{color:var(--cream)}
+.sr-draftflag{background:var(--rust);border-radius:999px;padding:1px 8px;letter-spacing:.06em}
+.sr-title{font-family:'Alfa Slab One',serif;font-weight:400;font-size:32px;line-height:1.12;margin:0 0 10px;color:var(--cream)}
+.sr-by{font-family:'Bitter',Georgia,serif;font-size:14.5px;margin:0 0 16px}
+.sr-by a{color:var(--cream)}
+.sr-cover{display:block;width:100%;border-radius:12px;margin:0 0 16px}
+.sr-paper{background:var(--cream);color:var(--ink);border-radius:12px;padding:20px 22px 10px;font-family:'Bitter',Georgia,serif;font-size:17px;line-height:1.72}
+.sr-paper p{margin:0 0 16px}
+.sr-paper a{color:var(--rust)}
+.sr-paper .sr-h{font-family:'Alfa Slab One',serif;font-weight:400;font-size:22px;color:#3f6555;margin:22px 0 10px}
+.sr-paper .sr-quote{margin:20px 0;padding:2px 0 2px 16px;border-left:4px solid var(--rust);font-family:'Alfa Slab One',serif;font-size:21px;line-height:1.3;color:#3f6555}
+.sr-fig{margin:18px -6px}
+.sr-fig img{display:block;width:100%;border-radius:8px}
+.sr-fig figcaption{font-size:13.5px;font-style:italic;opacity:.75;margin-top:6px;padding:0 6px}
+.sr-show{margin:14px 0 18px}
+.sr-show .list{margin:0}
+.sr-showlink{font-family:'Oswald',sans-serif;letter-spacing:.06em;text-transform:uppercase;font-size:13px}
+@media(max-width:600px){.sr-title{font-size:26px}.sr-paper{padding:16px 16px 6px;font-size:16.5px;margin:0 -4px}}
+.sr-desk{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin:0 0 14px}
+.sr-new{background:var(--cream);color:var(--ink);text-decoration:none;border-radius:999px;padding:8px 16px;font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+.sr-desk-note{font-size:13px;opacity:.75;font-family:'Bitter',Georgia,serif}
+.sr-drafts{background:rgba(0,0,0,.14);border-radius:12px;padding:10px 12px;margin:0 0 18px}
+.sr-drafts-h{font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:.1em;text-transform:uppercase;margin:0 0 6px}
+.sr-draft{display:flex;flex-direction:column;padding:8px 4px;border-top:1px solid rgba(243,234,215,.15);color:var(--cream);text-decoration:none;font-family:'Bitter',Georgia,serif}
+.sr-draft:first-of-type{border-top:0}
+.sr-draft span{font-size:13px;opacity:.75}
+.sr-card{display:flex;gap:12px;align-items:center;background:var(--cream);color:var(--ink);text-decoration:none;border-radius:12px;padding:10px;margin:0 0 12px}
+.sr-card-cover{flex:0 0 auto;width:84px;height:84px;border-radius:8px;background:#2f5a4a center/cover no-repeat}
+.sr-card-lead{display:block;padding:0;overflow:hidden}
+.sr-card-lead .sr-card-cover{width:100%;height:220px;border-radius:0}
+.sr-card-lead .sr-card-body{padding:12px 14px 14px}
+.sr-card-title{font-family:'Alfa Slab One',serif;font-size:19px;line-height:1.2;color:#3f6555}
+.sr-card-lead .sr-card-title{font-size:24px}
+.sr-card-by{font-family:'Bitter',Georgia,serif;font-size:13.5px;margin-top:4px}
+.sr-strip{display:flex;align-items:center;gap:10px;background:var(--cream);color:var(--ink);text-decoration:none;border-radius:10px;padding:8px 12px;margin:0 0 8px}
+.sr-strip[hidden]{display:none}
+.sr-strip-img{flex:0 0 auto;width:40px;height:40px;border-radius:6px;background:#2f5a4a center/cover no-repeat}
+.sr-strip-text{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;font-family:'Bitter',Georgia,serif;font-size:14px;line-height:1.3}
+.sr-strip-k{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--rust)}
+.sr-strip-go{flex:0 0 auto;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--rust)}
+.se-page input[type=text],.se-page textarea{width:100%;box-sizing:border-box;border:1px solid rgba(74,53,38,.25);border-radius:8px;padding:10px 12px;background:#fffdf7;color:var(--ink);font-family:'Bitter',Georgia,serif;font-size:16px}
+.se-title{font-family:'Alfa Slab One',serif !important;font-size:22px !important;margin:0 0 12px}
+.se-page textarea{line-height:1.6;resize:vertical}
+.se-cover{display:flex;flex-direction:column;gap:8px;margin:0 0 14px}
+.se-cover img{width:100%;border-radius:10px}
+.se-block{background:var(--cream);color:var(--ink);border-radius:12px;padding:10px 12px 12px;margin:0 0 10px}
+.se-bh{display:flex;align-items:center;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.1em;text-transform:uppercase;margin:0 0 8px;color:var(--rust)}
+.se-tools{margin-left:auto;display:flex;gap:4px}
+.se-tools button{border:1px solid rgba(74,53,38,.25);background:none;border-radius:6px;width:30px;height:28px;cursor:pointer;color:var(--ink)}
+.se-img{width:100%;border-radius:8px;margin:0 0 8px}
+.se-hint{font-size:12.5px;opacity:.7;margin-top:6px;font-family:'Bitter',Georgia,serif}
+.se-add{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:6px 0 16px;font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+.se-add button,.se-upload,.se-bar button,.se-bar .se-btn,.se-cover button{border:1px solid var(--cream);background:none;color:var(--cream);border-radius:999px;padding:7px 14px;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;text-decoration:none}
+.se-block .se-upload{border-color:var(--rust);color:var(--rust);margin:0 0 8px}
+.se-bar{display:flex;align-items:center;flex-wrap:wrap;gap:8px;justify-content:flex-end;border-top:1px solid rgba(243,234,215,.25);padding-top:12px}
+.se-bar .se-pub{background:var(--cream);color:var(--ink)}
+.se-msg{margin-right:auto;font-size:13.5px;font-family:'Bitter',Georgia,serif}
+
 .gw-banner{display:flex;align-items:center;gap:10px;margin:0 0 16px;padding:11px 14px;border-radius:10px;background:var(--rust);color:var(--cream);text-decoration:none;box-shadow:0 6px 14px rgba(20,40,30,.18)}
 .gw-banner[hidden]{display:none}
 .gw-banner .gw-ticket{font-size:20px;flex:0 0 auto}
