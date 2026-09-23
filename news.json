@@ -9,19 +9,19 @@
    "url": "#/festival/northwest-roots-fest-2026"
   },
   {
+   "text": "6 new venues on the calendar: Threshold Brewing, Hoku Events, Hopworks Brewery and 3 more.",
+   "auto": true,
+   "key": "venues:2026-09-23:2026-09-23T18:45:23+00:00",
+   "from": "2026-09-23",
+   "until": "2026-09-30",
+   "at": "2026-09-23T18:45:23+00:00"
+  },
+  {
    "text": "Welcome Dowtish, Torrey R, Philip, Dj, James T, Adrienne guica and 13 more to Rain Or Shows.",
    "auto": true,
    "key": "members:rolling",
    "from": "2026-09-23",
    "until": "2026-09-23"
-  },
-  {
-   "text": "New venue: 45 East — 7 shows on the calendar.",
-   "auto": true,
-   "key": "venues:2026-09-21:2026-09-22T06:43:15+00:00",
-   "from": "2026-09-21",
-   "until": "2026-09-28",
-   "at": "2026-09-22T06:43:15+00:00"
   },
   {
    "text": "Further Out: Tower Theatre, Volcanic Theatre Pub, Midtown Music Hall and 1 more — new on the calendar. Tap Further Out.",
@@ -58,6 +58,7 @@
   "venue:Arlene Schnitzer Concert Hall",
   "venue:Artichoke Music",
   "venue:Barrel Room",
+  "venue:Beach Hut Deli Tigard",
   "venue:Birch Street Uptown Lounge",
   "venue:Brunish Theatre",
   "venue:Bunk Bar",
@@ -79,8 +80,10 @@
   "venue:Hayden Homes Amphitheater",
   "venue:Haymaker",
   "venue:Helium Comedy Club",
+  "venue:Hoku Events",
   "venue:Holocene",
   "venue:Hops Ballpark",
+  "venue:Hopworks Brewery",
   "venue:Jack London Revue",
   "venue:Keller Auditorium",
   "venue:Kelly's Olympian",
@@ -125,6 +128,7 @@
   "venue:Switchback Saloon",
   "venue:The 1905",
   "venue:The Blue Diamond",
+  "venue:The Cazadero",
   "venue:The Den",
   "venue:The Get Down",
   "venue:The Goodfoot",
@@ -140,6 +144,7 @@
   "venue:The Waypost",
   "venue:The Wild Hare Saloon",
   "venue:Theater of the Clouds",
+  "venue:Threshold Brewing",
   "venue:Tigardville Station",
   "venue:Tomorrow Theater",
   "venue:Tomorrow's Verse",
@@ -148,6 +153,7 @@
   "venue:Trout Lake Hall",
   "venue:Turn! Turn! Turn!",
   "venue:Twilight Cafe & Bar",
+  "venue:Vancouver Elks Lodge",
   "venue:Veterans Memorial Coliseum",
   "venue:Volcanic Theatre Pub",
   "venue:WOW Hall",
@@ -164,6 +170,7 @@
   "venues:2026-09-19",
   "venues:2026-09-21",
   "venues:2026-09-21:2026-09-22T06:19:49+00:00",
-  "venues:2026-09-21:2026-09-22T06:43:15+00:00"
+  "venues:2026-09-21:2026-09-22T06:43:15+00:00",
+  "venues:2026-09-23:2026-09-23T18:45:23+00:00"
  ]
 }
