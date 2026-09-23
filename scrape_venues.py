@@ -134,6 +134,13 @@ VENUE_INFO = {
     "The Wild Hare Saloon": ("Oregon City", "1656 S Beavercreek Rd, Oregon City, OR 97045"),
     "The 1905": ("Boise", "830 N Shaver St, Portland, OR 97227"),
     "Tigardville Station": ("Tigard", "12370 SW Main St, Tigard, OR 97223"),
+    # Batch four (Sep 23 2026), from a Facebook music group Nick pointed at.
+    "Vancouver Elks Lodge": ("Vancouver, WA", "11605 SE McGillivray Blvd, Vancouver, WA 98683"),
+    "Hoku Events": ("Central Eastside", "1125 SE Madison St, Portland, OR 97214"),
+    "The Cazadero": ("Estacada", "352 SE Highway 211, Estacada, OR 97023"),
+    "Hopworks Brewery": ("Creston-Kenilworth", "2944 SE Powell Blvd, Portland, OR 97202"),
+    "Threshold Brewing": ("Montavilla", "403 SE 79th Ave, Portland, OR 97215"),
+    "Beach Hut Deli Tigard": ("Tigard", "12436 SW Main St, Tigard, OR 97223"),
     "Chehalem Valley Brewing": ("Newberg", "2515 E Portland Rd Ste B, Newberg, OR 97132"),
     "Curious Comedy Theater": ("King", "5225 NE Martin Luther King Jr Blvd, Portland, OR 97211"),
     "Kickstand Comedy": ("Hosford-Abernethy", "1006 SE Hawthorne Blvd, Portland, OR 97214"),
@@ -5371,6 +5378,203 @@ def parse_firkin(text, today):
     return _tribe_rows(text, today, "The Firkin Tavern", "https://firkintavern.com/upcoming-events/", horizon_days=HORIZON_DAYS)
 
 
+# ---- Batch four (Sep 23 2026): six rooms from a Facebook music group that
+# post a readable schedule on their own sites. Fixtures in fixtures/intake/.
+def _b4_row(venue, title, date, time_, url, img=""):
+    nb, addr = VENUE_INFO.get(venue, ("", ""))
+    return {"title": title, "venue": venue, "neighborhood": nb, "address": addr,
+            "date": date, "time": time_, "venueUrl": url, "imageUrl": img}
+
+
+_B4_MON = {m: i for i, m in enumerate(["", "jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"])}
+
+
+def _b4_month(word):
+    return _B4_MON.get((word or "").lower()[:3], 0)
+
+
+def _b4_pm(h, mnt="00"):
+    """A bare evening time like '7' or '6:30' -> '7:00 PM' (these rooms don't
+    say AM/PM; every show is an afternoon or evening one)."""
+    h = int(h)
+    ampm = "AM" if h in (10, 11) and False else "PM"
+    return f"{h if 1 <= h <= 12 else 12}:{mnt} {ampm}"
+
+
+# Vancouver Elks Lodge #823: WordPress Events Calendar REST. The lodge
+# calendar is mostly members' nights (bingo, cribbage, meetings); keep the
+# band nights and dances, drop the rest. Titles end with a time ("7PM").
+_ELKS_KEEP = re.compile(r"(?i)\bband\b|\bmusic\b|\blive\b|concert|dancing|\bjam\b")
+_ELKS_SKIP = re.compile(r"(?i)bingo|karaoke|meeting|orientation|taco|cribbage|hold-?em|seahawks|races|painting|dinner|stand down|emblem|trivia")
+_ELKS_STRIP = re.compile(r"(?i)\s+\d{1,2}(?::\d{2})?\s*(?:am|pm)?(?:\s*-\s*\d{1,2}(?::\d{2})?\s*(?:am|pm))?\s*$")
+
+
+def parse_elks823(text, today):
+    return _tribe_rows(text, today, "Vancouver Elks Lodge", "https://elks823.org/events/list/",
+                       keep=_ELKS_KEEP, skip=_ELKS_SKIP, strip=_ELKS_STRIP, horizon_days=HORIZON_DAYS)
+
+
+# Hoku Events (1125 SE Madison): Squarespace events JSON. Private bookings,
+# memorials and cancelled nights are on the same calendar.
+_HOKU_SKIP = re.compile(r"(?i)private event|celebration of life|cancel+ed|high tea|burlesque|glitter trash")
+
+
+def parse_hoku(text, today):
+    return _sqs_json_rows(text, today, "Hoku Events", "https://www.hoku-events.com/upcoming-events",
+                          skip=_HOKU_SKIP, horizon_days=HORIZON_DAYS)
+
+
+# The Cazadero (Estacada): a hand-typed "LIVE MUSIC LINEUP <year>" page --
+# "Month D:" then the band on the next line (sometimes ": Band"). Saturday
+# nights; no times on the page.
+_CAZ_DATE = re.compile(r"^(?:dec\s+31\s*\(nye\)|([A-Za-z]{3,9})\s*[/ ]?\s*(\d{1,2}))\s*(?:\(.*?\))?\s*:?\s*$", re.I)
+
+
+def parse_cazadero(html, today):
+    lines = [l.strip() for l in BeautifulSoup(html, "html.parser").get_text("\n").split("\n")]
+    lines = [l.replace("\u200d", "").strip() for l in lines]
+    lines = [l for l in lines if l]
+    out, year, i = [], None, 0
+    horizon = today + datetime.timedelta(days=HORIZON_DAYS)
+    while i < len(lines):
+        l = lines[i]
+        if re.fullmatch(r"(?:19|20)\d\d", l) and i and "LINEUP" in lines[i - 1].upper():
+            year = int(l); i += 1; continue
+        m = _CAZ_DATE.match(l)
+        if m and m.group(1) and not _b4_month(m.group(1)):
+            m = None        # "Exit 52" is a band, not a date
+        if year and m:
+            if m.group(1):
+                mon, day = _b4_month(m.group(1)), int(m.group(2))
+            else:
+                mon, day = 12, 31
+            title = lines[i + 1] if i + 1 < len(lines) else ""
+            title = title.lstrip(": ").rstrip(", ").strip()
+            i += 2
+            tm_ = _CAZ_DATE.match(title)
+            if not (mon and title) or (tm_ and (tm_.group(1) is None or _b4_month(tm_.group(1)))) or "LINEUP" in title.upper():
+                continue
+            try:
+                d = datetime.date(year, mon, day)
+            except ValueError:
+                continue
+            if today <= d <= horizon:
+                out.append(_b4_row("The Cazadero", title, d.isoformat(), "", "https://www.thecazadero.com/events"))
+            continue
+        i += 1
+    return out
+
+
+# Hopworks Brewery (SE Powell): a Popmenu page -- "sept 24 - front porch
+# swingers" with "7-9PM" on the next line. Names are often all lowercase.
+_HW_LINE = re.compile(r"^([A-Za-z]{3,9})\.?\s+(\d{1,2})\s*-\s*(.+)$")
+_HW_TIME = re.compile(r"^(\d{1,2})(?::(\d{2}))?\s*(?:-\s*\d{1,2}(?::\d{2})?)?\s*([AP])M$", re.I)
+
+
+def parse_hopworks(html, today):
+    lines = [l.strip() for l in BeautifulSoup(html, "html.parser").get_text("\n").split("\n") if l.strip()]
+    out, seen = [], set()
+    horizon = today + datetime.timedelta(days=HORIZON_DAYS)
+    for i, l in enumerate(lines):
+        m = _HW_LINE.match(l)
+        if not m:
+            continue
+        mon = _b4_month(m.group(1))
+        if not mon:
+            continue
+        title = m.group(3).strip()
+        if title == title.lower():
+            title = title.title()
+        t = ""
+        if i + 1 < len(lines):
+            tm = _HW_TIME.match(lines[i + 1].replace(" ", ""))
+            if tm:
+                t = f"{int(tm.group(1))}:{tm.group(2) or '00'} {tm.group(3).upper()}M"
+        try:
+            d = datetime.date(infer_year(mon, today), mon, int(m.group(2)))
+        except ValueError:
+            continue
+        key = (d, title.lower())
+        if key in seen or not (today <= d <= horizon):
+            continue
+        seen.add(key)
+        out.append(_b4_row("Hopworks Brewery", title, d.isoformat(), t, "https://www.hopworksbeer.com/live-music"))
+    return out
+
+
+# Threshold Brewing (SE 79th): a published Google Doc -- "Saturday October
+# 3rd" then one or more "Act 6:30 - 8:30" lines (the time sometimes on its
+# own line). Lines with no time are the booking roster at the bottom.
+_TH_DATE = re.compile(r"^(?:[A-Za-z]+day\s+)?([A-Za-z]{3,9})\s+(\d{1,2})(?:st|nd|rd|th)?$")
+_TH_TIME = re.compile(r"-?\s*(\d{1,2}):(\d{2})\s*-\s*\d{1,2}:\d{2}\s*$")
+
+
+def parse_threshold(html, today):
+    lines = [l.strip() for l in BeautifulSoup(html, "html.parser").get_text("\n").split("\n") if l.strip()]
+    out, seen, cur = [], set(), None
+    horizon = today + datetime.timedelta(days=HORIZON_DAYS)
+    pending = ""
+    for l in lines:
+        dm = _TH_DATE.match(l)
+        if dm and _b4_month(dm.group(1)):
+            mon = _b4_month(dm.group(1))
+            try:
+                cur = datetime.date(infer_year(mon, today), mon, int(dm.group(2)))
+            except ValueError:
+                cur = None
+            pending = ""
+            continue
+        if cur is None:
+            continue
+        tm = _TH_TIME.search(l)
+        if tm:
+            title = l[:tm.start()].strip(" -*") or pending.strip(" -*")
+            pending = ""
+            if not title or not (today <= cur <= horizon):
+                continue
+            t = _b4_pm(tm.group(1), tm.group(2))
+            key = (cur, title.lower())
+            if key not in seen:
+                seen.add(key)
+                out.append(_b4_row("Threshold Brewing", title, cur.isoformat(), t, "https://www.threshold.beer"))
+        else:
+            pending = l
+    return out
+
+
+# Beach Hut Deli, Tigard store: "Sep / 26 / Madson Madness / Music starts
+# Saturday at 7 PM ..." -- a month, a day, the act, then a line with the time.
+_BH_TIME = re.compile(r"(\d{1,2})(?::(\d{2}))?\s*(?:-\s*\d{1,2}(?::\d{2})?\s*)?([ap])m", re.I)
+_BH_SKIP = re.compile(r"(?i)poker|trivia|bingo|karaoke")
+
+
+def parse_beachhut(html, today):
+    lines = [l.strip() for l in BeautifulSoup(html, "html.parser").get_text("\n").split("\n") if l.strip()]
+    out, seen = [], set()
+    horizon = today + datetime.timedelta(days=HORIZON_DAYS)
+    for i in range(len(lines) - 3):
+        mon = _b4_month(lines[i]) if re.fullmatch(r"[A-Za-z]{3}", lines[i]) else 0
+        if not mon or not re.fullmatch(r"\d{1,2}", lines[i + 1]):
+            continue
+        title, desc = lines[i + 2], lines[i + 3]
+        if _BH_SKIP.search(title):
+            continue
+        try:
+            d = datetime.date(infer_year(mon, today), mon, int(lines[i + 1]))
+        except ValueError:
+            continue
+        tm = _BH_TIME.search(desc)
+        t = f"{int(tm.group(1))}:{tm.group(2) or '00'} {tm.group(3).upper()}M" if tm else ""
+        if not re.search(r"(?i)music|jam|band|live", title + " " + desc):
+            continue
+        key = (d, title.lower())
+        if key in seen or not (today <= d <= horizon):
+            continue
+        seen.add(key)
+        out.append(_b4_row("Beach Hut Deli Tigard", title, d.isoformat(), t, "https://beachhutdeli.com/store/tigard/"))
+    return out
+
+
 # ---- Topaz Farm (Sauvie Island): a summer concert series on the farm
 # (July-August). Its /live-music page is hand-laid Squarespace: per show, an
 # image block linked to tickets.topazfarm.com, then a text block that opens
@@ -5656,6 +5860,19 @@ SOURCES = [
      "urls": ["https://www.vinoveritaspdx.com/events?format=json"]},
     {"name": "The Firkin Tavern (firkintavern.com)", "parser": parse_firkin,
      "urls": ["https://firkintavern.com/wp-json/tribe/events/v1/events?per_page=50"]},
+    # Batch four (Sep 23 2026)
+    {"name": "Vancouver Elks Lodge (elks823.org)", "parser": parse_elks823,
+     "urls": ["https://elks823.org/wp-json/tribe/events/v1/events?per_page=50"]},
+    {"name": "Hoku Events (hoku-events.com)", "parser": parse_hoku,
+     "urls": ["https://www.hoku-events.com/upcoming-events?format=json"]},
+    {"name": "The Cazadero (thecazadero.com)", "parser": parse_cazadero,
+     "urls": ["https://www.thecazadero.com/events"]},
+    {"name": "Hopworks Brewery (hopworksbeer.com)", "parser": parse_hopworks,
+     "urls": ["https://www.hopworksbeer.com/live-music"]},
+    {"name": "Threshold Brewing (threshold.beer)", "parser": parse_threshold,
+     "urls": ["https://docs.google.com/document/d/e/2PACX-1vQTocN7yUyIeRnduOEGyrgh-06fyF6yzDQkPn_D15im6Eee5fHq8Wht24MBHBiOvUEYdS9rVV67ehf6/pub"]},
+    {"name": "Beach Hut Deli Tigard (beachhutdeli.com)", "parser": parse_beachhut,
+     "urls": ["https://beachhutdeli.com/store/tigard/"]},
     {"name": "Topaz Farm (topazfarm.com)", "parser": parse_topaz,
      "urls": ["https://topazfarm.com/live-music"]},
     {"name": "The Lyons Den (lyonsdenevents.com)", "parser": parse_lyonsden,

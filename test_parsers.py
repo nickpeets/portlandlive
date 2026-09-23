@@ -498,6 +498,37 @@ def tm_guard_check():
     print("  ok   tm guard                      a short pull (10 of 50) and a failed pull both keep the last good 50")
 
 
+def batch_four_check():
+    """Batch four readers (Sep 23 2026) against their captured pages: each
+    keeps at least what the capture showed, and the traps stay closed
+    (Elks bingo nights out, Cazadero's band "Exit 52" not read as a date,
+    Beach Hut's "7-10pm" jam read as 7 PM)."""
+    import datetime as _dt
+    today = _dt.date(2026, 9, 23)
+    d = os.path.join(HERE, "fixtures", "intake")
+    want = [("elks823-rest.json", sv.parse_elks823, 8), ("hoku-events.json", sv.parse_hoku, 18),
+            ("cazadero-events.html", sv.parse_cazadero, 12), ("hopworks-music.html", sv.parse_hopworks, 15),
+            ("threshold-doc.html", sv.parse_threshold, 20), ("beachhut-tigard.html", sv.parse_beachhut, 4)]
+    bad = []
+    rows = {}
+    for fx, fn, n in want:
+        r = fn(open(os.path.join(d, fx), encoding="utf-8").read(), today)
+        rows[fx] = r
+        if len(r) < n:
+            bad.append(f"{fx}: {len(r)} < {n}")
+    if any("ingo" in r["title"] for r in rows["elks823-rest.json"]):
+        bad.append("elks: a bingo night got through")
+    if not any(r["title"] == "Exit 52" for r in rows["cazadero-events.html"]):
+        bad.append("cazadero: Exit 52 (Oct 3) missing")
+    if not any(r["time"] == "7:00 PM" and "Jam" in r["title"] for r in rows["beachhut-tigard.html"]):
+        bad.append("beach hut: jam night time wrong")
+    if bad:
+        print("  FAIL batch four                   " + "; ".join(bad))
+        print("GATE FAILURE")
+        sys.exit(1)
+    print("  ok   batch four                    Elks, Hoku, Cazadero, Hopworks, Threshold, Beach Hut read from their captures")
+
+
 if __name__ == "__main__":
     main()
     talk_page_check()
@@ -505,3 +536,4 @@ if __name__ == "__main__":
     submission_fold_check()
     tm_same_act_check()
     tm_guard_check()
+    batch_four_check()
