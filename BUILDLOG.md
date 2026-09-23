@@ -566,3 +566,5 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **2026-09-23 — Story editor safety (e30cc3e1)** — reRenderCurrentView() never touches #/stories/edit (hourly token refresh reopened the editor from the last saved copy and erased Nick's work); editor keeps a localStorage backup (ros_story_backup_<id>) as you type and restores it on open if newer than the saved copy; cleared on save/delete.
 
 - **2026-09-23 — No reload while writing (c3f11202)** — the new-build check treats an open story editor as busy; it wiped Nick's edits when it reloaded mid-story.
+
+- **2026-09-23 — Preview saves first (e858da9b)** — the editor's Preview button saves, then opens the story; it used to open the last saved copy (a new YouTube block was missing).
