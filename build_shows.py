@@ -579,6 +579,29 @@ def _venue_key(v):
     return k[4:] if k.startswith("the ") else k
 
 
+# Titles an artist or venue asked us to use instead of what the source says
+# (Sep 22 2026, Nick). Keyed by (venue, title as the source writes it) --
+# matched loosely, like the submission fold -- so a recurring night keeps
+# its real name every time it comes back.
+TITLE_RENAMES = {
+    ("Starday Tavern", "James T & Friends"): "James T's Treasure Chest",   # monthly, 3rd Tuesday; James T's own name for it
+}
+
+
+def apply_title_renames(shows):
+    """Rename rows listed in TITLE_RENAMES. Returns how many changed."""
+    want = {(_venue_key(v), _norm_key(t)): new for (v, t), new in TITLE_RENAMES.items()}
+    n = 0
+    for r in shows:
+        new = want.get((_venue_key(r.get("venue")), _norm_key(r.get("title"))))
+        if new and r.get("title") != new:
+            r["title"] = new
+            n += 1
+    if n:
+        print(f"  Title renames: {n} row(s) renamed from TITLE_RENAMES")
+    return n
+
+
 def fold_submissions(shows, subs, venue_info=None):
     """Join approved submissions to the feed without making duplicates (Sep 22
     2026: "James T's Treasure Chest" @ "The Starday Tavern" was the same night
@@ -2169,6 +2192,7 @@ def main():
         if not (s.get("age") or "").strip():
             s["age"] = VENUE_AGE_DEFAULT.get(s.get("venue", ""), "")
 
+    apply_title_renames(shows)
     deduped, time_collisions = dedupe_shows(shows)
     deduped.sort(key=lambda s: (s["date"], s.get("venue",""), s.get("title","")))
     for i, s in enumerate(deduped, 1):
