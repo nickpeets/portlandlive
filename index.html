@@ -8277,6 +8277,20 @@ function favKey(s){ return (s.venue||'') + '|' + (s.date||'') + '|' + (s.title||
         const k = favKey(s); const on = state.favorites.has(k);
         return `<button type="button" class="heart${on?' on':''}" data-fav="${esc(k)}" aria-pressed="${on}" aria-label="${on?'Remove from favorites':'Save to favorites'}" title="${on?'Remove from favorites':'Save to favorites'}">${heartSvg(on)}</button>`;
       }
+      // A heart tapped on a page (a friend's profile, a show page) flips in
+      // place instead of redrawing the whole page (Sep 23 2026, Nick: "why
+      // does the page reload whenever i heart something on a friend's page?").
+      function heartsRefresh(k){
+        const on = state.favorites.has(k);
+        document.querySelectorAll('.heart[data-fav]').forEach(function(b){
+          if(b.getAttribute('data-fav') !== k) return;
+          b.classList.toggle('on', on);
+          b.setAttribute('aria-pressed', String(on));
+          const lbl = on ? 'Remove from favorites' : 'Save to favorites';
+          b.setAttribute('aria-label', lbl); b.title = lbl;
+          b.innerHTML = heartSvg(on);
+        });
+      }
       function toggleFav(s){
         if(!plRequireSignIn('save shows')) return;
         const k = favKey(s);
@@ -8403,7 +8417,7 @@ $('#byHoodToggle').addEventListener('click',()=>{const on=!state.byHood;leaveSec
       // "at <venue>" from titles), which the venue-link rule below also
       // matches -- so Listen opened the venue page (Sep 22 2026). Leave it
       // to the document-level Listen handler.
-      $('#results').addEventListener('click',e=>{if(e.target.closest('.listen')) return; const _del=e.target.closest('.stub-del'); if(_del){ e.preventDefault(); e.stopPropagation(); const id=_del.getAttribute('data-stubdel'); const kept=loadStubs().filter(s=>stubIdOf(s)!==id); saveStubs(kept); flashStub('Removed from your shelf'); reRenderCurrentView(); return; } const _no=e.target.closest('.dym-no'); if(_no){ e.preventDefault(); e.stopPropagation(); const k=_no.getAttribute('data-dym-key')||''; const sl=_no.getAttribute('data-dym-slug')||''; if(k && state.favorites.has(k)){ state.favorites.delete(k); saveFavorites(); } if(sl){ const sb=txClient(); if(sb){ sb.from('show_attendees').delete().eq('show_slug', sl).then(function(){}, function(){}); } ATTENDED_CACHE = ATTENDED_CACHE.filter(function(a){ return a.slug !== sl; }); } flashStub('Okay \u2014 next time'); reRenderCurrentView(); return; } const _iwt=e.target.closest('.iwt-btn'); if(_iwt){ e.preventDefault(); e.stopPropagation(); if(!_iwt.disabled){ const g=n=>_iwt.getAttribute('data-iwt-'+n)||''; const snap={title:g('title'),venue:g('venue'),neighborhood:g('neighborhood'),address:g('address'),date:g('date'),time:g('time')}; const r=mintStub(snap); if(r.ok){ flashStub('Stub added to your shelf \u2014 '+(snap.title||'show')); } else { flashStub('Already on your shelf'); } reRenderCurrentView(); } return; } const vlink=e.target.closest('[data-venue]');if(vlink){e.preventDefault();e.stopPropagation();openVenue(vlink.getAttribute('data-venue'));return;}const h=e.target.closest('.heart');if(h){e.preventDefault();e.stopPropagation();toggleFavKey(h.getAttribute('data-fav'));reRenderCurrentView();return;} const _interactive=e.target.closest('a, button'); if(_interactive) return; const _card=e.target.closest('.scard'); if(_card && _card.dataset.slug){ location.hash = '#/show/' + encodeURIComponent(_card.dataset.slug); }});
+      $('#results').addEventListener('click',e=>{if(e.target.closest('.listen')) return; const _del=e.target.closest('.stub-del'); if(_del){ e.preventDefault(); e.stopPropagation(); const id=_del.getAttribute('data-stubdel'); const kept=loadStubs().filter(s=>stubIdOf(s)!==id); saveStubs(kept); flashStub('Removed from your shelf'); reRenderCurrentView(); return; } const _no=e.target.closest('.dym-no'); if(_no){ e.preventDefault(); e.stopPropagation(); const k=_no.getAttribute('data-dym-key')||''; const sl=_no.getAttribute('data-dym-slug')||''; if(k && state.favorites.has(k)){ state.favorites.delete(k); saveFavorites(); } if(sl){ const sb=txClient(); if(sb){ sb.from('show_attendees').delete().eq('show_slug', sl).then(function(){}, function(){}); } ATTENDED_CACHE = ATTENDED_CACHE.filter(function(a){ return a.slug !== sl; }); } flashStub('Okay \u2014 next time'); reRenderCurrentView(); return; } const _iwt=e.target.closest('.iwt-btn'); if(_iwt){ e.preventDefault(); e.stopPropagation(); if(!_iwt.disabled){ const g=n=>_iwt.getAttribute('data-iwt-'+n)||''; const snap={title:g('title'),venue:g('venue'),neighborhood:g('neighborhood'),address:g('address'),date:g('date'),time:g('time')}; const r=mintStub(snap); if(r.ok){ flashStub('Stub added to your shelf \u2014 '+(snap.title||'show')); } else { flashStub('Already on your shelf'); } reRenderCurrentView(); } return; } const vlink=e.target.closest('[data-venue]');if(vlink){e.preventDefault();e.stopPropagation();openVenue(vlink.getAttribute('data-venue'));return;}const h=e.target.closest('.heart');if(h){e.preventDefault();e.stopPropagation();const _k=h.getAttribute('data-fav');toggleFavKey(_k);if(isFeedRoute(parseRoute().type)){reRenderCurrentView();}else{heartsRefresh(_k);}return;} const _interactive=e.target.closest('a, button'); if(_interactive) return; const _card=e.target.closest('.scard'); if(_card && _card.dataset.slug){ location.hash = '#/show/' + encodeURIComponent(_card.dataset.slug); }});
 // One section at a time. Comedy and All Ages used to stay lit while you
 // pressed Tonight, This Week or Venues -- reading like sort options layered
 // on top. Nick: "they should be stand alone." So every pill press first
