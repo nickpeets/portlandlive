@@ -558,3 +558,5 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **2026-09-23 — Hearts in place (10b0e5ae)** — heartsRefresh(k): on non-feed pages a heart tap updates the matching buttons only; the feed still redraws. Fixes the profile page jumping to the top.
 
 - **2026-09-23 — Ticketmaster safety net (4587f1bc)** — tm_fetch_guarded: six pulls (portland/eugene... x music/comedy) each cached in og/tm_cache.json; a pull that errors, returns <60% of the last good (20+), or returns 0 where there were 3+ reuses the last good still-upcoming events (cache max 7 days old) and logs a WARN. Sep 23 build lost ~100 TM shows incl. Billy Strings. Test: tm_guard_check.
+
+- **2026-09-23 — Picks cards stay in Picks (f99f8b4c)** — listOf uses list--b only when state.picks AND the route is the feed; a profile opened from Picks drew its wall with giant poster cards.
