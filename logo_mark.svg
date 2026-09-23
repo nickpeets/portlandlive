@@ -1,9 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="34 34 1429 1429" width="256" height="256">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-3.5 -3.5 1504 1504" width="256" height="256">
   <!-- Rain Or Shows mark for the masthead (Sep 22 2026, highlighter colors
        from the print-ready set). Same artwork as the sticker without the
-       rainorshows.com lettering, which can't be read at 38px, plus a thin
-       cream edge so the dark ring doesn't melt into the dark masthead. -->
-  <circle cx="748.5" cy="748.5" r="714" fill="#f3ead7"/>
+       rainorshows.com lettering, which can't be read at 38px, plus a cream
+       edge (same share of the width as the old logo_color.png) so the dark
+       ring doesn't melt into the dark masthead. -->
+  <circle cx="748.5" cy="748.5" r="752" fill="#f3ead7"/>
   <circle cx="748.5" cy="748.5" r="664" fill="#3d5749"/>
   <circle cx="748.5" cy="748.5" r="549.5" fill="#7fcdff"/>
   <path d="M 223.48 1155.01 L 749.00 680.00 L 1273.87 1154.55 A 664 664 0 0 1 223.48 1155.01 Z" fill="#3d5749"/>
