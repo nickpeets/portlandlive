@@ -582,3 +582,5 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **2026-09-23 — Get Down posters (0f786960)** — parse_getdown reads .poster background-image beside each .day-card-2 (30 of 33 shows had none) and takes the enclosing a.cal-container-2 as the ticket link. Fixture: 34/34 posters.
 
 - **2026-09-23 — Submit note (11762e8f)** — Submit page note: shows on a venue calendar arrive on their own; if not listed there, confirm with the venue first (BundyBand 1 PM Laurelthirst submission, not on their calendar).
+
+- **2026-09-23 — Batch four venues (f7a453da)** — six rooms from the Facebook music group with readable sites: Vancouver Elks Lodge (Tribe REST, band nights only), Hoku Events (Squarespace JSON; private/memorial/cancelled/burlesque skipped), The Cazadero (Estacada; hand-typed yearly lineup), Hopworks Brewery (Popmenu list), Threshold Brewing (published Google Doc), Beach Hut Deli Tigard (store page). ~80 shows. Test: batch_four_check. Facebook-only rooms from the list go to outreach.
