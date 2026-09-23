@@ -592,3 +592,5 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **2026-09-23 — Giveaway share page + Following pill (edab6e89)** — giveaway/index.html (og: poster + giveaway title, redirects to #/giveaway keeping ?ref=); #/giveaway?ref=x now routes to the giveaway and the ref is counted (the scheduled FB posts used that shape); invite links are rainorshows.com/giveaway/?ref=inv-<handle>; share path /giveaway/. Desktop ★ Following pill first in the row, signed-in only, mirrors the menu switch.
 
 - **2026-09-23 — Your name box (dba610a3)** — renderNameEditor in auth.js: members edit profiles.display_name (1-60 chars, spaces tidied) from the bookmark menu; handle unchanged; past comments/going marks keep their saved name. Tim could not change his.
+
+- **2026-09-23 — @-mention autocomplete (4598da52)** — mentionAutocomplete() on the comment box: "@" + 2 letters calls search_profiles (6), arrows/Enter/Tab or tap fills "@handle "; Esc/blur closes; Enter is a newline when closed.
