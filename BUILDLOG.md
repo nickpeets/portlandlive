@@ -550,3 +550,5 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **2026-09-23 — Stories last (f5f0873e)** — Stories pill order 8 (after Further Out); phone Browse option moved to the end.
 
 - **2026-09-23 — Follow-request emails (1632895b)** — follow_email_sweep (pg_cron follow-email-sweep */5): pending requests 10 min to 7 days old, each emailed once (follow_email_state), bundled per person; shares dm_email_prefs switch + unsubscribe. #/requests lands on the feed with the bell open. Switch label: Email me about messages and follow requests. SQL: supabase/schema-follow-email.sql.
+
+- **2026-09-23 — Venue outreach script (959f894e)** — outreach/send_outreach.py: --list N (dry run), --test addr (3 samples), --send N (batch N via Resend from nick@rainorshows.com, reply-to nick@, logs outreach/sent.csv, never repeats). venues.csv + sent.csv gitignored.
