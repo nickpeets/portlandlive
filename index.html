@@ -1163,7 +1163,7 @@ body{
           <option value="festivals" id="phoneBrowseFestivals" hidden>Festivals</option>
           <option value="allages">All Ages</option>
           <option value="outoftown">Further Out</option>
-          <option value="stories" id="phoneBrowseStories" hidden>Stories</option>
+          <option value="stories" id="phoneBrowseStories" hidden>Liner Notes</option>
         </select>
       </div>
     </div>
@@ -1183,8 +1183,8 @@ body{
         <span class="toggle" id="picksToggle"></span>
         <span>Picks</span>
       </label>
-      <!-- Stories (Sep 23 2026): writers only until it goes public. -->
-      <a class="pill pill-when" id="storiesPill" href="#/stories" hidden><span>Stories</span></a>
+      <!-- Liner Notes (the Stories section; named Sep 23 2026): writers only until it goes public. -->
+      <a class="pill pill-when" id="storiesPill" href="#/stories" hidden><span>Liner Notes</span></a>
       <!-- All Ages: a door-policy filter, not a taste judgement. Deliberately
            narrows to shows we KNOW are all-ages; it never hides 21+ shows on the
            strength of a guess, because most of the feed has no age published at
@@ -1279,7 +1279,7 @@ body{
   <div>Every night of live music in Portland, OR · Updated every morning from the venues&rsquo; own calendars</div>
   <div style="margin-top:8px;opacity:.7">Always confirm dates &amp; times with the venue before heading out.</div>
   <div class="foot-correct">Know a show we&rsquo;re missing? <a href="#/submit">Send it in</a>. Got a correction? <a id="footCorrectLink" href="mailto:corrections@rainorshows.com?subject=%5BROS%5D%20Correction">Let us know</a>.</div>
-  <div class="foot-links"><a href="#/about">About</a> &middot; <a href="#/privacy">Privacy</a> &middot; <a href="#/venues">Venues</a> &middot; <a href="#/submit">Submit a show</a><span id="footStories" hidden> &middot; <a href="#/stories">Stories</a></span></div>
+  <div class="foot-links"><a href="#/about">About</a> &middot; <a href="#/privacy">Privacy</a> &middot; <a href="#/venues">Venues</a> &middot; <a href="#/submit">Submit a show</a><span id="footStories" hidden> &middot; <a href="#/stories">Liner Notes</a></span></div>
 </footer>
 <!-- GoatCounter: visit counts, no cookies, no identification. The code is
      Nick's site code from goatcounter.com. -->
@@ -3699,7 +3699,7 @@ function srNotFound(wrap){
 }
 async function renderStoriesRoute(){
   const wrap = $('#results');
-  $('#resultCount').textContent = 'Stories';
+  $('#resultCount').textContent = 'Liner Notes';
   clearTogglePills();
   try{ if(typeof trackView === 'function') trackView('/#/stories'); }catch(_){}
   wrap.innerHTML = '<div class="sub-page"><p class="sub-lead">One moment\u2026</p></div>';
@@ -3712,7 +3712,7 @@ async function renderStoriesRoute(){
   const rows = (r && !r.error && r.data) || [];
   const pub = rows.filter(function(s){ return s.status === 'published'; });
   const drafts = rows.filter(function(s){ return s.status !== 'published'; });
-  let html = '<div class="sr-page"><div class="sr-kicker">Stories</div>';
+  let html = '<div class="sr-page"><div class="sr-kicker">Liner Notes</div>';
   if(STORIES_WRITER){
     html += '<div class="sr-desk"><a class="sr-new" href="#/stories/edit/new">+ New story</a>'
       + '<span class="sr-desk-note">Only writers can see this section until it goes public.</span></div>';
@@ -3750,7 +3750,7 @@ async function renderStoryRoute(key){
   if(!s){ srNotFound(wrap); return; }
   try{ if(typeof trackView === 'function') trackView('/#/story/' + (s.slug || s.id)); }catch(_){}
   wrap.innerHTML = '<article class="sr-page sr-article">'
-    + '<div class="sr-kicker"><a href="#/stories">Stories</a>' + (s.status !== 'published' ? ' \u00b7 <span class="sr-draftflag">Draft preview</span>' : '') + '</div>'
+    + '<div class="sr-kicker"><a href="#/stories">Liner Notes</a>' + (s.status !== 'published' ? ' \u00b7 <span class="sr-draftflag">Draft preview</span>' : '') + '</div>'
     + '<h1 class="sr-title">' + esc(s.title || 'Untitled') + '</h1>'
     + '<div class="sr-by">' + srByline(s) + (s.can_edit ? ' \u00b7 <a href="#/stories/edit/' + esc(s.id) + '">Edit</a>' : '') + '</div>'
     + (s.cover_url ? '<img class="sr-cover" src="' + esc(s.cover_url) + '" alt="">' : '')
@@ -3819,7 +3819,7 @@ async function renderStoryEditRoute(id){
   }
   function draw(msg){
     root.innerHTML = '<div class="sr-page se-page">'
-      + '<div class="sr-kicker"><a href="#/stories">Stories</a> \u00b7 ' + (st.status === 'published' ? 'Published' : 'Draft') + '</div>'
+      + '<div class="sr-kicker"><a href="#/stories">Liner Notes</a> \u00b7 ' + (st.status === 'published' ? 'Published' : 'Draft') + '</div>'
       + '<input type="text" class="se-title" data-se-title placeholder="Title" value="' + esc(st.title) + '">'
       + '<div class="se-cover">' + (st.cover_url ? '<img src="' + esc(st.cover_url) + '" alt=""><button type="button" data-se-cover-clear>Remove cover</button>' : '') + '<button type="button" class="se-upload" data-se-cover>' + (st.cover_url ? 'Change cover photo' : 'Add a cover photo') + '</button></div>'
       + st.body.map(blockHtml).join('')
@@ -3946,7 +3946,7 @@ async function mountStoryStrip(wrap){
   if(!host.isConnected || !s || Date.now() - new Date(s.published_at).getTime() > 5 * 864e5){ host.remove(); return; }
   host.href = '#/story/' + encodeURIComponent(s.slug);
   host.innerHTML = (s.cover_url ? '<span class="sr-strip-img" style="background-image:url(\'' + esc(s.cover_url) + '\')"></span>' : '')
-    + '<span class="sr-strip-text"><span class="sr-strip-k">New story</span><b>' + esc(s.title) + '</b></span><span class="sr-strip-go">Read \u2192</span>';
+    + '<span class="sr-strip-text"><span class="sr-strip-k">New in Liner Notes</span><b>' + esc(s.title) + '</b></span><span class="sr-strip-go">Read \u2192</span>';
   host.hidden = false;
 }
 
