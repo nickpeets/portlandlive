@@ -570,3 +570,5 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **2026-09-23 — Preview saves first (e858da9b)** — the editor's Preview button saves, then opens the story; it used to open the last saved copy (a new YouTube block was missing).
 
 - **2026-09-23 — Liner Notes (6029f73a)** — the Stories section is now called Liner Notes everywhere it shows; routes stay #/stories and #/story/<slug>; pieces inside are still stories.
+
+- **2026-09-23 — Liner Notes public (30915c24)** — app_flags.stories_public switched on; writing (New story, drafts, editor) stays writers-only in the database; desk note reworded.
