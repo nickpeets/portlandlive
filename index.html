@@ -243,8 +243,8 @@ body{
    All Ages, Further Out. The group wrapper is flattened so one order runs
    across the whole row. */
 .controls-inner .ctl-row + .ctl-row .ctl-group{display:contents}
-#venuesPill{order:1} #picksPill{order:2} #storiesPill{order:3} #comedyPill{order:4} #festivalsPill{order:5}
-#allAgesPill{order:6} #outOfTownPill{order:7}
+#venuesPill{order:1} #picksPill{order:2} #comedyPill{order:3} #festivalsPill{order:4}
+#allAgesPill{order:5} #outOfTownPill{order:6} #storiesPill{order:8}
 #storiesPill{text-decoration:none} #storiesPill[hidden]{display:none} .controls-inner .ctl-row + .ctl-row .browse-pill{order:9}
 
 .search-pill{flex:1 1 auto;min-width:220px;background:rgba(255,255,255,.14)}
@@ -1159,11 +1159,11 @@ body{
           <option value="following">&#9733; Following</option>
           <option value="venues">Venues</option>
           <option value="picks">Picks</option>
-          <option value="stories" id="phoneBrowseStories" hidden>Stories</option>
           <option value="comedy">Comedy</option>
           <option value="festivals" id="phoneBrowseFestivals" hidden>Festivals</option>
           <option value="allages">All Ages</option>
           <option value="outoftown">Further Out</option>
+          <option value="stories" id="phoneBrowseStories" hidden>Stories</option>
         </select>
       </div>
     </div>
