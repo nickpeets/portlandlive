@@ -580,3 +580,5 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **2026-09-23 — Badges (0bf1002b)** — stubBadges(): First Stub/Regular 10/Lifer 50/Century 100, Room Hopper 5/Map Maker 15 venues, All Over Town 8 hoods, Road Trip (Further Out), Across the River (E+W same month by address), School Night, Weeknight Warrior 10, Night Owl 3 (10 PM+), Matinee (<5 PM), Double Header, Month of Music (4 straight weeks), Laugh Track, Fest Goer, Halloween, NYE, plus <Venue> Regular at 5. Profile shelf (earned + 4 closest); visibility follows stubs; mintStub flashes Badge earned. Honor system, never prizes.
 
 - **2026-09-23 — Get Down posters (0f786960)** — parse_getdown reads .poster background-image beside each .day-card-2 (30 of 33 shows had none) and takes the enclosing a.cal-container-2 as the ticket link. Fixture: 34/34 posters.
+
+- **2026-09-23 — Submit note (11762e8f)** — Submit page note: shows on a venue calendar arrive on their own; if not listed there, confirm with the venue first (BundyBand 1 PM Laurelthirst submission, not on their calendar).
