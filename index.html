@@ -1501,7 +1501,7 @@ function applyShowKinds(tries){
     rows.forEach(function(x){ if(x.slug && x.kind) SHOW_KINDS[x.slug] = x.kind; });
     let n = 0;
     state.shows.forEach(function(s){ const k = SHOW_KINDS[s._slug]; if(k && s.contentType !== k){ s.contentType = k; n++; } });
-    if(n && parseRoute().type !== 'show') render();
+    if(n && isFeedRoute(parseRoute().type)) render();
   }).catch(function(){});
 }
 async function mountKindControl(card, show, slug){
@@ -3016,9 +3016,15 @@ function venueFromSlug(slug){
   return Object.keys(names).find(function(n){ return venueSlug(n) === slug; }) || null;
 }
 
+// The views that ARE the feed (render() draws them). Everything else --
+// show, profile, giveaway, about, messages... -- is a page with its own
+// renderer, and a background redraw must never paint the feed over it
+// (Sep 22 2026: the giveaway page vanished for a signed-in member when a
+// sign-in refresh and the late show-kinds load each called render()).
+function isFeedRoute(t){ return t === 'feed' || t === 'venue' || t === 'venues' || t === 'festivals'; }
 function reRenderCurrentView(){
   var t = parseRoute().type;
-  if(t === 'show' || t === 'profile'){ router(); } else { render(); }
+  if(isFeedRoute(t)){ render(); } else { router(); }
 }
 
 // Entering venue mode from a URL clears the time/curation filters the same
@@ -7057,7 +7063,7 @@ function applyPosterOverrides(tries){
     const map = {}; rows.forEach(function(x){ if(x.slug && x.image_url) map[x.slug] = x.image_url; });
     let n = 0;
     state.shows.forEach(function(s){ const u = map[s._slug]; if(u && s.imageUrl !== u){ s.imageUrl = u; s._srch = undefined; n++; } });
-    if(n) render();
+    if(n && isFeedRoute(parseRoute().type)) render();
   }).catch(function(){});
 }
 
