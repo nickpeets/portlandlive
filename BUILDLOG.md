@@ -540,3 +540,5 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **2026-09-23 — Title renames (edd5192f)** — TITLE_RENAMES in build_shows.py (venue + source title -> our title, matched loosely), applied before dedupe. First entry: Starday Tavern James T & Friends -> James T's Treasure Chest (monthly, 3rd Tuesday).
 
 - **2026-09-23 — Same-act twins (244e1299)** — tm_apply matches when the headliner is the same (Everything Everything at the Aladdin); dedupe_shows merges same date/venue/headliner/slot within 75 min, venue listing over _tm. Early/late (label or 75+ min) never merge. 7 pairs in the Sep 22 feed; TSO 8 PM and Holiday Pops evening no longer swallowed. Test: tm_same_act_check.
+
+- **2026-09-23 — Name search covers all (d5386df0)** — filtered(): a search with words beyond a date skips the music-only gate (Mark Normand at Helium was unfindable); date-only searches stay music; Comedy section unchanged.
