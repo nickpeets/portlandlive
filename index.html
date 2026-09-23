@@ -2108,6 +2108,12 @@ function filtered(){
      out = applyTimeFilters(out);
    }
    sortShows(out);
+   // Picks: your pinned shows lead, each group still in date order (Sep 22
+   // 2026, Nick: "i would think the top").
+   if(state.picks){
+     const pinned = out.filter(function(x){ return PICK_PINS[x._slug] === 'in'; });
+     if(pinned.length) out = pinned.concat(out.filter(function(x){ return PICK_PINS[x._slug] !== 'in'; }));
+   }
   return out;
 }
 
