@@ -8962,6 +8962,69 @@ function goHome(){
   window.scrollTo({top:0,behavior:'instant'});
 }
 $('.masthead-brand').addEventListener('click', goHome);
+// ===== Easter eggs (Sep 23 2026, Nick) =====
+// 1. Type "rain" in the search box: it rains on the page for a few seconds
+//    (the search still runs -- plenty of bands have "rain" in the name).
+// 2. Tap the logo 5 times fast: a thunder flash, the logo lights up, and a
+//    short shower follows.
+// Both are decoration only and skip the motion for anyone whose phone or
+// computer asks for reduced motion.
+const EGG_CALM = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+let _eggRaining = false;
+function makeItRain(ms){
+  if(EGG_CALM || _eggRaining) return;
+  _eggRaining = true;
+  const cv = document.createElement('canvas');
+  cv.className = 'egg-rain';
+  document.body.appendChild(cv);
+  const ctx = cv.getContext('2d');
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  function size(){ cv.width = innerWidth * dpr; cv.height = innerHeight * dpr; }
+  size(); addEventListener('resize', size);
+  const n = Math.round(Math.min(160, innerWidth / 6));
+  const drops = Array.from({ length: n }, function(){
+    return { x: Math.random() * innerWidth, y: Math.random() * -innerHeight, v: 9 + Math.random() * 9, l: 10 + Math.random() * 14 };
+  });
+  const t0 = performance.now(), total = ms || 5000;
+  (function frame(t){
+    const age = t - t0, fade = Math.max(0, Math.min(1, (total - age) / 900));
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, innerWidth, innerHeight);
+    ctx.strokeStyle = 'rgba(206,230,255,' + (0.55 * fade).toFixed(3) + ')';
+    ctx.lineWidth = 1.3; ctx.lineCap = 'round';
+    ctx.beginPath();
+    drops.forEach(function(d){
+      d.y += d.v; d.x -= d.v * 0.18;
+      if(d.y > innerHeight){ d.y = -d.l; d.x = Math.random() * (innerWidth + 60); }
+      ctx.moveTo(d.x, d.y); ctx.lineTo(d.x + d.l * 0.18, d.y - d.l);
+    });
+    ctx.stroke();
+    if(age < total) requestAnimationFrame(frame);
+    else { removeEventListener('resize', size); cv.remove(); _eggRaining = false; }
+  })(t0);
+}
+let _eggLastQ = '';
+function eggSearch(v){
+  const q = String(v || '').trim().toLowerCase();
+  if(q === 'rain' && _eggLastQ !== 'rain') makeItRain(5000);
+  _eggLastQ = q;
+}
+$('#searchInput').addEventListener('input', function(e){ eggSearch(e.target.value); });
+(function(){ const m = document.getElementById('mastSearchInput'); if(m) m.addEventListener('input', function(e){ eggSearch(e.target.value); }); })();
+let _eggTaps = [];
+$('.masthead-brand').addEventListener('click', function(){
+  const now = Date.now();
+  _eggTaps = _eggTaps.filter(function(t){ return now - t < 2500; });
+  _eggTaps.push(now);
+  if(_eggTaps.length < 5) return;
+  _eggTaps = [];
+  const logo = document.querySelector('.masthead-logo');
+  if(logo){ logo.classList.remove('egg-glow'); void logo.offsetWidth; logo.classList.add('egg-glow'); setTimeout(function(){ logo.classList.remove('egg-glow'); }, 1600); }
+  if(EGG_CALM) return;
+  const f = document.createElement('div'); f.className = 'egg-flash'; document.body.appendChild(f);
+  setTimeout(function(){ f.remove(); }, 900);
+  setTimeout(function(){ makeItRain(4000); }, 350);
+});
 
 // ---- Favorites/stubs follow the signed-in account (Fork Stage 7) ----------
 // This subscription is what actually fixes the reported bug: signing out now
@@ -9108,6 +9171,12 @@ a.inbox-thread-who:hover{text-decoration:underline}
 .pick-mod{display:flex;gap:8px;padding:8px 12px 10px;border-top:1px dashed rgba(74,53,38,.25)}
 .pick-mod-btn{border:1px solid var(--rust);background:none;color:var(--rust);border-radius:999px;padding:4px 10px;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.05em;text-transform:uppercase;cursor:pointer}
 .pick-mod-btn.on{background:var(--rust);color:var(--cream)}
+/* Easter eggs (Sep 23 2026) */
+.egg-rain{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:9999}
+.egg-flash{position:fixed;inset:0;pointer-events:none;z-index:9998;background:#f6f3e6;animation:eggFlash .9s ease-out forwards}
+@keyframes eggFlash{0%{opacity:0}8%{opacity:.85}18%{opacity:.1}28%{opacity:.6}100%{opacity:0}}
+.masthead-logo.egg-glow img{animation:eggGlow 1.6s ease-in-out}
+@keyframes eggGlow{0%,100%{filter:none;transform:none}25%{filter:drop-shadow(0 0 10px #ffff00) brightness(1.25);transform:scale(1.12)}55%{filter:drop-shadow(0 0 16px #ffff00) brightness(1.35);transform:scale(1.06)}}
 /* ===== Stories (Sep 23 2026) ===== */
 .sr-page{max-width:680px;margin:0 auto;padding:6px 0 40px;color:var(--cream)}
 .sr-kicker{font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:.12em;text-transform:uppercase;opacity:.85;margin:0 0 8px}
