@@ -243,7 +243,7 @@ body{
    All Ages, Further Out. The group wrapper is flattened so one order runs
    across the whole row. */
 .controls-inner .ctl-row + .ctl-row .ctl-group{display:contents}
-#venuesPill{order:1} #picksPill{order:2} #comedyPill{order:3} #festivalsPill{order:4}
+#followingPill{order:0} #followingPill[hidden]{display:none} #venuesPill{order:1} #picksPill{order:2} #comedyPill{order:3} #festivalsPill{order:4}
 #allAgesPill{order:5} #outOfTownPill{order:6} #storiesPill{order:8}
 #storiesPill{text-decoration:none} #storiesPill[hidden]{display:none} .controls-inner .ctl-row + .ctl-row .browse-pill{order:9}
 
@@ -1183,6 +1183,13 @@ body{
         <span class="toggle" id="picksToggle"></span>
         <span>Picks</span>
       </label>
+      <!-- ★ Following on desktop (Sep 23 2026, Nick): the same switch as the one
+           in the bookmark menu, first in the row, signed-in members only.
+           Phones already have it first in Browse. -->
+      <label class="pill pill-when" id="followingPill" title="Shows by the bands, venues and people you follow" hidden>
+        <span class="toggle" id="followingPillToggle"></span>
+        <span>&#9733; Following</span>
+      </label>
       <!-- Liner Notes (the Stories section; named Sep 23 2026): writers only until it goes public. -->
       <a class="pill pill-when" id="storiesPill" href="#/stories" hidden><span>Liner Notes</span></a>
       <!-- All Ages: a door-policy filter, not a taste judgement. Deliberately
@@ -1298,7 +1305,11 @@ body{
   // the address bar so shared links stay clean.
   (function(){
     try{
+      // Also after the # (Sep 23 2026): the first giveaway posts linked
+      // rainorshows.com/#/giveaway?ref=fb-giveaway.
+      var inHash = false;
       var m = /[?&]ref=([A-Za-z0-9_-]{1,60})/.exec(location.search || '');
+      if(!m){ m = /[?&]ref=([A-Za-z0-9_-]{1,60})/.exec(location.hash || ''); inHash = !!m; }
       if(!m) return;
       var ref = m[1].toLowerCase(), now = Date.now(), cur = null;
       try{ cur = JSON.parse(localStorage.getItem('ros_ref') || 'null'); }catch(_){ cur = null; }
@@ -1307,7 +1318,8 @@ body{
       }
       window.__rosRefVisit = ref;
       var clean = location.search.replace(/([?&])ref=[^&]*(&|$)/, function(_, a, b){ return b ? a : ''; }).replace(/[?&]$/, '');
-      history.replaceState(null, '', location.pathname + clean + location.hash);
+      var hash = inHash ? location.hash.replace(/([?&])ref=[^&]*(&|$)/, function(_, a, b){ return b ? a : ''; }).replace(/[?&]$/, '') : location.hash;
+      history.replaceState(null, '', location.pathname + clean + hash);
     }catch(_){}
   })();
   function trackView(path){
@@ -2378,7 +2390,13 @@ function drawDaysInPieces(wrap, days, drawDay){
   };
 }
 
+function syncFollowingPill(){
+  const p = document.getElementById('followingPill'); if(!p) return;
+  p.hidden = !state._signedIn;
+  const t = document.getElementById('followingPillToggle'); if(t) t.classList.toggle('on', !!state.following);
+}
 function render(){
+  syncFollowingPill();
   stopFeedPager();
   // Keep both search boxes showing the same thing (Sep 19 2026): anything
   // that clears or sets state.q -- the logo, Following, a pill, a route --
@@ -3013,7 +3031,7 @@ function parseRoute(){
   if(/^#\/privacy\/?$/.test(h)) return {type:'privacy'};
   m = /^#\/review\/([0-9a-f-]{36})\/([0-9a-f-]{36})\/(approved|rejected)\/?$/.exec(h);
   if(m) return {type:'review', id:m[1], token:m[2], action:m[3]};
-  if(/^#\/giveaway\/?$/.test(h)) return {type:'giveaway'};
+  if(/^#\/giveaway\/?(?:\?.*)?$/.test(h)) return {type:'giveaway'};
   if(/^#\/requests\/?$/.test(h)) return {type:'requests'};
   if(/^#\/stories\/?$/.test(h)) return {type:'stories'};
   m = /^#\/stories\/edit\/([A-Za-z0-9-]+)\/?$/.exec(h);
@@ -3078,6 +3096,7 @@ function syncSharePath(route){
     var want = '/';
     if(route.type === 'show' && route.slug) want = '/show/' + encodeURIComponent(route.slug) + '/';
     else if(route.type === 'venue' && route.slug) want = '/venue/' + encodeURIComponent(route.slug) + '/';
+    else if(route.type === 'giveaway') want = '/giveaway/';
     if(location.pathname !== want) history.replaceState(history.state, '', want + location.search + location.hash);
   }catch(_){}
 }
@@ -4229,7 +4248,9 @@ async function renderGiveawayRoute(){
   if(!st || parseRoute().type !== 'giveaway') return;
   if(st.won){ me.innerHTML = '<div class="gw-box gw-won"><b>You won!</b> Check your messages \u2014 we\u2019ll sort out the tickets.</div>'; return; }
   if(st.is_moderator){ me.innerHTML = '<div class="gw-box">You\u2019re running this one, so you can\u2019t win it. Share the page!</div>'; return; }
-  const link = 'https://rainorshows.com/?ref=inv-' + String(st.handle || '').toLowerCase();
+  // The giveaway's own share page (Sep 23 2026): a friend's link previews
+  // with the giveaway card and opens on the giveaway, not the feed.
+  const link = 'https://rainorshows.com/giveaway/?ref=inv-' + String(st.handle || '').toLowerCase();
   me.innerHTML = '<div class="gw-box">'
     + '<div class="gw-count"><span class="gw-num">' + (st.total | 0) + '</span> ' + ((st.total | 0) === 1 ? 'entry' : 'entries') + '</div>'
     + '<p class="gw-odds" data-gw-odds hidden></p>'
@@ -8843,6 +8864,11 @@ $('#comedyToggle').addEventListener('click',()=>{const on=!state.comedy;leaveSec
 // FOLLOWING FILTER toggle: hide-style filter that collapses the feed to hearted
 // bands/venues. Turning it on clears the alternate views/modes; the other view
 // toggles + reset clear it back (see Edit 5 / reset). Self-contained; removable.
+document.getElementById('followingPill').addEventListener('click', function(e){
+  e.preventDefault();
+  document.getElementById('followingToggle').click();
+  syncFollowingPill();
+});
 $('#followingToggle').addEventListener('click',()=>{
   const on=!state.following; leaveSections('following'); state.following=on;
   if(state.following){
