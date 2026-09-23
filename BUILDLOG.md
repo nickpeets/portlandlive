@@ -532,3 +532,5 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **2026-09-23 — Odds as 1 in K (3daed816)** — every odds line reads "odds of winning ... 1 in K" (K = entries / yours; one decimal under 10); members also see bring-a-friend odds; no friend line when you hold every entry.
 
 - **2026-09-23 — Further Out clean (93b98ff6)** — plainHome now excludes state.outOfTown, so the banner/photos/PYMK stack only shows on the plain feed.
+
+- **2026-09-23 — Giveaway contact (7356a3f6)** — rules end with a mailto link to giveaway@rainorshows.com (needs a Porkbun forward).
