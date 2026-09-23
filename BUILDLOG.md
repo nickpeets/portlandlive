@@ -512,3 +512,5 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **2026-09-22 — Search row tightened (a345e0d7)** — phones: controls bottom padding 30 -> 10, results top 8 -> 4 (search-row-to-banner 38px -> 14px); Browse 130 -> 108px, search 221 -> 243px.
 
 - **2026-09-23 — Ticker + new logo (e9ff2d7f)** — phones: ticker always one line (30px); long lines slide across once (1.5s hold, ~45px/s, 1.5s hold) and the rotation waits for them. Masthead uses logo_mark.svg: print-set colors (#ffff00 arcs, #7fcdff sky, #3d5749 green), no lettering, thin cream edge.
+
+- **2026-09-23 — Logo edge (4ca7642e)** — logo_mark.svg cream edge widened to the old logo_color.png share (88 of 752 = 12% of the radius; was 50 of 714).
