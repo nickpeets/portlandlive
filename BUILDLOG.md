@@ -576,3 +576,5 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **2026-09-23 — Even stack (dbe1c0b3)** — giveaway banner, Liner Notes strip, Latest photos and People you may know all 8px apart on desktop and phones; open panels keep 8px above their contents.
 
 - **2026-09-23 — Liner Notes dot (3b214ce3)** — feed strip removed; a yellow dot on the Liner Notes pill (desktop) / Browse button (phones, option reads "Liner Notes • new") when a piece was published in the last 14 days and this device has not opened Liner Notes since (localStorage ros_liner_seen).
+
+- **2026-09-23 — Badges (0bf1002b)** — stubBadges(): First Stub/Regular 10/Lifer 50/Century 100, Room Hopper 5/Map Maker 15 venues, All Over Town 8 hoods, Road Trip (Further Out), Across the River (E+W same month by address), School Night, Weeknight Warrior 10, Night Owl 3 (10 PM+), Matinee (<5 PM), Double Header, Month of Music (4 straight weeks), Laugh Track, Fest Goer, Halloween, NYE, plus <Venue> Regular at 5. Profile shelf (earned + 4 closest); visibility follows stubs; mintStub flashes Badge earned. Honor system, never prizes.
