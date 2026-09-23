@@ -526,3 +526,5 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **2026-09-23 — Giveaway show link + counter (bd178a56)** — See the show button and linked poster; giveaway_totals(slug) (public, totals only) drives "N entries from N people so far". SQL: supabase/schema-giveaway-totals.sql.
 
 - **2026-09-23 — Pins first (183d2faa)** — Picks view puts pinned shows at the top (soonest first), then the auto picks by date.
+
+- **2026-09-23 — Giveaway odds (49070dfe)** — members see "your chance right now: X in N (about 1 in K)"; visitors see "join now: 1 in N+1, bring a friend: 2 in N+3"; members with no entry see "tap I'm going: 1 in N+1". All from giveaway_totals.
