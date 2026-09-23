@@ -534,3 +534,5 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **2026-09-23 — Further Out clean (93b98ff6)** — plainHome now excludes state.outOfTown, so the banner/photos/PYMK stack only shows on the plain feed.
 
 - **2026-09-23 — Giveaway contact (7356a3f6)** — rules end with a mailto link to giveaway@rainorshows.com (needs a Porkbun forward).
+
+- **2026-09-23 — Submission fold (8fbc35e5)** — fold_submissions(): venue matched ignoring case/punctuation/leading The and takes our name/neighborhood/address; a submission at the same venue+date within 60 min (or no time + shared title word) folds into the existing row (our title/slug kept, blanks filled: link, age, time). James T's Treasure Chest -> James T & Friends. Test: submission_fold_check.
