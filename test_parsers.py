@@ -435,8 +435,45 @@ def submission_fold_check():
     print("  ok   submission fold               The Starday Tavern -> Starday Tavern; same-night look-alike folded; 9:30 show kept")
 
 
+def tm_same_act_check():
+    """Ticketmaster (Sep 22 2026): same venue, same date, same act -- one row,
+    even when the two titles share only the band's name."""
+    bspec = importlib.util.spec_from_file_location("bs", os.path.join(HERE, "build_shows.py"))
+    bs = importlib.util.module_from_spec(bspec)
+    bspec.loader.exec_module(bs)
+    import datetime as _dt
+    shows = [dict(title="Everything Everything - Get To Heaven, 10th Anniversary, North America 2026", venue="Aladdin Theater",
+                  date="2026-09-22", time="8:00 PM", imageUrl="", ticketUrl="")]
+    ev = {"name": "Everything Everything w/ Psymon Spine", "dates": {"start": {"localDate": "2026-09-22", "localTime": "20:00:00"}, "status": {"code": "onsale"}},
+          "url": "https://www.ticketmaster.com/event/x", "images": [{"url": "https://s1.ticketm.net/x.jpg", "width": 1024, "ratio": "16_9"}],
+          "_embedded": {"venues": [{"name": "Aladdin Theater", "city": {"name": "Portland"}, "state": {"stateCode": "OR"}}]}}
+    matched, added, _ = bs.tm_apply(shows, [ev], _dt.date(2026, 9, 20))
+    # ...but an early/late pair stays two shows.
+    shows2 = [dict(title="Ron Funches", venue="Revolution Hall", date="2026-11-15", time="7:00 PM", imageUrl="", ticketUrl="")]
+    ev2 = {"name": "Ron Funches (Late Show)", "dates": {"start": {"localDate": "2026-11-15", "localTime": "21:30:00"}, "status": {"code": "onsale"}},
+           "url": "https://www.ticketmaster.com/event/y", "images": [],
+           "_embedded": {"venues": [{"name": "Revolution Hall - Portland", "city": {"name": "Portland"}, "state": {"stateCode": "OR"}}]}}
+    m2, a2, _ = bs.tm_apply(shows2, [ev2], _dt.date(2026, 9, 20))
+    # The final dedupe folds same-act twins the same way (Wilfs listed
+    # Norman Sylvester twice) and still keeps an early/late pair apart.
+    tw, _c = bs.dedupe_shows([dict(title="Norman Sylvester Band", venue="Wilfs", date="2026-12-19", time="7:00 PM"),
+                              dict(title="Norman Sylvester Band w/ Lenanne Miller", venue="Wilfs", date="2026-12-19", time="7:00 PM"),
+                              dict(title="ALOK (Early Show)", venue="Revolution Hall", date="2026-09-26", time="7:00 PM"),
+                              dict(title="ALOK (Late Show)", venue="Revolution Hall", date="2026-09-26", time="10:00 PM")])
+    if len(tw) != 3:
+        print(f"  FAIL tm same act                  final dedupe gave {[r['title'] for r in tw]}")
+        print("GATE FAILURE")
+        sys.exit(1)
+    if not (len(shows) == 1 and added == 0 and matched == 1 and a2 == 1):
+        print(f"  FAIL tm same act                  rows={[r['title'] for r in shows]} matched={matched} added={added} late_added={a2}")
+        print("GATE FAILURE")
+        sys.exit(1)
+    print("  ok   tm same act                   Everything Everything + TM's w/ Psymon Spine -> one row; Wilfs twins -> one; early/late pairs kept")
+
+
 if __name__ == "__main__":
     main()
     talk_page_check()
     multi_time_check()
     submission_fold_check()
+    tm_same_act_check()

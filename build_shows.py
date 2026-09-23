@@ -181,6 +181,45 @@ def dedupe_shows(shows):
                 if not (kept.get(_f) or "").strip() and (s.get(_f) or "").strip():
                     kept[_f] = s[_f]
 
+    # Same act, same room, same night, same slot, under two different titles
+    # (Sep 22 2026): "Norman Sylvester Band" / "... w/ Lenanne Miller" at
+    # Wilfs, "MISSIO: ... w/ Ryan Oakes" / "... with Ryan Oakes" at the Star.
+    # Keep the venue's own listing over one Ticketmaster added (else the
+    # first), and fill its blanks from the other. Times 75+ minutes apart or
+    # an "Early Show"/"Late Show" label keep them apart.
+    kept, by_act, acts = [], {}, 0
+    for s in deduped:
+        head = _tm_headliner(s.get("title"))
+        key = (s.get("date"), _venue_key(s.get("venue")), head, _tm_slot(s.get("title"))) if head else None
+        twin = None
+        for k in (by_act.get(key) or []) if key else []:
+            a, b = _time_min(k.get("time") or ""), _time_min(s.get("time") or "")
+            if a is None or b is None or abs(a - b) < 75:
+                twin = k
+                break
+        if twin is not None:
+            # The venue's own listing wins over one Ticketmaster added.
+            if twin.get("_tm") and not s.get("_tm"):
+                i = kept.index(twin)
+                for _f in ("time", "imageUrl", "venueUrl", "ticketUrl", "age", "price"):
+                    if not (s.get(_f) or "").strip() and (twin.get(_f) or "").strip():
+                        s[_f] = twin[_f]
+                kept[i] = s
+                by_act[key][by_act[key].index(twin)] = s
+                acts += 1
+                continue
+            for _f in ("time", "imageUrl", "venueUrl", "ticketUrl", "age", "price"):
+                if not (twin.get(_f) or "").strip() and (s.get(_f) or "").strip():
+                    twin[_f] = s[_f]
+            acts += 1
+            continue
+        kept.append(s)
+        if key:
+            by_act.setdefault(key, []).append(s)
+    if acts:
+        print(f"  Same-act twins: {acts} row(s) merged into the listing already there (one act, one room, one night)")
+    deduped = kept
+
     multi = 0
     for s in deduped:
         ts = s.pop("_times", None)
@@ -752,6 +791,12 @@ def _tm_headliner(title):
     Isakov with the Oregon Symphony" do not."""
     head = re.split(r"\s*[:(]|\s+(?:w/|with|feat\.?|featuring)\s+|\s+-\s+", title or "", maxsplit=1)[0]
     return frozenset(_tm_words(head))
+
+
+def _tm_slot(title):
+    """'early' / 'late' when the title names the slot, else ''."""
+    t = (title or "").lower()
+    return "late" if "late show" in t else ("early" if "early show" in t else "")
 
 
 def _tm_price(ev):
@@ -1411,10 +1456,25 @@ def tm_apply(shows, events, today):
             dead += 1
             continue
         tw = _tm_words(n["title"])
+        th = _tm_headliner(n["title"])
         best = None
         for r in by.get((n["date"], n["venue"]), []):
+            # An early/late pair is two shows, never a match: "(Late Show)" vs
+            # "(Early Show)" or no label, or start times 75+ minutes apart.
+            if _tm_slot(n["title"]) != _tm_slot(r.get("title")):
+                continue
+            _a, _b = _time_min(n.get("time") or ""), _time_min(r.get("time") or "")
+            if _a is not None and _b is not None and abs(_a - _b) >= 75:
+                continue
             rw = _tm_words(r.get("title"))
             ov = len(tw & rw)
+            # Same act on both sides is a match however the rest reads (Sep
+            # 22 2026: the Aladdin's "Everything Everything - Get To Heaven,
+            # 10th Anniversary..." vs Ticketmaster's "Everything Everything w/
+            # Psymon Spine" shared one distinct word and became two rows).
+            if th and th == _tm_headliner(r.get("title")):
+                best = r
+                break
             # Same date, same venue, and the SHORTER title is mostly inside the
             # longer one. Either side can be the short one: the scraper had
             # "Hovvdy" where Ticketmaster had "Hovvdy w/ Emma Ogier", and
