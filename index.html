@@ -3631,19 +3631,37 @@ async function renderGiveawayRoute(){
   const me = wrap.querySelector('[data-gw-me]');
   const sb = window.__plAuth;
   // How many people and entries so far -- anyone can see the totals.
-  if(sb){
-    Promise.resolve(sb.rpc('giveaway_totals', { p_slug: g.slug })).then(function(r){
-      const row = r && !r.error && Array.isArray(r.data) ? r.data[0] : null;
-      const box = wrap.querySelector('[data-gw-tally]');
-      if(!row || !box || parseRoute().type !== 'giveaway') return;
-      const ent = row.entries | 0, ppl = row.entrants | 0;
-      box.innerHTML = '<span class="gw-tally-num">' + ent.toLocaleString() + '</span> '
-        + (ent === 1 ? 'entry' : 'entries') + ' from ' + ppl.toLocaleString() + ' ' + (ppl === 1 ? 'person' : 'people') + (open ? ' so far' : '');
-      box.hidden = false;
-    }).catch(function(){});
+  const totalsP = sb
+    ? Promise.resolve(sb.rpc('giveaway_totals', { p_slug: g.slug })).then(function(r){
+        return r && !r.error && Array.isArray(r.data) ? r.data[0] : null;
+      }).catch(function(){ return null; })
+    : Promise.resolve(null);
+  totalsP.then(function(row){
+    const box = wrap.querySelector('[data-gw-tally]');
+    if(!row || !box || parseRoute().type !== 'giveaway') return;
+    const ent = row.entries | 0, ppl = row.entrants | 0;
+    box.innerHTML = '<span class="gw-tally-num">' + ent.toLocaleString() + '</span> '
+      + (ent === 1 ? 'entry' : 'entries') + ' from ' + ppl.toLocaleString() + ' ' + (ppl === 1 ? 'person' : 'people') + (open ? ' so far' : '');
+    box.hidden = false;
+  });
+  // Odds (Sep 22 2026): "mine in total", with "about 1 in K" when that reads
+  // easier. Worked out from the live totals, so it shrinks as people enter.
+  function odds(mine, total){
+    if(total <= 0 || mine <= 0) return '';
+    if(mine >= total) return 'every entry so far is yours';
+    const k = Math.round(total / mine);
+    return mine + ' in ' + total.toLocaleString() + (mine > 1 ? ' (about 1 in ' + k.toLocaleString() + ')' : '');
   }
   if(!state._signedIn || !sb){
-    me.innerHTML = open ? '<div class="gw-box"><p>Sign in to see your entries and get your invite link.</p><button type="button" class="tx-signin-btn" data-gw-signin>Sign In</button></div>' : '';
+    me.innerHTML = open ? '<div class="gw-box"><p class="gw-odds" data-gw-odds hidden></p><p>Sign in to see your entries and get your invite link.</p><button type="button" class="tx-signin-btn" data-gw-signin>Sign In</button></div>' : '';
+    // What joining now would get you: your 1 entry, and with one friend who
+    // joins through your link and goes, 2 of yours in 3 more entries.
+    if(open) totalsP.then(function(row){
+      const el = me.querySelector('[data-gw-odds]'); if(!el || !row) return;
+      const n = row.entries | 0;
+      el.innerHTML = '<b>Join now and your chance is 1 in ' + (n + 1).toLocaleString() + '.</b> Bring a friend and it\u2019s 2 in ' + (n + 3).toLocaleString() + '.';
+      el.hidden = false;
+    });
     const b = me.querySelector('[data-gw-signin]');
     if(b) b.addEventListener('click', function(){ const x = document.getElementById('authSignInBtn'); if(x) x.click(); });
     return;
@@ -3656,6 +3674,7 @@ async function renderGiveawayRoute(){
   const link = 'https://rainorshows.com/?ref=inv-' + String(st.handle || '').toLowerCase();
   me.innerHTML = '<div class="gw-box">'
     + '<div class="gw-count"><span class="gw-num">' + (st.total | 0) + '</span> ' + ((st.total | 0) === 1 ? 'entry' : 'entries') + '</div>'
+    + '<p class="gw-odds" data-gw-odds hidden></p>'
     + '<ul class="gw-break">'
     + '<li>' + (st.base ? '&#10003; You\u2019re going to a show \u2014 1 entry' : 'Tap \u201cI\u2019m going\u201d on any show to get your first entry') + '</li>'
     + '<li>' + (st.invites | 0) + ' friend' + ((st.invites | 0) === 1 ? '' : 's') + ' joined and marked going \u2014 ' + (st.invites | 0) + ' more</li>'
@@ -3664,6 +3683,14 @@ async function renderGiveawayRoute(){
     + (st.handle && open ? '<div class="gw-invite"><label>Your invite link</label><div class="gw-linkrow"><input type="text" readonly value="' + esc(link) + '"><button type="button" class="gw-copy" data-gw-copy>Copy</button></div></div>' : '')
     + (!st.handle ? '<p>Pick a handle in the bookmark menu to get your invite link.</p>' : '')
     + '</div>';
+  totalsP.then(function(row){
+    const el = me.querySelector('[data-gw-odds]'); if(!el || !row) return;
+    const n = row.entries | 0, mine = st.total | 0;
+    el.innerHTML = mine > 0
+      ? 'Your chance right now: <b>' + odds(mine, n) + '</b>' + (open ? '. Each friend who joins through your link and taps \u201cI\u2019m going\u201d adds one more.' : '.')
+      : (open ? 'Tap \u201cI\u2019m going\u201d on any show and your chance is <b>1 in ' + (n + 1).toLocaleString() + '</b>.' : '');
+    el.hidden = !el.innerHTML;
+  });
   const cp = me.querySelector('[data-gw-copy]');
   if(cp) cp.addEventListener('click', async function(){
     const inp = me.querySelector('.gw-linkrow input');
@@ -8803,6 +8830,8 @@ a.inbox-thread-who:hover{text-decoration:underline}
 .gw-linkrow input{flex:1 1 auto;min-width:0;border:1px solid rgba(74,53,38,.35);border-radius:8px;padding:8px 10px;font-size:14px;background:#fff;color:var(--ink)}
 .gw-copy{flex:0 0 auto;border:0;border-radius:999px;background:var(--rust);color:var(--cream);padding:0 16px;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
 .gw-won{background:#f4e1b8}
+.gw-odds{margin:0 0 10px}
+.gw-odds[hidden]{display:none}
 .gw-tally{display:inline-flex;align-items:baseline;gap:6px;margin:0 0 14px;padding:8px 14px;border-radius:10px;background:rgba(0,0,0,.14);color:var(--cream);font-family:'Oswald',sans-serif;font-size:14px;letter-spacing:.04em}
 .gw-tally[hidden]{display:none}
 .gw-tally-num{font-family:'Alfa Slab One',serif;font-size:24px;color:var(--cream)}
