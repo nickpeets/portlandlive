@@ -471,9 +471,37 @@ def tm_same_act_check():
     print("  ok   tm same act                   Everything Everything + TM's w/ Psymon Spine -> one row; Wilfs twins -> one; early/late pairs kept")
 
 
+def tm_guard_check():
+    """Ticketmaster safety net (Sep 23 2026): a failed or shrunken pull keeps
+    the last good pull's shows instead of dropping them."""
+    import datetime as _dt, tempfile
+    bspec = importlib.util.spec_from_file_location("bs", os.path.join(HERE, "build_shows.py"))
+    bs = importlib.util.module_from_spec(bspec)
+    bspec.loader.exec_module(bs)
+    today = _dt.date(2026, 9, 23)
+    ev = lambda i: {"id": f"e{i}", "name": f"Show {i}", "dates": {"start": {"localDate": "2026-10-06"}}, "images": [],
+                    "_embedded": {"venues": [{"name": "Moda Center"}]}}
+    path = os.path.join(tempfile.mkdtemp(), "tm_cache.json")
+    pulls = [("portland|music", {})]
+    good = lambda t, status=None, **k: [ev(i) for i in range(50)]
+    short = lambda t, status=None, **k: [ev(i) for i in range(10)]
+    def failed(t, status=None, **k):
+        status["failed"] = True
+        return []
+    a = len(bs.tm_fetch_guarded(today, pulls, path, good))
+    b = len(bs.tm_fetch_guarded(today, pulls, path, short))
+    c = len(bs.tm_fetch_guarded(today, pulls, path, failed))
+    if (a, b, c) != (50, 50, 50):
+        print(f"  FAIL tm guard                     good/short/failed gave {a}/{b}/{c} (want 50/50/50)")
+        print("GATE FAILURE")
+        sys.exit(1)
+    print("  ok   tm guard                      a short pull (10 of 50) and a failed pull both keep the last good 50")
+
+
 if __name__ == "__main__":
     main()
     talk_page_check()
     multi_time_check()
     submission_fold_check()
     tm_same_act_check()
+    tm_guard_check()

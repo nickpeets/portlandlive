@@ -1374,10 +1374,11 @@ def _sv():
     return _sv.mod
 
 
-def tm_fetch(today, days=90, classification="music", latlong="45.5152,-122.6784", radius=35):
+def tm_fetch(today, days=90, classification="music", latlong="45.5152,-122.6784", radius=35, status=None):
     key = os.environ.get("TM_API_KEY", "").strip()
     if not key:
         print("  note: Ticketmaster: TM_API_KEY not set; pass skipped")
+        if status is not None: status["skipped"] = True
         return []
     import urllib.request, urllib.parse
     end = today + datetime.timedelta(days=days)
@@ -1401,6 +1402,7 @@ def tm_fetch(today, days=90, classification="music", latlong="45.5152,-122.6784"
                 d = json.load(r)
         except Exception as e:
             print(f"  WARN: Ticketmaster: fetch failed on page {page}: {type(e).__name__}: {e}")
+            if status is not None: status["failed"] = True
             break
         ev = ((d.get("_embedded") or {}).get("events")) or []
         for x in ev:
@@ -1410,6 +1412,75 @@ def tm_fetch(today, days=90, classification="music", latlong="45.5152,-122.6784"
             break
         page += 1
     return out
+
+
+# Last good Ticketmaster pull, per area and kind (Sep 23 2026: one morning's
+# pull came back short -- Crystal 37 -> 12, Moda 19 -> 11, Billy Strings at
+# Matthew Knight gone -- and the site quietly lost ~100 shows). Kept in og/ so
+# the nightly workflow commits it with everything else.
+TM_CACHE = os.path.join(HERE, "og", "tm_cache.json")
+_TM_KEEP = ("id", "name", "url", "info", "pleaseNote", "dates", "priceRanges", "_ros_class")
+
+
+def _tm_slim(ev):
+    """Only what _tm_normalize / tm_apply read, so the cache stays small."""
+    out = {k: ev[k] for k in _TM_KEEP if k in ev}
+    imgs = sorted(ev.get("images") or [], key=lambda i: -(i.get("width") or 0))
+    out["images"] = [{k: i.get(k) for k in ("url", "width", "ratio")} for i in imgs[:2]]
+    vs = ((ev.get("_embedded") or {}).get("venues") or [{}])[:1]
+    out["_embedded"] = {"venues": [{"name": v.get("name"), "city": v.get("city"), "state": v.get("state")} for v in vs]}
+    return out
+
+
+def tm_fetch_guarded(today, pulls, cache_path=None, fetch=None):
+    """Run each Ticketmaster pull; when one fails or comes back far smaller
+    than last time, use the last good pull for it instead of losing its shows.
+
+    pulls: [(key, kwargs for tm_fetch)]. A pull is BAD when a page errored, or
+    it returned under 60% of the last good pull (which had 20+ upcoming
+    events), or nothing at all where the last one had some. A bad pull uses
+    the last good one's still-upcoming events (plus anything new it did get);
+    a good pull replaces the cache. A cache older than 7 days is not reused.
+    Returns the combined event list. Never raises."""
+    cache_path = cache_path or TM_CACHE
+    fetch = fetch or tm_fetch
+    try:
+        cache = json.load(open(cache_path))
+    except Exception:
+        cache = {}
+    today_s = today.isoformat()
+    events, changed = [], False
+    for key, kw in pulls:
+        st = {}
+        got = fetch(today, status=st, **kw)
+        if st.get("skipped"):
+            continue
+        prev = cache.get(key) or {}
+        fresh_enough = (prev.get("at") or "") >= (today - datetime.timedelta(days=7)).isoformat()
+        prev_ev = [e for e in (prev.get("events") or [])
+                   if (((e.get("dates") or {}).get("start") or {}).get("localDate") or "") >= today_s] if fresh_enough else []
+        bad = (st.get("failed")
+               or (len(prev_ev) >= 20 and len(got) < 0.6 * len(prev_ev))
+               or (not got and len(prev_ev) >= 3))
+        if bad and prev_ev:
+            have = {e.get("id") for e in got}
+            kept = [e for e in prev_ev if e.get("id") not in have]
+            print(f"  WARN: Ticketmaster {key}: got {len(got)} events (last good: {len(prev_ev)}) -- "
+                  f"kept {len(kept)} from the last good pull ({prev.get('at')})")
+            events += got + kept
+        else:
+            events += got
+            if got or not prev_ev:
+                cache[key] = {"at": today_s, "events": [_tm_slim(e) for e in got]}
+                changed = True
+    if changed:
+        try:
+            os.makedirs(os.path.dirname(cache_path), exist_ok=True)
+            with open(cache_path, "w") as f:
+                json.dump(cache, f, separators=(",", ":"))
+        except Exception as e:
+            print(f"  WARN: Ticketmaster cache not saved: {type(e).__name__}: {e}")
+    return events
 
 
 def tm_apply(shows, events, today):
@@ -2120,13 +2191,16 @@ def main():
     # missed at venues the site covers. See the block above.
     _pac = datetime.timezone(datetime.timedelta(hours=-8))
     _today = datetime.datetime.now(_pac).date()
-    _tm_events = tm_fetch(_today) + tm_fetch(_today, classification="comedy")
     # Out of town (Sep 21 2026, Nick): Eugene's big rooms. A second, small
     # radius around downtown Eugene; only venues in VENUE_INFO / TM_VENUE_MAP
     # are kept, so the rest of Lane County's listings count as "uncovered" in
-    # the log and nowhere else.
+    # the log and nowhere else. Every pull is guarded (tm_fetch_guarded): a
+    # failed or shrunken pull falls back to the last good one.
+    _pulls = [("portland|music", {}), ("portland|comedy", {"classification": "comedy"})]
     for _area, _ll, _rad in OUT_OF_TOWN_TM_AREAS:
-        _tm_events += tm_fetch(_today, latlong=_ll, radius=_rad) + tm_fetch(_today, classification="comedy", latlong=_ll, radius=_rad)
+        _pulls += [(_area.lower() + "|music", {"latlong": _ll, "radius": _rad}),
+                   (_area.lower() + "|comedy", {"classification": "comedy", "latlong": _ll, "radius": _rad})]
+    _tm_events = tm_fetch_guarded(_today, _pulls)
     if _tm_events:
         _m, _a, _unc = tm_apply(shows, _tm_events, _today)
         _u = ", ".join(f"{v} ({c})" for v, c in _unc.most_common(15))
