@@ -2042,7 +2042,17 @@ def parse_getdown(html, today):
         # neighbour's link). Take the nearest Tixr link, before or after,
         # whose address contains a word of this show's name; otherwise the
         # venue page, never a guess.
-        a = c.find("a", href=True)
+        # Sep 23 2026: each card now sits inside its own <a class="cal-container-2">
+        # (the Tixr link) next to a <div class="poster"> whose background is the
+        # show's poster. Use both when they're there.
+        box = c.find_parent("a", class_="cal-container-2")
+        a = box if (box is not None and box.get("href")) else c.find("a", href=True)
+        img = ""
+        pdiv = (box or c.parent).select_one(".poster") if (box or c.parent) else None
+        if pdiv is not None:
+            m_img = re.search(r"url\((['\"]?)(https?://[^'\")]+)\1\)", pdiv.get("style", ""))
+            if m_img:
+                img = m_img.group(2)
         if not a:
             words = {w for w in re.findall(r"[a-z0-9]{4,}", title.lower()) if w not in ("with", "feat", "presents", "night", "show", "live", "tour")}
             cands = [x for x in (c.find_previous("a", href=True), c.find_next("a", href=True)) if x and "tixr" in x.get("href", "")]
@@ -2054,7 +2064,7 @@ def parse_getdown(html, today):
         seen.add(key)
         nb, addr = VENUE_INFO.get(venue, ("Central Eastside", ""))
         shows.append({"title": title, "venue": venue, "neighborhood": nb,
-                      "address": addr, "date": date, "time": "", "venueUrl": url, "imageUrl": ""})
+                      "address": addr, "date": date, "time": "", "venueUrl": url, "imageUrl": img})
     return shows
 
 
