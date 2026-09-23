@@ -516,3 +516,5 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **2026-09-23 — Logo edge (4ca7642e)** — logo_mark.svg cream edge widened to the old logo_color.png share (88 of 752 = 12% of the radius; was 50 of 714).
 
 - **2026-09-23 — Browse trimmed (c9241f59)** — phone list: Browse, Following, Picks, Comedy, Venues, Festivals, All Ages, Further Out; Tonight and This Week pills hidden on desktop (toggles kept in the DOM); parseDateQuery reads "this week" (next 7 days) and "next week".
+
+- **2026-09-23 — Section order (49bcd029)** — Nick: Venues, Picks, Comedy, Festivals, All Ages, Further Out. Desktop pills ordered by CSS (ctl-group flattened); phone Browse keeps Following first.
