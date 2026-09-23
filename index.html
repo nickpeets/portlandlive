@@ -3715,7 +3715,7 @@ async function renderStoriesRoute(){
   let html = '<div class="sr-page"><div class="sr-kicker">Liner Notes</div>';
   if(STORIES_WRITER){
     html += '<div class="sr-desk"><a class="sr-new" href="#/stories/edit/new">+ New story</a>'
-      + '<span class="sr-desk-note">Only writers can see this section until it goes public.</span></div>';
+      + '<span class="sr-desk-note">Only you and Tim see this bar.</span></div>';
     if(drafts.length){
       html += '<div class="sr-drafts"><div class="sr-drafts-h">Drafts <span class="count">' + drafts.length + '</span></div>'
         + drafts.map(function(s){
