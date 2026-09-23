@@ -574,3 +574,5 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **2026-09-23 — Liner Notes public (30915c24)** — app_flags.stories_public switched on; writing (New story, drafts, editor) stays writers-only in the database; desk note reworded.
 
 - **2026-09-23 — Even stack (dbe1c0b3)** — giveaway banner, Liner Notes strip, Latest photos and People you may know all 8px apart on desktop and phones; open panels keep 8px above their contents.
+
+- **2026-09-23 — Liner Notes dot (3b214ce3)** — feed strip removed; a yellow dot on the Liner Notes pill (desktop) / Browse button (phones, option reads "Liner Notes • new") when a piece was published in the last 14 days and this device has not opened Liner Notes since (localStorage ros_liner_seen).
