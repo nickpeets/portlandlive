@@ -9818,6 +9818,9 @@ window.myPastGoing = myPastGoing;
       .catch(function(){ return null; });
   }
   function busy(){
+    // Never while a story is open in the editor (Sep 23 2026: a self-reload
+    // mid-story wiped Nick's edits).
+    if(/^#\/stories\/edit\//.test(location.hash || '')) return true;
     var a = document.activeElement;
     if(a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA' || a.isContentEditable)) return true;
     var ov = document.getElementById('authOverlay');
