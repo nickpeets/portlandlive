@@ -520,3 +520,5 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **2026-09-23 — Section order (49bcd029)** — Nick: Venues, Picks, Comedy, Festivals, All Ages, Further Out. Desktop pills ordered by CSS (ctl-group flattened); phone Browse keeps Following first.
 
 - **2026-09-23 — Share previews (b347a207)** — syncSharePath() in router(): show pages sit at /show/<slug>/#/show/<slug>, venue pages at /venue/<slug>/, everything else at /; link previews read the per-show page (poster). replaceState calls that kept location.pathname now use /; festivals.json and news.json fetched from /.
+
+- **2026-09-23 — Pages stay put (95d64783)** — isFeedRoute(): reRenderCurrentView() calls router() for every non-feed page; applyShowKinds and applyPosterOverrides only redraw on feed routes. Fixes the giveaway page vanishing for signed-in members (WB).
