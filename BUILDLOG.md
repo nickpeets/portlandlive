@@ -586,3 +586,5 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **2026-09-23 — Batch four venues (f7a453da)** — six rooms from the Facebook music group with readable sites: Vancouver Elks Lodge (Tribe REST, band nights only), Hoku Events (Squarespace JSON; private/memorial/cancelled/burlesque skipped), The Cazadero (Estacada; hand-typed yearly lineup), Hopworks Brewery (Popmenu list), Threshold Brewing (published Google Doc), Beach Hut Deli Tigard (store page). ~80 shows. Test: batch_four_check. Facebook-only rooms from the list go to outreach.
 
 - **2026-09-23 — Badge explanations (78790b39)** — every badge shows a one-line how-to-earn under its name (progress in yellow when locked); Badges section moved below the stub grid on profiles.
+
+- **2026-09-23 — Hopworks posters (9cd033ef)** — parse_hopworks reads each Popmenu column (h2 title, p time, img poster); 8 of 15 shows have a poster on their site. Poster audit of batch four: Elks 8/8, Hoku 20/20, Hopworks 8/15; Cazadero, Threshold, Beach Hut post none. Rule: check posters on every new venue.
