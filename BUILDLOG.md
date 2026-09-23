@@ -554,3 +554,5 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **2026-09-23 — Venue outreach script (959f894e)** — outreach/send_outreach.py: --list N (dry run), --test addr (3 samples), --send N (batch N via Resend from nick@rainorshows.com, reply-to nick@, logs outreach/sent.csv, never repeats). venues.csv + sent.csv gitignored.
 
 - **2026-09-23 — Easter eggs (20a72fad)** — searching "rain" rains on the page 5 s (search still runs); 5 logo taps within ~2.5 s = lightning flash, yellow logo glow, 4 s shower. Reduced-motion users get only the glow.
+
+- **2026-09-23 — Hearts in place (10b0e5ae)** — heartsRefresh(k): on non-feed pages a heart tap updates the matching buttons only; the feed still redraws. Fixes the profile page jumping to the top.
