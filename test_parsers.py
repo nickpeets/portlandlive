@@ -520,6 +520,8 @@ def batch_four_check():
         bad.append("elks: a bingo night got through")
     if not any(r["title"] == "Exit 52" for r in rows["cazadero-events.html"]):
         bad.append("cazadero: Exit 52 (Oct 3) missing")
+    if sum(1 for r in rows["hopworks-music.html"] if r.get("imageUrl")) < 8:
+        bad.append("hopworks: posters missing")
     if not any(r["time"] == "7:00 PM" and "Jam" in r["title"] for r in rows["beachhut-tigard.html"]):
         bad.append("beach hut: jam night time wrong")
     if bad:

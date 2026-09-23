@@ -5472,24 +5472,42 @@ _HW_TIME = re.compile(r"^(\d{1,2})(?::(\d{2}))?\s*(?:-\s*\d{1,2}(?::\d{2})?)?\s*
 
 
 def parse_hopworks(html, today):
-    lines = [l.strip() for l in BeautifulSoup(html, "html.parser").get_text("\n").split("\n") if l.strip()]
+    """Each show is a Popmenu column: an <h2> "sept 24 - front porch swingers",
+    a <p> "7-9PM", and the show's poster as the column's <img> (Sep 23 2026,
+    Nick: "fix hopworks posters"). Falls back to the page text if the markup
+    changes, so the dates never go missing even if the posters do."""
+    soup = BeautifulSoup(html, "html.parser")
     out, seen = [], set()
     horizon = today + datetime.timedelta(days=HORIZON_DAYS)
-    for i, l in enumerate(lines):
-        m = _HW_LINE.match(l)
-        if not m:
+    items = []
+    for h in soup.find_all(["h2", "h3"]):
+        m = _HW_LINE.match(clean(h.get_text(" ")))
+        if not m or not _b4_month(m.group(1)):
             continue
+        sec = h.find_parent("section") or h.parent
+        p = h.find_next_sibling("p")
+        img = ""
+        for im in (sec.find_all("img", src=True) if sec else []):
+            src = im.get("src", "")
+            if src.startswith("http") and "popmenucloud" in src:
+                img = src
+                break
+        items.append((m, clean(p.get_text(" ")) if p else "", img))
+    if not items:
+        lines = [l.strip() for l in soup.get_text("\n").split("\n") if l.strip()]
+        for i, l in enumerate(lines):
+            m = _HW_LINE.match(l)
+            if m and _b4_month(m.group(1)):
+                items.append((m, lines[i + 1] if i + 1 < len(lines) else "", ""))
+    for m, tline, img in items:
         mon = _b4_month(m.group(1))
-        if not mon:
-            continue
         title = m.group(3).strip()
         if title == title.lower():
             title = title.title()
         t = ""
-        if i + 1 < len(lines):
-            tm = _HW_TIME.match(lines[i + 1].replace(" ", ""))
-            if tm:
-                t = f"{int(tm.group(1))}:{tm.group(2) or '00'} {tm.group(3).upper()}M"
+        tm = _HW_TIME.match(tline.replace(" ", ""))
+        if tm:
+            t = f"{int(tm.group(1))}:{tm.group(2) or '00'} {tm.group(3).upper()}M"
         try:
             d = datetime.date(infer_year(mon, today), mon, int(m.group(2)))
         except ValueError:
@@ -5498,7 +5516,7 @@ def parse_hopworks(html, today):
         if key in seen or not (today <= d <= horizon):
             continue
         seen.add(key)
-        out.append(_b4_row("Hopworks Brewery", title, d.isoformat(), t, "https://www.hopworksbeer.com/live-music"))
+        out.append(_b4_row("Hopworks Brewery", title, d.isoformat(), t, "https://www.hopworksbeer.com/live-music", img))
     return out
 
 
