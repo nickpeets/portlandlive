@@ -573,6 +573,81 @@ def fetch_approved_submissions():
     return out
 
 
+def _venue_key(v):
+    """Venue name for matching only: _norm_key without a leading "the"."""
+    k = _norm_key(v)
+    return k[4:] if k.startswith("the ") else k
+
+
+def fold_submissions(shows, subs, venue_info=None):
+    """Join approved submissions to the feed without making duplicates (Sep 22
+    2026: "James T's Treasure Chest" @ "The Starday Tavern" was the same night
+    as our "James T & Friends" @ Starday Tavern, 6 PM).
+
+    1. The venue is matched loosely (case, punctuation, a leading "The") to a
+       venue we know -- VENUE_INFO or the feed -- and takes our name,
+       neighborhood and address.
+    2. A submission at the same venue on the same date as a listing we
+       already have -- times within 60 minutes, or no time on one side and a
+       shared word in the titles -- is folded into that listing: ours keeps
+       its title (and so its link, hearts and I'm-going marks), and only fills
+       blanks from the submission (link, age, time).
+    Anything else is added as its own show. Returns the new list."""
+    if venue_info is None:
+        venue_info = {}
+        try:
+            import importlib.util
+            spec = importlib.util.spec_from_file_location("sv", os.path.join(HERE, "scrape_venues.py"))
+            sv = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(sv)
+            venue_info = dict(sv.VENUE_INFO)
+        except Exception as e:
+            print(f"  WARN: submissions: VENUE_INFO unreadable ({type(e).__name__}); venue matching uses the feed only")
+    known = {}
+    for name, info in venue_info.items():
+        nb, addr = (info if isinstance(info, (tuple, list)) else (info.get("neighborhood", ""), info.get("address", "")))[:2]
+        known.setdefault(_venue_key(name), (name, nb or "", addr or ""))
+    for r in shows:
+        v = r.get("venue") or ""
+        if v:
+            known.setdefault(_venue_key(v), (v, r.get("neighborhood") or "", r.get("address") or ""))
+
+    def words(t):
+        return {w for w in _norm_key(t).split() if len(w) >= 3 and w not in ("the", "and", "with", "friends", "presents", "live")}
+
+    out, folded, renamed = list(shows), 0, 0
+    for sub in subs:
+        k = _venue_key(sub.get("venue"))
+        if k in known:
+            name, nb, addr = known[k]
+            if name != sub.get("venue"):
+                renamed += 1
+            sub["venue"] = name
+            if nb: sub["neighborhood"] = nb
+            if addr: sub["address"] = addr
+        match = None
+        for r in shows:
+            if r.get("_submitted") or r.get("date") != sub.get("date") or _venue_key(r.get("venue")) != _venue_key(sub.get("venue")):
+                continue
+            a, b = _time_min(r.get("time") or ""), _time_min(sub.get("time") or "")
+            if a is not None and b is not None:
+                if abs(a - b) <= 60:
+                    match = r; break
+            elif words(r.get("title")) & words(sub.get("title")):
+                match = r; break
+        if match is not None:
+            for f in ("venueUrl", "age", "time"):
+                if not (match.get(f) or "").strip() and (sub.get(f) or "").strip():
+                    match[f] = sub[f]
+            folded += 1
+            print(f"  Submission folded into existing show: {sub.get('title')!r} -> {match.get('title')!r} ({match.get('venue')}, {match.get('date')})")
+        else:
+            out.append(sub)
+    if subs:
+        print(f"  submissions: {len(subs) - folded} added, {folded} folded into existing listings, {renamed} venue name(s) matched to ours")
+    return out
+
+
 def _venue_directory(shows):
     """Sorted list of {name, neighborhood, address}: VENUE_INFO from the
     scraper plus any venue present in the feed but not in VENUE_INFO."""
@@ -1943,7 +2018,7 @@ def main():
     # The submissions line: shows venues and people sent in, reviewed and
     # approved. They join the scrape here and go through the same dedupe,
     # so a submitted show that the scraper also found collapses to one row.
-    shows.extend(fetch_approved_submissions())
+    shows = fold_submissions(shows, fetch_approved_submissions())
     festival_apply(shows)
     # Any row missing its neighborhood or address gets them from VENUE_INFO
     # when the venue is on file -- a submission for a known room, or a room

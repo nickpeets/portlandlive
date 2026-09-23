@@ -413,7 +413,30 @@ def multi_time_check():
     print("  ok   multi-show nights             4:00/7:00/9:30 kept on one row; 7:30 vs 8:00 (doors vs show) stays one time")
 
 
+def submission_fold_check():
+    """Submissions (Sep 22 2026): "The Starday Tavern" is our Starday Tavern,
+    and a same-night look-alike folds into the listing we already have."""
+    bspec = importlib.util.spec_from_file_location("bs", os.path.join(HERE, "build_shows.py"))
+    bs = importlib.util.module_from_spec(bspec)
+    bspec.loader.exec_module(bs)
+    shows = [dict(title="James T & Friends", venue="Starday Tavern", neighborhood="Brentwood-Darlington", address="6517 SE Foster Rd",
+                  date="2026-10-20", time="6:00 PM", venueUrl="", age="21+")]
+    subs = [dict(title="James T's Treasure Chest", venue="The Starday Tavern", neighborhood="FoPo", address="6517 SE Foster Rd",
+                 date="2026-10-20", time="6:00 PM", venueUrl="https://facebook.com/events/x", age="21+", _submitted=True),
+            dict(title="Late Band", venue="the starday tavern", neighborhood="", address="", date="2026-10-20", time="9:30 PM",
+                 venueUrl="", age="", _submitted=True)]
+    out = bs.fold_submissions(shows, subs, venue_info={"Starday Tavern": ("Brentwood-Darlington", "6517 SE Foster Rd")})
+    ok = (len(out) == 2 and out[0]["title"] == "James T & Friends" and out[0]["venueUrl"] == "https://facebook.com/events/x"
+          and out[1]["venue"] == "Starday Tavern" and out[1]["neighborhood"] == "Brentwood-Darlington")
+    if not ok:
+        print(f"  FAIL submission fold               {[(r['title'], r['venue'], r.get('neighborhood')) for r in out]}")
+        print("GATE FAILURE")
+        sys.exit(1)
+    print("  ok   submission fold               The Starday Tavern -> Starday Tavern; same-night look-alike folded; 9:30 show kept")
+
+
 if __name__ == "__main__":
     main()
     talk_page_check()
     multi_time_check()
+    submission_fold_check()
