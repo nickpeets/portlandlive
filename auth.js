@@ -61,6 +61,7 @@
     handle: $("authHandle"),
     handleEditor: $("handleEditor"),
     visibilityEditor: $("visibilityEditor"),
+    nameEditor: $("nameEditor"),
     tickerEditor: $("tickerEditor"),
     emailInput: $("authEmailInput"),
     passwordInput: $("authPasswordInput"),
@@ -117,6 +118,7 @@
     if (el.displayName) el.displayName.textContent = "";
     if (el.handle) el.handle.textContent = "";
     renderHandleEditor(null);
+    renderNameEditor(null, null);
     renderVisibilityEditor(null, null);
     renderTickerEditor(null);
   }
@@ -150,6 +152,7 @@
       }
     }
     renderHandleEditor(handleInfo);
+    renderNameEditor(displayName, userId);
     renderVisibilityEditor(visibility, userId);
     renderTickerEditor(userId);
   }
@@ -209,6 +212,54 @@
   // Who may see your upcoming shows, saved shows and stubs (D1): your
   // accepted followers, everyone, or no one (Sep 17 2026 -- 'private').
   // One setting, profiles.upcoming_visibility, read by can_see_upcoming().
+  // Your name (Sep 23 2026, Nick: Tim couldn't change his). The name people
+  // see -- not the @handle, which stays fixed. profiles.display_name is
+  // already updatable by its owner (grant + profiles_update_own); the table
+  // allows 1-60 characters. New activity shows the new name; comments and
+  // posts made before keep the name they were made with.
+  function renderNameEditor(displayName, userId) {
+    const slot = el.nameEditor;
+    if (!slot) return;
+    if (!userId) {
+      slot.hidden = true;
+      slot.innerHTML = "";
+      return;
+    }
+    slot.hidden = false;
+    slot.innerHTML =
+      '<div class="handle-edit">' +
+        '<label class="av-edit-note" style="padding:0" for="pfNameInput">Your name</label>' +
+        '<div class="handle-edit-row">' +
+          '<input type="text" id="pfNameInput" maxlength="60" autocomplete="name" data-name-input>' +
+          '<button type="button" class="av-edit-btn" data-name-save>Save</button>' +
+        "</div>" +
+        '<div class="handle-edit-msg" data-name-msg>The name people see. Your @handle stays the same.</div>' +
+      "</div>";
+    const input = slot.querySelector("[data-name-input]");
+    const btn = slot.querySelector("[data-name-save]");
+    const msg = slot.querySelector("[data-name-msg]");
+    input.value = displayName || "";
+    async function save() {
+      const next = input.value.replace(/\s+/g, " ").trim();
+      if (!next) { msg.textContent = "Your name can't be blank."; return; }
+      if (next === (displayName || "")) { msg.textContent = "That's already your name."; return; }
+      btn.disabled = true;
+      msg.textContent = "Saving\u2026";
+      const { error } = await sb.from("profiles").update({ display_name: next }).eq("id", userId);
+      btn.disabled = false;
+      if (error) { msg.textContent = "Couldn't save that. Try again."; return; }
+      displayName = next;
+      msg.textContent = "Saved.";
+      if (el.displayName) el.displayName.textContent = next;
+      try {
+        if (typeof AV_CACHE !== "undefined" && AV_CACHE[userId]) AV_CACHE[userId].display_name = next;
+        if (typeof window.reRenderCurrentView === "function") window.reRenderCurrentView();
+      } catch (_) {}
+    }
+    btn.addEventListener("click", save);
+    input.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); save(); } });
+  }
+
   function renderVisibilityEditor(visibility, userId) {
     const slot = el.visibilityEditor;
     if (!slot) return;
