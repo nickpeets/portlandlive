@@ -3048,6 +3048,11 @@ function venueFromSlug(slug){
 function isFeedRoute(t){ return t === 'feed' || t === 'venue' || t === 'venues' || t === 'festivals'; }
 function reRenderCurrentView(){
   var t = parseRoute().type;
+  // Never redraw the story editor from underneath the writer (Sep 23 2026,
+  // Nick: "the Stories tool just glitched and erased what i was working on").
+  // Sign-in refreshes -- which also fire on their own about once an hour --
+  // were re-opening the editor from the last SAVED copy.
+  if(t === 'storyedit') return;
   if(isFeedRoute(t)){ render(); } else { router(); }
 }
 
@@ -3767,9 +3772,29 @@ async function renderStoryEditRoute(id){
     const r = await safeRpc(sb.rpc('story_get', { p_key: id }));
     const s = r && !r.error && Array.isArray(r.data) ? r.data[0] : null;
     if(!s){ srNotFound(wrap); return; }
-    st = { id: s.id, title: s.title || '', cover_url: s.cover_url || '', body: Array.isArray(s.body) && s.body.length ? s.body : [{ type: 'text', md: '' }], status: s.status, slug: s.slug };
+    st = { id: s.id, title: s.title || '', cover_url: s.cover_url || '', body: Array.isArray(s.body) && s.body.length ? s.body : [{ type: 'text', md: '' }], status: s.status, slug: s.slug, updated_at: s.updated_at };
   }
   if(parseRoute().type !== 'storyedit') return;
+  // A copy of the open story is kept on this device as you type, so nothing
+  // is lost to a crash, a closed tab or a dropped connection. If the copy is
+  // newer than the saved story, it comes back when the editor opens.
+  const BK = 'ros_story_backup_' + (st.id || 'new');
+  let restored = '';
+  try{
+    const bk = JSON.parse(localStorage.getItem(BK) || 'null');
+    if(bk && bk.st && bk.at && (!st.id || !st.updated_at || bk.at > Date.parse(st.updated_at))){
+      st.title = bk.st.title; st.cover_url = bk.st.cover_url; st.body = bk.st.body && bk.st.body.length ? bk.st.body : st.body;
+      restored = 'Restored your unsaved changes from ' + new Date(bk.at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) + '.';
+    }
+  }catch(_){}
+  let _bkTimer = null;
+  function backup(){
+    clearTimeout(_bkTimer);
+    _bkTimer = setTimeout(function(){
+      try{ collect(); localStorage.setItem('ros_story_backup_' + (st.id || 'new'), JSON.stringify({ at: Date.now(), st: { title: st.title, cover_url: st.cover_url, body: st.body } })); }catch(_){}
+    }, 600);
+  }
+  function dropBackup(){ try{ localStorage.removeItem('ros_story_backup_new'); if(st.id) localStorage.removeItem('ros_story_backup_' + st.id); }catch(_){} }
   // Draw into a fresh element so listeners never stack up on #results.
   const root = document.createElement('div'); wrap.innerHTML = ''; wrap.appendChild(root);
   let dirty = false;
@@ -3818,7 +3843,7 @@ async function renderStoryEditRoute(id){
     const body = st.body.filter(function(b){ return (b.type === 'text' && (b.md || '').trim()) || (b.type === 'photo' && b.url) || (b.type === 'show' && b.slug) || (b.type === 'audio' && b.url) || (b.type === 'embed' && srEmbed(b.url)); });
     const r = await safeRpc(sb.rpc('story_save', { p_id: st.id, p_title: st.title, p_cover_url: st.cover_url || '', p_body: body }));
     if(r.error){ draw('Couldn\u2019t save: ' + (r.error.message || r.error)); return false; }
-    const isNew = !st.id; st.id = r.data; dirty = false;
+    const isNew = !st.id; st.id = r.data; dirty = false; dropBackup();
     if(isNew){ history.replaceState(null, '', '/#/stories/edit/' + st.id); }
     return true;
   }
@@ -3840,8 +3865,9 @@ async function renderStoryEditRoute(id){
     if(up.error) throw new Error(up.error.message);
     return sb.storage.from('stories').getPublicUrl(path).data.publicUrl;
   }
-  draw('');
-  root.addEventListener('input', function(){ dirty = true; });
+  draw(restored);
+  if(restored) dirty = true;
+  root.addEventListener('input', function(){ dirty = true; backup(); });
   // The link block's hint updates as you type, without redrawing (a redraw
   // would steal focus from the caption box you just tapped into).
   root.addEventListener('input', function(e){
@@ -3856,7 +3882,7 @@ async function renderStoryEditRoute(id){
     if(af){
       const file = af.files && af.files[0]; af.value = ''; if(!file || upTarget == null) return;
       collect(); draw('Uploading audio\u2026');
-      try{ st.body[upTarget].url = await uploadAudio(file); dirty = true; draw('Audio added. Save to keep it.'); }
+      try{ st.body[upTarget].url = await uploadAudio(file); dirty = true; draw('Audio added. Save to keep it.'); backup(); }
       catch(err){ draw('Upload failed: ' + (err && err.message || err)); }
       return;
     }
@@ -3866,8 +3892,11 @@ async function renderStoryEditRoute(id){
     try{
       const url = await upload(file);
       if(upTarget === 'cover') st.cover_url = url; else if(upTarget != null) st.body[upTarget].url = url;
-      dirty = true; draw('Photo added. Save to keep it.');
+      dirty = true; draw('Photo added. Save to keep it.'); backup();
     }catch(err){ draw('Upload failed: ' + (err && err.message || err)); }
+  });
+  root.addEventListener('click', function(e){
+    if(e.target.closest('[data-se-add],[data-se-up],[data-se-down],[data-se-del],[data-se-cover-clear]')) setTimeout(backup, 0);
   });
   root.addEventListener('click', async function(e){
     const q = function(a){ return e.target.closest('[' + a + ']'); };
@@ -3885,6 +3914,7 @@ async function renderStoryEditRoute(id){
       if(!confirm('Delete this draft? This can\u2019t be undone.')) return;
       const r = await safeRpc(sb.rpc('story_delete', { p_id: st.id }));
       if(r.error){ draw('Couldn\u2019t delete: ' + (r.error.message || r.error)); return; }
+      dropBackup(); dirty = false;
       location.hash = '#/stories'; return;
     }
     if((el = q('data-se-publish'))){
