@@ -231,7 +231,7 @@
         '<label class="av-edit-note" style="padding:6px 0 0;display:flex;gap:6px;align-items:center"><input type="checkbox" data-pymk-pref="suggest_me" checked> Suggest me to others</label>' +
         '<label class="av-edit-note" style="padding:2px 0 0;display:flex;gap:6px;align-items:center"><input type="checkbox" data-pymk-pref="show_card" checked> Show People you may know</label>' +
         // Message emails (Sep 22 2026): one email per unread conversation.
-        '<label class="av-edit-note" style="padding:2px 0 0;display:flex;gap:6px;align-items:center"><input type="checkbox" data-dm-email checked> Email me about new messages</label>' +
+        '<label class="av-edit-note" style="padding:2px 0 0;display:flex;gap:6px;align-items:center"><input type="checkbox" data-dm-email checked> Email me about messages and follow requests</label>' +
       "</div>";
     const sel = slot.querySelector("[data-vis-select]");
     const msg = slot.querySelector("[data-vis-msg]");

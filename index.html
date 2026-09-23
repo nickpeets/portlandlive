@@ -3013,6 +3013,7 @@ function parseRoute(){
   m = /^#\/review\/([0-9a-f-]{36})\/([0-9a-f-]{36})\/(approved|rejected)\/?$/.exec(h);
   if(m) return {type:'review', id:m[1], token:m[2], action:m[3]};
   if(/^#\/giveaway\/?$/.test(h)) return {type:'giveaway'};
+  if(/^#\/requests\/?$/.test(h)) return {type:'requests'};
   if(/^#\/stories\/?$/.test(h)) return {type:'stories'};
   m = /^#\/stories\/edit\/([A-Za-z0-9-]+)\/?$/.exec(h);
   if(m) return {type:'storyedit', id:m[1]};
@@ -3097,6 +3098,17 @@ async function router(){
   if(route.type === 'review'){ await renderReviewRoute(route); return; }
   if(route.type === 'unsubscribe'){ await renderUnsubscribeRoute(route); return; }
   if(route.type === 'giveaway'){ await renderGiveawayRoute(); return; }
+  if(route.type === 'requests'){
+    // From the follow-request email (Sep 23 2026): land on the feed with the
+    // bell's panel open, where requests are approved or declined. Signed out,
+    // the sign-in box opens instead.
+    history.replaceState(null, '', '/');
+    render();
+    for(var _w = 0; _w < 40 && !state._signedIn; _w++){ await new Promise(function(r){ setTimeout(r, 250); }); }
+    var _b = document.getElementById(state._signedIn ? 'notifBtn' : 'authSignInBtn');
+    if(_b) _b.click();
+    return;
+  }
   if(route.type === 'stories'){ await renderStoriesRoute(); return; }
   if(route.type === 'story'){ await renderStoryRoute(route.key); return; }
   if(route.type === 'storyedit'){ await renderStoryEditRoute(route.id); return; }
@@ -3329,8 +3341,8 @@ async function renderUnsubscribeRoute(route){
     wrap.innerHTML = '<div class="sub-page"><h1 class="sub-title">That link didn\u2019t work</h1><p class="sub-lead">Sign in and use the bookmark menu to turn off message emails instead.</p></div>';
     return;
   }
-  wrap.innerHTML = '<div class="sub-page"><h1 class="sub-title">Message emails are off</h1>'
-    + '<p class="sub-lead">You won\u2019t get emails about new messages. Messages still show under the envelope on the site. To turn emails back on, open the bookmark menu and check \u201cEmail me about new messages.\u201d</p></div>';
+  wrap.innerHTML = '<div class="sub-page"><h1 class="sub-title">Emails are off</h1>'
+    + '<p class="sub-lead">You won\u2019t get emails about new messages or follow requests. They still show under the envelope and the bell on the site. To turn emails back on, open the bookmark menu and check \u201cEmail me about messages and follow requests.\u201d</p></div>';
 }
 
 // ===== PROFILE PAGES (Fork Stage 10, Part 2) =====
