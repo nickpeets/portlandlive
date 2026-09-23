@@ -3598,12 +3598,18 @@ async function renderGiveawayRoute(){
   if(!g){ wrap.innerHTML = '<div class="sub-page"><h1 class="sub-title">No giveaway right now</h1><p class="sub-lead">Check back soon.</p></div>'; return; }
   const show = state.shows.find(function(s){ return s._slug === g.show_slug; });
   const open = giveawayOpen(g);
-  const poster = show && show.imageUrl ? '<img class="gw-poster" src="' + esc(show.imageUrl) + '" alt="">' : '';
+  const showHref = '#/show/' + esc(g.show_slug);
+  const poster = show && show.imageUrl ? '<a href="' + showHref + '"><img class="gw-poster" src="' + esc(show.imageUrl) + '" alt="' + esc(g.title) + ' poster"></a>' : '';
   let html = '<div class="sub-page gw-page">'
     + '<div class="gw-kicker">&#127903;&#65039; Ticket giveaway</div>'
     + '<h1 class="sub-title">Win a pair to ' + esc(g.title) + '</h1>'
     + (show ? '<p class="sub-lead"><a href="#/show/' + esc(g.show_slug) + '">' + esc(ordinalDate(show.date)) + (show.time ? ' \u00b7 ' + esc(show.time) : '') + ' \u00b7 ' + esc(show.venue) + '</a></p>' : '')
     + poster
+    // A plain way to the show's own page (Sep 22 2026, Nick): who's going,
+    // Listen, tickets, the heart -- the page the giveaway is about.
+    + '<p><a class="gw-showlink" href="' + showHref + '">See the show &rarr;</a></p>'
+    // Entry counter (Sep 22 2026, Nick): totals only, filled in below.
+    + '<div class="gw-tally" data-gw-tally hidden></div>'
     + (g.drawn ? '<p class="sub-lead"><b>Entries are closed and the winner has been drawn.</b> Thanks to everyone who entered.</p>'
        : open ? '<p class="sub-lead">Entries close <b>' + esc(giveawayCloses(g)) + '</b>.</p>'
        : '<p class="sub-lead"><b>Entries are closed.</b> The winner will be drawn shortly.</p>')
@@ -3618,6 +3624,18 @@ async function renderGiveawayRoute(){
   wrap.innerHTML = html;
   const me = wrap.querySelector('[data-gw-me]');
   const sb = window.__plAuth;
+  // How many people and entries so far -- anyone can see the totals.
+  if(sb){
+    Promise.resolve(sb.rpc('giveaway_totals', { p_slug: g.slug })).then(function(r){
+      const row = r && !r.error && Array.isArray(r.data) ? r.data[0] : null;
+      const box = wrap.querySelector('[data-gw-tally]');
+      if(!row || !box || parseRoute().type !== 'giveaway') return;
+      const ent = row.entries | 0, ppl = row.entrants | 0;
+      box.innerHTML = '<span class="gw-tally-num">' + ent.toLocaleString() + '</span> '
+        + (ent === 1 ? 'entry' : 'entries') + ' from ' + ppl.toLocaleString() + ' ' + (ppl === 1 ? 'person' : 'people') + (open ? ' so far' : '');
+      box.hidden = false;
+    }).catch(function(){});
+  }
   if(!state._signedIn || !sb){
     me.innerHTML = open ? '<div class="gw-box"><p>Sign in to see your entries and get your invite link.</p><button type="button" class="tx-signin-btn" data-gw-signin>Sign In</button></div>' : '';
     const b = me.querySelector('[data-gw-signin]');
@@ -8779,6 +8797,10 @@ a.inbox-thread-who:hover{text-decoration:underline}
 .gw-linkrow input{flex:1 1 auto;min-width:0;border:1px solid rgba(74,53,38,.35);border-radius:8px;padding:8px 10px;font-size:14px;background:#fff;color:var(--ink)}
 .gw-copy{flex:0 0 auto;border:0;border-radius:999px;background:var(--rust);color:var(--cream);padding:0 16px;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
 .gw-won{background:#f4e1b8}
+.gw-tally{display:inline-flex;align-items:baseline;gap:6px;margin:0 0 14px;padding:8px 14px;border-radius:10px;background:rgba(0,0,0,.14);color:var(--cream);font-family:'Oswald',sans-serif;font-size:14px;letter-spacing:.04em}
+.gw-tally[hidden]{display:none}
+.gw-tally-num{font-family:'Alfa Slab One',serif;font-size:24px;color:var(--cream)}
+.gw-showlink{display:inline-block;background:var(--cream);color:var(--ink);text-decoration:none;border-radius:999px;padding:9px 16px;font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:.08em;text-transform:uppercase;margin:0 0 14px}
 .gw-rules{font-family:'Bitter',Georgia,serif;font-size:13px;line-height:1.55;color:rgba(243,234,215,.8)}
 .blk-wrap{position:relative;display:inline-flex;margin-left:auto}
 .dm-head .blk-wrap{margin-left:auto}
