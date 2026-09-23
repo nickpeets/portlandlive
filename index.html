@@ -2453,7 +2453,8 @@ function render(){
     && !state.festivals && !state.allAges && !state.following && !state.byHood && !state.comedy && !state.outOfTown && !state.selectedVenue && state.view === 'shows';
   if(plainHome) mountPhotoStrip(wrap);
   if(plainHome) mountGiveawayBanner(wrap);
-  if(plainHome) mountStoryStrip(wrap);
+  // Liner Notes announce themselves with a dot on the button now, not a strip
+  // in the feed (Sep 23 2026, Nick) -- see linerNotesDot().
   // People you may know (Sep 22 2026, Nick): a folding panel right under
   // Latest photos & clips, folded on every draw -- no longer in the listings.
   if(plainHome) mountPymk(wrap);
@@ -3605,10 +3606,34 @@ async function storiesCheck(){
   STORIES_WRITER = !!(w && !w.error && w.data);
   storiesNav();
 }
+// A small dot on the Liner Notes button (and the phone Browse button) when a
+// piece has been published in the last two weeks that this device hasn't
+// looked at yet. Opening Liner Notes or any story clears it.
+const LN_SEEN = 'ros_liner_seen';
+async function linerNotesDot(){
+  const on = function(show){
+    const p = document.getElementById('storiesPill'); if(p) p.classList.toggle('ln-new', !!show);
+    const b = document.querySelector('.phone-browse'); if(b) b.classList.toggle('ln-new', !!show);
+    const o = document.getElementById('phoneBrowseStories'); if(o) o.textContent = show ? 'Liner Notes \u2022 new' : 'Liner Notes';
+  };
+  if(!STORIES_VISIBLE){ on(false); return; }
+  const sb = window.__plAuth; if(!sb){ on(false); return; }
+  const r = await safeRpc(sb.rpc('stories_list'));
+  const newest = ((r && !r.error && r.data) || []).filter(function(x){ return x.status === 'published' && x.published_at; })
+    .map(function(x){ return Date.parse(x.published_at); }).sort(function(a, b){ return b - a; })[0] || 0;
+  let seen = 0; try{ seen = +localStorage.getItem(LN_SEEN) || 0; }catch(_){}
+  on(newest > seen && Date.now() - newest < 14 * 864e5);
+}
+function linerNotesSeen(){
+  try{ localStorage.setItem(LN_SEEN, String(Date.now())); }catch(_){}
+  document.querySelectorAll('.ln-new').forEach(function(el){ el.classList.remove('ln-new'); });
+  const o = document.getElementById('phoneBrowseStories'); if(o) o.textContent = 'Liner Notes';
+}
 function storiesNav(){
   const p = document.getElementById('storiesPill'); if(p) p.hidden = !STORIES_VISIBLE;
   const o = document.getElementById('phoneBrowseStories'); if(o) o.hidden = !STORIES_VISIBLE;
   const f = document.getElementById('footStories'); if(f) f.hidden = !STORIES_VISIBLE;
+  if(!/^#\/(stories|story)(\/|$)/.test(location.hash || '')) linerNotesDot();
 }
 function srInline(t){
   // esc() first, then the few marks writers use: **bold**, *italic*, [text](url)
@@ -3698,6 +3723,7 @@ function srNotFound(wrap){
   wrap.innerHTML = '<div class="sub-page"><h1 class="sub-title">Nothing here</h1><p class="sub-lead">That page isn\u2019t available. <a href="#">Back to shows</a></p></div>';
 }
 async function renderStoriesRoute(){
+  linerNotesSeen();
   const wrap = $('#results');
   $('#resultCount').textContent = 'Liner Notes';
   clearTogglePills();
@@ -3738,6 +3764,7 @@ async function renderStoriesRoute(){
   wrap.innerHTML = html;
 }
 async function renderStoryRoute(key){
+  linerNotesSeen();
   const wrap = $('#results');
   $('#resultCount').textContent = 'Story';
   clearTogglePills();
@@ -9294,6 +9321,9 @@ a.inbox-thread-who:hover{text-decoration:underline}
 .pick-mod{display:flex;gap:8px;padding:8px 12px 10px;border-top:1px dashed rgba(74,53,38,.25)}
 .pick-mod-btn{border:1px solid var(--rust);background:none;color:var(--rust);border-radius:999px;padding:4px 10px;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.05em;text-transform:uppercase;cursor:pointer}
 .pick-mod-btn.on{background:var(--rust);color:var(--cream)}
+/* "New in Liner Notes" dot (Sep 23 2026) */
+#storiesPill.ln-new, .phone-browse.ln-new{position:relative}
+#storiesPill.ln-new::after, .phone-browse.ln-new::after{content:"";position:absolute;top:-4px;right:-4px;width:11px;height:11px;border-radius:50%;background:#ffff00;box-shadow:0 0 0 2px var(--rust)}
 /* Easter eggs (Sep 23 2026) */
 .egg-rain{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:9999}
 .egg-flash{position:fixed;inset:0;pointer-events:none;z-index:9998;background:#f6f3e6;animation:eggFlash .9s ease-out forwards}
