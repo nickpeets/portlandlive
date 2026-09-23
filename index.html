@@ -238,6 +238,7 @@ body{
 .pill-narrow:has(.toggle.on){background:var(--cream);border-color:var(--cream);color:var(--ink)}
 .browse-pill{display:none}
 .phone-browse{display:none}
+.pill.pill-retired{display:none !important}
 
 .search-pill{flex:1 1 auto;min-width:220px;background:rgba(255,255,255,.14)}
 .search-pill input{flex:1;width:100%}
@@ -1144,27 +1145,29 @@ body{
       <div class="pill sort-pill phone-browse" title="Browse">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
         <select id="phoneBrowse" aria-label="Browse">
+          <!-- Sep 22 2026 (Nick): All shows, Tonight and This Week retired --
+               "Browse" is the way back to everything, the feed opens on
+               tonight, and search reads "tonight", "friday", "this week". -->
           <option value="" selected>Browse</option>
-          <option value="all">All shows</option>
-          <option value="tonight">Tonight</option>
-          <option value="thisweek">This Week</option>
-          <option value="picks">Picks</option>
-          <option value="venues">Venues</option>
-          <option value="comedy">Comedy</option>
           <option value="following">&#9733; Following</option>
-          <option value="allages">All Ages</option>
+          <option value="picks">Picks</option>
+          <option value="comedy">Comedy</option>
+          <option value="venues">Venues</option>
           <option value="festivals" id="phoneBrowseFestivals" hidden>Festivals</option>
+          <option value="allages">All Ages</option>
           <option value="outoftown">Further Out</option>
         </select>
       </div>
     </div>
 
     <div class="ctl-row">
-      <label class="pill pill-when" id="tonightPill" title="Only shows happening tonight">
+      <!-- Tonight and This Week retired from the row (Sep 22 2026); the
+           toggles stay in the page because code still reads them. -->
+      <label class="pill pill-when pill-retired" id="tonightPill" title="Only shows happening tonight">
         <span class="toggle" id="tonightToggle"></span>
         <span>Tonight</span>
       </label>
-      <label class="pill pill-when" title="Shows happening in the next 7 days">
+      <label class="pill pill-when pill-retired" title="Shows happening in the next 7 days">
         <span class="toggle" id="thisWeekToggle"></span>
         <span>This Week</span>
       </label>
@@ -1786,6 +1789,9 @@ function parseDateQuery(q){
       return {from: plus(-toSun - 2), to: plus(-toSun)};
     })
   || cut(/\s(last\s+week)\s/, () => ({from: plus(-7), to: plus(-1)}))
+  // "this week" = the next 7 days (what the retired This Week pill did);
+  // "next week" = the 7 after that (Sep 22 2026).
+  || cut(/\s(this|next)\s+week\s/, m => m[1] === 'next' ? {from: plus(7), to: plus(13)} : {from: today, to: plus(6)})
   || cut(/\s(?:this\s+)?(weekend)\s/, () => {
       const dow = new Date(today + 'T12:00:00').getDay();      // 0 Sun .. 6 Sat
       const toFri = (5 - dow + 7) % 7;
