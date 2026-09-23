@@ -2874,7 +2874,7 @@ function followReasonChips(s, followSet){
 
 function listOf(items, showDate){
   const l=document.createElement('div');
-  const eff = state.picks ? 'b' : state.cardLayout;
+  const eff = (state.picks && isFeedRoute(parseRoute().type)) ? 'b' : state.cardLayout;   // big Picks cards only in the Picks feed, not on a profile you open from it (Sep 23 2026)
   const _followSet = state.following ? new Set([...state.favorites].map(function(k){ var i=k.indexOf('::'); return i<0 ? k : k.slice(0,i+2)+_normTitle(k.slice(i+2)); })) : null;
   l.className = 'list ' + (eff==='b' ? 'list--b' : 'list--a');
   items.forEach(s=>{
