@@ -2036,9 +2036,16 @@ function filtered(){
   const _allUpcoming = out;   // Picks: pinned shows skip the gates below
   // Content-type gate: music only by default. Comedy toggle shows comedy.
   // The audit panel bypasses this gate so ALL buckets stay visible.
+  // A search by NAME looks through everything (Sep 22 2026, Nick: "where's
+  // Mark Normand?" -- a comedian, so music-only search never found him).
+  // A search that is only a date ("friday", "this week") stays music, like
+  // the feed.
+  const _q0 = state.q.trim().toLowerCase();
+  const _dq0 = _q0 ? parseDateQuery(_q0) : null;
+  const nameSearch = !!(_dq0 ? (_dq0.rest || '').trim() : _q0);
   if(!state.audit){
     if(state.comedy) out = out.filter(s => s.contentType === 'comedy');
-    else out = out.filter(s => s.contentType === 'music');
+    else if(!nameSearch) out = out.filter(s => s.contentType === 'music');
   }
   // Festivals view: only shows belonging to a registered festival. Sits after
   // the content gate so a comedy set inside a festival still behaves sanely.
