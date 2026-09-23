@@ -2439,7 +2439,7 @@ function render(){
   // Only on the plain home feed -- no search, no pill -- so it never gets in
   // the way of someone looking for a specific thing.
   const plainHome = !state.q.trim() && !state.tonight && !state.thisWeek && !state.picks && !state.myShows
-    && !state.festivals && !state.allAges && !state.following && !state.byHood && !state.comedy && !state.selectedVenue && state.view === 'shows';
+    && !state.festivals && !state.allAges && !state.following && !state.byHood && !state.comedy && !state.outOfTown && !state.selectedVenue && state.view === 'shows';
   if(plainHome) mountPhotoStrip(wrap);
   if(plainHome) mountGiveawayBanner(wrap);
   // People you may know (Sep 22 2026, Nick): a folding panel right under
