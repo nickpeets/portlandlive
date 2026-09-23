@@ -3232,6 +3232,9 @@ function renderSubmitRoute(){
     '<div class="sub-page">'
     + '<h1 class="sub-title">Send us a show</h1>'
     + '<p class="sub-lead">Playing somewhere we don\u2019t list, or spotted a show we\u2019re missing? Tell us. We review everything by hand and approved shows appear the next morning.</p>'
+    // Sep 23 2026 (Nick): a 1 PM show sent in for the Laurelthirst that the
+    // room's own calendar didn't have. Ask people to check with the venue.
+    + '<div class="sub-note"><b>Is the show on the venue\u2019s own calendar?</b> We read most venues\u2019 calendars every morning, so if it\u2019s listed there it will show up here on its own. If it isn\u2019t on their calendar yet, please check with the venue that the show is confirmed before sending it to us.</div>'
     + '<form class="sub-form" id="subForm" novalidate>'
     + '<label>Show<input type="text" name="title" maxlength="160" placeholder="Band name, or the event name" required></label>'
     + '<label>Venue<input type="text" name="venue" list="subVenues" maxlength="80" placeholder="Where" required>'
@@ -9562,6 +9565,7 @@ a.inbox-thread-who:hover{text-decoration:underline}
 .gw-linkrow input{flex:1 1 auto;min-width:0;border:1px solid rgba(74,53,38,.35);border-radius:8px;padding:8px 10px;font-size:14px;background:#fff;color:var(--ink)}
 .gw-copy{flex:0 0 auto;border:0;border-radius:999px;background:var(--rust);color:var(--cream);padding:0 16px;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
 .gw-won{background:#f4e1b8}
+.sub-note{background:rgba(0,0,0,.14);border-left:4px solid #ffff00;border-radius:8px;padding:10px 14px;margin:0 0 18px;font-family:'Bitter',Georgia,serif;font-size:14.5px;line-height:1.5;color:var(--cream)}
 .gw-odds{margin:0 0 10px}
 .gw-odds[hidden]{display:none}
 .gw-tally{display:inline-flex;align-items:baseline;gap:6px;margin:0 0 14px;padding:8px 14px;border-radius:10px;background:rgba(0,0,0,.14);color:var(--cream);font-family:'Oswald',sans-serif;font-size:14px;letter-spacing:.04em}
