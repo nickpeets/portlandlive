@@ -3644,13 +3644,15 @@ async function renderGiveawayRoute(){
       + (ent === 1 ? 'entry' : 'entries') + ' from ' + ppl.toLocaleString() + ' ' + (ppl === 1 ? 'person' : 'people') + (open ? ' so far' : '');
     box.hidden = false;
   });
-  // Odds (Sep 22 2026): "mine in total", with "about 1 in K" when that reads
-  // easier. Worked out from the live totals, so it shrinks as people enter.
-  function odds(mine, total){
+  // Odds of winning, always as "1 in K" (Sep 22 2026, Nick: "i'm talking
+  // odds of winning"). K = all entries / your entries: whole numbers stay
+  // whole, under 10 keeps one decimal (8.5), bigger rounds. Worked out from
+  // the live totals, so it shrinks as people enter.
+  function oneIn(mine, total){
     if(total <= 0 || mine <= 0) return '';
-    if(mine >= total) return 'every entry so far is yours';
-    const k = Math.round(total / mine);
-    return mine + ' in ' + total.toLocaleString() + (mine > 1 ? ' (about 1 in ' + k.toLocaleString() + ')' : '');
+    const k = total / mine;
+    const shown = Number.isInteger(k) ? k : (k < 10 ? Math.round(k * 10) / 10 : Math.round(k));
+    return '1 in ' + shown.toLocaleString();
   }
   if(!state._signedIn || !sb){
     me.innerHTML = open ? '<div class="gw-box"><p class="gw-odds" data-gw-odds hidden></p><p>Sign in to see your entries and get your invite link.</p><button type="button" class="tx-signin-btn" data-gw-signin>Sign In</button></div>' : '';
@@ -3659,7 +3661,7 @@ async function renderGiveawayRoute(){
     if(open) totalsP.then(function(row){
       const el = me.querySelector('[data-gw-odds]'); if(!el || !row) return;
       const n = row.entries | 0;
-      el.innerHTML = '<b>Join now and your chance is 1 in ' + (n + 1).toLocaleString() + '.</b> Bring a friend and it\u2019s 2 in ' + (n + 3).toLocaleString() + '.';
+      el.innerHTML = '<b>Join now and your odds of winning are ' + oneIn(1, n + 1) + '.</b> Bring a friend and they\u2019re ' + oneIn(2, n + 3) + '.';
       el.hidden = false;
     });
     const b = me.querySelector('[data-gw-signin]');
@@ -3687,8 +3689,9 @@ async function renderGiveawayRoute(){
     const el = me.querySelector('[data-gw-odds]'); if(!el || !row) return;
     const n = row.entries | 0, mine = st.total | 0;
     el.innerHTML = mine > 0
-      ? 'Your chance right now: <b>' + odds(mine, n) + '</b>' + (open ? '. Each friend who joins through your link and taps \u201cI\u2019m going\u201d adds one more.' : '.')
-      : (open ? 'Tap \u201cI\u2019m going\u201d on any show and your chance is <b>1 in ' + (n + 1).toLocaleString() + '</b>.' : '');
+      ? (mine >= n ? 'Your odds of winning right now: <b>every entry so far is yours</b>' : 'Your odds of winning right now: <b>' + oneIn(mine, n) + '</b>')
+        + (open && mine < n ? '. Bring a friend and they\u2019re <b>' + oneIn(mine + 1, n + 2) + '</b>.' : '.')
+      : (open ? 'Tap \u201cI\u2019m going\u201d on any show and your odds of winning are <b>' + oneIn(1, n + 1) + '</b>.' : '');
     el.hidden = !el.innerHTML;
   });
   const cp = me.querySelector('[data-gw-copy]');
