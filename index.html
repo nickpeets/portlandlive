@@ -3564,17 +3564,23 @@ function reportSignupRef(){
 // "I'm going" on any show during the window; +1 for each friend who joins
 // through your invite link (?ref=inv-<handle>) and taps "I'm going" too.
 // Everything is counted by the database (schema-giveaway.sql).
-let GIVEAWAY = null, GIVEAWAY_ASKED = false;
-async function giveawayLoad(){
-  if(GIVEAWAY_ASKED) return GIVEAWAY;
-  GIVEAWAY_ASKED = true;
-  let sb = window.__plAuth;
-  for(let i = 0; !sb && i < 25; i++){ await new Promise(function(r){ setTimeout(r, 200); }); sb = window.__plAuth; }
-  if(!sb) return null;
-  const r = await safeRpc(sb.rpc('giveaway_current'));
-  const row = r && !r.error && Array.isArray(r.data) ? r.data[0] : null;
-  GIVEAWAY = row || null;
-  return GIVEAWAY;
+// One shared request (Sep 23 2026: the banner went missing on phones). The
+// feed draws twice at load -- once on the data, again when sign-in settles --
+// and the second draw used to get "nothing yet" while the first request was
+// still out, then the first draw's banner was gone with the old page. Every
+// caller now waits on the same request, and a failed one is tried again.
+let GIVEAWAY_P = null;
+function giveawayLoad(){
+  if(GIVEAWAY_P) return GIVEAWAY_P;
+  GIVEAWAY_P = (async function(){
+    let sb = window.__plAuth;
+    for(let i = 0; !sb && i < 50; i++){ await new Promise(function(r){ setTimeout(r, 200); }); sb = window.__plAuth; }
+    if(!sb){ GIVEAWAY_P = null; return null; }
+    const r = await safeRpc(sb.rpc('giveaway_current'));
+    if(!r || r.error){ GIVEAWAY_P = null; return null; }
+    return Array.isArray(r.data) ? (r.data[0] || null) : null;
+  })();
+  return GIVEAWAY_P;
 }
 function giveawayOpen(g){ return !!(g && !g.drawn && new Date(g.ends_at).getTime() > Date.now()); }
 function giveawayCloses(g){
@@ -3605,7 +3611,7 @@ async function renderGiveawayRoute(){
   clearTogglePills();
   wrap.innerHTML = '<div class="sub-page"><p class="sub-lead">One moment\u2026</p></div>';
   try{ if(typeof trackView === 'function') trackView('/#/giveaway'); }catch(_){}
-  GIVEAWAY_ASKED = false;
+  GIVEAWAY_P = null;   // the giveaway page always asks fresh
   const g = await giveawayLoad();
   if(parseRoute().type !== 'giveaway') return;
   if(!g){ wrap.innerHTML = '<div class="sub-page"><h1 class="sub-title">No giveaway right now</h1><p class="sub-lead">Check back soon.</p></div>'; return; }
