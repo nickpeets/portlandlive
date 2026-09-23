@@ -239,6 +239,12 @@ body{
 .browse-pill{display:none}
 .phone-browse{display:none}
 .pill.pill-retired{display:none !important}
+/* Desktop pill order (Sep 22 2026, Nick): Venues, Picks, Comedy, Festivals,
+   All Ages, Further Out. The group wrapper is flattened so one order runs
+   across the whole row. */
+.controls-inner .ctl-row + .ctl-row .ctl-group{display:contents}
+#venuesPill{order:1} #picksPill{order:2} #comedyPill{order:3} #festivalsPill{order:4}
+#allAgesPill{order:5} #outOfTownPill{order:6} .controls-inner .ctl-row + .ctl-row .browse-pill{order:9}
 
 .search-pill{flex:1 1 auto;min-width:220px;background:rgba(255,255,255,.14)}
 .search-pill input{flex:1;width:100%}
@@ -1150,9 +1156,9 @@ body{
                tonight, and search reads "tonight", "friday", "this week". -->
           <option value="" selected>Browse</option>
           <option value="following">&#9733; Following</option>
+          <option value="venues">Venues</option>
           <option value="picks">Picks</option>
           <option value="comedy">Comedy</option>
-          <option value="venues">Venues</option>
           <option value="festivals" id="phoneBrowseFestivals" hidden>Festivals</option>
           <option value="allages">All Ages</option>
           <option value="outoftown">Further Out</option>
@@ -1171,7 +1177,7 @@ body{
         <span class="toggle" id="thisWeekToggle"></span>
         <span>This Week</span>
       </label>
-      <label class="pill pill-when" title="Picks of the Week - curated, vertical showcase">
+      <label class="pill pill-when" id="picksPill" title="Picks of the Week - curated, vertical showcase">
         <span class="toggle" id="picksToggle"></span>
         <span>Picks</span>
       </label>
