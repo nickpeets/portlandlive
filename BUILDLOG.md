@@ -556,3 +556,5 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **2026-09-23 — Easter eggs (20a72fad)** — searching "rain" rains on the page 5 s (search still runs); 5 logo taps within ~2.5 s = lightning flash, yellow logo glow, 4 s shower. Reduced-motion users get only the glow.
 
 - **2026-09-23 — Hearts in place (10b0e5ae)** — heartsRefresh(k): on non-feed pages a heart tap updates the matching buttons only; the feed still redraws. Fixes the profile page jumping to the top.
+
+- **2026-09-23 — Ticketmaster safety net (4587f1bc)** — tm_fetch_guarded: six pulls (portland/eugene... x music/comedy) each cached in og/tm_cache.json; a pull that errors, returns <60% of the last good (20+), or returns 0 where there were 3+ reuses the last good still-upcoming events (cache max 7 days old) and logs a WARN. Sep 23 build lost ~100 TM shows incl. Billy Strings. Test: tm_guard_check.
