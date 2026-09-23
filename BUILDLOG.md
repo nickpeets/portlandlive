@@ -546,3 +546,5 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **2026-09-23 — Giveaway banner race (87885320)** — giveawayLoad() shares one promise; a second draw while the first request was out got null and the banner vanished (phones). Failed requests retry.
 
 - **2026-09-23 — Stories part 1 (dabfbce5)** — writers table (moderators + timstout), app_flags.stories_public (false = writers only), stories table + stories_list/story_get/story_save/story_publish/story_delete, stories photo bucket. Page #/stories, reader #/story/<slug>, editor #/stories/edit/<id|new>: text (light markdown), photo, show-card blocks; feed strip 5 days. Pill/Browse/footer hidden unless visible. SQL: supabase/schema-stories.sql.
+
+- **2026-09-23 — Stories last (f5f0873e)** — Stories pill order 8 (after Further Out); phone Browse option moved to the end.
