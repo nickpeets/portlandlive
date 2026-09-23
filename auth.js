@@ -233,7 +233,7 @@
           '<input type="text" id="pfNameInput" maxlength="60" autocomplete="name" data-name-input>' +
           '<button type="button" class="av-edit-btn" data-name-save>Save</button>' +
         "</div>" +
-        '<div class="handle-edit-msg" data-name-msg>The name people see. Your @handle stays the same.</div>' +
+        '<div class="handle-edit-msg" data-name-msg>The name people see on your profile and posts.</div>' +
       "</div>";
     const input = slot.querySelector("[data-name-input]");
     const btn = slot.querySelector("[data-name-save]");
@@ -545,13 +545,16 @@
     }
     slot.hidden = false;
     slot.innerHTML =
+      // Labelled as the @handle, with the @ shown, so it doesn't read as a
+      // second copy of the "Your name" box above it (Sep 23 2026, Nick).
       '<div class="handle-edit">' +
-        '<div class="av-edit-note" style="padding:0">Your handle was made from your name. You can change it once.</div>' +
+        '<div class="av-edit-note" style="padding:0">Your @handle</div>' +
         '<div class="handle-edit-row">' +
-          '<input type="text" maxlength="20" autocapitalize="off" spellcheck="false" placeholder="' + info.handle.replace(/"/g, "&quot;") + '" data-handle-input>' +
+          '<span class="handle-at" aria-hidden="true">@</span>' +
+          '<input type="text" maxlength="20" autocapitalize="off" spellcheck="false" aria-label="New @handle" placeholder="' + info.handle.replace(/"/g, "&quot;") + '" data-handle-input>' +
           '<button type="button" class="av-edit-btn" data-handle-save>Save</button>' +
         '</div>' +
-        '<div class="handle-edit-msg" data-handle-msg></div>' +
+        '<div class="handle-edit-msg" data-handle-msg>How people find and mention you. It was made from your name; you can change it once.</div>' +
       '</div>';
     const input = slot.querySelector("[data-handle-input]");
     const save = slot.querySelector("[data-handle-save]");
