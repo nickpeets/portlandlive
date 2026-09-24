@@ -614,3 +614,5 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **2026-09-24 — Same-password reset (a1bfc773)** — newpass mode treats Supabase "should be different from the old password" as success (the reset link already signed them in); auth.js?v=20260924b.
 
 - **2026-09-24 — PYMK follow state (dd591abd)** — PYMK_FOLLOW map: the profile page records follow/requested/none per person; PYMK cards show a disabled Requested/Following instead of Follow (the 5-minute PYMK cache kept offering Follow).
+
+- **2026-09-24 — Venue safety net (5bda97d6)** — safety_net() in scrape_venues.py replaces the 5-run retention: 0 today keeps last good upcoming rows up to RETAIN_DAYS=7 calendar days (manual_shows.json _last_good); a drop under 40% of the trailing average (avg 8+, not seasonal) adds back the missing upcoming rows; kept venues are not learned into baselines; never-scraped hand venues kept forever; SAFETY NET / EXPIRED log lines. The Goodfoot lost 39 shows when five builds in an afternoon used up the old 5-run window; restored from 1f46b7ea. Test: safety_net_check.
