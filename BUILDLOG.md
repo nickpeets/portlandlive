@@ -602,3 +602,5 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **2026-09-24 — Forgot password (a38f3468)** — Sign In sheet: Forgot your password? -> reset mode (email only, resetPasswordForEmail, redirectTo site root, same answer for any email) -> PASSWORD_RECOVERY on return opens newpass mode (updateUser). Needs Supabase custom SMTP via Resend (smtp.resend.com:465, user resend) -- the default sender only mails team members, 2/hour.
 
 - **2026-09-24 — auth.js version tag (63eb69f3)** — script src auth.js?v=20260924a; bump the v= on every auth.js change (the Forgot password button did nothing for browsers holding the old auth.js).
+
+- **2026-09-24 — Waiting on you (c1dda6eb)** — bell panel groups follow requests and reports under Waiting on you (Clear leaves these until answered) above Everything else; follow requests get inline Allow/Decline (approve_follow/decline_follow); panel header wraps so Clear fits.
