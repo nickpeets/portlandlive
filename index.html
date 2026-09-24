@@ -2730,28 +2730,49 @@ function renderVenues(){
       + (mapsHref(first.address, state.selectedVenue)
           ? `<div class="venue-info venue-addr">${first.address ? esc(first.address)+' ' : ''}<a class="venue-dir" href="${mapsHref(first.address, state.selectedVenue)}" target="_blank" rel="noopener">Directions</a></div>`
           : '');
+    // Upcoming | Past tabs (Sep 24 2026, Nick: "gotta be easier to see past
+    // shows from a venue page" -- they sat below every upcoming show, 145
+    // cards down at Helium). The Past tab swaps the list in place.
+    const vname = state.selectedVenue;
+    const pastMode = !q && state.venuePast === vname;
+    if(!q){
+      head.innerHTML += '<div class="venue-tabs" role="tablist">'
+        + '<button type="button" role="tab" class="venue-tab' + (pastMode ? '' : ' on') + '" data-vtab="up">Upcoming <span>' + vshows.length + '</span></button>'
+        + '<button type="button" role="tab" class="venue-tab' + (pastMode ? ' on' : '') + '" data-vtab="past">Past shows <span data-vpast-n></span></button></div>';
+      head.addEventListener('click', function(e){
+        const t = e.target.closest('[data-vtab]'); if(!t) return;
+        const want = t.getAttribute('data-vtab') === 'past' ? vname : null;
+        if(state.venuePast === want) return;
+        state.venuePast = want;
+        render();
+        const h = document.querySelector('.venue-header'); if(h) h.scrollIntoView({ block: 'start' });
+      });
+    }
     wrap.appendChild(head);
-    if(vshows.length){
-      wrap.appendChild(listOf(vshows, true));
-    } else {
-      const em=document.createElement('div'); em.className='empty';
-      em.innerHTML='<h2>Nothing on the calendar right now.</h2><p>Know a show here we\u2019re missing? <a href="#/submit">Send it in</a>.</p>';
-      wrap.appendChild(em);
+    if(!pastMode){
+      if(vshows.length){
+        wrap.appendChild(listOf(vshows, true));
+      } else {
+        const em=document.createElement('div'); em.className='empty';
+        em.innerHTML='<h2>Nothing on the calendar right now.</h2><p>Know a show here we\u2019re missing? <a href="#/submit">Send it in</a>.</p>';
+        wrap.appendChild(em);
+      }
     }
     // ---- Past shows (Sep 18 2026) -------------------------------------
     // The venue page becomes a record of what has played here, from
     // archive.json, newest first, 30 at a time. Their show pages work; that
-    // is where photos will go.
+    // is where photos will go. Shown under the Past tab; the tab's count
+    // fills in when the archive lands.
     if(!q){
       const past = document.createElement('section');
       past.className = 'venue-past';
-      past.innerHTML = '<h3 class="pf-section-head">Past shows</h3>';
-      wrap.appendChild(past);
-      const vname = state.selectedVenue;
+      if(pastMode) wrap.appendChild(past);
       loadArchive().then(function(a){
-        if(state.selectedVenue !== vname || !past.isConnected) return;
+        if(state.selectedVenue !== vname) return;
         const rows = ((a && a.shows) || []).filter(function(x){ return x.venue === vname && x.date && x.date < todayPacific; })
           .sort(function(x, y){ return y.date < x.date ? -1 : y.date > x.date ? 1 : 0; });
+        const n = document.querySelector('.venue-header [data-vpast-n]'); if(n) n.textContent = rows.length;
+        if(!pastMode || !past.isConnected) return;
         if(!rows.length){ past.innerHTML += '<div class="pf-empty">No past shows on record yet.</div>'; return; }
         let shown = 0;
         const list = document.createElement('div'); past.appendChild(list);
@@ -9742,6 +9763,10 @@ a.inbox-thread-who:hover{text-decoration:underline}
 .gw-linkrow input{flex:1 1 auto;min-width:0;border:1px solid rgba(74,53,38,.35);border-radius:8px;padding:8px 10px;font-size:14px;background:#fff;color:var(--ink)}
 .gw-copy{flex:0 0 auto;border:0;border-radius:999px;background:var(--rust);color:var(--cream);padding:0 16px;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
 .gw-won{background:#f4e1b8}
+.venue-tabs{display:flex;gap:8px;margin:12px 0 4px}
+.venue-tab{border:1px solid rgba(243,234,215,.55);background:none;color:var(--cream);border-radius:999px;padding:6px 14px;font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
+.venue-tab span{opacity:.75;margin-left:4px}
+.venue-tab.on{background:var(--cream);color:var(--ink);border-color:var(--cream)}
 .inbox-sec{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--rust);padding:10px 14px 4px}
 .inbox-sec-note{text-transform:none;letter-spacing:0;font-family:'Bitter',Georgia,serif;font-size:11.5px;color:#7c6a55}
 .inbox-fr{display:flex;flex-direction:column}
