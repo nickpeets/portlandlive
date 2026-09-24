@@ -8852,6 +8852,11 @@ $('#byHoodToggle').addEventListener('click',()=>{const on=!state.byHood;leaveSec
 // leaves every other section, then enters its own. (Tonight/This Week keep
 // their own pairing rules inside their handlers.)
 function leaveSections(except){
+  // Picking a section while on a page (Liner Notes, a story, a profile...)
+  // leaves that page's address behind (Sep 24 2026, Nick: Picks showed with
+  // #/stories still in the address bar, and tapping Liner Notes again did
+  // nothing because the address didn't change).
+  if(except && !isFeedRoute(parseRoute().type)){ try{ history.pushState(null, '', '/'); }catch(_){} }
   const flags = {tonight:'tonightToggle', thisWeek:'thisWeekToggle', picks:'picksToggle', comedy:'comedyToggle',
                  allAges:'allAgesToggle', outOfTown:'outOfTownToggle', festivals:'festivalsToggle', following:'followingToggle', myShows:'myShowsToggle', byHood:'byHoodToggle'};
   for(const k in flags){
@@ -8873,6 +8878,11 @@ function leaveSections(except){
 // Typing a search leaves whatever section was on, so a search always covers
 // every show (Following + a band you don't follow used to come up empty).
 function searchLeavesSections(){ if(state.q && state.q.trim()) leaveSections(null); }
+(function(){
+  // Tapping Liner Notes while its address is already showing still opens it.
+  const lp = document.getElementById('storiesPill');
+  if(lp) lp.addEventListener('click', function(e){ if(location.hash === '#/stories'){ e.preventDefault(); router(); } });
+})();
 $('#tonightToggle').addEventListener('click',()=>{leaveSections('tonight');state.picks=false;$('#picksToggle').classList.remove('on');state.tonight=!state.tonight;if(state.tonight){state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');}$('#tonightToggle').classList.toggle('on',state.tonight);render();});
 $('#thisWeekToggle').addEventListener('click',()=>{leaveSections('thisWeek');state.picks=false;$('#picksToggle').classList.remove('on');state.thisWeek=!state.thisWeek;if(state.thisWeek){state.tonight=false;$('#tonightToggle').classList.remove('on');state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');}$('#thisWeekToggle').classList.toggle('on',state.thisWeek);render();});
 /* Audit (dev) toggle retired from the UI; audit view still reachable via ?audit=1 for dev. */
