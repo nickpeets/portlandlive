@@ -6564,8 +6564,42 @@ function inboxRenderList(){
     list.innerHTML = head + '<div class="inbox-state">' + (tab === 'unread' ? 'Nothing unread.' : (which === 'mail' ? 'No messages yet.' : 'No notifications yet.')) + '</div>';
     return;
   }
-  list.innerHTML = head + shown.map(function(x){
+  // Follow requests and reports wait for an answer, so Clear leaves them
+  // (Sep 24 2026, Nick: "can't clear notifications" -- they were follow
+  // requests). They now sit in their own "Waiting on you" section at the
+  // top, and a follow request has Allow / Decline right on its row.
+  const waits = function(x){ return x.i.kind === 'followreq' || x.i.kind === 'report'; };
+  let ordered = shown, secWait = '', secRest = '';
+  if(which === 'notif' && shown.some(waits)){
+    ordered = shown.filter(waits).concat(shown.filter(function(x){ return !waits(x); }));
+    secWait = '<div class="inbox-sec">Waiting on you <span class="inbox-sec-note">\u2014 Clear leaves these until you answer</span></div>';
+    secRest = shown.some(function(x){ return !waits(x); }) ? '<div class="inbox-sec">Everything else</div>' : '';
+  }
+  let restStarted = false;
+  list.innerHTML = head + ordered.map(function(x, n){
     const i = x.i, idx = x.idx;
+    let sec = '';
+    if(secWait && n === 0) sec = secWait;
+    if(secRest && !restStarted && !waits(x)){ sec += secRest; restStarted = true; }
+    if(i.kind === 'followreq'){
+      return sec + '<div class="inbox-item-wrap inbox-fr">'
+        + '<button type="button" class="inbox-item' + (i.unread ? ' is-unread' : '') + '" data-inbox-open="' + idx + '">'
+        +   '<span class="inbox-item-top">' + avImg(i.otherId, i.who) + '<span class="inbox-item-who">' + esc(i.who) + '</span>'
+        +   (i.unread ? '<span class="inbox-item-dot" aria-label="unread"></span>' : '') + '</span>'
+        +   '<span class="inbox-item-show">' + esc(i.kindLabel || '') + '</span>'
+        +   '<span class="inbox-item-snip">' + esc(i.snippet || '') + '</span>'
+        + '</button>'
+        + '<span class="inbox-fr-acts">'
+        +   '<button type="button" class="mod-dismiss" data-fr-act="approve" data-fr-idx="' + idx + '">Allow</button>'
+        +   '<button type="button" class="mod-uphold" data-fr-act="decline" data-fr-idx="' + idx + '">Decline</button>'
+        + '</span></div>';
+    }
+    return sec + inboxRowHtml(i, idx);
+  }).join('')
+  + (pool.length > shown.length ? '<button type="button" class="inbox-more" data-inbox-more>See previous ' + (which === 'mail' ? 'messages' : 'notifications') + '</button>' : '');
+}
+function inboxRowHtml(i, idx){
+  {
     // A conversation row carries an x to delete it (Sep 17 2026), beside
     // the row rather than inside it: a button cannot sit inside a button.
     const del = i.kind === 'dm'
@@ -6582,8 +6616,7 @@ function inboxRenderList(){
       + '<span class="inbox-item-show">' + esc(i.kindLabel || '') + '</span>'
       + '<span class="inbox-item-snip">' + esc(i.snippet || '') + '</span>'
       + '</button>' + (del ? del + '</div>' : '');
-  }).join('')
-  + (pool.length > shown.length ? '<button type="button" class="inbox-more" data-inbox-more>See previous ' + (which === 'mail' ? 'messages' : 'notifications') + '</button>' : '');
+  }
 }
 
 // Open a conversation INSIDE the panel. Previously clicking a row just
@@ -6958,6 +6991,25 @@ function inboxWire(){
       if(tab){ INBOX.tab[which] = tab.getAttribute('data-inbox-tab'); INBOX.shown[which] = INBOX_PAGE; inboxRenderList(); return; }
       if(e.target.closest('[data-inbox-more]')){ INBOX.shown[which] += INBOX_PAGE; inboxRenderList(); return; }
       if(e.target.closest('[data-inbox-clear]')){ notifClearNow(); return; }
+      const frBtn = e.target.closest('[data-fr-act]');
+      if(frBtn){
+        const item = INBOX.items[parseInt(frBtn.getAttribute('data-fr-idx'), 10)];
+        if(!item || !item.otherId) return;
+        const what = frBtn.getAttribute('data-fr-act');
+        frBtn.parentNode.querySelectorAll('button').forEach(function(b){ b.disabled = true; });
+        (async function(){
+          const sb = inboxClient();
+          let failed = false;
+          try{
+            const { error } = await sb.rpc(what === 'approve' ? 'approve_follow' : 'decline_follow', { p_follower: item.otherId });
+            if(error){ failed = true; console.warn('[inbox] follow request ' + what + ' failed:', error.message); }
+          }catch(err){ failed = true; console.warn('[inbox] follow request ' + what + ' threw:', err); }
+          if(failed){ frBtn.parentNode.querySelectorAll('button').forEach(function(b){ b.disabled = false; }); return; }
+          INBOX.items = INBOX.items.filter(function(x){ return x !== item; });
+          inboxRenderBadge(); inboxRenderList(); inboxLoad();
+        })();
+        return;
+      }
       const delBtn = e.target.closest('[data-inbox-del-thread]');
       if(delBtn){
         const item = INBOX.items[parseInt(delBtn.getAttribute('data-inbox-del-thread'), 10)];
@@ -9504,6 +9556,10 @@ load();
 
 .inbox-state{font-family:'Bitter',Georgia,serif;font-size:12.5px;color:var(--ink);opacity:.75;padding:10px}
 .inbox-head{display:flex;align-items:center;justify-content:space-between;padding:6px 10px 8px;border-bottom:1px solid rgba(0,0,0,.08);margin-bottom:4px}
+/* Room for All / Unread / Clear beside the title in the narrow panel (Clear was cut off). */
+#notifList .inbox-head{flex-wrap:wrap;gap:4px}
+#notifList .inbox-tab{padding:4px 8px}
+#notifList .inbox-clear{margin-left:2px}
 .inbox-title{font-family:'Oswald',sans-serif;font-weight:600;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink);opacity:.8}
 .inbox-tabs{display:inline-flex;gap:4px}
 .inbox-tab{border:0;background:transparent;color:var(--ink);opacity:.6;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.06em;text-transform:uppercase;padding:4px 10px;border-radius:999px;cursor:pointer}
@@ -9676,6 +9732,10 @@ a.inbox-thread-who:hover{text-decoration:underline}
 .gw-linkrow input{flex:1 1 auto;min-width:0;border:1px solid rgba(74,53,38,.35);border-radius:8px;padding:8px 10px;font-size:14px;background:#fff;color:var(--ink)}
 .gw-copy{flex:0 0 auto;border:0;border-radius:999px;background:var(--rust);color:var(--cream);padding:0 16px;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
 .gw-won{background:#f4e1b8}
+.inbox-sec{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--rust);padding:10px 14px 4px}
+.inbox-sec-note{text-transform:none;letter-spacing:0;font-family:'Bitter',Georgia,serif;font-size:11.5px;color:#7c6a55}
+.inbox-fr{display:flex;flex-direction:column}
+.inbox-fr-acts{display:flex;gap:8px;padding:0 14px 10px 54px}
 .auth-link{display:block;margin:10px auto 0;border:0;background:none;padding:4px;font-family:'Bitter',Georgia,serif;font-size:13.5px;color:var(--rust);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
 .auth-link[hidden],.auth-tabs[hidden],.auth-field[hidden]{display:none}
 .sub-note{background:rgba(0,0,0,.14);border-left:4px solid #ffff00;border-radius:8px;padding:10px 14px;margin:0 0 18px;font-family:'Bitter',Georgia,serif;font-size:14.5px;line-height:1.5;color:var(--cream)}
