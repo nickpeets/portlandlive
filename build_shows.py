@@ -2399,6 +2399,7 @@ def main():
     except Exception as e:
         print(f"  Artist audit skipped ({type(e).__name__})")
     write_clean_urls(out["shows"], out.get("venues") or [])
+    write_story_pages()
 
 
 # ---------------------------------------------------------------------------
@@ -2583,6 +2584,76 @@ def _show_desc(s):
     elif s.get("age"):
         bits.append(s["age"])
     return " \u00b7 ".join(bits)
+
+
+# Inside og/ (Sep 23 2026): the nightly workflow already saves og/, so the
+# pages publish without touching the workflow file. Share links read
+# rainorshows.com/og/story/<slug>/ (the og cleanup only removes top-level .jpg
+# cards, never this folder).
+STORY_PAGES = os.path.join(HERE, "og", "story")
+
+
+def _story_rpc(name, body):
+    url, key = _supabase_public_config()
+    if not url or not key:
+        return None
+    import urllib.request
+    req = urllib.request.Request(
+        url + "/rest/v1/rpc/" + name, data=json.dumps(body).encode(), method="POST",
+        headers={"apikey": key, "Authorization": "Bearer " + key, "Content-Type": "application/json"})
+    with urllib.request.urlopen(req, timeout=20) as r:
+        return json.load(r)
+
+
+def _story_desc(body):
+    """The first ~180 characters of a story's text, markdown marks removed."""
+    for b in body or []:
+        if b.get("type") == "text" and (b.get("md") or "").strip():
+            t = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", b["md"])
+            t = re.sub(r"^\s*(?:##\s+|>\s?)", "", t, flags=re.M)
+            t = re.sub(r"[*_`]+", "", t)
+            t = re.sub(r"\s+", " ", t).strip()
+            return (t[:177].rsplit(" ", 1)[0] + "\u2026") if len(t) > 180 else t
+    return "Liner Notes on Rain Or Shows"
+
+
+def write_story_pages(rpc=None):
+    """A share page per published Liner Notes story (Sep 23 2026): og/story/<slug>/
+    so a shared link previews with the story's title, opening lines and cover
+    photo, then opens the story. Read with the anon key -- only what the public
+    can already read (published stories, once Liner Notes is public). Never
+    fatal: a Supabase blip keeps last night's pages."""
+    import shutil
+    rpc = rpc or _story_rpc
+    try:
+        rows = rpc("stories_list", {}) or []
+    except Exception as e:
+        print(f"  WARN: story pages: list failed: {type(e).__name__}: {e}; keeping last pages")
+        return 0
+    rows = [r for r in rows if r.get("status") == "published" and r.get("slug")]
+    shutil.rmtree(STORY_PAGES, ignore_errors=True)
+    os.makedirs(STORY_PAGES, exist_ok=True)
+    n = 0
+    for r in rows:
+        slug = r["slug"]
+        if not re.fullmatch(r"[a-z0-9-]{1,90}", slug):
+            continue
+        body = []
+        try:
+            full = rpc("story_get", {"p_key": slug}) or []
+            body = (full[0].get("body") if full else []) or []
+        except Exception:
+            pass
+        title = f"{r.get('title') or 'Liner Notes'} \u2014 Liner Notes on Rain Or Shows"
+        img = (r.get("cover_url") or "").strip()
+        if not img.startswith("http"):
+            img = DEFAULT_OG_IMAGE
+        os.makedirs(os.path.join(STORY_PAGES, slug), exist_ok=True)
+        with open(os.path.join(STORY_PAGES, slug, "index.html"), "w", encoding="utf-8") as f:
+            f.write(_shell(title, _story_desc(body), img, f"{SITE}/og/story/{slug}/", f"#/story/{slug}"))
+        n += 1
+    print(f"  Story pages: {n} written to og/story/")
+    return n
 
 
 def write_clean_urls(shows, venues):

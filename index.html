@@ -3104,6 +3104,7 @@ function syncSharePath(route){
     if(route.type === 'show' && route.slug) want = '/show/' + encodeURIComponent(route.slug) + '/';
     else if(route.type === 'venue' && route.slug) want = '/venue/' + encodeURIComponent(route.slug) + '/';
     else if(route.type === 'giveaway') want = '/giveaway/';
+    else if(route.type === 'story' && route.key) want = '/og/story/' + encodeURIComponent(route.key) + '/';
     if(location.pathname !== want) history.replaceState(history.state, '', want + location.search + location.hash);
   }catch(_){}
 }
