@@ -2689,6 +2689,13 @@ def write_clean_urls(shows, venues):
             f.write(_shell(title, _show_desc(s), img, f"{SITE}/show/{slug}/", f"#/show/{slug}"))
         n_show += 1
     n_venue = 0
+    # Venue photos set by a moderator (Sep 24 2026) are the venue's share
+    # picture; otherwise the first upcoming poster, then the logo.
+    vphotos = {}
+    try:
+        vphotos = {r["venue"]: r["image_url"] for r in (_story_rpc("venue_photos_all", {}) or []) if r.get("image_url")}
+    except Exception as e:
+        print(f"  note: venue photos not fetched ({type(e).__name__})")
     for v in venues:
         name = v.get("name") or ""
         vs = _venue_slug(name)
@@ -2700,7 +2707,7 @@ def write_clean_urls(shows, venues):
             desc += f" \u00b7 {v['neighborhood']}"
         if v.get("address"):
             desc += f" \u00b7 {v['address']}"
-        img = next((s.get("imageUrl") for s in upcoming if (s.get("imageUrl") or "").startswith("http")), DEFAULT_OG_IMAGE)
+        img = vphotos.get(name) or next((s.get("imageUrl") for s in upcoming if (s.get("imageUrl") or "").startswith("http")), DEFAULT_OG_IMAGE)
         os.makedirs(os.path.join(VENUE_PAGES, vs), exist_ok=True)
         with open(os.path.join(VENUE_PAGES, vs, "index.html"), "w", encoding="utf-8") as f:
             f.write(_shell(f"{name} \u2014 Rain Or Shows", desc, img, f"{SITE}/venue/{vs}/", f"#/venue/{vs}"))

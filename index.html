@@ -2748,7 +2748,9 @@ function renderVenues(){
         const h = document.querySelector('.venue-header'); if(h) h.scrollIntoView({ block: 'start' });
       });
     }
+    if(!q) head.insertAdjacentHTML('beforeend', '<div class="venue-most" data-vmost hidden></div>');
     wrap.appendChild(head);
+    mountVenuePhoto(head, vname);
     if(!pastMode){
       if(vshows.length){
         wrap.appendChild(listOf(vshows, true));
@@ -2772,6 +2774,8 @@ function renderVenues(){
         const rows = ((a && a.shows) || []).filter(function(x){ return x.venue === vname && x.date && x.date < todayPacific; })
           .sort(function(x, y){ return y.date < x.date ? -1 : y.date > x.date ? 1 : 0; });
         const n = document.querySelector('.venue-header [data-vpast-n]'); if(n) n.textContent = rows.length;
+        const most = document.querySelector('.venue-header [data-vmost]');
+        if(most){ const t = venueMostPlayed(rows.concat(vshows)); if(t){ most.innerHTML = t; most.hidden = false; } }
         if(!pastMode || !past.isConnected) return;
         if(!rows.length){ past.innerHTML += '<div class="pf-empty">No past shows on record yet.</div>'; return; }
         let shown = 0;
@@ -3643,6 +3647,97 @@ function reportSignupRef(){
   }catch(_){}
 }
 
+
+
+// ===== Venue page extras (Sep 24 2026, Nick) =====
+// "Most-played here": the acts with the most nights at this room, past and
+// upcoming, from the archive and the feed. Recurring house nights that
+// aren't acts (open mic, karaoke, trivia, jams...) are left out; an act
+// needs 3+ nights to count. Names are cut at "w/", "with", "feat.", ":" and
+// " - " so "Jackstraw w/ Friends" and "Jackstraw" are one act.
+const VM_SKIP = /\b(open mic|open jam|jam night|jam session|karaoke|trivia|bingo|private (event|party)|closed|happy hour|brunch|dj night|comedy (night|open)|showcase|residency)\b/i;
+function venueMostPlayed(rows){
+  const tally = {};
+  (rows || []).forEach(function(s){
+    let t = String(s.title || '').replace(/\s*[\(\[].*?[\)\]]\s*/g, ' ');
+    t = t.split(/\s+(?:w\/|with|feat\.?|featuring|ft\.?|presents)\s+|\s*:\s+|\s+[-\u2013\u2014]\s+/i)[0].trim();
+    if(!t || t.length < 3 || VM_SKIP.test(s.title || '')) return;
+    const k = t.toLowerCase().replace(/^the\s+/, '').replace(/[^a-z0-9]+/g, ' ').trim();
+    if(!k) return;
+    const e = tally[k] = tally[k] || { n: 0, dates: {}, names: {} };
+    if(e.dates[s.date]) return;               // one night, however many sets
+    e.dates[s.date] = 1; e.n++;
+    e.names[t] = (e.names[t] || 0) + 1;
+  });
+  const top = Object.keys(tally).map(function(k){
+    const e = tally[k];
+    const name = Object.keys(e.names).sort(function(a, b){ return e.names[b] - e.names[a]; })[0];
+    return { name: name, n: e.n };
+  }).filter(function(x){ return x.n >= 3; }).sort(function(a, b){ return b.n - a.n || a.name.localeCompare(b.name); }).slice(0, 3);
+  if(!top.length) return '';
+  return '<span class="venue-most-k">Most-played here</span> '
+    + top.map(function(x, i){ return '<b>' + esc(x.name) + '</b> (' + x.n + (i === 0 ? ' nights' : '') + ')'; }).join(' \u00b7 ');
+}
+
+// The venue's photo across the top of its page, set by a moderator (Set /
+// Remove under the header). Stored in the posters bucket under venues/.
+const VENUE_PHOTO_CACHE = {};
+async function mountVenuePhoto(head, vname){
+  const sb = window.__plAuth; if(!sb || !head) return;
+  let url = VENUE_PHOTO_CACHE[vname];
+  if(url === undefined){
+    try{ const r = await sb.rpc('venue_photo', { p_venue: vname }); url = (r && !r.error && typeof r.data === 'string') ? r.data : ''; }catch(_){ url = ''; }
+    VENUE_PHOTO_CACHE[vname] = url;
+  }
+  if(!head.isConnected) return;
+  function paint(){
+    let ph = head.querySelector('.venue-photo');
+    if(url){
+      if(!ph){ ph = document.createElement('div'); ph.className = 'venue-photo'; head.insertBefore(ph, head.firstChild); }
+      ph.style.backgroundImage = "url('" + url.replace(/'/g, '%27') + "')";
+    } else if(ph){ ph.remove(); }
+  }
+  paint();
+  if(typeof rpIsModerator !== 'function' || !(await rpIsModerator()) || !head.isConnected) return;
+  const box = document.createElement('div');
+  box.className = 'poster-edit venue-photo-edit';
+  box.innerHTML = '<button type="button" class="poster-edit-btn" data-vp-pick>&#128444; ' + (url ? 'Change' : 'Set') + ' venue photo</button>'
+    + '<button type="button" class="poster-edit-btn poster-edit-clear" data-vp-clear' + (url ? '' : ' hidden') + '>Remove</button>'
+    + '<input type="file" accept="image/*" data-vp-file style="display:none">'
+    + '<span class="poster-edit-note" data-vp-note></span>';
+  head.appendChild(box);
+  const note = box.querySelector('[data-vp-note]');
+  const path = 'venues/' + venueSlug(vname).slice(0, 150) + '.jpg';
+  box.addEventListener('click', async function(e){
+    if(e.target.closest('[data-vp-pick]')){ box.querySelector('[data-vp-file]').click(); return; }
+    if(e.target.closest('[data-vp-clear]')){
+      if(!confirm('Remove this venue\u2019s photo?')) return;
+      const r = await sb.rpc('set_venue_photo', { p_venue: vname, p_image_url: null });
+      if(r.error){ note.textContent = 'Couldn\u2019t remove: ' + r.error.message; return; }
+      try{ await sb.storage.from('posters').remove([path]); }catch(_){}
+      url = ''; VENUE_PHOTO_CACHE[vname] = ''; paint();
+      box.querySelector('[data-vp-clear]').hidden = true;
+      box.querySelector('[data-vp-pick]').innerHTML = '&#128444; Set venue photo';
+      note.textContent = 'Removed.';
+    }
+  });
+  box.querySelector('[data-vp-file]').addEventListener('change', async function(){
+    const f = this.files && this.files[0]; this.value = ''; if(!f) return;
+    note.textContent = 'Uploading\u2026';
+    try{
+      const out = await phResize(f);
+      const up = await sb.storage.from('posters').upload(path, out.blob, { contentType: 'image/jpeg', upsert: true });
+      if(up.error){ note.textContent = 'Upload failed: ' + up.error.message; return; }
+      const u = sb.storage.from('posters').getPublicUrl(path).data.publicUrl + '?v=' + Date.now();
+      const r = await sb.rpc('set_venue_photo', { p_venue: vname, p_image_url: u });
+      if(r.error){ note.textContent = 'Couldn\u2019t save: ' + r.error.message; return; }
+      url = u; VENUE_PHOTO_CACHE[vname] = u; paint();
+      box.querySelector('[data-vp-clear]').hidden = false;
+      box.querySelector('[data-vp-pick]').innerHTML = '&#128444; Change venue photo';
+      note.textContent = 'Saved. It\u2019s the venue\u2019s share picture from the next build.';
+    }catch(err){ note.textContent = 'That didn\u2019t work: ' + (err && err.message || err); }
+  });
+}
 
 // ===== @-mention autocomplete (Sep 23 2026, Nick) =====
 // Type "@" and a couple of letters in a comment and matching people drop
@@ -9764,6 +9859,11 @@ a.inbox-thread-who:hover{text-decoration:underline}
 .gw-copy{flex:0 0 auto;border:0;border-radius:999px;background:var(--rust);color:var(--cream);padding:0 16px;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
 .gw-won{background:#f4e1b8}
 .venue-tabs{display:flex;gap:8px;margin:12px 0 4px}
+.venue-photo{width:100%;aspect-ratio:16/7;border-radius:12px;background:#2f5a4a center/cover no-repeat;margin:0 0 12px;box-shadow:0 6px 14px rgba(20,40,30,.18)}
+.venue-most{font-family:'Bitter',Georgia,serif;font-size:14px;line-height:1.5;color:var(--cream);margin:10px 0 2px}
+.venue-most[hidden]{display:none}
+.venue-most-k{font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.1em;text-transform:uppercase;opacity:.8;margin-right:4px}
+.venue-photo-edit{margin:8px 0 0}
 .venue-tab{border:1px solid rgba(243,234,215,.55);background:none;color:var(--cream);border-radius:999px;padding:6px 14px;font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
 .venue-tab span{opacity:.75;margin-left:4px}
 .venue-tab.on{background:var(--cream);color:var(--ink);border-color:var(--cream)}
