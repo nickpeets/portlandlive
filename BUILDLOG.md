@@ -612,3 +612,5 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **2026-09-24 — Venue extras (0e741a4f)** — venueMostPlayed(): top 3 acts by nights at the room (archive + upcoming; house nights skipped; 3+ nights; w/ / feat / : / - trimmed); venue photo from venue_photos (moderator Set/Change/Remove on the venue page, stored posters/venues/<slug>.jpg), used as the venue share image by the build. SQL: supabase/schema-venue-photos.sql.
 
 - **2026-09-24 — Same-password reset (a1bfc773)** — newpass mode treats Supabase "should be different from the old password" as success (the reset link already signed them in); auth.js?v=20260924b.
+
+- **2026-09-24 — PYMK follow state (dd591abd)** — PYMK_FOLLOW map: the profile page records follow/requested/none per person; PYMK cards show a disabled Requested/Following instead of Follow (the 5-minute PYMK cache kept offering Follow).
