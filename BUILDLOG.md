@@ -610,3 +610,5 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **2026-09-24 — Venue tabs (a2ad7e26)** — venue header gets Upcoming N / Past shows N tabs; Past swaps the list in place (archive, newest first, 30 + Show more); each venue opens on Upcoming; tabs hide while searching within a venue.
 
 - **2026-09-24 — Venue extras (0e741a4f)** — venueMostPlayed(): top 3 acts by nights at the room (archive + upcoming; house nights skipped; 3+ nights; w/ / feat / : / - trimmed); venue photo from venue_photos (moderator Set/Change/Remove on the venue page, stored posters/venues/<slug>.jpg), used as the venue share image by the build. SQL: supabase/schema-venue-photos.sql.
+
+- **2026-09-24 — Same-password reset (a1bfc773)** — newpass mode treats Supabase "should be different from the old password" as success (the reset link already signed them in); auth.js?v=20260924b.
