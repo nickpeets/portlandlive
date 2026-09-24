@@ -4502,7 +4502,13 @@ function blockMenu(anchor, person, onBlocked){
     btn.setAttribute('aria-expanded', 'true');
     panel = document.createElement('div');
     panel.className = 'blk-panel';
-    panel.innerHTML = '<button type="button" class="blk-item" data-blk-ask>Block @' + esc(person.handle) + '</button>';
+    // Report profile photo (moved here from the Who's Going rows, Sep 24
+    // 2026): only when there is a photo, and once reported it says so.
+    const av = (person.avatar_url || (AV_CACHE[person.id] && AV_CACHE[person.id].avatar_url)) ? person.id : null;
+    const reportItem = !av ? '' : (typeof RP_MINE !== 'undefined' && RP_MINE.has(av))
+      ? '<button type="button" class="blk-item" disabled>Photo reported</button>'
+      : '<button type="button" class="blk-item" data-rp-type="avatar" data-rp-id="' + esc(av) + '">Report profile photo</button>';
+    panel.innerHTML = reportItem + '<button type="button" class="blk-item" data-blk-ask>Block @' + esc(person.handle) + '</button>';
     wrap.appendChild(panel);
   });
   wrap.addEventListener('click', async function(e){
@@ -7311,12 +7317,9 @@ function wgRow(r, myUserId, iAmGoing){
     actions = '<button type="button" class="tx-msgbtn' + (unread ? ' tx-msgbtn-unread' : '') + '" data-wg-open="'+esc(r.user_id)+'">'
       + (existing ? (unread ? 'New message' : 'View messages') : 'Message') + '</button>';
   }
-  // An avatar has no row of its own, so it's reported by its owner's user id
-  // (target_type 'avatar'). Only offered where there's actually a photo to
-  // report -- an initial-circle can't be objectionable.
-  if(myUserId && !mine && AV_CACHE[r.user_id] && AV_CACHE[r.user_id].avatar_url){
-    actions += rpButton('avatar', r.user_id, false, true);
-  }
+  // The bare report-photo flag that used to sit here read as a mystery
+  // marker (Sep 24 2026, Nick: "why flags on just a few names?"). Reporting
+  // a profile photo now lives in the person's profile ⋯ menu, spelled out.
   return '<li class="wg-row" data-wg-id="'+esc(r.user_id)+'">'
     + avImg(r.user_id, r.display_name)
     + '<span class="wg-name">' + nameLink(r.display_name, r.handle) + (mine ? ' (you)' : '') + '</span>'
