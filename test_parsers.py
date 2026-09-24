@@ -531,6 +531,31 @@ def batch_four_check():
     print("  ok   batch four                    Elks, Hoku, Cazadero, Hopworks, Threshold, Beach Hut read from their captures")
 
 
+def safety_net_check():
+    """The venue safety net (Sep 24 2026: The Goodfoot lost all 39 shows when
+    five builds in one afternoon used up a 5-run retention)."""
+    import datetime as _dt
+    t = _dt.date(2026, 9, 24)
+    row = lambda v, d, title: {"venue": v, "date": d, "title": title}
+    prev = [row("The Goodfoot", "2026-09-26", f"Band {i}") for i in range(39)] \
+         + [row("Big Room", "2026-10-0%d" % (i % 9 + 1), f"Act {i}") for i in range(20)] \
+         + [row("Oregon Zoo", "2026-10-01", "Zoo Lights")] \
+         + [row("Old Room", "2026-10-02", "Last Show")]
+    hist = {"The Goodfoot": [39] * 5 + [0] * 5, "Big Room": [20] * 10, "Oregon Zoo": [0] * 10, "Old Room": [5] * 5 + [0] * 5}
+    today = [row("Big Room", "2026-10-01", "Act 0"), row("Big Room", "2026-10-02", "Act 1")]   # 2 of ~20: partial
+    keep, lg, rep = sv.safety_net(today, prev, {"The Goodfoot": "2026-09-23", "Old Room": "2026-09-10"}, hist, t)
+    kv = {}
+    for r in keep:
+        kv[r["venue"]] = kv.get(r["venue"], 0) + 1
+    ok = (kv.get("The Goodfoot") == 39 and kv.get("Big Room") == 18 and kv.get("Oregon Zoo") == 1
+          and "Old Room" in rep["expired"] and "Old Room" not in kv and lg.get("Big Room") == "2026-09-24")
+    if not ok:
+        print(f"  FAIL safety net                   kept={kv} report={rep}")
+        print("GATE FAILURE")
+        sys.exit(1)
+    print("  ok   safety net                    Goodfoot 0 -> kept 39; Big Room 2 of ~20 -> 18 added back; hand-added zoo kept; 14-day-dead room expired")
+
+
 if __name__ == "__main__":
     main()
     talk_page_check()
@@ -539,3 +564,4 @@ if __name__ == "__main__":
     tm_same_act_check()
     tm_guard_check()
     batch_four_check()
+    safety_net_check()

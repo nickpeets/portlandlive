@@ -6246,8 +6246,98 @@ def retention_status(hist):
     return expired, retained
 
 
+# --- Layer 4: the safety net, by days and for partial drops (Sep 24 2026) ----
+# The Goodfoot lost all 39 shows: its source failed, retention kept them for
+# 5 RUNS, and five manual builds in one afternoon used those up in hours.
+# Now, for every venue:
+#   * a venue that scrapes ZERO keeps its last good shows for up to
+#     RETAIN_DAYS calendar days since its last good scrape -- however many
+#     builds run in between;
+#   * a venue that suddenly scrapes FAR FEWER than usual (under PARTIAL_PCT of
+#     its trailing average, average PARTIAL_MIN_AVG+) is treated as a broken
+#     scrape too: today's rows plus the last good upcoming rows it didn't
+#     return, and the count isn't learned into the baseline;
+#   * seasonal venues are exempt from the partial rule (they really do empty);
+#   * past the window, the shows expire and the log says the source is dead.
+# Last good dates live in manual_shows.json under "_last_good".
+RETAIN_DAYS = 7
+PARTIAL_PCT = 0.40
+PARTIAL_MIN_AVG = 8
+
+
+def _show_key(s):
+    return (s.get("date") or "", re.sub(r"[^a-z0-9]+", "", (s.get("title") or "").lower()))
+
+
+def safety_net(scraped, prev_rows, prev_last_good, hist, today):
+    """Returns (rows_to_keep_from_before, last_good, report). Pure: no I/O.
+
+    scraped: this run's rows. prev_rows: last manual_shows.json rows (scraped
+    ones, not hand-added). hist: venue_baselines BEFORE this run."""
+    from collections import Counter, defaultdict
+    today_s = today.isoformat()
+    counts = Counter(s.get("venue", "") for s in scraped)
+    by_prev = defaultdict(list)
+    for s in prev_rows:
+        if (s.get("date") or "") >= today_s:
+            by_prev[s.get("venue", "")].append(s)
+    last_good = dict(prev_last_good or {})
+    keep, report = [], {"zero": {}, "partial": {}, "expired": {}}
+    for v in set(by_prev) | set(counts):
+        if not v:
+            continue
+        past = [x for x in (hist.get(v) or []) if x > 0]
+        avg = sum(past) / len(past) if past else 0
+        now = counts.get(v, 0)
+        if now == 0 and not past:
+            # Never scraped (Dublin Pub, Oregon Zoo...): rows added by hand
+            # without the _hand flag. Always kept, never expire.
+            keep.extend(by_prev.get(v) or [])
+            continue
+        broken_zero = now == 0 and by_prev.get(v)
+        broken_partial = (0 < now < PARTIAL_PCT * avg and avg >= PARTIAL_MIN_AVG
+                          and v not in SEASONAL_VENUES and len(by_prev.get(v) or []) > now)
+        if not (broken_zero or broken_partial):
+            if now > 0:
+                last_good[v] = today_s
+            continue
+        since = last_good.get(v)
+        if since is None:
+            since = last_good[v] = today_s          # first run of this rule: start the clock
+        age = (today - datetime.date.fromisoformat(since)).days
+        if age > RETAIN_DAYS:
+            report["expired"][v] = age
+            continue
+        if broken_zero:
+            keep.extend(by_prev[v])
+            report["zero"][v] = (len(by_prev[v]), age)
+        else:
+            have = {_show_key(s) for s in scraped if s.get("venue") == v}
+            extra = [s for s in by_prev[v] if _show_key(s) not in have]
+            keep.extend(extra)
+            report["partial"][v] = (now, round(avg), len(extra), age)
+    return keep, last_good, report
+
+
 def main():
     scraped, zero_reports = scrape()
+    target = os.path.join(os.path.dirname(__file__), "manual_shows.json")
+    try:
+        prev = json.load(open(target))
+    except Exception:
+        prev = {}
+    prev_all = prev.get("shows", []) if isinstance(prev, dict) else []
+    try:
+        _hist_before = json.load(open(_BASELINE_FILE))
+    except Exception:
+        _hist_before = {}
+    today = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=-8))).date()
+    keep, last_good, net = safety_net(scraped, [s for s in prev_all if not s.get("_hand")],
+                                      prev.get("_last_good", {}) if isinstance(prev, dict) else {},
+                                      _hist_before, today)
+    # A venue on the net this run served old data: compare it, don't learn it.
+    DEGRADED_VENUES.update(net["zero"].keys())
+    DEGRADED_VENUES.update(net["partial"].keys())
     check_baselines(scraped)
     # Reported BEFORE the retention/staleness block, because this is the
     # upstream cause of the staleness that block describes -- and unlike
@@ -6260,46 +6350,31 @@ def main():
         print("  ^ a source that loads but yields nothing is a parser problem, not an "
               "empty calendar. If a source is legitimately empty (seasonal, closed), "
               'mark it {"may_be_empty": True} in SOURCES so this stays worth reading.')
-    scraped_venues = {s["venue"] for s in scraped}
-    target = os.path.join(os.path.dirname(__file__), "manual_shows.json")
-    try:
-        _hist = json.load(open(_BASELINE_FILE))
-    except Exception:
-        _hist = {}
-    _expired, _retained = retention_status(_hist)
 
-    hand = []
-    if os.path.exists(target):
-        try:
-            hand = [s for s in json.load(open(target)).get("shows", [])
-                    if s.get("_hand")
-                    or (s.get("venue") not in scraped_venues
-                        and s.get("venue") not in _expired)]
-        except Exception:
-            pass
+    if net["zero"] or net["partial"]:
+        print(f"SAFETY NET: {len(net['zero']) + len(net['partial'])} venue(s) kept their last good shows "
+              f"(up to {RETAIN_DAYS} days):")
+        for v, (n, age) in sorted(net["zero"].items()):
+            print(f"  KEPT: {v} -- scraped 0 today; showing {n} upcoming from the last good scrape "
+                  f"({age} day(s) ago)")
+        for v, (now, avg, extra, age) in sorted(net["partial"].items()):
+            print(f"  KEPT: {v} -- scraped {now} (usually ~{avg}); added back {extra} upcoming "
+                  f"from the last good scrape ({age} day(s) ago)")
+    if net["expired"]:
+        print(f"SAFETY NET EXPIRED: {len(net['expired'])} venue(s) dropped after {RETAIN_DAYS}+ days "
+              f"without a good scrape:")
+        for v, age in sorted(net["expired"].items()):
+            note = "seasonal venue, off-season" if v in SEASONAL_VENUES else "source likely dead -- fix or remove the parser"
+            print(f"  EXPIRED: {v} ({age} days) -- {note}")
 
-    # Per-venue staleness signal, independent of the decaying DROPPED-TO-0 alert.
-    if _expired:
-        print(f"RETENTION EXPIRED: {len(_expired)} venue(s) dropped after "
-              f"{_RETENTION_MAX_ZERO_RUNS}+ zero-scrape runs (now honest-empty):")
-        for v, z in sorted(_expired.items()):
-            if v in SEASONAL_VENUES:
-                print(f"  EXPIRED: {v} ({z} consecutive zero runs) -- seasonal venue, off-season; "
-                      f"nothing to fix, it comes back on its own")
-            else:
-                print(f"  EXPIRED: {v} ({z} consecutive zero runs) -- source likely dead, fix or remove the parser")
-    if _retained:
-        print(f"SERVING RETAINED DATA: {len(_retained)} venue(s) are showing a previous "
-              f"scrape, not fresh data:")
-        for v, z in sorted(_retained.items()):
-            print(f"  STALE: {v} ({z}/{_RETENTION_MAX_ZERO_RUNS} zero runs before entries expire)")
-
-    merged = hand + scraped
+    hand = [s for s in prev_all if s.get("_hand")]
+    merged = hand + keep + scraped
     with open(target, "w") as f:
         json.dump({"_comment": "Auto-generated by scrape_venues.py + hand-added shows.",
+                   "_last_good": last_good,
                    "shows": merged}, f, indent=2, ensure_ascii=False)
     print(f"Wrote {len(merged)} shows to manual_shows.json "
-          f"({len(scraped)} scraped, {len(hand)} hand-added)")
+          f"({len(scraped)} scraped, {len(keep)} kept by the safety net, {len(hand)} hand-added)")
 
 if __name__ == "__main__":
     main()
