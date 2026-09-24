@@ -49,6 +49,63 @@ _CHALLENGE_TITLES = ("just a moment", "attention required", "checking your brows
                      "verifying you are human", "access denied")
 
 
+# ---- A window, when a wall wants one (Sep 24 2026) --------------------------
+# The Goodfoot's Cloudflare check stopped clearing for any headless browser
+# (25 s of "Just a moment..."), yet a WINDOWED Chromium on a fake screen
+# clears it in one second. So a walled source can ask for headed=True: if a
+# display is available (DISPLAY set, or Xvfb on the machine -- Playwright's
+# --with-deps installs it) the browser gets a window on it; otherwise it
+# falls back to the headless launch and the caller finds out the usual way.
+import os, shutil, subprocess
+
+
+class _Display:
+    def __init__(self):
+        self.proc = None
+        self.prev = os.environ.get("DISPLAY")
+
+    def __enter__(self):
+        if self.prev:
+            return self
+        xvfb = shutil.which("Xvfb")
+        if not xvfb:
+            return self
+        for n in (99, 98, 97, 96):
+            if os.path.exists(f"/tmp/.X{n}-lock"):
+                continue
+            self.proc = subprocess.Popen([xvfb, f":{n}", "-screen", "0", "1366x900x24", "-nolisten", "tcp"],
+                                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            os.environ["DISPLAY"] = f":{n}"
+            time.sleep(0.8)
+            if self.proc.poll() is None:
+                return self
+            self.proc = None
+        return self
+
+    @property
+    def ok(self):
+        return bool(os.environ.get("DISPLAY"))
+
+    def __exit__(self, *a):
+        if self.proc is not None:
+            try:
+                self.proc.terminate()
+                self.proc.wait(timeout=5)
+            except Exception:
+                pass
+        if self.prev is None:
+            os.environ.pop("DISPLAY", None)
+        else:
+            os.environ["DISPLAY"] = self.prev
+
+
+def _launch_headed(p):
+    return p.chromium.launch(
+        headless=False,
+        args=["--disable-blink-features=AutomationControlled", "--no-sandbox"],
+    )
+
+
 def _launch(p):
     # Not the default headless mode: Cloudflare fingerprints it. Chromium's
     # newer headless ("--headless=new") presents a normal browser surface and
@@ -124,18 +181,21 @@ def fetch_headless(url, wait_s=25, settle_s=2):
             browser.close()
 
 
-def fetch_headless_json(entry_url, json_url, wait_s=25):
+def fetch_headless_json(entry_url, json_url, wait_s=25, headed=False):
     """Clear the challenge on `entry_url`, then read `json_url` in the same
     session and return the parsed JSON. This is the preferred path: the
     walled venue's own API, reached with the clearance cookie the browser
-    just earned."""
+    just earned. headed=True asks for a windowed browser (see _Display)."""
     try:
         from playwright.sync_api import sync_playwright
     except ImportError as e:
         raise HeadlessUnavailable("playwright not installed") from e
 
-    with sync_playwright() as p:
-        browser = _launch(p)
+    with _Display() as disp, sync_playwright() as p:
+        use_window = headed and disp.ok
+        if headed and not use_window:
+            print("  note: no display for a windowed browser (Xvfb missing); trying headless")
+        browser = _launch_headed(p) if use_window else _launch(p)
         try:
             ctx = _new_context(browser)
             page = ctx.new_page()

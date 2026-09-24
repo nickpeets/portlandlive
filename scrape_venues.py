@@ -3282,7 +3282,10 @@ _GOODFOOT_NONMUSIC = re.compile(
 def parse_goodfoot(html, today):
     from fetch_headless import fetch_headless_json
     import html as _html
-    data = fetch_headless_json(GOODFOOT_HOME, GOODFOOT_API)
+    # Windowed browser (Sep 24 2026): Cloudflare stopped clearing for any
+    # headless browser here; a Chromium with a window on a fake screen
+    # clears in a second and the API answers with all 50 events.
+    data = fetch_headless_json(GOODFOOT_HOME, GOODFOOT_API, headed=True)
     events = data.get("events", []) if isinstance(data, dict) else []
     nb, addr = VENUE_INFO.get("The Goodfoot", ("Buckman", "2845 SE Stark St"))
     out, seen = [], set()
