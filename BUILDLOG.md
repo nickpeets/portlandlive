@@ -596,3 +596,5 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **2026-09-23 — @-mention autocomplete (4598da52)** — mentionAutocomplete() on the comment box: "@" + 2 letters calls search_profiles (6), arrows/Enter/Tab or tap fills "@handle "; Esc/blur closes; Enter is a newline when closed.
 
 - **2026-09-23 — Name vs handle (5dd46d8a)** — menu order Your name, then Your @handle (one-time rename, only for auto-made handles) with an @ prefix and a one-line explanation; they read as duplicates before.
+
+- **2026-09-24 — Story share pages (839cde8b)** — write_story_pages(): nightly og/story/<slug>/index.html per published story (og title, first ~180 chars, cover_url else logo) via stories_list/story_get with the anon key; lives in og/ so the workflow already commits it; og .jpg cleanup never touches it. Address bar shows /og/story/<slug>/.
