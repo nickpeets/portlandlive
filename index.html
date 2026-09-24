@@ -1372,6 +1372,8 @@ body{
           </div>
           <button type="submit" class="auth-submit" id="authSubmitBtn">Sign In</button>
           <div class="auth-msg" id="authMsg"></div>
+          <button type="button" class="auth-link" id="authForgot">Forgot your password?</button>
+          <button type="button" class="auth-link" id="authBackToSignIn" hidden>&larr; Back to sign in</button>
         </form>
       </div>
     </div>
@@ -9674,6 +9676,8 @@ a.inbox-thread-who:hover{text-decoration:underline}
 .gw-linkrow input{flex:1 1 auto;min-width:0;border:1px solid rgba(74,53,38,.35);border-radius:8px;padding:8px 10px;font-size:14px;background:#fff;color:var(--ink)}
 .gw-copy{flex:0 0 auto;border:0;border-radius:999px;background:var(--rust);color:var(--cream);padding:0 16px;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
 .gw-won{background:#f4e1b8}
+.auth-link{display:block;margin:10px auto 0;border:0;background:none;padding:4px;font-family:'Bitter',Georgia,serif;font-size:13.5px;color:var(--rust);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+.auth-link[hidden],.auth-tabs[hidden],.auth-field[hidden]{display:none}
 .sub-note{background:rgba(0,0,0,.14);border-left:4px solid #ffff00;border-radius:8px;padding:10px 14px;margin:0 0 18px;font-family:'Bitter',Georgia,serif;font-size:14.5px;line-height:1.5;color:var(--cream)}
 .gw-odds{margin:0 0 10px}
 .gw-odds[hidden]{display:none}

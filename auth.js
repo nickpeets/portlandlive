@@ -71,19 +71,38 @@
 
   let mode = "signin"; // "signin" | "signup"
 
+  // Modes: signin, signup, and (Sep 24 2026, forgot password) "reset" --
+  // email only, sends a reset link -- and "newpass" -- password only, shown
+  // when someone arrives from that link.
   function setMode(next) {
     mode = next;
     const isSignUp = mode === "signup";
-    el.tabSignIn.classList.toggle("active", !isSignUp);
+    const isReset = mode === "reset";
+    const isNewPass = mode === "newpass";
+    el.tabSignIn.classList.toggle("active", mode === "signin");
     el.tabSignUp.classList.toggle("active", isSignUp);
     el.displayNameField.hidden = !isSignUp;
     el.displayNameInput.required = isSignUp;
     if (el.handleField) el.handleField.hidden = !isSignUp;
     if (el.handleInput) el.handleInput.required = isSignUp;
-    el.passwordInput.autocomplete = isSignUp ? "new-password" : "current-password";
-    el.title.textContent = isSignUp ? "Sign Up" : "Sign In";
-    el.submitBtn.textContent = isSignUp ? "Create account" : "Sign In";
-    setMsg("");
+    const emailField = el.emailInput.closest(".auth-field");
+    const passField = el.passwordInput.closest(".auth-field");
+    if (emailField) emailField.hidden = isNewPass;
+    el.emailInput.required = !isNewPass;
+    if (passField) passField.hidden = isReset;
+    el.passwordInput.required = !isReset;
+    el.passwordInput.autocomplete = (isSignUp || isNewPass) ? "new-password" : "current-password";
+    const passLabel = passField && passField.querySelector(".auth-label");
+    if (passLabel) passLabel.textContent = isNewPass ? "New password" : "Password";
+    const forgot = document.getElementById("authForgot");
+    if (forgot) forgot.hidden = mode !== "signin";
+    const back = document.getElementById("authBackToSignIn");
+    if (back) back.hidden = !isReset;
+    const tabs = el.tabSignIn.parentNode;
+    if (tabs) tabs.hidden = isReset || isNewPass;
+    el.title.textContent = isSignUp ? "Sign Up" : isReset ? "Reset your password" : isNewPass ? "Choose a new password" : "Sign In";
+    el.submitBtn.textContent = isSignUp ? "Create account" : isReset ? "Send reset link" : isNewPass ? "Save new password" : "Sign In";
+    setMsg(isReset ? "Enter the email you signed up with and we\u2019ll send you a link to set a new password." : "");
   }
 
   function setMsg(text, isError) {
@@ -96,7 +115,7 @@
     el.form.reset();
     el.overlay.classList.add("open");
     el.overlay.setAttribute("aria-hidden", "false");
-    (mode === "signup" ? el.displayNameInput : el.emailInput).focus();
+    (mode === "signup" ? el.displayNameInput : mode === "newpass" ? el.passwordInput : el.emailInput).focus();
   }
 
   function closeSheet() {
@@ -651,6 +670,25 @@
         } else {
           setMsg("Check your email to confirm your account, then sign in.", false);
         }
+      } else if (mode === "reset") {
+        // Always the same answer, whether or not the email has an account,
+        // so the form can't be used to find out who's signed up.
+        const { error } = await sb.auth.resetPasswordForEmail(el.emailInput.value.trim(), {
+          redirectTo: location.origin + "/"
+        });
+        if (error && /rate|too many/i.test(error.message || "")) {
+          setMsg("Too many tries. Wait a few minutes and try again.", true);
+          return;
+        }
+        setMsg("If there\u2019s an account for that email, a reset link is on its way. Check your inbox (and spam).", false);
+      } else if (mode === "newpass") {
+        const pw = el.passwordInput.value;
+        if (!pw || pw.length < 6) { setMsg("Use at least 6 characters.", true); return; }
+        const { error } = await sb.auth.updateUser({ password: pw });
+        if (error) { setMsg(error.message, true); return; }
+        setMsg("Password updated. You\u2019re signed in.", false);
+        await refreshAuthUI();
+        setTimeout(closeSheet, 1200);
       } else {
         const { error } = await sb.auth.signInWithPassword({
           email: el.emailInput.value.trim(),
@@ -704,7 +742,18 @@
 
   sb.auth.onAuthStateChange((_event, _session) => {
     refreshAuthUI();
+    // Arrived from a password-reset email: ask for the new password.
+    if (_event === "PASSWORD_RECOVERY") setTimeout(() => openSheet("newpass"), 300);
   });
+  const forgotBtn = document.getElementById("authForgot");
+  if (forgotBtn) forgotBtn.addEventListener("click", () => {
+    const email = el.emailInput.value;
+    setMode("reset");
+    el.emailInput.value = email;
+    el.emailInput.focus();
+  });
+  const backBtn = document.getElementById("authBackToSignIn");
+  if (backBtn) backBtn.addEventListener("click", () => setMode("signin"));
 
   refreshAuthUI();
 })();
