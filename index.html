@@ -4593,6 +4593,9 @@ async function renderProfileRoute(handle){
   var iFollow = !!(stateRow && stateRow.i_follow);
   var followsMe = !!(stateRow && stateRow.follows_me);
   var iRequested = !!(stateRow && stateRow.i_requested);   // my request is waiting (Sep 17 2026)
+  // Tell People you may know, so its card for this person matches (Sep 24
+  // 2026, Nick: a request made here still showed "Follow" in the PYMK bar).
+  if(!isMe && stateRow) PYMK_FOLLOW[p.id] = iFollow ? 'following' : iRequested ? 'requested' : '';
   if(out[0].error) console.warn('[profile] stubs failed:', out[0].error.message);
   if(out[1].error) console.warn('[profile] attendance failed:', out[1].error.message);
   if(out[3].error) console.warn('[profile] follow counts failed:', out[3].error.message);
@@ -7847,6 +7850,9 @@ function pymkWhy(u){
   const s = u.shared_shows || 0;
   return s ? ('At ' + s + ' of your shows') : 'New on Rain Or Shows';
 }
+// Follow status learned elsewhere this visit (a profile page, a PYMK tap),
+// so a card never offers "Follow" to someone you've already asked.
+const PYMK_FOLLOW = {};
 async function mountPymk(parent){
   const sb = profileClient();
   if(!sb || !state._signedIn) return;
@@ -7883,7 +7889,9 @@ async function mountPymk(parent){
           +   '<span class="pymk-handle">@' + esc(u.handle) + '</span>'
           +   '<span class="pymk-why">' + esc(pymkWhy(u)) + '</span>'
           + '</a>'
-          + '<button type="button" class="pymk-follow" data-pymk-follow="' + esc(u.id) + '">Follow</button>'
+          + (PYMK_FOLLOW[u.id]
+              ? '<button type="button" class="pymk-follow is-requested" disabled>' + (PYMK_FOLLOW[u.id] === 'following' ? 'Following' : 'Requested') + '</button>'
+              : '<button type="button" class="pymk-follow" data-pymk-follow="' + esc(u.id) + '">Follow</button>')
           + '</div>';
       }).join('') + '</div></div>';
   function drop(id){
@@ -7913,6 +7921,7 @@ async function mountPymk(parent){
       const r = await safeRpc(sb.from('follows').insert({ followee_id: id }));
       if(r && r.error){ console.warn('[pymk] follow failed:', r.error.message || r.error); fb.disabled = false; return; }
       fb.textContent = 'Requested'; fb.classList.add('is-requested');
+      PYMK_FOLLOW[id] = 'requested';
       // Gone from the next draw (people_you_may_know skips anyone you've
       // asked to follow); this card stays until then so the tap reads.
       PYMK_CACHE.rows = (PYMK_CACHE.rows || []).filter(function(x){ return x.id !== id; });
