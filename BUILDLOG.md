@@ -604,3 +604,5 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **2026-09-24 — auth.js version tag (63eb69f3)** — script src auth.js?v=20260924a; bump the v= on every auth.js change (the Forgot password button did nothing for browsers holding the old auth.js).
 
 - **2026-09-24 — Waiting on you (c1dda6eb)** — bell panel groups follow requests and reports under Waiting on you (Clear leaves these until answered) above Everything else; follow requests get inline Allow/Decline (approve_follow/decline_follow); panel header wraps so Clear fits.
+
+- **2026-09-24 — Pills leave pages cleanly (419aecd7)** — leaveSections(): picking a section from a non-feed route pushes / so the address matches the view; Liner Notes pill forces router() when #/stories is already the hash (Picks showed under #/stories and Liner Notes did nothing).
