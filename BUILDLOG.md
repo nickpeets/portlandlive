@@ -600,3 +600,5 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **2026-09-24 — Story share pages (839cde8b)** — write_story_pages(): nightly og/story/<slug>/index.html per published story (og title, first ~180 chars, cover_url else logo) via stories_list/story_get with the anon key; lives in og/ so the workflow already commits it; og .jpg cleanup never touches it. Address bar shows /og/story/<slug>/.
 
 - **2026-09-24 — Forgot password (a38f3468)** — Sign In sheet: Forgot your password? -> reset mode (email only, resetPasswordForEmail, redirectTo site root, same answer for any email) -> PASSWORD_RECOVERY on return opens newpass mode (updateUser). Needs Supabase custom SMTP via Resend (smtp.resend.com:465, user resend) -- the default sender only mails team members, 2/hour.
+
+- **2026-09-24 — auth.js version tag (63eb69f3)** — script src auth.js?v=20260924a; bump the v= on every auth.js change (the Forgot password button did nothing for browsers holding the old auth.js).
