@@ -685,6 +685,15 @@
         const pw = el.passwordInput.value;
         if (!pw || pw.length < 6) { setMsg("Use at least 6 characters.", true); return; }
         const { error } = await sb.auth.updateUser({ password: pw });
+        // The reset link has already signed them in. Choosing the password
+        // they already had isn't a failure -- nothing needed changing
+        // (Sep 24 2026, Nick got Supabase's "should be different" error).
+        if (error && /different from the old|same password|same_password/i.test((error.message || "") + " " + (error.code || ""))) {
+          setMsg("That\u2019s already your password, so there\u2019s nothing to change. You\u2019re signed in.", false);
+          await refreshAuthUI();
+          setTimeout(closeSheet, 2200);
+          return;
+        }
         if (error) { setMsg(error.message, true); return; }
         setMsg("Password updated. You\u2019re signed in.", false);
         await refreshAuthUI();
