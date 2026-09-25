@@ -426,6 +426,9 @@ body{
 .heat-x:hover{opacity:1}
 .s-tally .t-you{color:var(--forest);font-weight:600;opacity:1}
 .venue-tally{font-size:14px;margin-top:4px}
+.show-tally{margin:10px 2px 0;opacity:1;color:var(--cream);font-size:14px}
+.show-tally .t-you{color:var(--cream)}
+.show-tally .t-heart{color:#ff9a7a}
 .venue-tally:empty{display:none}
 .list--a .s-sub .rdot{opacity:.4}
 .list--a .s-foot{flex:0 0 auto;display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:10px;padding:14px 16px 14px 0}
@@ -1672,7 +1675,7 @@ async function mountKindControl(card, show, slug){
       + (msg ? '<span class="kind-msg">' + esc(msg) + '</span>' : '');
   }
   draw('');
-  card.insertAdjacentElement('afterend', box);
+  cardTail(card).insertAdjacentElement('afterend', box);
   box.addEventListener('click', async function(e){
     const b = e.target.closest('[data-kind]');
     if(!b) return;
@@ -1696,7 +1699,7 @@ async function mountPickPin(card, show, slug){
   box.className = 'poster-edit';
   function label(){ const st = PICK_PINS[slug]; return st === 'in' ? '&#128204; Pinned to Picks \u2014 unpin' : st === 'out' ? 'Dropped from Picks \u2014 pin instead' : '&#128204; Pin to Picks'; }
   box.innerHTML = '<button type="button" class="poster-edit-btn" data-pick-page>' + label() + '</button>';
-  card.insertAdjacentElement('afterend', box);
+  cardTail(card).insertAdjacentElement('afterend', box);
   box.addEventListener('click', async function(e){
     const b = e.target.closest('[data-pick-page]');
     if(!b) return;
@@ -4670,7 +4673,7 @@ async function mountGiveawayBadge(card, slug){
   const a = document.createElement('a');
   a.className = 'gw-banner gw-badge'; a.href = '#/giveaway';
   a.innerHTML = '<span class="gw-ticket">&#127903;&#65039;</span><span class="gw-text"><b>We\u2019re giving away a pair to this show.</b></span><span class="gw-go">Enter &rarr;</span>';
-  card.insertAdjacentElement('afterend', a);
+  cardTail(card).insertAdjacentElement('afterend', a);
 }
 async function renderGiveawayRoute(){
   const wrap = $('#results');
@@ -5232,6 +5235,12 @@ function resaleLine(show){
     + '</div>';
 }
 
+// The last thing that belongs to the ticket card: the card, or the tally
+// line right under it. Moderator tools and the giveaway line go after it.
+function cardTail(card){
+  const n = card.nextElementSibling;
+  return (n && n.classList.contains('show-tally')) ? n : card;
+}
 function renderShowDetail(wrap, show, kind){
   $('#resultCount').textContent = kind === 'past' ? 'Past show' : 'Upcoming show';
   // Three lines instead of one run-on: when, where, then the address as a
@@ -5250,9 +5259,6 @@ function renderShowDetail(wrap, show, kind){
     + '<h2 class="venue-name">' + esc(show.title||'') + '</h2>'
     + '<div class="venue-info venue-when">' + when + '</div>'
     + (where ? '<div class="venue-info venue-where">' + where + '</div>' : '')
-    + (kind === 'upcoming' && show._slug
-        ? '<div class="venue-info venue-tally s-tally" data-tally-slug="' + esc(show._slug) + '">' + tallyBits(show, 1) + '</div>'
-        : '')
     + (_m ? '<div class="venue-info venue-addr">'
               + (show.address ? esc(show.address) + ' ' : '')
               + '<a class="venue-dir" href="' + _m + '" target="_blank" rel="noopener">Directions</a>'
@@ -5290,6 +5296,15 @@ function renderShowDetail(wrap, show, kind){
   const listWrap = document.createElement('div');
   listWrap.className = 'list list--b';
   listWrap.appendChild(card);
+  // Hearts / going / people you follow sit right under the ticket card
+  // (Sep 24 2026, Nick), above everything else on the page.
+  if(kind === 'upcoming' && show._slug){
+    const tl = document.createElement('div');
+    tl.className = 'venue-info venue-tally s-tally show-tally';
+    tl.setAttribute('data-tally-slug', show._slug);
+    tl.innerHTML = tallyBits(show, 1);
+    listWrap.appendChild(tl);
+  }
 
   // One flat grid container rather than nested column wrappers: the exchange
   // has to sit between the actions and the placeholder on mobile but in a
@@ -8441,7 +8456,7 @@ async function mountPosterEditor(card, show, slug){
     + '<button type="button" class="poster-edit-btn poster-edit-clear" data-poster-clear' + (show.imageUrl ? '' : ' hidden') + '>Remove poster</button>'
     + '<input type="file" accept="image/*" data-poster-file style="display:none">'
     + '<span class="poster-edit-note" data-poster-note></span>';
-  card.insertAdjacentElement('afterend', box);
+  cardTail(card).insertAdjacentElement('afterend', box);
   const note = box.querySelector('[data-poster-note]');
   box.addEventListener('click', async function(e){
     e.stopPropagation();
