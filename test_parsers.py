@@ -575,6 +575,20 @@ def safety_net_check():
         print("GATE FAILURE")
         sys.exit(1)
     print("  ok   feed health                   held (0 and partial), expired, dark 23 days, empty source -> report; 85-day-dark room dropped off")
+    # Turn! Turn! Turn! on Opendate (Sep 24 2026): the capture is the real
+    # page, saved from the Codespace (the venue moved its calendar there).
+    _od = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fixtures", "turn-opendate.html")
+    if os.path.exists(_od):
+        rows = sv.parse_turn_opendate(open(_od, encoding="utf-8").read(), datetime.date(2026, 9, 24))
+        n = len(rows)
+        timed = sum(1 for r in rows if r.get("time"))
+        posters = sum(1 for r in rows if r.get("imageUrl"))
+        dated = all(r.get("date") and r.get("title") for r in rows)
+        if n < 10 or not dated or timed < n * 0.8 or posters < n * 0.6:
+            print(f"  FAIL turn-opendate.html          rows {n}, timed {timed}, posters {posters}, all dated {dated}")
+            print("GATE FAILURE")
+            sys.exit(1)
+        print(f"  ok   turn-opendate.html          {n:3d} rows  -- Opendate embed; date from each event link; show time; poster before the link; age from the venue's day/night rule")
 
 
 if __name__ == "__main__":

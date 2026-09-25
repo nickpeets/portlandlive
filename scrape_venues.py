@@ -3303,8 +3303,25 @@ def parse_goodfoot(html, today):
     # Windowed browser (Sep 24 2026): Cloudflare stopped clearing for any
     # headless browser here; a Chromium with a window on a fake screen
     # clears in a second and the API answers with all 50 events.
-    data = fetch_headless_json(GOODFOOT_HOME, GOODFOOT_API, headed=True)
-    events = data.get("events", []) if isinstance(data, dict) else []
+    # Cloudflare clears most runs but not every one (Sep 24 2026: the 10:45 PM
+    # build came back empty, the 2:57 PM one full). Try up to three times,
+    # each in a fresh browser, before the safety net has to hold the rows.
+    events = []
+    for attempt in range(3):
+        try:
+            data = fetch_headless_json(GOODFOOT_HOME, GOODFOOT_API, headed=True)
+        except Exception as e:
+            data = None
+            print(f"  note: Goodfoot attempt {attempt + 1} failed ({type(e).__name__})")
+        events = data.get("events", []) if isinstance(data, dict) else []
+        if events:
+            if attempt:
+                print(f"  note: Goodfoot cleared on attempt {attempt + 1}")
+            break
+        if attempt < 2:
+            print(f"  note: Goodfoot attempt {attempt + 1} came back empty; retrying")
+            import time as _t
+            _t.sleep(8)
     nb, addr = VENUE_INFO.get("The Goodfoot", ("Buckman", "2845 SE Stark St"))
     out, seen = [], set()
     for ev in events:
@@ -4951,6 +4968,81 @@ def parse_turnturnturn(html, today):
     return out
 
 
+# ---- Turn! Turn! Turn! on Opendate (Sep 24 2026). The venue moved its
+# calendar off the hand-typed WordPress page (parse_turnturnturn, kept for its
+# fixture) to an Opendate embed: app.opendate.io/v/turn-turn-turn-3116. Each
+# event links to /e/<name>-<month>-<dd>-<yyyy>-<id>, so the date is read from
+# the link itself; the title is the link text, the poster the Opendate image
+# just before it, the time the "Show: 8:00 PM" line just after (doors if no
+# show time). Age is the venue's own posted rule, on its LIVE! page: "Daytime
+# events are all ages, after 8PM we are 21+" -- so shows starting before 6 PM
+# are all ages and 8 PM and later 21+; between those, left blank.
+TTT_OPENDATE = "https://app.opendate.io/v/turn-turn-turn-3116?layout=iframe"
+_OD_EVENT = re.compile(
+    r'href="(?P<u>(?:https?://app\.opendate\.io)?/e/[a-z0-9-]*?-'
+    r'(?P<mon>january|february|march|april|may|june|july|august|september|october|november|december)-'
+    r'(?P<d>\d{1,2})-(?P<y>\d{4})-(?P<id>\d+)[^"]*)"[^>]*>(?P<t>.*?)</a>', re.I | re.S)
+# Any Opendate image URL, however the page carries it (src, data-src, srcset,
+# a style background, single or double quotes) -- the live page gave 0 posters
+# to the first, src="..."-only pattern (Sep 24 2026).
+_OD_IMG = re.compile(r'(https?://[^\s"\'<>()]*opendate-aws-assets[^\s"\'<>()]*)', re.I)
+_OD_SHOW = re.compile(r"show:\s*(\d{1,2}:\d{2}\s*[ap]m)", re.I)
+_OD_DOORS = re.compile(r"doors:\s*(\d{1,2}:\d{2}\s*[ap]m)", re.I)
+
+
+def parse_turn_opendate(html, today):
+    import html as _html
+    html = html or ""
+    horizon = today + datetime.timedelta(days=120)
+    hits = list(_OD_EVENT.finditer(html))
+    by_id, order = {}, []
+    for i, m in enumerate(hits):
+        eid = m.group("id")
+        title = clean(_html.unescape(re.sub(r"<[^>]+>", " ", m.group("t"))))
+        ev = by_id.get(eid)
+        if ev is None:
+            ev = by_id[eid] = {"m": m, "title": "", "img": "", "after": ""}
+            order.append(eid)
+            # Poster: the last Opendate image between the previous event and this link.
+            prev_end = hits[i - 1].end() if i else 0
+            imgs = _OD_IMG.findall(html, prev_end, m.end())
+            ev["img"] = _html.unescape(imgs[-1]) if imgs else ""
+        if title and not ev["title"]:
+            ev["title"] = title
+            nxt = hits[i + 1].start() if i + 1 < len(hits) else min(len(html), m.end() + 3000)
+            ev["after"] = re.sub(r"<[^>]+>", " ", html[m.end():nxt])
+    out, seen = [], set()
+    for eid in order:
+        ev = by_id[eid]
+        m, title = ev["m"], ev["title"]
+        if not title:
+            continue
+        try:
+            d = datetime.date(int(m.group("y")), _month_num(m.group("mon")[:3]), int(m.group("d")))
+        except (ValueError, TypeError):
+            continue
+        if not (today <= d <= horizon):
+            continue
+        tm_m = _OD_SHOW.search(ev["after"]) or _OD_DOORS.search(ev["after"])
+        tm = ""
+        if tm_m:
+            tt = re.sub(r"\s+", " ", tm_m.group(1)).upper()
+            tm = re.sub(r"(\d)(AM|PM)$", r"\1 \2", tt)
+        age = ""
+        if tm:
+            hh = int(tm.split(":")[0]) % 12 + (12 if tm.endswith("PM") else 0)
+            age = "all-ages" if hh < 18 else ("21+" if hh >= 20 else "")
+        key = (d.isoformat(), title.lower())
+        if key in seen:
+            continue
+        seen.add(key)
+        url = m.group("u")
+        if url.startswith("/"):
+            url = "https://app.opendate.io" + url
+        out.append(_batch_row("Turn! Turn! Turn!", d.isoformat(), tm, title, url.split("?")[0], ev["img"], age))
+    return out
+
+
 # ---- The Off Beat (Friends of Noise, 8440 N Interstate). Portland's all-ages
 # room. An Astro page of .card blocks: date badge, a title that starts with
 # "9/19 ", and meta lines "September 19, 2026 7:30 pm - 10:30 pm",
@@ -5865,8 +5957,9 @@ SOURCES = [
     {"name": "Kickstand Comedy (Crowdwork)", "parser": parse_kickstand,
      "urls": ["https://crowdwork.com/api/v2/kickstandcomedy/shows"]},
     # Sep 17 2026 batch 3 (HTML pages).
-    {"name": "Turn! Turn! Turn! (turnturnturnpdx.com)", "parser": parse_turnturnturn,
-     "urls": ["https://turnturnturnpdx.com/entertainment/"]},
+    # Sep 24 2026: the calendar moved to Opendate (parse_turn_opendate).
+    {"name": "Turn! Turn! Turn! (turnturnturnpdx.com)", "parser": parse_turn_opendate,
+     "urls": [TTT_OPENDATE]},
     {"name": "The Off Beat (Friends of Noise)", "parser": parse_offbeat,
      "urls": ["https://calendar.friendsofnoise.org/"]},
     {"name": "The Siren Theater (sirentheater.com)", "parser": parse_siren,
@@ -5889,15 +5982,15 @@ SOURCES = [
      "urls": ["https://calendar.google.com/calendar/ical/1d9rstj8str8khfubp6ckohvik%40group.calendar.google.com/public/basic.ics"]},
     {"name": "Wolves & People Bar (Eventbrite)", "parser": parse_wolves, "tls": True,   # plain fetches get Eventbrite's "listing failed" page (Sep 21 2026)
      "urls": ["https://www.eventbrite.com/o/wolves-people-bar-and-music-hall-121529882609"]},
-    {"name": "HiFi Wine Bar (hifiwinebar.com)", "parser": parse_hifi,
+    {"name": "HiFi Wine Bar (hifiwinebar.com)", "parser": parse_hifi, "may_be_empty": True,
      "urls": ["https://www.hifiwinebar.com/upcoming-events?format=json"]},
     {"name": "Swan Dive (swandivepdx.com)", "parser": parse_swandive,
      "urls": ["https://www.swandivepdx.com/events-2-1?format=json"]},
     {"name": "The Waypost (Google Calendar)", "parser": parse_waypost,
      "urls": ["https://calendar.google.com/calendar/ical/6ia5aftci3h6c5rdj2qt1te9fg%40group.calendar.google.com/public/basic.ics"]},
-    {"name": "Vino Veritas (vinoveritaspdx.com)", "parser": parse_vinoveritas,
+    {"name": "Vino Veritas (vinoveritaspdx.com)", "parser": parse_vinoveritas, "may_be_empty": True,
      "urls": ["https://www.vinoveritaspdx.com/events?format=json"]},
-    {"name": "The Firkin Tavern (firkintavern.com)", "parser": parse_firkin,
+    {"name": "The Firkin Tavern (firkintavern.com)", "parser": parse_firkin, "may_be_empty": True,
      "urls": ["https://firkintavern.com/wp-json/tribe/events/v1/events?per_page=50"]},
     # Batch four (Sep 23 2026)
     {"name": "Vancouver Elks Lodge (elks823.org)", "parser": parse_elks823,
@@ -5912,7 +6005,7 @@ SOURCES = [
      "urls": ["https://docs.google.com/document/d/e/2PACX-1vQTocN7yUyIeRnduOEGyrgh-06fyF6yzDQkPn_D15im6Eee5fHq8Wht24MBHBiOvUEYdS9rVV67ehf6/pub"]},
     {"name": "Beach Hut Deli Tigard (beachhutdeli.com)", "parser": parse_beachhut,
      "urls": ["https://beachhutdeli.com/store/tigard/"]},
-    {"name": "Topaz Farm (topazfarm.com)", "parser": parse_topaz,
+    {"name": "Topaz Farm (topazfarm.com)", "parser": parse_topaz, "may_be_empty": True,
      "urls": ["https://topazfarm.com/live-music"]},
     {"name": "The Lyons Den (lyonsdenevents.com)", "parser": parse_lyonsden,
      "urls": ["https://www.lyonsdenevents.com/events?format=json"]},

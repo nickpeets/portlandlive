@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html style='padding: 0px; background: white; '>
+<head>
+
+<meta content='text/html; charset=UTF-8' http-equiv='Content-Type'>
+<meta charset='utf-8'>
+<meta content='width=device-width, initial-scale=1, shrink-to-fit=no' name='viewport'>
+<script src="https://js.sentry-cdn.com/a8335de451bc4658917a3b0e84304cd8.min.js" crossorigin="anonymous"></script>
+<script>
+  window.sentryOnLoad = function () {
+    // Browser-only noise filters for #sentry-alerts (O-4667). Intentionally narrow:
+    // keep JSON parse failures, ReactOnRails render errors, and real app TypeErrors.
+    var EXTENSION_URL = /^(chrome|chrome-extension|moz-extension|safari-extension|safari-web-extension|webkit-masked-url):/i;
+  
+    function exceptionValues(event) {
+      return (event.exception && event.exception.values) || [];
+    }
+  
+    function framesFor(exception) {
+      return (exception.stacktrace && exception.stacktrace.frames) || [];
+    }
+  
+    function isExtensionFilename(filename) {
+      return typeof filename === "string" && EXTENSION_URL.test(filename);
+    }
+  
+    function isNoisySyntaxError(exception) {
+      if (!exception || exception.type !== "SyntaxError") return false;
+  
+      var message = exception.value || "";
+      // Keep real JSON.parse failures ("Unexpected end of JSON input", etc.).
+      if (/JSON/i.test(message)) return false;
+  
+      var frames = framesFor(exception);
+      // Truncated / mangled scripts often arrive with no usable frames.
+      if (frames.length === 0) return true;
+  
+      // Drop when every frame is from a browser extension.
+      if (frames.every(function (frame) { return isExtensionFilename(frame.filename); })) {
+        return true;
+      }
+  
+      return false;
+    }
+  
+    Sentry.init({
+      dsn: "https://a8335de451bc4658917a3b0e84304cd8@o375671.ingest.us.sentry.io/5195506",
+      // Alternatively, use `process.env.npm_package_version` for a dynamic release version
+      // if your build tool supports it.
+      release: "opendate@1.0.0",
+      environment: "production",
+      integrations: [
+        Sentry.browserTracingIntegration(),
+        Sentry.replayIntegration(),
+      ],
+      // Set tracesSampleRate to 1.0 to capture 100%
+      // of transactions for tracing.
+      // We recommend adjusting this value in production
+      // Learn more at
+      // https://docs.sentry.io/platforms/javascript/configuration/options/#traces-sample-rate
+      tracesSampleRate: 1.0,
+      // Set `tracePropagationTargets` to control for which URLs trace propagation should be enabled
+      tracePropagationTargets: [],
+      // Capture Replay for 10% of all sessions,
+      // plus for 100% of sessions with an error
+      // Learn more at
+      // https://docs.sentry.io/platforms/javascript/session-replay/configuration/#general-integration-configuration
+      replaysSessionSampleRate: 0.1,
+      replaysOnErrorSampleRate: 1.0,
+  
+      // Message matchers for junk that is never actionable for us.
+      // Exact strings / tight regexes only — avoid broad "Unexpected token" catches.
+      ignoreErrors: [
+        // Truncated or mangled scripts (network, adblock, mid-deploy cache).
+        "Unexpected end of input",
+        "Invalid or unexpected token",
+        /^Invalid regular expression: missing \//,
+        // Classic cross-origin script noise (also matches Sentry's
+        // "Event ErrorEvent captured as exception with message Script error." form).
+        /Script error\.?/,
+        // Ancient / odd WebViews.
+        "Can't find variable: HTMLDialogElement",
+        "HTMLDialogElement is not defined",
+        // Wallet / extension fights over window.ethereum.
+        /Cannot set property ethereum of #<Window> which has only a getter/,
+        /Cannot redefine property:\s*ethereum/,
+        // Third-party ads / GTM / native WebView bridges seen in recent alerts.
+        /iframeBridge/,
+        /adsParams/,
+        "gtmObject is not defined",
+        /Java bridge method invocation/,
+        "shared Env not inited yet",
+      ],
+  
+      // Never attribute extension-injected stacks to our app.
+      // Prefer scheme matching only — a path regex like /extensions\// would
+      // also match any future first-party URL containing that segment.
+      denyUrls: [
+        EXTENSION_URL,
+      ],
+  
+      beforeSend: function (event) {
+        var values = exceptionValues(event);
+        var i;
+  
+        for (i = 0; i < values.length; i++) {
+          if (isNoisySyntaxError(values[i])) {
+            return null;
+          }
+        }
+  
+        // Drop events whose stack is exclusively extension frames (any error type).
+        var allFrames = [];
+        for (i = 0; i < values.length; i++) {
+          allFrames = allFrames.concat(framesFor(values[i]));
+        }
+        if (allFrames.length > 0 && allFrames.every(function (frame) {
+          return isExtensionFilename(frame.filename);
+        })) {
+          return null;
+        }
+  
+        return event;
+      },
+    });
+  };
+</script>
+
+<title>Opendate</title>
+<meta name="csrf-param" content="authenticity_token" />
+<meta name="csrf-token" content="oD11rWKaZm5GrtJfcf14HoTmMzi8n52IpMSkSbWfVTgwIGmoFC2OdGEtN42vbOuQRvoNLeC5lyfSfhNcAtggPA" />
+
+<link rel="icon" type="image/png" href="/assets/favicon/favicon-96x96-9599d63751d297eb138305f34a185d0537e37ee377316d1de4704de0ee665d7a.png" sizes="96x96" />
+<link rel="icon" type="image/svg+xml" href="/assets/favicon/favicon-d0fb1d999265c53ce4d50ea73aabfff438519eb88c210afe52b793fbde1163ff.svg" />
+<link rel="shortcut icon" href="/assets/favicon/favicon-41f178d13ae1a8561fd6a50cab6b1eb4d2a543532bb804ecffc54cf8cc0748d9.ico" />
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/favicon/apple-touch-icon-e5bd8154a542d0fe11fc1ec3a466eeed2ddbc3ebab6e7f6648583dc7314dc307.png" />
+<link rel="manifest" href="/assets/favicon/site-74a83d3ae62f7cd7efc3b0b9be2e68554428214d55eeaa1d4c49a34d63569503.webmanifest" />
+<link rel="stylesheet" href="/packs/css/web-order-form-styles-0bf0373be15dd81d.css" media="screen" />
+<link rel="stylesheet" href="/assets/application-cc61a8b0157b0c49e28cdff59a7e558cef217a2a7be584ec463828262d0145c8.css" media="all" />
+<link rel="stylesheet" href="/packs/css/vendor-175d05eb3020cd1f.css" media="all" />
+<link rel="stylesheet" href="/packs/css/common-ba34b1d5d851109a.css" media="all" />
+<link rel="stylesheet" href="/packs/css/styles-abc1d868737807f0.css" media="all" />
+<link href='https://fonts.googleapis.com/css?family=Open+Sans:400,600,700' rel='stylesheet'>
+
+
+<style>
+  html, body {
+    background: white !important;
+  }
+  
+  .confirm-card:hover {
+    border: 2px solid #f6f6f6 !important;
+  }
+  
+  .page-link {
+    background: none !important;
+  }
+</style>
+<style>
+  .venue-hero-section {
+    background: #000000;
+  }
+</style>
+
+</head>
+<body style='padding: 0px; background: white;'>
+
+<div class='container-fluid p-0'>
+
+<div class='container'>
+<div class='row'>
+<div class='col-12' style='margin-top: 24px;'>
+<ul class='list-group list-group-horizontal' style='margin-top: 10px;'>
+<li class='list-group-item border-0 pl-0 pr-2'>
+<a class="btn btn-primary" style="font-size: 12.8px; font-weight: 600; border-radius: 32px; padding: 9px 30px;" href="/v/turn-turn-turn-3116?layout=iframe">UPCOMING
+</a></li>
+<li class='list-group-item border-0 pl-0 pr-2'>
+<a class="btn btn-link text-dark text-decoration-none" style="font-size: 12.8px; font-weight: 600; border-radius: 32px; padding: 9px 30px;" href="/v/turn-turn-turn-3116/past?layout=iframe">PAST
+</a></li>
+</ul>
+</div>
+</div>
+<div class='form-row' style='margin-top: 12px;'>
+<div class='col-12 col-sm-6 col-md-4 col-xl-3' style='margin-bottom: 58px;'>
+<div class='card confirm-card' style='border-radius: 16px; border: 2px solid white;'>
+<div class='card-body' style='padding: 15px;'>
+<div style='margin-bottom: 20px;'>
+<img class='consumer-order-img img-fluid' src='https://s3.amazonaws.com/opendate-aws-assets/confirms/main_event_images/000/745/687/compressed/20250404_SonicBlossoms_Dugmoore_NoWM_03182-Zjxr60-Q.jpg?1787614749' style='border-radius: 16px;'>
+</div>
+<p class='mb-0 text-dark' style='font-size: 20px; line-height: 20px;'>
+<a target="_parent" class="text-dark stretched-link text-decoration-none" href="https://app.opendate.io/e/sonic-blossoms-morrison-graves-nite-hike-september-24-2026-745687"><strong>
+Sonic Blossoms + Morrison Graves + Nite Hike
+</strong>
+</a></p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+September 24, 2026
+</p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+Doors: 7:30 PM - Show: 8:00 PM
+</p>
+<p class='mb-0 text-truncate' style='font-size: 13.6px; color: rgba(51, 51, 51, .85); margin-top: 3px;' title='Turn! Turn! Turn! • Portland, OR'>
+Turn! Turn! Turn! • Portland, OR
+</p>
+</div>
+</div>
+</div>
+<div class='col-12 col-sm-6 col-md-4 col-xl-3' style='margin-bottom: 58px;'>
+<div class='card confirm-card' style='border-radius: 16px; border: 2px solid white;'>
+<div class='card-body' style='padding: 15px;'>
+<div style='margin-bottom: 20px;'>
+<img class='consumer-order-img img-fluid' src='https://s3.amazonaws.com/opendate-aws-assets/confirms/main_event_images/000/741/827/compressed/Band-Photo-1-1-scaled.jpg?1786425097' style='border-radius: 16px;'>
+</div>
+<p class='mb-0 text-dark' style='font-size: 20px; line-height: 20px;'>
+<a target="_parent" class="text-dark stretched-link text-decoration-none" href="https://app.opendate.io/e/orchestra-gold-larry-yes-september-25-2026-741827"><strong>
+Orchestra Gold + Larry Yes 
+</strong>
+</a></p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+September 25, 2026
+</p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+Doors: 7:30 PM - Show: 8:00 PM
+</p>
+<p class='mb-0 text-truncate' style='font-size: 13.6px; color: rgba(51, 51, 51, .85); margin-top: 3px;' title='Turn! Turn! Turn! • Portland, OR'>
+Turn! Turn! Turn! • Portland, OR
+</p>
+</div>
+</div>
+</div>
+<div class='col-12 col-sm-6 col-md-4 col-xl-3' style='margin-bottom: 58px;'>
+<div class='card confirm-card' style='border-radius: 16px; border: 2px solid white;'>
+<div class='card-body' style='padding: 15px;'>
+<div style='margin-bottom: 20px;'>
+<img class='consumer-order-img img-fluid' src='https://s3.amazonaws.com/opendate-aws-assets/confirms/main_event_images/000/745/049/compressed/Screenshot_2026-08-21_at_2.17.17%E2%80%AFAM.jpg?1787303963' style='border-radius: 16px;'>
+</div>
+<p class='mb-0 text-dark' style='font-size: 20px; line-height: 20px;'>
+<a target="_parent" class="text-dark stretched-link text-decoration-none" href="https://app.opendate.io/e/exceptional-failures-the-purrs-wolfpack-serenade-september-26-2026-745049"><strong>
+Exceptional Failures + The Purrs + Wolfpack Serenade
+</strong>
+</a></p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+September 26, 2026
+</p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+Doors: 7:30 PM - Show: 8:00 PM
+</p>
+<p class='mb-0 text-truncate' style='font-size: 13.6px; color: rgba(51, 51, 51, .85); margin-top: 3px;' title='Turn! Turn! Turn! • Portland, OR'>
+Turn! Turn! Turn! • Portland, OR
+</p>
+</div>
+</div>
+</div>
+<div class='col-12 col-sm-6 col-md-4 col-xl-3' style='margin-bottom: 58px;'>
+<div class='card confirm-card' style='border-radius: 16px; border: 2px solid white;'>
+<div class='card-body' style='padding: 15px;'>
+<div style='margin-bottom: 20px;'>
+<img class='consumer-order-img img-fluid' src='https://s3.amazonaws.com/opendate-aws-assets/confirms/main_event_images/000/749/971/compressed/Screenshot_2026-09-07_at_7.22.12%E2%80%AFPM.jpg?1788834166' style='border-radius: 16px;'>
+</div>
+<p class='mb-0 text-dark' style='font-size: 20px; line-height: 20px;'>
+<a target="_parent" class="text-dark stretched-link text-decoration-none" href="https://app.opendate.io/e/sea-moss-surprise-guests-september-27-2026-749971"><strong>
+Sea Moss + surprise guests
+</strong>
+</a></p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+September 27, 2026
+</p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+Doors: 7:30 PM - Show: 8:00 PM
+</p>
+<p class='mb-0 text-truncate' style='font-size: 13.6px; color: rgba(51, 51, 51, .85); margin-top: 3px;' title='Turn! Turn! Turn! • Portland, OR'>
+Turn! Turn! Turn! • Portland, OR
+</p>
+</div>
+</div>
+</div>
+<div class='col-12 col-sm-6 col-md-4 col-xl-3' style='margin-bottom: 58px;'>
+<div class='card confirm-card' style='border-radius: 16px; border: 2px solid white;'>
+<div class='card-body' style='padding: 15px;'>
+<div style='margin-bottom: 20px;'>
+<img class='consumer-order-img img-fluid' src='https://s3.amazonaws.com/opendate-aws-assets/confirms/main_event_images/000/748/894/compressed/Screenshot_2026-09-02_at_1.39.47%E2%80%AFAM.jpg?1788338529' style='border-radius: 16px;'>
+</div>
+<p class='mb-0 text-dark' style='font-size: 20px; line-height: 20px;'>
+<a target="_parent" class="text-dark stretched-link text-decoration-none" href="https://app.opendate.io/e/lexie-helgerson-wild-flowers-nate-wey-september-28-2026-748894"><strong>
+Lexie Helgerson + Wild Flowers + Nate Wey
+</strong>
+</a></p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+September 28, 2026
+</p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+Doors: 7:30 PM - Show: 8:00 PM
+</p>
+<p class='mb-0 text-truncate' style='font-size: 13.6px; color: rgba(51, 51, 51, .85); margin-top: 3px;' title='Turn! Turn! Turn! • Portland, OR'>
+Turn! Turn! Turn! • Portland, OR
+</p>
+</div>
+</div>
+</div>
+<div class='col-12 col-sm-6 col-md-4 col-xl-3' style='margin-bottom: 58px;'>
+<div class='card confirm-card' style='border-radius: 16px; border: 2px solid white;'>
+<div class='card-body' style='padding: 15px;'>
+<div style='margin-bottom: 20px;'>
+<img class='consumer-order-img img-fluid' src='https://s3.amazonaws.com/opendate-aws-assets/confirms/main_event_images/000/748/893/compressed/Screenshot_2026-09-02_at_1.24.17%E2%80%AFAM.jpg?1788337621' style='border-radius: 16px;'>
+</div>
+<p class='mb-0 text-dark' style='font-size: 20px; line-height: 20px;'>
+<a target="_parent" class="text-dark stretched-link text-decoration-none" href="https://app.opendate.io/e/johnny-bell-josh-moss-lucas-gunn-nate-wallace-september-30-2026-748893"><strong>
+Johnny Bell + Josh Moss + Lucas Gunn + Nate Wallace
+</strong>
+</a></p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+September 30, 2026
+</p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+Doors: 7:30 PM - Show: 8:00 PM
+</p>
+<p class='mb-0 text-truncate' style='font-size: 13.6px; color: rgba(51, 51, 51, .85); margin-top: 3px;' title='Turn! Turn! Turn! • Portland, OR'>
+Turn! Turn! Turn! • Portland, OR
+</p>
+</div>
+</div>
+</div>
+<div class='col-12 col-sm-6 col-md-4 col-xl-3' style='margin-bottom: 58px;'>
+<div class='card confirm-card' style='border-radius: 16px; border: 2px solid white;'>
+<div class='card-body' style='padding: 15px;'>
+<div style='margin-bottom: 20px;'>
+<img class='consumer-order-img img-fluid' src='https://s3.amazonaws.com/opendate-aws-assets/confirms/main_event_images/000/755/374/compressed/Screenshot_2026-09-22_at_6.38.17%E2%80%AFPM.jpg?1790127514' style='border-radius: 16px;'>
+</div>
+<p class='mb-0 text-dark' style='font-size: 20px; line-height: 20px;'>
+<a target="_parent" class="text-dark stretched-link text-decoration-none" href="https://app.opendate.io/e/billy-the-bread-king-compost-joe-von-appen-tyronza-october-01-2026-755374"><strong>
+Billy + The Bread + King Compost + Joe Von Appen + Tyronza
+</strong>
+</a></p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+October 01, 2026
+</p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+Doors: 7:30 PM - Show: 8:00 PM
+</p>
+<p class='mb-0 text-truncate' style='font-size: 13.6px; color: rgba(51, 51, 51, .85); margin-top: 3px;' title='Turn! Turn! Turn! • Portland, OR'>
+Turn! Turn! Turn! • Portland, OR
+</p>
+</div>
+</div>
+</div>
+<div class='col-12 col-sm-6 col-md-4 col-xl-3' style='margin-bottom: 58px;'>
+<div class='card confirm-card' style='border-radius: 16px; border: 2px solid white;'>
+<div class='card-body' style='padding: 15px;'>
+<div style='margin-bottom: 20px;'>
+<img class='consumer-order-img img-fluid' src='https://s3.amazonaws.com/opendate-aws-assets/confirms/main_event_images/000/749/635/compressed/Screenshot_2026-09-03_at_3.27.47%E2%80%AFPM.jpg?1788474590' style='border-radius: 16px;'>
+</div>
+<p class='mb-0 text-dark' style='font-size: 20px; line-height: 20px;'>
+<a target="_parent" class="text-dark stretched-link text-decoration-none" href="https://app.opendate.io/e/tricky-fm-dwelling-unit-piggy-bank-snakey-dublay-october-02-2026-749635"><strong>
+Tricky FM + Dwelling Unit + Piggy Bank + Snakey Dublay
+</strong>
+</a></p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+October 02, 2026
+</p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+Doors: 7:30 PM - Show: 8:00 PM
+</p>
+<p class='mb-0 text-truncate' style='font-size: 13.6px; color: rgba(51, 51, 51, .85); margin-top: 3px;' title='Turn! Turn! Turn! • Portland, OR'>
+Turn! Turn! Turn! • Portland, OR
+</p>
+</div>
+</div>
+</div>
+<div class='col-12 col-sm-6 col-md-4 col-xl-3' style='margin-bottom: 58px;'>
+<div class='card confirm-card' style='border-radius: 16px; border: 2px solid white;'>
+<div class='card-body' style='padding: 15px;'>
+<div style='margin-bottom: 20px;'>
+<img class='consumer-order-img img-fluid' src='https://s3.amazonaws.com/opendate-aws-assets/confirms/main_event_images/000/755/375/compressed/Screenshot_2026-09-22_at_6.51.25%E2%80%AFPM.jpg?1790128429' style='border-radius: 16px;'>
+</div>
+<p class='mb-0 text-dark' style='font-size: 20px; line-height: 20px;'>
+<a target="_parent" class="text-dark stretched-link text-decoration-none" href="https://app.opendate.io/e/the-bad-charms-friday-night-saints-october-03-2026-755375"><strong>
+The Bad Charms + Friday Night Saints
+</strong>
+</a></p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+October 03, 2026
+</p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+Doors: 3:30 PM - Show: 4:00 PM
+</p>
+<p class='mb-0 text-truncate' style='font-size: 13.6px; color: rgba(51, 51, 51, .85); margin-top: 3px;' title='Turn! Turn! Turn! • Portland, OR'>
+Turn! Turn! Turn! • Portland, OR
+</p>
+</div>
+</div>
+</div>
+<div class='col-12 col-sm-6 col-md-4 col-xl-3' style='margin-bottom: 58px;'>
+<div class='card confirm-card' style='border-radius: 16px; border: 2px solid white;'>
+<div class='card-body' style='padding: 15px;'>
+<div style='margin-bottom: 20px;'>
+<img class='consumer-order-img img-fluid' src='https://s3.amazonaws.com/opendate-aws-assets/confirms/main_event_images/000/755/376/compressed/Screenshot_2026-09-22_at_7.00.28%E2%80%AFPM.jpg?1790128853' style='border-radius: 16px;'>
+</div>
+<p class='mb-0 text-dark' style='font-size: 20px; line-height: 20px;'>
+<a target="_parent" class="text-dark stretched-link text-decoration-none" href="https://app.opendate.io/e/the-second-half-walters-creature-party-friends-with-salad-october-03-2026-755376"><strong>
+The Second Half Walters + Creature Party + Friends with Salad
+</strong>
+</a></p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+October 03, 2026
+</p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+Doors: 7:30 PM - Show: 8:00 PM
+</p>
+<p class='mb-0 text-truncate' style='font-size: 13.6px; color: rgba(51, 51, 51, .85); margin-top: 3px;' title='Turn! Turn! Turn! • Portland, OR'>
+Turn! Turn! Turn! • Portland, OR
+</p>
+</div>
+</div>
+</div>
+<div class='col-12 col-sm-6 col-md-4 col-xl-3' style='margin-bottom: 58px;'>
+<div class='card confirm-card' style='border-radius: 16px; border: 2px solid white;'>
+<div class='card-body' style='padding: 15px;'>
+<div style='margin-bottom: 20px;'>
+<img class='consumer-order-img img-fluid' src='https://s3.amazonaws.com/opendate-aws-assets/confirms/main_event_images/000/734/151/compressed/open-uri20260803-878-6tdezv.jpg?1785779239' style='border-radius: 16px;'>
+</div>
+<p class='mb-0 text-dark' style='font-size: 20px; line-height: 20px;'>
+<a target="_parent" class="text-dark stretched-link text-decoration-none" href="https://app.opendate.io/e/megagonefree-livt-october-04-2026-734151"><strong>
+MegaGoneFree + LIVT
+</strong>
+</a></p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+October 04, 2026
+</p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+Doors: 3:30 PM - Show: 4:00 PM
+</p>
+<p class='mb-0 text-truncate' style='font-size: 13.6px; color: rgba(51, 51, 51, .85); margin-top: 3px;' title='Turn! Turn! Turn! • Portland, OR'>
+Turn! Turn! Turn! • Portland, OR
+</p>
+</div>
+</div>
+</div>
+<div class='col-12 col-sm-6 col-md-4 col-xl-3' style='margin-bottom: 58px;'>
+<div class='card confirm-card' style='border-radius: 16px; border: 2px solid white;'>
+<div class='card-body' style='padding: 15px;'>
+<div style='margin-bottom: 20px;'>
+<img class='consumer-order-img img-fluid' src='https://s3.amazonaws.com/opendate-aws-assets/confirms/main_event_images/000/754/136/compressed/Screenshot_2026-09-19_at_5.04.22%E2%80%AFPM.jpg?1789862745' style='border-radius: 16px;'>
+</div>
+<p class='mb-0 text-dark' style='font-size: 20px; line-height: 20px;'>
+<a target="_parent" class="text-dark stretched-link text-decoration-none" href="https://app.opendate.io/e/zozo-joshua-tree-courtney-doorhinge-josh-hydeman-triple-nipple-october-04-2026-754136"><strong>
+ZoZo (Joshua Tree) + Courtney Doorhinge + Josh Hydeman + Triple Nipple
+</strong>
+</a></p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+October 04, 2026
+</p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+Doors: 7:30 PM - Show: 8:00 PM
+</p>
+<p class='mb-0 text-truncate' style='font-size: 13.6px; color: rgba(51, 51, 51, .85); margin-top: 3px;' title='Turn! Turn! Turn! • Portland, OR'>
+Turn! Turn! Turn! • Portland, OR
+</p>
+</div>
+</div>
+</div>
+<div class='col-12 col-sm-6 col-md-4 col-xl-3' style='margin-bottom: 58px;'>
+<div class='card confirm-card' style='border-radius: 16px; border: 2px solid white;'>
+<div class='card-body' style='padding: 15px;'>
+<div style='margin-bottom: 20px;'>
+<img class='consumer-order-img img-fluid' src='https://s3.amazonaws.com/opendate-aws-assets/confirms/main_event_images/000/755/377/compressed/Screenshot_2026-09-22_at_7.04.05%E2%80%AFPM.jpg?1790129162' style='border-radius: 16px;'>
+</div>
+<p class='mb-0 text-dark' style='font-size: 20px; line-height: 20px;'>
+<a target="_parent" class="text-dark stretched-link text-decoration-none" href="https://app.opendate.io/e/overcalc-baltimore-national-hair-soup-purse-october-05-2026-755377"><strong>
+Overcalc (Baltimore) + National Hair + Soup Purse
+</strong>
+</a></p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+October 05, 2026
+</p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+Doors: 7:30 PM - Show: 8:00 PM
+</p>
+<p class='mb-0 text-truncate' style='font-size: 13.6px; color: rgba(51, 51, 51, .85); margin-top: 3px;' title='Turn! Turn! Turn! • Portland, OR'>
+Turn! Turn! Turn! • Portland, OR
+</p>
+</div>
+</div>
+</div>
+<div class='col-12 col-sm-6 col-md-4 col-xl-3' style='margin-bottom: 58px;'>
+<div class='card confirm-card' style='border-radius: 16px; border: 2px solid white;'>
+<div class='card-body' style='padding: 15px;'>
+<div style='margin-bottom: 20px;'>
+<img class='consumer-order-img img-fluid' src='https://s3.amazonaws.com/opendate-aws-assets/confirms/main_event_images/000/755/378/compressed/643ea3d1f12b8917a9c84795_maddi_field_rec_4.jpg?1790129536' style='border-radius: 16px;'>
+</div>
+<p class='mb-0 text-dark' style='font-size: 20px; line-height: 20px;'>
+<a target="_parent" class="text-dark stretched-link text-decoration-none" href="https://app.opendate.io/e/maddi-baird-elif-dincer-zac-burgenbauch-mattheuu-october-06-2026-755378"><strong>
+Maddi Baird + Elif Dincer &amp; Zac Burgenbauch + Mattheuu
+</strong>
+</a></p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+October 06, 2026
+</p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+Doors: 7:30 PM - Show: 8:00 PM
+</p>
+<p class='mb-0 text-truncate' style='font-size: 13.6px; color: rgba(51, 51, 51, .85); margin-top: 3px;' title='Turn! Turn! Turn! • Portland, OR'>
+Turn! Turn! Turn! • Portland, OR
+</p>
+</div>
+</div>
+</div>
+<div class='col-12 col-sm-6 col-md-4 col-xl-3' style='margin-bottom: 58px;'>
+<div class='card confirm-card' style='border-radius: 16px; border: 2px solid white;'>
+<div class='card-body' style='padding: 15px;'>
+<div style='margin-bottom: 20px;'>
+<img class='consumer-order-img img-fluid' src='https://s3.amazonaws.com/opendate-aws-assets/confirms/main_event_images/000/755/381/compressed/Screenshot_2026-09-22_at_7.17.09%E2%80%AFPM.jpg?1790129944' style='border-radius: 16px;'>
+</div>
+<p class='mb-0 text-dark' style='font-size: 20px; line-height: 20px;'>
+<a target="_parent" class="text-dark stretched-link text-decoration-none" href="https://app.opendate.io/e/has-will-years-of-sun-lesser-demons-october-07-2026-755381"><strong>
+Has/Will + Years of Sun + Lesser Demons
+</strong>
+</a></p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+October 07, 2026
+</p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+Doors: 7:30 PM - Show: 8:00 PM
+</p>
+<p class='mb-0 text-truncate' style='font-size: 13.6px; color: rgba(51, 51, 51, .85); margin-top: 3px;' title='Turn! Turn! Turn! • Portland, OR'>
+Turn! Turn! Turn! • Portland, OR
+</p>
+</div>
+</div>
+</div>
+<div class='col-12 col-sm-6 col-md-4 col-xl-3' style='margin-bottom: 58px;'>
+<div class='card confirm-card' style='border-radius: 16px; border: 2px solid white;'>
+<div class='card-body' style='padding: 15px;'>
+<div style='margin-bottom: 20px;'>
+<img class='consumer-order-img img-fluid' src='https://s3.amazonaws.com/opendate-aws-assets/confirms/main_event_images/000/754/138/compressed/0045693382_10.jpg?1789864492' style='border-radius: 16px;'>
+</div>
+<p class='mb-0 text-dark' style='font-size: 20px; line-height: 20px;'>
+<a target="_parent" class="text-dark stretched-link text-decoration-none" href="https://app.opendate.io/e/toby-summerfield-nh-floom-jones-miller-pierce-team-evil-october-08-2026-754138"><strong>
+Toby Summerfield (NH) + Floom + Jones/Miller/Pierce + Team Evil
+</strong>
+</a></p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+October 08, 2026
+</p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+Doors: 7:30 PM - Show: 8:00 PM
+</p>
+<p class='mb-0 text-truncate' style='font-size: 13.6px; color: rgba(51, 51, 51, .85); margin-top: 3px;' title='Turn! Turn! Turn! • Portland, OR'>
+Turn! Turn! Turn! • Portland, OR
+</p>
+</div>
+</div>
+</div>
+<div class='col-12 col-sm-6 col-md-4 col-xl-3' style='margin-bottom: 58px;'>
+<div class='card confirm-card' style='border-radius: 16px; border: 2px solid white;'>
+<div class='card-body' style='padding: 15px;'>
+<div style='margin-bottom: 20px;'>
+<img class='consumer-order-img img-fluid' src='https://s3.amazonaws.com/opendate-aws-assets/confirms/main_event_images/000/755/382/compressed/Screenshot_2026-09-22_at_7.37.46%E2%80%AFPM.jpg?1790131218' style='border-radius: 16px;'>
+</div>
+<p class='mb-0 text-dark' style='font-size: 20px; line-height: 20px;'>
+<a target="_parent" class="text-dark stretched-link text-decoration-none" href="https://app.opendate.io/e/the-vardaman-ensemble-mottainai-multiverse-ensembel-october-09-2026-755382"><strong>
+The Vardaman Ensemble + Mottainai + Multiverse Ensembel
+</strong>
+</a></p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+October 09, 2026
+</p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+Doors: 7:30 PM - Show: 8:00 PM
+</p>
+<p class='mb-0 text-truncate' style='font-size: 13.6px; color: rgba(51, 51, 51, .85); margin-top: 3px;' title='Turn! Turn! Turn! • Portland, OR'>
+Turn! Turn! Turn! • Portland, OR
+</p>
+</div>
+</div>
+</div>
+<div class='col-12 col-sm-6 col-md-4 col-xl-3' style='margin-bottom: 58px;'>
+<div class='card confirm-card' style='border-radius: 16px; border: 2px solid white;'>
+<div class='card-body' style='padding: 15px;'>
+<div style='margin-bottom: 20px;'>
+<img class='consumer-order-img img-fluid' src='https://s3.amazonaws.com/opendate-aws-assets/confirms/main_event_images/000/749/917/compressed/Screenshot_2026-09-06_at_5.23.07%E2%80%AFPM.jpg?1788740756' style='border-radius: 16px;'>
+</div>
+<p class='mb-0 text-dark' style='font-size: 20px; line-height: 20px;'>
+<a target="_parent" class="text-dark stretched-link text-decoration-none" href="https://app.opendate.io/e/davey-bones-isle-decide-susurrus-station-october-10-2026-749917"><strong>
+Davey Bones + Isle Decide + Susurrus Station 
+</strong>
+</a></p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+October 10, 2026
+</p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+Doors: 7:30 PM - Show: 8:00 PM
+</p>
+<p class='mb-0 text-truncate' style='font-size: 13.6px; color: rgba(51, 51, 51, .85); margin-top: 3px;' title='Turn! Turn! Turn! • Portland, OR'>
+Turn! Turn! Turn! • Portland, OR
+</p>
+</div>
+</div>
+</div>
+<div class='col-12 col-sm-6 col-md-4 col-xl-3' style='margin-bottom: 58px;'>
+<div class='card confirm-card' style='border-radius: 16px; border: 2px solid white;'>
+<div class='card-body' style='padding: 15px;'>
+<div style='margin-bottom: 20px;'>
+<img class='consumer-order-img img-fluid' src='https://s3.amazonaws.com/opendate-aws-assets/confirms/main_event_images/000/754/397/compressed/cropped-event-image.jpg?1790054888' style='border-radius: 16px;'>
+</div>
+<p class='mb-0 text-dark' style='font-size: 20px; line-height: 20px;'>
+<a target="_parent" class="text-dark stretched-link text-decoration-none" href="https://app.opendate.io/e/pool-boys-night-swimming-lizzy-rose-october-14-2026-754397"><strong>
+Pool Boys + Night Swimming + Lizzy Rose
+</strong>
+</a></p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+October 14, 2026
+</p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+Doors: 7:30 PM - Show: 8:00 PM
+</p>
+<p class='mb-0 text-truncate' style='font-size: 13.6px; color: rgba(51, 51, 51, .85); margin-top: 3px;' title='Turn! Turn! Turn! • Portland, OR'>
+Turn! Turn! Turn! • Portland, OR
+</p>
+</div>
+</div>
+</div>
+<div class='col-12 col-sm-6 col-md-4 col-xl-3' style='margin-bottom: 58px;'>
+<div class='card confirm-card' style='border-radius: 16px; border: 2px solid white;'>
+<div class='card-body' style='padding: 15px;'>
+<div style='margin-bottom: 20px;'>
+<img class='consumer-order-img img-fluid' src='https://s3.amazonaws.com/opendate-aws-assets/confirms/main_event_images/000/755/384/compressed/0039934942_10.jpg?1790132186' style='border-radius: 16px;'>
+</div>
+<p class='mb-0 text-dark' style='font-size: 20px; line-height: 20px;'>
+<a target="_parent" class="text-dark stretched-link text-decoration-none" href="https://app.opendate.io/e/michael-beach-the-lavender-flu-fruited-planes-october-15-2026-755384"><strong>
+Michael Beach + The Lavender Flu + Fruited Planes
+</strong>
+</a></p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+October 15, 2026
+</p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+Doors: 7:30 PM - Show: 8:00 PM
+</p>
+<p class='mb-0 text-truncate' style='font-size: 13.6px; color: rgba(51, 51, 51, .85); margin-top: 3px;' title='Turn! Turn! Turn! • Portland, OR'>
+Turn! Turn! Turn! • Portland, OR
+</p>
+</div>
+</div>
+</div>
+<div class='col-12 col-sm-6 col-md-4 col-xl-3' style='margin-bottom: 58px;'>
+<div class='card confirm-card' style='border-radius: 16px; border: 2px solid white;'>
+<div class='card-body' style='padding: 15px;'>
+<div style='margin-bottom: 20px;'>
+<img class='consumer-order-img img-fluid' src='https://s3.amazonaws.com/opendate-aws-assets/confirms/main_event_images/000/755/385/compressed/Screenshot_2026-09-22_at_8.04.16%E2%80%AFPM.jpg?1790132763' style='border-radius: 16px;'>
+</div>
+<p class='mb-0 text-dark' style='font-size: 20px; line-height: 20px;'>
+<a target="_parent" class="text-dark stretched-link text-decoration-none" href="https://app.opendate.io/e/sherbet-tone-babytooth-october-17-2026-755385"><strong>
+Sherbet Tone + Babytooth
+</strong>
+</a></p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+October 17, 2026
+</p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+Doors: 3:30 PM - Show: 4:00 PM
+</p>
+<p class='mb-0 text-truncate' style='font-size: 13.6px; color: rgba(51, 51, 51, .85); margin-top: 3px;' title='Turn! Turn! Turn! • Portland, OR'>
+Turn! Turn! Turn! • Portland, OR
+</p>
+</div>
+</div>
+</div>
+<div class='col-12 col-sm-6 col-md-4 col-xl-3' style='margin-bottom: 58px;'>
+<div class='card confirm-card' style='border-radius: 16px; border: 2px solid white;'>
+<div class='card-body' style='padding: 15px;'>
+<div style='margin-bottom: 20px;'>
+<img class='consumer-order-img img-fluid' src='https://s3.amazonaws.com/opendate-aws-assets/confirms/main_event_images/000/755/386/compressed/Screenshot_2026-09-22_at_8.14.41%E2%80%AFPM.jpg?1790133328' style='border-radius: 16px;'>
+</div>
+<p class='mb-0 text-dark' style='font-size: 20px; line-height: 20px;'>
+<a target="_parent" class="text-dark stretched-link text-decoration-none" href="https://app.opendate.io/e/blanky-ks-grolixes-guitar-october-18-2026-755386"><strong>
+Blanky (KS) + Grolixes + Guitar
+</strong>
+</a></p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+October 18, 2026
+</p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+Doors: 7:30 PM - Show: 8:00 PM
+</p>
+<p class='mb-0 text-truncate' style='font-size: 13.6px; color: rgba(51, 51, 51, .85); margin-top: 3px;' title='Turn! Turn! Turn! • Portland, OR'>
+Turn! Turn! Turn! • Portland, OR
+</p>
+</div>
+</div>
+</div>
+<div class='col-12 col-sm-6 col-md-4 col-xl-3' style='margin-bottom: 58px;'>
+<div class='card confirm-card' style='border-radius: 16px; border: 2px solid white;'>
+<div class='card-body' style='padding: 15px;'>
+<div style='margin-bottom: 20px;'>
+<img class='consumer-order-img img-fluid' src='https://s3.amazonaws.com/opendate-aws-assets/confirms/main_event_images/000/734/155/compressed/open-uri20260803-874-potl4q.jpg?1785779256' style='border-radius: 16px;'>
+</div>
+<p class='mb-0 text-dark' style='font-size: 20px; line-height: 20px;'>
+<a target="_parent" class="text-dark stretched-link text-decoration-none" href="https://app.opendate.io/e/the-crooked-rugs-worry-wart-chandler-trey-johnson-october-20-2026-734155"><strong>
+The Crooked Rugs + Worry Wart + Chandler Trey Johnson 
+</strong>
+</a></p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+October 20, 2026
+</p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+Doors: 7:30 PM - Show: 8:00 PM
+</p>
+<p class='mb-0 text-truncate' style='font-size: 13.6px; color: rgba(51, 51, 51, .85); margin-top: 3px;' title='Turn! Turn! Turn! • Portland, OR'>
+Turn! Turn! Turn! • Portland, OR
+</p>
+</div>
+</div>
+</div>
+<div class='col-12 col-sm-6 col-md-4 col-xl-3' style='margin-bottom: 58px;'>
+<div class='card confirm-card' style='border-radius: 16px; border: 2px solid white;'>
+<div class='card-body' style='padding: 15px;'>
+<div style='margin-bottom: 20px;'>
+<img class='consumer-order-img img-fluid' src='https://s3.amazonaws.com/opendate-aws-assets/confirms/main_event_images/000/750/311/compressed/0042927938_10.jpg?1788909510' style='border-radius: 16px;'>
+</div>
+<p class='mb-0 text-dark' style='font-size: 20px; line-height: 20px;'>
+<a target="_parent" class="text-dark stretched-link text-decoration-none" href="https://app.opendate.io/e/imaad-wasif-ilyas-ahmed-tispur-october-22-2026-750311"><strong>
+Imaad Wasif + Ilyas Ahmed + Tispur
+</strong>
+</a></p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+October 22, 2026
+</p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+Doors: 7:30 PM - Show: 8:00 PM
+</p>
+<p class='mb-0 text-truncate' style='font-size: 13.6px; color: rgba(51, 51, 51, .85); margin-top: 3px;' title='Turn! Turn! Turn! • Portland, OR'>
+Turn! Turn! Turn! • Portland, OR
+</p>
+</div>
+</div>
+</div>
+<div class='col-12 col-sm-6 col-md-4 col-xl-3' style='margin-bottom: 58px;'>
+<div class='card confirm-card' style='border-radius: 16px; border: 2px solid white;'>
+<div class='card-body' style='padding: 15px;'>
+<div style='margin-bottom: 20px;'>
+<img class='consumer-order-img img-fluid' src='https://s3.amazonaws.com/opendate-aws-assets/confirms/main_event_images/000/749/918/compressed/1435836273.jpg?1788835363' style='border-radius: 16px;'>
+</div>
+<p class='mb-0 text-dark' style='font-size: 20px; line-height: 20px;'>
+<a target="_parent" class="text-dark stretched-link text-decoration-none" href="https://app.opendate.io/e/the-ghoulfriends-supergroup-benefit-for-the-ukulele-project-october-24-2026-749918"><strong>
+The Ghoulfriends&#39; Supergroup (benefit for The Ukulele Project)
+</strong>
+</a></p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+October 24, 2026
+</p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+Doors: 3:30 PM - Show: 4:00 PM
+</p>
+<p class='mb-0 text-truncate' style='font-size: 13.6px; color: rgba(51, 51, 51, .85); margin-top: 3px;' title='Turn! Turn! Turn! • Portland, OR'>
+Turn! Turn! Turn! • Portland, OR
+</p>
+</div>
+</div>
+</div>
+<div class='col-12 col-sm-6 col-md-4 col-xl-3' style='margin-bottom: 58px;'>
+<div class='card confirm-card' style='border-radius: 16px; border: 2px solid white;'>
+<div class='card-body' style='padding: 15px;'>
+<div style='margin-bottom: 20px;'>
+<img class='consumer-order-img img-fluid' src='https://s3.amazonaws.com/opendate-aws-assets/confirms/main_event_images/000/755/388/compressed/Screenshot_2026-09-22_at_8.54.24%E2%80%AFPM.jpg?1790135762' style='border-radius: 16px;'>
+</div>
+<p class='mb-0 text-dark' style='font-size: 20px; line-height: 20px;'>
+<a target="_parent" class="text-dark stretched-link text-decoration-none" href="https://app.opendate.io/e/mania-mnemonic-pulse-andrew-black-dj-music-medieval-october-26-2026-755388"><strong>
+Mania + Mnemonic Pulse + Andrew Black + DJ Music Medieval 
+</strong>
+</a></p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+October 26, 2026
+</p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+Doors: 7:30 PM - Show: 8:00 PM
+</p>
+<p class='mb-0 text-truncate' style='font-size: 13.6px; color: rgba(51, 51, 51, .85); margin-top: 3px;' title='Turn! Turn! Turn! • Portland, OR'>
+Turn! Turn! Turn! • Portland, OR
+</p>
+</div>
+</div>
+</div>
+<div class='col-12 col-sm-6 col-md-4 col-xl-3' style='margin-bottom: 58px;'>
+<div class='card confirm-card' style='border-radius: 16px; border: 2px solid white;'>
+<div class='card-body' style='padding: 15px;'>
+<div style='margin-bottom: 20px;'>
+<img class='consumer-order-img img-fluid' src='https://s3.amazonaws.com/opendate-aws-assets/confirms/main_event_images/000/755/387/compressed/Screenshot_2026-09-22_at_8.41.36%E2%80%AFPM.jpg?1790134991' style='border-radius: 16px;'>
+</div>
+<p class='mb-0 text-dark' style='font-size: 20px; line-height: 20px;'>
+<a target="_parent" class="text-dark stretched-link text-decoration-none" href="https://app.opendate.io/e/brites-holy-pinto-wi-worse-october-27-2026-755387"><strong>
+Brites + Holy Pinto (WI) + Worse
+</strong>
+</a></p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+October 27, 2026
+</p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+Doors: 7:30 PM - Show: 8:00 PM
+</p>
+<p class='mb-0 text-truncate' style='font-size: 13.6px; color: rgba(51, 51, 51, .85); margin-top: 3px;' title='Turn! Turn! Turn! • Portland, OR'>
+Turn! Turn! Turn! • Portland, OR
+</p>
+</div>
+</div>
+</div>
+<div class='col-12 col-sm-6 col-md-4 col-xl-3' style='margin-bottom: 58px;'>
+<div class='card confirm-card' style='border-radius: 16px; border: 2px solid white;'>
+<div class='card-body' style='padding: 15px;'>
+<div style='margin-bottom: 20px;'>
+<img class='consumer-order-img img-fluid' src='https://s3.amazonaws.com/opendate-aws-assets/confirms/main_event_images/000/749/681/compressed/IMG_0135.jpg?1788520562' style='border-radius: 16px;'>
+</div>
+<p class='mb-0 text-dark' style='font-size: 20px; line-height: 20px;'>
+<a target="_parent" class="text-dark stretched-link text-decoration-none" href="https://app.opendate.io/e/cormae-new-here-combobox-october-28-2026-749681"><strong>
+CorMae + New Here + Combobox 
+</strong>
+</a></p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+October 28, 2026
+</p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+Doors: 7:30 PM - Show: 8:00 PM
+</p>
+<p class='mb-0 text-truncate' style='font-size: 13.6px; color: rgba(51, 51, 51, .85); margin-top: 3px;' title='Turn! Turn! Turn! • Portland, OR'>
+Turn! Turn! Turn! • Portland, OR
+</p>
+</div>
+</div>
+</div>
+<div class='col-12 col-sm-6 col-md-4 col-xl-3' style='margin-bottom: 58px;'>
+<div class='card confirm-card' style='border-radius: 16px; border: 2px solid white;'>
+<div class='card-body' style='padding: 15px;'>
+<div style='margin-bottom: 20px;'>
+<img class='consumer-order-img img-fluid' src='https://s3.amazonaws.com/opendate-aws-assets/confirms/main_event_images/000/749/221/compressed/csm_david_bowie_ohl-019112_ausschnitt_f62904d43f.jpg?1788378821' style='border-radius: 16px;'>
+</div>
+<p class='mb-0 text-dark' style='font-size: 20px; line-height: 20px;'>
+<a target="_parent" class="text-dark stretched-link text-decoration-none" href="https://app.opendate.io/e/boys-keep-swing-friends-october-30-2026-749221"><strong>
+Boys Keep Swing + friends 
+</strong>
+</a></p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+October 30, 2026
+</p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+Doors: 7:30 PM - Show: 8:00 PM
+</p>
+<p class='mb-0 text-truncate' style='font-size: 13.6px; color: rgba(51, 51, 51, .85); margin-top: 3px;' title='Turn! Turn! Turn! • Portland, OR'>
+Turn! Turn! Turn! • Portland, OR
+</p>
+</div>
+</div>
+</div>
+<div class='col-12 col-sm-6 col-md-4 col-xl-3' style='margin-bottom: 58px;'>
+<div class='card confirm-card' style='border-radius: 16px; border: 2px solid white;'>
+<div class='card-body' style='padding: 15px;'>
+<div style='margin-bottom: 20px;'>
+<img class='consumer-order-img img-fluid' src='https://s3.amazonaws.com/opendate-aws-assets/confirms/main_event_images/000/749/976/compressed/1000017210.jpg?1788835144' style='border-radius: 16px;'>
+</div>
+<p class='mb-0 text-dark' style='font-size: 20px; line-height: 20px;'>
+<a target="_parent" class="text-dark stretched-link text-decoration-none" href="https://app.opendate.io/e/is-this-really-halloween-w-surgery-season-golem-pink-cassie-candles-the-cocker-spaniels-koa-koala-tacoma-october-31-2026-749976"><strong>
+is this really HALLOWEEN? w/ Surgery Season + Golem Pink + Cassie Candles &amp; the Cocker Spaniels + Koa Koala (Tacoma)
+</strong>
+</a></p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+October 31, 2026
+</p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+Doors: 7:30 PM - Show: 8:00 PM
+</p>
+<p class='mb-0 text-truncate' style='font-size: 13.6px; color: rgba(51, 51, 51, .85); margin-top: 3px;' title='Turn! Turn! Turn! • Portland, OR'>
+Turn! Turn! Turn! • Portland, OR
+</p>
+</div>
+</div>
+</div>
+<div class='col-12 col-sm-6 col-md-4 col-xl-3' style='margin-bottom: 58px;'>
+<div class='card confirm-card' style='border-radius: 16px; border: 2px solid white;'>
+<div class='card-body' style='padding: 15px;'>
+<div style='margin-bottom: 20px;'>
+<img class='consumer-order-img img-fluid' src='https://s3.amazonaws.com/opendate-aws-assets/confirms/main_event_images/000/750/305/compressed/Eric_Silverman_by_Pearl_Mathilde_Martin-Eagle_HMM-909_crop.jpg?1788908813' style='border-radius: 16px;'>
+</div>
+<p class='mb-0 text-dark' style='font-size: 20px; line-height: 20px;'>
+<a target="_parent" class="text-dark stretched-link text-decoration-none" href="https://app.opendate.io/e/eric-silverman-sam-plecker-november-02-2026-750305"><strong>
+Eric Silverman + Sam Plecker
+</strong>
+</a></p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+November 02, 2026
+</p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+Doors: 7:30 PM - Show: 8:00 PM
+</p>
+<p class='mb-0 text-truncate' style='font-size: 13.6px; color: rgba(51, 51, 51, .85); margin-top: 3px;' title='Turn! Turn! Turn! • Portland, OR'>
+Turn! Turn! Turn! • Portland, OR
+</p>
+</div>
+</div>
+</div>
+<div class='col-12 col-sm-6 col-md-4 col-xl-3' style='margin-bottom: 58px;'>
+<div class='card confirm-card' style='border-radius: 16px; border: 2px solid white;'>
+<div class='card-body' style='padding: 15px;'>
+<div style='margin-bottom: 20px;'>
+<img class='consumer-order-img img-fluid' src='https://s3.amazonaws.com/opendate-aws-assets/confirms/main_event_images/000/729/304/compressed/open-uri20260714-651-4jbdno.jpg?1784064508' style='border-radius: 16px;'>
+</div>
+<p class='mb-0 text-dark' style='font-size: 20px; line-height: 20px;'>
+<a target="_parent" class="text-dark stretched-link text-decoration-none" href="https://app.opendate.io/e/elanor-moss-bob-desaulniers-november-14-2026-729304"><strong>
+Elanor Moss + Bob Desaulniers
+</strong>
+</a></p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+November 14, 2026
+</p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+Doors: 7:30 PM - Show: 7:30 PM
+</p>
+<p class='mb-0 text-truncate' style='font-size: 13.6px; color: rgba(51, 51, 51, .85); margin-top: 3px;' title='Turn! Turn! Turn! • Portland, OR'>
+Turn! Turn! Turn! • Portland, OR
+</p>
+</div>
+</div>
+</div>
+<div class='col-12 col-sm-6 col-md-4 col-xl-3' style='margin-bottom: 58px;'>
+<div class='card confirm-card' style='border-radius: 16px; border: 2px solid white;'>
+<div class='card-body' style='padding: 15px;'>
+<div style='margin-bottom: 20px;'>
+<img class='consumer-order-img img-fluid' src='https://s3.amazonaws.com/opendate-aws-assets/confirms/main_event_images/000/754/398/compressed/Screenshot_2026-09-21_at_10.56.11%E2%80%AFPM.jpg?1790056726' style='border-radius: 16px;'>
+</div>
+<p class='mb-0 text-dark' style='font-size: 20px; line-height: 20px;'>
+<a target="_parent" class="text-dark stretched-link text-decoration-none" href="https://app.opendate.io/e/glass-egg-seattle-femme-cell-found-space-november-19-2026-754398"><strong>
+Glass Egg (Seattle) + Femme Cell + Found Space
+</strong>
+</a></p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+November 19, 2026
+</p>
+<p class='mb-0' style='font-size: 13.6px; color: #1982c4; font-weight: 600; margin-top: 3px;'>
+Doors: 7:30 PM - Show: 8:00 PM
+</p>
+<p class='mb-0 text-truncate' style='font-size: 13.6px; color: rgba(51, 51, 51, .85); margin-top: 3px;' title='Turn! Turn! Turn! • Portland, OR'>
+Turn! Turn! Turn! • Portland, OR
+</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+<script>
+//<![CDATA[
+window.gon={};gon.google_api_key="AIzaSyA0P6EU94uw7z58viruOs10Q6Rw-mqHJVo";gon.google_static_maps_api_key="AIzaSyA6wm3tj70VHwEAXUGfFC4RASHHMjvF0d4";gon.turnstile_site_key="0x4AAAAAADrBO1OpuLnaSIHo";gon.ckeditor_license_key="eyJhbGciOiJFUzI1NiJ9.eyJleHAiOjE3NzA0MjIzOTksImp0aSI6ImE5ZGI4ZDBlLTJkMTAtNDMzZS05NmQzLTViZDZjZmU0OTQ4YSIsImxpY2Vuc2VkSG9zdHMiOlsiKi5vcGVuZGF0ZS5pbyIsIm9wZW5kYXRlLnRlc3QiXSwiZGlzdHJpYnV0aW9uQ2hhbm5lbCI6WyJzaCIsImRydXBhbCJdLCJ3aGl0ZUxhYmVsIjp0cnVlLCJmZWF0dXJlcyI6WyJEUlVQIiwiRE8iLCJGUCIsIlNDIiwiVE9DIiwiVFBMIiwiUE9FIiwiQ0MiLCJNRiIsIlNFRSIsIkVDSCIsIkVJUyIsIkxIIiwiRk9PIl0sInZjIjoiM2FkMmJhNjUifQ.3-tVmYpvunttEVz0pt_y89R4Qn5HyPsffrPrOvO_rEiKCNKeA-Hq_UWOmgtztd8TEL2eDT6gvpyyB-tEyvCzNw";gon.timeZone="America/Los_Angeles";
+//]]>
+</script>
+<script src="//kit.fontawesome.com/688ba73e1b.js"></script>
+<script src="/assets/application-e39cd6093d53488b6ff0d6595e7adbafa78b6187e7c8f3bd24c9581b193215bd.js"></script>
+<script src="/packs/od_embed.js" defer="defer"></script>
+<script src="/packs/lodash-00a05576f7b880b7.js" defer="defer"></script>
+<script src="/packs/vendor-b214f2a9271de732.js" defer="defer"></script>
+<script src="/packs/common-0c5041227fe3119e.js" defer="defer"></script>
+<script src="/packs/react-on-rails-bundle-0dbd118c24685a2d.js" defer="defer"></script>
+
+
+</body>
+</html>
