@@ -3921,7 +3921,7 @@ def parse_mcmenamins(html, today):
 
 
 
-def fetch_tls(url, timeout=30):
+def fetch_tls(url, timeout=30, impersonate="chrome"):
     """Fetch with Chrome's TLS fingerprint, no browser.
 
     Some firewalls block on the TLS handshake, not the headers: Python's
@@ -3934,10 +3934,49 @@ def fetch_tls(url, timeout=30):
 
     Sits between browser-headers and Playwright in the bot-wall order."""
     from curl_cffi import requests as cr
-    r = cr.get(url, impersonate="chrome", timeout=timeout,
+    r = cr.get(url, impersonate=impersonate, timeout=timeout,
                headers={"Accept-Language": "en-US,en;q=0.9"})
+    # A challenge served with a 200 used to reach the parser as "a page with
+    # no events" (Sep 25 2026: Kelly's and Realm, both "loaded but found
+    # nothing" on the same build). Call it what it is.
+    why = _challenged(r)
+    if why:
+        raise ChallengeError(f"challenge {why} from {url}")
     r.raise_for_status()
     return r.text
+
+
+def tls_rows(src, url, today):
+    """TLS tier with two fallbacks (Sep 25 2026). Cloudflare now and then
+    challenges the build's connection even with Chrome's handshake -- Kelly's
+    and Realm both came back empty on one build and full on the next. So: the
+    Chrome handshake; if that is challenged or empty, a Safari handshake; if
+    that is too, a real windowed browser (the tier that clears The Goodfoot).
+    Sources marked may_be_empty stop after the handshakes -- an empty calendar
+    is normal for them and not worth a browser every night."""
+    for imp in ("chrome", "safari"):
+        try:
+            rows = src["parser"](fetch_tls(url, impersonate=imp), today) or []
+            if rows:
+                if imp != "chrome":
+                    print(f"  note: {src['name']}: cleared with the {imp} handshake")
+                return rows
+            why = "0 events"
+        except Exception as e:
+            why = type(e).__name__
+        print(f"  note: {src['name']}: {imp} handshake gave {why}")
+    if src.get("may_be_empty"):
+        return []
+    from fetch_headless import fetch_headless, fetch_headless_json
+    if "/wp-json/" in url:
+        home = url.split("/wp-json/")[0] + "/"
+        data = fetch_headless_json(home, url, headed=True)
+        text = json.dumps(data) if data else ""
+    else:
+        text = fetch_headless(url)
+    rows = src["parser"](text, today) or []
+    print(f"  note: {src['name']}: browser fallback got {len(rows)} rows")
+    return rows
 
 
 def parse_kellys_olympian(html_text, today):
@@ -6140,7 +6179,7 @@ def scrape():
                     # TLS-fingerprint tier: Chrome's handshake without a
                     # browser. For firewalls that block on the connection,
                     # not the headers. Cheaper and steadier than headless.
-                    rows = src["parser"](fetch_tls(url), today)
+                    rows = tls_rows(src, url, today)
                 elif src.get("headless"):
                     # Headless tier, loop-owned fetch: Chromium clears the
                     # challenge and the parser gets ordinary rendered HTML, so
@@ -6466,7 +6505,9 @@ def net_health(net, last_good, scraped, today, zero_reports=()):
             items.append({"venue": v, "kind": "dark", "since": since, "days": age})
             reported.add(v)
     for name, why in zero_reports or ():
-        if name not in reported:
+        # "Realm (realmpdx.com)" is the same room as the held "Realm" --
+        # one line per venue, not two (Sep 25 2026).
+        if not any(name == v or name.startswith(v + " (") for v in reported):
             items.append({"venue": name, "kind": "empty", "why": why})
     return {"checked": today.isoformat(), "items": items}
 

@@ -575,6 +575,30 @@ def safety_net_check():
         print("GATE FAILURE")
         sys.exit(1)
     print("  ok   feed health                   held (0 and partial), expired, dark 23 days, empty source -> report; 85-day-dark room dropped off")
+    import json
+    # TLS fallbacks (Sep 25 2026): a challenged Chrome handshake tries Safari,
+    # then a browser; a may_be_empty source stops after the handshakes.
+    import fetch_headless as _fh
+    calls = []
+    def _tls(url, timeout=30, impersonate="chrome"):
+        calls.append(impersonate)
+        raise sv.ChallengeError("challenge signature 'Just a moment'")
+    _real_tls, _real_hj = sv.fetch_tls, _fh.fetch_headless_json
+    sv.fetch_tls = _tls
+    _fh.fetch_headless_json = lambda home, url, headed=False: {"events": [1, 2]}
+    try:
+        src = {"name": "Kelly's (test)", "parser": lambda t, d: json.loads(t)["events"] if t else []}
+        got = sv.tls_rows(src, "https://x.example/wp-json/tribe/events/v1/events", datetime.date(2026, 9, 25))
+        quiet = sv.tls_rows(dict(src, may_be_empty=True), "https://x.example/wp-json/tribe/events/v1/events", datetime.date(2026, 9, 25))
+    finally:
+        sv.fetch_tls, _fh.fetch_headless_json = _real_tls, _real_hj
+    h2 = sv.net_health({"zero": {"Realm": (28, 1)}}, {"Realm": "2026-09-24"}, [], datetime.date(2026, 9, 25),
+                       [("Realm (realmpdx.com)", "fetched OK but the parser found no events")])
+    if got != [1, 2] or quiet != [] or calls != ["chrome", "safari", "chrome", "safari"] or len(h2["items"]) != 1:
+        print(f"  FAIL tls fallback                 got {got} quiet {quiet} calls {calls} health {h2}")
+        print("GATE FAILURE")
+        sys.exit(1)
+    print("  ok   tls fallback                  challenged chrome -> safari -> browser; quiet source stops at the handshakes; one health line per venue")
     # Turn! Turn! Turn! on Opendate (Sep 24 2026): the capture is the real
     # page, saved from the Codespace (the venue moved its calendar there).
     _od = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fixtures", "turn-opendate.html")
