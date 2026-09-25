@@ -413,6 +413,12 @@ body{
 /* Tallies under a listing (Sep 24 2026): hearts, going, people you follow */
 .s-tally{font-size:12.5px;color:var(--ink);opacity:.7;margin-top:3px;letter-spacing:.01em}
 .s-tally .t-heart{color:var(--rust)}
+/* YouTube in comments (Sep 25 2026) */
+.cmt-yt{position:relative;display:block;width:100%;max-width:420px;aspect-ratio:16/9;margin:6px 0 2px;padding:0;border:0;border-radius:8px;overflow:hidden;background:#000;cursor:pointer}
+.cmt-yt img{width:100%;height:100%;object-fit:cover;display:block;opacity:.9}
+.cmt-yt:hover img{opacity:1}
+.cmt-yt-play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:58px;height:40px;border-radius:10px;background:rgba(200,30,30,.9);color:#fff;font-size:18px;line-height:40px;text-align:center}
+.cmt-yt-frame{display:block;width:100%;max-width:420px;aspect-ratio:16/9;border:0;border-radius:8px;margin:6px 0 2px;background:#000}
 .s-tally .t-you .av{width:16px;height:16px;font-size:8px;vertical-align:middle;margin:0 4px 0 0;position:relative;top:-1px}
 .s-tally .t-you .av-stack{display:inline-flex;vertical-align:middle;margin-right:4px}
 .s-tally .t-you .av-stack .av{margin-right:0;vertical-align:0}
@@ -8152,15 +8158,53 @@ async function cmtAuthors(ids){
 function cmtMarks(t){
   return t.replace(/\*\*([^*\n]+)\*\*/g, '<b>$1</b>').replace(/(^|[^*])\*([^*\s][^*\n]*?)\*(?!\*)/g, '$1<i>$2</i>');
 }
+// Pull YouTube links out of a comment: watch, youtu.be, shorts, live,
+// embed, music.youtube. Only the 11-character video id is kept -- the player
+// is built from that, never from the pasted text. Two per comment at most.
+const CMT_YT_RE = /(?:https?:\/\/)?(?:www\.|m\.|music\.)?(?:youtube\.com\/(?:watch\?(?:[^\s#]*&)?v=|shorts\/|live\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{11})[^\s]*/g;
+function cmtYouTube(raw){
+  const ids = [];
+  const text = String(raw).replace(CMT_YT_RE, function(all, id){
+    if(ids.indexOf(id) === -1 && ids.length < 2) ids.push(id);
+    return ' ';
+  }).replace(/[ \t]{2,}/g, ' ');
+  return { text: text, ids: ids };
+}
+// A thumbnail with a play button; the player itself (youtube-nocookie) loads
+// only when someone taps, so a long thread doesn't pull in ten players.
+function cmtYtCard(id){
+  return '<button type="button" class="cmt-yt" data-yt="' + id + '" aria-label="Play video">'
+    + '<img src="https://i.ytimg.com/vi/' + id + '/hqdefault.jpg" alt="" loading="lazy">'
+    + '<span class="cmt-yt-play" aria-hidden="true">&#9654;</span></button>';
+}
+document.addEventListener('click', function(e){
+  const b = e.target.closest('.cmt-yt[data-yt]');
+  if(!b) return;
+  e.preventDefault(); e.stopPropagation();
+  const id = b.getAttribute('data-yt');
+  if(!/^[A-Za-z0-9_-]{11}$/.test(id)) return;
+  const f = document.createElement('iframe');
+  f.className = 'cmt-yt-frame';
+  f.src = 'https://www.youtube-nocookie.com/embed/' + id + '?autoplay=1&rel=0';
+  f.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+  f.allowFullscreen = true;
+  f.title = 'YouTube video';
+  b.replaceWith(f);
+});
 function cmtRow(c, myUserId, hidden, resolved, authorHandle){
   if(c && MY_BLOCKS.has(c.user_id)) return '';   // someone you blocked (Sep 22 2026)
   const mine = myUserId && c.user_id === myUserId;
   // A reported comment keeps its byline but loses its body. Showing who wrote
   // it and when preserves the thread's shape; showing the text would defeat
   // the point of hiding it. The author still sees their own Delete.
+  // YouTube links play right in the comment (Sep 25 2026, Nick). The link
+  // text comes out of the sentence and a player card goes under it.
+  const yt = hidden ? { text: c.body || '', ids: [] } : cmtYouTube(c.body || '');
+  const txt = yt.text.trim();
   const body = hidden
     ? rpHiddenPlaceholder()
-    : '<p class="cmt-body">' + cmtLinkify(cmtMarks(esc(c.body || '')), resolved) + '</p>';
+    : (txt ? '<p class="cmt-body">' + cmtLinkify(cmtMarks(esc(txt)), resolved) + '</p>' : '')
+      + yt.ids.map(cmtYtCard).join('');
   return '<li class="cmt" data-cmt-id="'+esc(c.id)+'">'
     + '<div class="cmt-top">'
       + avImg(c.user_id, c.display_name)
@@ -8749,7 +8793,7 @@ async function renderComments(host, slug){
   if(myUserId){
     html += '<form class="cmt-form" data-cmt-form>'
       + '<label class="sr-only" for="cmtInput">Add a comment</label>'
-      + '<textarea class="cmt-input" id="cmtInput" maxlength="'+CMT_MAX+'" placeholder="Add a comment… @handle to mention · **bold** · *italic*"></textarea>'
+      + '<textarea class="cmt-input" id="cmtInput" maxlength="'+CMT_MAX+'" placeholder="Add a comment… @handle to mention · **bold** · *italic* · paste a YouTube link to share a video"></textarea>'
       + '<div class="cmt-form-foot">'
         + '<span class="cmt-counter" data-cmt-counter>0 / '+CMT_MAX+'</span>'
         + '<button type="submit" class="cmt-post" disabled>Post</button>'
