@@ -116,7 +116,7 @@ CASES = [
     ("cascade-cuthbert-amphitheater.html", sv.parse_cuthbert,    2, {"time": 2},                         "Cascade Tickets RHP page, season's tail (captured 2026-09-21)"),
     ("cascade-mcmenamins-lolas-room.html", sv.parse_lolasroom,   5, {"time": 5, "age": 5},               "Cascade Tickets RHP page (captured 2026-09-21)"),
     ("wowhall-tribe.json",      sv.parse_wowhall,        23, {"time": 23, "imageUrl": 23},       "Tribe REST; classes, meetings and talks dropped (captured 2026-09-21)"),
-    ("lavernes.html",           sv.parse_lavernes,        4, {"time": 4, "age": 4, "imageUrl": 4},  "hand-typed Squarespace page: h2 title + 'Day, Month Nth | 8pm | 21+ | $' line; poster in the neighbouring image block; TICKETS button link (captured 2026-09-19)"),
+    ("lavernes.html",           sv.parse_lavernes,        5, {"time": 5, "age": 5, "imageUrl": 5},  "hand-typed Squarespace page (past rows returned too since Sep 25 2026; the loop drops them): h2 title + 'Day, Month Nth | 8pm | 21+ | $' line; poster in the neighbouring image block; TICKETS button link (captured 2026-09-19)"),
     ("helium.html",             sv.parse_helium,        197, {"time": 197, "imageUrl": 197, "contentType": 197}, "JSON-LD Place.Events on the homepage; UTC -> Pacific; Special Event/Helium Presents prefixes dropped; Neon Room sets tagged; all comedy (captured 2026-09-18)"),
     ("haymaker.html",           sv.parse_haymaker,      20, {"time": 20, "imageUrl": 20}, "Squarespace event list (shared reader with No Fun); comedy nights kept for the comedy bin"),
     ("kellys-tribe.json",       sv.parse_kellys_olympian, 17, {"time": 17, "imageUrl": 17},  "Tribe REST JSON via the TLS tier (curl_cffi); JSON-LD HTML path kept as fallback"),

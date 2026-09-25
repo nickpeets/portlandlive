@@ -3946,6 +3946,13 @@ def fetch_tls(url, timeout=30, impersonate="chrome"):
     return r.text
 
 
+# What each fetch tier got, per source, this run -- "chrome: ChallengeError ·
+# safari: ChallengeError · browser: 0 rows". Lands on the feed-health line for
+# a venue that scraped 0 (Sep 25 2026: Kelly's and Realm were 0 on the runner
+# and fine from the Codespace, and the report couldn't say which tier failed).
+FETCH_NOTES = {}
+
+
 def tls_rows(src, url, today):
     """TLS tier with two fallbacks (Sep 25 2026). Cloudflare now and then
     challenges the build's connection even with Chrome's handshake -- Kelly's
@@ -3954,19 +3961,24 @@ def tls_rows(src, url, today):
     that is too, a real windowed browser (the tier that clears The Goodfoot).
     Sources marked may_be_empty stop after the handshakes -- an empty calendar
     is normal for them and not worth a browser every night."""
+    tried = []
     for imp in ("chrome", "safari"):
         try:
             rows = src["parser"](fetch_tls(url, impersonate=imp), today) or []
             if rows:
                 if imp != "chrome":
                     print(f"  note: {src['name']}: cleared with the {imp} handshake")
+                    FETCH_NOTES[src["name"]] = " \u00b7 ".join(tried + [f"{imp}: {len(rows)} rows"])
                 return rows
             why = "0 events"
         except Exception as e:
             why = type(e).__name__
+        tried.append(f"{imp}: {why}")
         print(f"  note: {src['name']}: {imp} handshake gave {why}")
     if src.get("may_be_empty"):
+        FETCH_NOTES[src["name"]] = " \u00b7 ".join(tried)
         return []
+    FETCH_NOTES[src["name"]] = " \u00b7 ".join(tried + ["browser: failed"])
     from fetch_headless import fetch_headless, fetch_headless_json
     if "/wp-json/" in url:
         home = url.split("/wp-json/")[0] + "/"
@@ -3976,6 +3988,7 @@ def tls_rows(src, url, today):
         text = fetch_headless(url)
     rows = src["parser"](text, today) or []
     print(f"  note: {src['name']}: browser fallback got {len(rows)} rows")
+    FETCH_NOTES[src["name"]] = " \u00b7 ".join(tried + [f"browser: {len(rows)} rows" if text else "browser: no page"])
     return rows
 
 
@@ -5426,7 +5439,9 @@ def parse_lavernes(html, today):
             d = datetime.date(yr, mon, day)
         except ValueError:
             continue
-        if not (today <= d <= horizon):
+        # Past listings come back too (the loop drops them); an all-past page
+        # reads as "nothing upcoming posted yet", not a shape change.
+        if d > horizon:
             continue
         tm = _LAV_TIME.search(line)
         time_s = show_time(line) or (to_time(tm.group(1)) if tm else "")
@@ -6207,10 +6222,19 @@ def scrape():
                     print(f"  note: {src['name']}: {url.rsplit('/', 1)[-1]} not posted yet (404, expected)")
                 else:
                     print(f"  WARN: {src['name']} parser failed: {type(e).__name__}: {e} ({url})")
+                    if src["name"] not in FETCH_NOTES:
+                        FETCH_NOTES[src["name"]] = f"{type(e).__name__}: {str(e)[:120]}"
+        raw = list(got)
         got = [s for s in got if lower <= s["date"] <= horizon]
         print(f"  {src['name']}: {len(got)} shows")
         if not got and fetched_ok and not src.get("may_be_empty"):
-            if raw_count:
+            if raw_count and all(s["date"] < lower for s in raw):
+                # Every listing is in the past: the venue hasn't posted the
+                # next one yet (LaVerne's, Sep 25 2026 -- a hand-typed page
+                # still showing last week). Quiet, not a breakage.
+                zero_reports.append(
+                    (src["name"], f"nothing upcoming posted yet (latest listing {max(s['date'] for s in raw)})"))
+            elif raw_count:
                 zero_reports.append(
                     (src["name"], f"parsed {raw_count} row(s) but every one fell outside "
                                   f"today..+{HORIZON_DAYS}d -- stale calendar or a date-parsing bug"))
@@ -6480,7 +6504,7 @@ def safety_net(scraped, prev_rows, prev_last_good, hist, today):
 DARK_REPORT_DAYS = 30   # a venue gone dark stays on the report this long, then drops off
 
 
-def net_health(net, last_good, scraped, today, zero_reports=()):
+def net_health(net, last_good, scraped, today, zero_reports=(), notes=None):
     """Pure: the safety net's report as JSON-able rows, worst first."""
     from collections import Counter
     counts = Counter(s.get("venue", "") for s in scraped)
@@ -6490,9 +6514,11 @@ def net_health(net, last_good, scraped, today, zero_reports=()):
     for v, age in sorted((net.get("expired") or {}).items()):
         items.append({"venue": v, "kind": "expired", "days": age,
                       "seasonal": v in SEASONAL_VENUES})
+    note_for = lambda v: next((w for name, w in (notes or {}).items() if name == v or name.startswith(v + " (")), "")
     for v, (n, age) in sorted((net.get("zero") or {}).items()):
         items.append({"venue": v, "kind": "zero", "scraped": 0, "shown": n,
-                      "since": last_good.get(v, ""), "drops": drop(last_good.get(v)), "days": age})
+                      "since": last_good.get(v, ""), "drops": drop(last_good.get(v)), "days": age,
+                      "why": note_for(v)})
     for v, (now, avg, extra, age) in sorted((net.get("partial") or {}).items()):
         items.append({"venue": v, "kind": "partial", "scraped": now, "usual": avg, "added": extra,
                       "since": last_good.get(v, ""), "drops": drop(last_good.get(v)), "days": age})
@@ -6508,7 +6534,7 @@ def net_health(net, last_good, scraped, today, zero_reports=()):
         # "Realm (realmpdx.com)" is the same room as the held "Realm" --
         # one line per venue, not two (Sep 25 2026).
         if not any(name == v or name.startswith(v + " (") for v in reported):
-            items.append({"venue": name, "kind": "empty", "why": why})
+            items.append({"venue": name, "kind": "quiet" if why.startswith("nothing upcoming") else "empty", "why": why})
     return {"checked": today.isoformat(), "items": items}
 
 
@@ -6565,7 +6591,7 @@ def main():
     with open(target, "w") as f:
         json.dump({"_comment": "Auto-generated by scrape_venues.py + hand-added shows.",
                    "_last_good": last_good,
-                   "_health": net_health(net, last_good, scraped, today, zero_reports),
+                   "_health": net_health(net, last_good, scraped, today, zero_reports, FETCH_NOTES),
                    "shows": merged}, f, indent=2, ensure_ascii=False)
     print(f"Wrote {len(merged)} shows to manual_shows.json "
           f"({len(scraped)} scraped, {len(keep)} kept by the safety net, {len(hand)} hand-added)")

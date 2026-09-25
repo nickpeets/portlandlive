@@ -528,7 +528,9 @@
     // Build-time items from shows.json, plus notes the page works out itself
     // (the Heating Up revisit flag).
     const items = ((h && Array.isArray(h.items)) ? h.items : []).concat(window.__plHealthExtra || []);
-    if (btn) btn.classList.toggle("has-alert", isMod && items.length > 0);
+    // A venue with nothing upcoming posted yet is news, not an alarm: no dot.
+    const loud = items.filter(function (i) { return i.kind !== "quiet"; });
+    if (btn) btn.classList.toggle("has-alert", isMod && loud.length > 0);
     if (!slot) return;
     const old = slot.querySelector(".feed-health"); if (old) old.remove();
     if (!isMod || (!h && !items.length)) return;
@@ -540,7 +542,8 @@
     const esc = function (t) { return String(t == null ? "" : t).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); };
     const line = function (i) {
       const v = "<b>" + esc(i.venue) + "</b> \u2014 ";
-      if (i.kind === "zero") return v + "scraped 0. Showing " + i.shown + " from the last good scrape (" + md(i.since) + "). Drops off " + md(i.drops) + " unless fixed.";
+      if (i.kind === "zero") return v + "scraped 0. Showing " + i.shown + " from the last good scrape (" + md(i.since) + "). Drops off " + md(i.drops) + " unless fixed." + (i.why ? " Tiers: " + esc(i.why) + "." : "");
+      if (i.kind === "quiet") return v + esc(i.why || "nothing upcoming posted yet") + ".";
       if (i.kind === "partial") return v + "scraped " + i.scraped + " (usually ~" + i.usual + "). Added back " + i.added + " since " + md(i.since) + ". Drops off " + md(i.drops) + ".";
       if (i.kind === "expired") return v + (i.seasonal ? "off-season; shows dropped after " : "shows DROPPED today after ") + i.days + " days without a good scrape.";
       if (i.kind === "dark") return v + "no shows on the site since " + md(i.since) + " (" + i.days + " days).";
