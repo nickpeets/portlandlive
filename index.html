@@ -1919,7 +1919,47 @@ function parseDateQuery(q){
   };
   let hit = null;
   const plus = n => { const d = new Date(today + 'T12:00:00'); d.setDate(d.getDate() + n); return d.toISOString().slice(0,10); };
-  cut(/\s(\d{4})-(\d{2})-(\d{2})\s/, m => ({from: m[1]+'-'+m[2]+'-'+m[3], to: m[1]+'-'+m[2]+'-'+m[3]}))
+  // Sep 24 2026 additions (Nick: "any other variations that would trip the
+  // search up?"): day ranges, plural days, slang, next weekend, this/next
+  // month, 9-25, "the 25th", NYE. Day numbers: sun 0 .. sat 6.
+  const DAY = '(monday|mon|tuesday|tues|tue|wednesday|weds|wed|thursday|thurs|thur|thu|friday|fri|saturday|sat|sunday)';
+  const dnum = w => ({ mon:1, tue:2, wed:3, thu:4, fri:5, sat:6, sun:0 })[w.slice(0, 3)];
+  const dowToday = new Date(today + 'T12:00:00').getDay();
+  const nextDow = (d, from) => from + ((d - ((dowToday + from) % 7) + 7) % 7);   // days ahead, on/after `from`
+  cut(new RegExp('\\s' + DAY + '\\s*(?:(and|through|thru|to|-)\\s*)?(' + DAY.slice(1, -1) + '|sun)(?:\\s+(?:nights?|nites?))?\\s'), m => {
+      const a = dnum(m[1]), b = dnum(m[3]);
+      const n1 = nextDow(a, 0), n2 = nextDow(b, n1);
+      const through = m[2] && m[2] !== 'and';
+      const out = {from: plus(n1), to: plus(n2)};
+      if(!through && n2 - n1 > 1) out.dows = [a, b];                        // "friday and sunday": just those two
+      return out;
+    })
+  || cut(/\s(mondays|tuesdays|wednesdays|thursdays|fridays|saturdays|sundays)\s/, m => ({from: today, to: plus(27), dows: [dnum(m[1])]}))
+  || cut(/\s(tonite|2nite|this\s+evening)\s/, () => ({from: today, to: today}))
+  || cut(/\s(tmrw|tmr|tmrrw|2morrow|tomorow|tommorow|tommorrow)(?:\s+(?:night|nite))?\s/, () => ({from: plus(1), to: plus(1)}))
+  || cut(/\s(?:tomorrow|today|tonight)\s+(?:night|nite)\s/, m => /tomorrow/.test(m[0]) ? {from: plus(1), to: plus(1)} : {from: today, to: today})
+  || cut(/\snext\s+(weekend|wknd|wkend)\s/, () => {
+      const toFri = (5 - dowToday + 7) % 7, f = dowToday === 0 ? 5 : toFri + 7;
+      return {from: plus(f), to: plus(f + 2)};
+    })
+  || cut(/\s(?:this\s+)?(wknd|wkend)\s/, () => {
+      const toFri = (5 - dowToday + 7) % 7;
+      return {from: plus(dowToday === 0 ? 0 : toFri), to: plus(dowToday === 0 ? 0 : toFri + 2)};
+    })
+  || cut(/\s(this|next)\s+month\s/, m => {
+      const t = new Date(today + 'T12:00:00'); let y = t.getFullYear(), mo = t.getMonth() + 1;
+      if(m[1] === 'this') return {from: today, to: _dqISO(y, mo, _dqLastDay(y, mo))};
+      mo += 1; if(mo > 12){ mo = 1; y += 1; }
+      return {from: _dqISO(y, mo, 1), to: _dqISO(y, mo, _dqLastDay(y, mo))};
+    })
+  || cut(/\s(nye|new\s+years?\s+eve)\s/, () => { const y = +today.slice(0, 4); return {from: _dqISO(y, 12, 31), to: _dqISO(y, 12, 31)}; })
+  || cut(/\s(\d{4})-(\d{2})-(\d{2})\s/, m => ({from: m[1]+'-'+m[2]+'-'+m[3], to: m[1]+'-'+m[2]+'-'+m[3]}))
+  || cut(/\s(\d{1,2})-(\d{1,2})\s/, m => {
+      const mo = +m[1], d = +m[2];
+      if(mo < 1 || mo > 12 || d < 1 || d > 31) return null;
+      const y = _dqYearFor(mo, d);
+      return {from: _dqISO(y,mo,d), to: _dqISO(y,mo,d)};
+    })
   || cut(/\s(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?\s/, m => {
       const mo = +m[1], d = +m[2];
       if(mo < 1 || mo > 12 || d < 1 || d > 31) return null;
@@ -1937,6 +1977,13 @@ function parseDateQuery(q){
       const mo = _DQ_MONTHS[m[2]]; const d = +m[1];
       if(!mo || d < 1 || d > 31) return null;
       const y = _dqYearFor(mo, d);
+      return {from: _dqISO(y,mo,d), to: _dqISO(y,mo,d)};
+    })
+  || cut(/\s(?:the\s+)?(\d{1,2})(?:st|nd|rd|th)\s/, m => {
+      const d = +m[1]; if(d < 1 || d > 31) return null;
+      const t = new Date(today + 'T12:00:00'); let y = t.getFullYear(), mo = t.getMonth() + 1;
+      if(d < t.getDate()){ mo += 1; if(mo > 12){ mo = 1; y += 1; } }          // "the 5th" when it's the 24th = next month
+      if(d > _dqLastDay(y, mo)) return null;
       return {from: _dqISO(y,mo,d), to: _dqISO(y,mo,d)};
     })
   || cut(/\s(today|tonight)\s/, () => ({from: today, to: today}))
@@ -1974,7 +2021,9 @@ function parseDateQuery(q){
       return {from: _dqISO(y,mo,1), to: _dqISO(y,mo,_dqLastDay(y,mo))};
     });
   if(!hit) return null;
-  hit.rest = text.trim();
+  // "friday oct 2", "fri 10/2": the day name is the date said twice.
+  text = text.replace(new RegExp('\\s' + DAY + '(?:\\s+(?:night|nite))?(?=\\s)', 'g'), ' ');
+  hit.rest = text.replace(/\s+/g, ' ').trim();
   return hit;
 }
 // A multi-word search that appears as a phrase somewhere wins outright:
@@ -2238,6 +2287,20 @@ function filtered(){
   if(state.outOfTown) out = out.filter(s => s.outOfTown);
   else if(!state.q.trim()) out = out.filter(s => !s.outOfTown);
   let q = state.q.trim().toLowerCase();   // a date typed in the query is cut out of it below
+  // "all ages", "21+", "free" filter on the chips, not on title words (Sep 24
+  // 2026: "21+" was matching the 21 in street numbers).
+  const _whole0 = q, _beforeFlags = out;
+  let _age = null, _free = false;
+  if(q){
+    q = ' ' + q + ' ';
+    if(/\sall[\s-]?ages?\s/.test(q)){ _age = 'all-ages'; q = q.replace(/\sall[\s-]?ages?\s/, ' '); }
+    else if(/\s21\s*(\+|plus|and\s+(?:over|up))\s/.test(q)){ _age = '21+'; q = q.replace(/\s21\s*(\+|plus|and\s+(?:over|up))\s/, ' '); }
+    else if(/\s18\s*(\+|plus|and\s+(?:over|up))\s/.test(q)){ _age = '18+'; q = q.replace(/\s18\s*(\+|plus|and\s+(?:over|up))\s/, ' '); }
+    if(/\s(free|no\s+cover)\s/.test(q)){ _free = true; q = q.replace(/\s(free|no\s+cover)\s/, ' '); }
+    q = q.trim();
+    if(_age) out = out.filter(s => s.age === _age);
+    if(_free) out = out.filter(s => /^free$/i.test(s.price || ''));
+  }
   if(q){
     const dq = parseDateQuery(q), _beforeDate = out, _whole = q;
     if(dq){
@@ -2261,6 +2324,7 @@ function filtered(){
         }
       }
       out = out.filter(s => (s.date || '') >= dq.from && (s.date || '') <= dq.to);
+      if(dq.dows) out = out.filter(s => dq.dows.includes(new Date((s.date || '') + 'T12:00:00').getDay()));
       q = dq.rest;                                   // "dante's oct 3" still matches Dante's
     }
     if(q) out = filterByQuery(out, q, showSearchText);
@@ -2268,6 +2332,9 @@ function filtered(){
     // Up") finds nothing on that date -- then search the whole thing as words.
     if(dq && dq.rest && !out.length) out = filterByQuery(_beforeDate, _whole, showSearchText);
   }
+  // ...and if the age/price words were really part of a name ("Free Energy"),
+  // search the whole thing as words.
+  if((_age || _free) && !out.length && _whole0) out = filterByQuery(_beforeFlags, _whole0, showSearchText);
    // FOLLOWING FILTER: hide-style collapse to shows whose band (band:: key) OR venue
    // (venue:: key) is hearted. Uses the SAME key construction as favoriting
    // (bandFavKey(s.title) / venueFavKey(s.venue)) so a hearted band/venue reliably
