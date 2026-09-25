@@ -1,5 +1,5 @@
 {
-  "generated": "2026-09-25T16:20:56+00:00",
+  "generated": "2026-09-25T16:34:11+00:00",
   "source": "Scraped from venue calendars + hand-added listings",
   "shows": [
     {
@@ -2761,7 +2761,7 @@
       "resaleFrom": "49.00",
       "id": 198,
       "pickable": true,
-      "buzz": 41195
+      "buzz": 41196
     },
     {
       "title": "Samuel Aaron with AC Sapphire",
@@ -3491,7 +3491,7 @@
       "resaleFrom": "34.00",
       "id": 249,
       "pickable": true,
-      "buzz": 2534
+      "buzz": 2535
     },
     {
       "title": "Comedy Unfiltered Last TuesdayS",
@@ -3846,7 +3846,7 @@
       "resaleFrom": "93.00",
       "id": 273,
       "pickable": true,
-      "buzz": 59580
+      "buzz": 59581
     },
     {
       "title": "Dancing with the Rose City Stars",
@@ -3934,7 +3934,7 @@
       "resaleFrom": "148.00",
       "id": 279,
       "pickable": true,
-      "buzz": 18424
+      "buzz": 18427
     },
     {
       "title": "COMBICHRIST with Ludovico Technique & Dead Animal Assembly Plant",
@@ -5678,7 +5678,7 @@
       "age": "",
       "id": 401,
       "pickable": true,
-      "buzz": 167252
+      "buzz": 167254
     },
     {
       "title": "PDX Rated",
@@ -5783,7 +5783,7 @@
       "resaleFrom": "97.00",
       "id": 408,
       "pickable": true,
-      "buzz": 33686
+      "buzz": 33688
     },
     {
       "title": "J. RODDY WALSTON with The Upkeeps",
@@ -8068,7 +8068,7 @@
       "age": "",
       "id": 568,
       "pickable": true,
-      "buzz": 1669181
+      "buzz": 1669192
     },
     {
       "title": "Greta Van Fleet Listening Party",
@@ -8579,7 +8579,7 @@
       "resaleFrom": "158.00",
       "id": 602,
       "pickable": true,
-      "buzz": 6811
+      "buzz": 6812
     },
     {
       "title": "Castle Rat: Summon The Beasts Tour 2026 (w/ Unto Others, Wraith Knight)",
@@ -10253,7 +10253,7 @@
       "age": "",
       "id": 718,
       "pickable": true,
-      "buzz": 1063970
+      "buzz": 1063972
     },
     {
       "title": "BRUT",
@@ -38034,18 +38034,29 @@
     "checked": "2026-09-25",
     "items": [
       {
-        "venue": "The Goodfoot",
+        "venue": "Kelly's Olympian",
         "kind": "zero",
         "scraped": 0,
-        "shown": 38,
+        "shown": 19,
         "since": "2026-09-25",
         "drops": "2026-10-03",
-        "days": 0
+        "days": 0,
+        "why": "chrome: ChallengeError · safari: ChallengeError · browser: failed"
+      },
+      {
+        "venue": "Realm",
+        "kind": "zero",
+        "scraped": 0,
+        "shown": 28,
+        "since": "2026-09-25",
+        "drops": "2026-10-03",
+        "days": 0,
+        "why": "chrome: ChallengeError · safari: ChallengeError · browser: 0 rows"
       },
       {
         "venue": "LaVerne's (lavernespdx.com)",
-        "kind": "empty",
-        "why": "fetched OK but the parser found no events -- the page shape likely changed"
+        "kind": "quiet",
+        "why": "nothing upcoming posted yet (latest listing 2026-09-24)"
       }
     ]
   },
