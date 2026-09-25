@@ -6145,7 +6145,31 @@ async function txRenderThread(panel, thread, postId, myUserId, slug, host){
 // (target_type 'avatar'), and upholding clears it. Still reactive: an image
 // is visible between upload and the first report.
 const AV_BUCKET_BASE = 'https://mhdysfdqoqrohlltgsig.supabase.co/storage/v1/object/public/avatars/';
-const AV_MAX_BYTES = 2 * 1024 * 1024;
+const AV_MAX_BYTES = 2 * 1024 * 1024;   // what the bucket accepts (unchanged)
+// Sep 24 2026: phone photos run 3-6 MB and were bounced. Now any photo up to
+// 25 MB can be picked; it's shrunk in the browser (longest side 800px, JPEG)
+// before upload, so what lands in the bucket stays well under the 2 MB cap.
+// GIFs go up as-is (shrinking would stop the animation), so they keep 2 MB.
+const AV_PICK_MAX = 25 * 1024 * 1024, AV_SIDE = 800;
+function avShrink(file){
+  return new Promise(function(resolve, reject){
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = function(){
+      URL.revokeObjectURL(url);
+      let w = img.naturalWidth, h = img.naturalHeight;
+      const k = Math.min(1, AV_SIDE / Math.max(w, h));
+      w = Math.round(w * k); h = Math.round(h * k);
+      const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+      const cx = cv.getContext('2d');
+      cx.fillStyle = '#fff'; cx.fillRect(0, 0, w, h); // transparent PNGs get white, not black
+      cx.drawImage(img, 0, 0, w, h);
+      cv.toBlob(function(b){ if(b) resolve(b); else reject(new Error('encode failed')); }, 'image/jpeg', 0.88);
+    };
+    img.onerror = function(){ URL.revokeObjectURL(url); reject(new Error('not an image')); };
+    img.src = url;
+  });
+}
 const AV_TYPES = ['image/jpeg','image/png','image/webp','image/gif'];
 // display_name/avatar_url by user id, filled per render. Avatars appear beside
 // content that already carries a denormalized display_name, so this is only
@@ -6207,7 +6231,14 @@ async function avUpload(file){
   if(!sb) return { ok:false, msg:'Unavailable right now.' };
   if(!file) return { ok:false, msg:'No file chosen.' };
   if(AV_TYPES.indexOf(file.type) === -1) return { ok:false, msg:'JPEG, PNG, WebP or GIF only.' };
-  if(file.size > AV_MAX_BYTES) return { ok:false, msg:'Keep it under 2 MB.' };
+  if(file.type === 'image/gif'){
+    if(file.size > AV_MAX_BYTES) return { ok:false, msg:'GIFs need to be under 2 MB.' };
+  }else{
+    if(file.size > AV_PICK_MAX) return { ok:false, msg:'That photo is over 25 MB. Try a smaller one.' };
+    try{ file = new File([await avShrink(file)], 'avatar.jpg', { type: 'image/jpeg' }); }
+    catch(e){ return { ok:false, msg:'Couldn\u2019t read that photo. Try a JPEG or PNG.' }; }
+    if(file.size > AV_MAX_BYTES) return { ok:false, msg:'That photo is too big.' };
+  }
 
   let uid = null;
   try{
@@ -6277,7 +6308,7 @@ async function avRenderEditor(){
       + '</div>'
       + '<input type="file" accept="image/jpeg,image/png,image/webp,image/gif" hidden data-av-file>'
     + '</div>'
-    + '<div class="av-edit-note" data-av-note>Under 2 MB. Everyone can see it.</div>';
+    + '<div class="av-edit-note" data-av-note>Any photo. Everyone can see it.</div>';
 
   const fileInput = slot.querySelector('[data-av-file]');
   const note = slot.querySelector('[data-av-note]');
