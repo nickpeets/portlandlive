@@ -426,9 +426,11 @@ body{
 .heat-x:hover{opacity:1}
 .s-tally .t-you{color:var(--forest);font-weight:600;opacity:1}
 .venue-tally{font-size:14px;margin-top:4px}
-.show-tally{margin:10px 2px 0;opacity:1;color:var(--cream);font-size:14px}
-.show-tally .t-you{color:var(--cream)}
-.show-tally .t-heart{color:#ff9a7a}
+/* A cream pill so it reads on the green (Sep 24 2026, Nick) */
+.show-tally{display:inline-block;width:fit-content;max-width:100%;align-self:flex-start;margin:12px 0 0;padding:6px 14px;border-radius:999px;background:var(--cream);color:var(--ink);opacity:1;font-size:14px;line-height:1.4;box-shadow:0 2px 6px rgba(0,0,0,.18)}
+.show-tally:empty{display:none}
+.show-tally .t-you{color:var(--forest)}
+.show-tally .t-heart{color:var(--rust)}
 .venue-tally:empty{display:none}
 .list--a .s-sub .rdot{opacity:.4}
 .list--a .s-foot{flex:0 0 auto;display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:10px;padding:14px 16px 14px 0}
