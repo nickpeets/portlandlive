@@ -279,6 +279,15 @@
     input.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); save(); } });
   }
 
+  // Opening the bookmark menu re-reads the People-you-may-know switches.
+  (function () {
+    const qb = document.getElementById("quickMenuBtn");
+    if (qb) qb.addEventListener("click", function () {
+      const vs = el.visibilityEditor;
+      if (vs && !vs.hidden && typeof vs._readPymk === "function") vs._readPymk();
+    });
+  })();
+
   function renderVisibilityEditor(visibility, userId) {
     const slot = el.visibilityEditor;
     if (!slot) return;
@@ -306,11 +315,17 @@
     const sel = slot.querySelector("[data-vis-select]");
     const msg = slot.querySelector("[data-vis-msg]");
     const pymkBoxes = slot.querySelectorAll("[data-pymk-pref]");
-    Promise.resolve(sb.rpc("pymk_prefs_get")).then(function (r) {
-      const row = r && !r.error && r.data ? (Array.isArray(r.data) ? r.data[0] : r.data) : null;
-      if (!row) return;
-      pymkBoxes.forEach(function (b) { b.checked = row[b.getAttribute("data-pymk-pref")] !== false; });
-    }).catch(function () {});
+    // Read the saved switches now AND every time the menu opens (Sep 24 2026,
+    // Nick: "Don't show this" on the card hid it, but this box stayed checked
+    // -- the menu had read the setting once, at sign-in, and never again).
+    slot._readPymk = function () {
+      Promise.resolve(sb.rpc("pymk_prefs_get")).then(function (r) {
+        const row = r && !r.error && r.data ? (Array.isArray(r.data) ? r.data[0] : r.data) : null;
+        if (!row) return;
+        pymkBoxes.forEach(function (b) { if (!b.disabled) b.checked = row[b.getAttribute("data-pymk-pref")] !== false; });
+      }).catch(function () {});
+    };
+    slot._readPymk();
     const dmEmailBox = slot.querySelector("[data-dm-email]");
     Promise.resolve(sb.rpc("dm_email_pref_get")).then(function (r) {
       if (r && !r.error && dmEmailBox) dmEmailBox.checked = r.data !== false;

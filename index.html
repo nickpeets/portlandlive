@@ -8199,6 +8199,8 @@ async function mountPymk(parent){
     } else if(ob){
       PYMK_CACHE.off = true; PYMK_CACHE.rows = [];
       host.remove();
+      // Keep the bookmark menu's switch in step right away (Sep 24 2026).
+      document.querySelectorAll('[data-pymk-pref="show_card"]').forEach(function(b){ b.checked = false; });
       safeRpc(sb.rpc('pymk_prefs_set', { p_show_card: false }));
     }
   });
@@ -10611,7 +10613,7 @@ a.fest-artist:hover{text-decoration:underline}
 })();
 </script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-    <script src="auth.js?v=20260924b" defer></script>
+    <script src="auth.js?v=20260925a" defer></script>
 <script>
 // ===== DID YOU MAKE IT? from your going marks (Sep 18 2026) =====
 // The shows you marked "I'm going" whose date has passed and that have no
