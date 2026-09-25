@@ -10353,7 +10353,10 @@ a.inbox-thread-who:hover{text-decoration:underline}
 .gw-badge{margin:12px 0 0}
 .gw-kicker{font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--cream);opacity:.85;margin-bottom:6px}
 .gw-page .sub-lead a{color:var(--cream)}
-.gw-poster{display:block;width:100%;max-width:420px;border-radius:10px;margin:0 0 16px}
+/* Bigger poster (Sep 25 2026, Nick): the giveaway page runs 720px wide and
+   the poster fills it; a very tall poster stops at 80% of the screen height. */
+.sub-page.gw-page{max-width:720px}
+.gw-poster{display:block;width:100%;max-width:100%;max-height:80vh;object-fit:contain;object-position:left top;border-radius:10px;margin:0 0 16px;box-shadow:0 6px 18px rgba(0,0,0,.25)}
 .gw-h{font-family:'Alfa Slab One',serif;font-weight:400;font-size:19px;color:var(--cream);margin:22px 0 8px}
 .gw-steps{margin:0 0 14px;padding-left:20px;color:var(--cream);font-family:'Bitter',Georgia,serif;font-size:15px;line-height:1.55}
 .gw-steps li{margin-bottom:6px}
