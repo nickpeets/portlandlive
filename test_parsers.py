@@ -230,11 +230,17 @@ def main():
     sv._laurel_month = lambda m, y, n, x: month if (m, y) == (10, 2026) else ""
     rows = sv.parse_laurelthirst("<html></html>", TODAY)
     imgs = sum(1 for r in rows if (r.get("imageUrl") or "").strip())
-    if len(rows) == 28 and imgs == 22:
-        print(f"  ok   laurelthirst-sept2026.html   {len(rows):3d} rows  -- EventON month via stubbed _laurel_month; poster from description img")
+    # Sep 24 2026: ages and prices from the one-line subtitle. The four 1 PM
+    # matinees say ALL AGES; evenings say nothing, so they must stay unknown.
+    ages = [(r["time"], r.get("age", "")) for r in rows if r.get("age")]
+    matinee_ages = all(t == "1:00 PM" and a == "all-ages" for t, a in ages) and len(ages) == 4
+    prices = sum(1 for r in rows if r.get("price"))
+    door = any(r.get("price") == "$10 adv / $15 door" for r in rows)
+    if len(rows) == 28 and imgs == 22 and matinee_ages and prices == 28 and door:
+        print(f"  ok   laurelthirst-sept2026.html   {len(rows):3d} rows  -- EventON month via stubbed _laurel_month; poster from description img; 1 PM matinees all ages, price from the subtitle")
     else:
         fails += 1
-        print(f"  FAIL laurelthirst-sept2026.html   rows {len(rows)} != 28 or imageUrl {imgs} != 22")
+        print(f"  FAIL laurelthirst-sept2026.html   rows {len(rows)} != 28 or imageUrl {imgs} != 22 or ages {ages} or prices {prices} != 28 or adv/door {door}")
     print()
     # McMenamins: the parser drives its own session (postback per venue, then
     # the getScrollEvents.aspx fragment for the full list). Stub those three

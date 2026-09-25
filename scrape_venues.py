@@ -344,7 +344,7 @@ _AGE_TXT_18 = re.compile(r"(?<![$\d.])\b(?:ages?\s*)?18\s*(?:\+|&\s*(?:over|up)|
 # "Free", "$12", "$10–15", "$20 adv / $25 door". Nothing when unsure.
 _PRICE_FREE = re.compile(r"\b(free(?:\s+(?:show|admission|entry|event))?|no cover)\b", re.I)
 _PRICE_RANGE = re.compile(r"\$\s?(\d{1,3}(?:\.\d{2})?)\s*(?:-|–|—|to)\s*\$?\s?(\d{1,3}(?:\.\d{2})?)")
-_PRICE_ADV_DOOR = re.compile(r"\$\s?(\d{1,3}(?:\.\d{2})?)\s*(?:adv(?:ance)?|presale)\b.{0,12}?\$\s?(\d{1,3}(?:\.\d{2})?)\s*(?:door|dos)\b", re.I)
+_PRICE_ADV_DOOR = re.compile(r"\$\s?(\d{1,3}(?:\.\d{2})?)\s*(?:adv(?:ance)?|presale)\b.{0,12}?\$\s?(\d{1,3}(?:\.\d{2})?)\s*(?:cash\s+)?(?:door|dos)\b", re.I)
 _PRICE_ONE = re.compile(r"\$\s?(\d{1,3}(?:\.\d{2})?)(?!\d)")
 
 
@@ -2375,12 +2375,30 @@ def parse_laurelthirst(html, today):
                 hh, mn = local.hour, local.minute
                 tm = "%d:%02d %s" % (hh % 12 or 12, mn, "AM" if hh < 12 else "PM")
 
+                # Age and price (Sep 24 2026, Nick: "the 1pm shows at
+                # Laurelthirst are probably all ages"). Every event carries a
+                # one-line subtitle under the title -- "SATURDAY MATINEE | FREE
+                # | ALL AGES | 1-3PM", "FRIDAY NIGHT | $10 | 9PM". The matinees
+                # say ALL AGES; the evening lines say nothing about age, so
+                # those stay unknown (no venue default). The description is a
+                # fallback for age only -- it runs into band bios, too loose
+                # for prices.
+                sub_el = el.select_one(".evoet_subtitle")
+                sub = sub_el.get_text(" ", strip=True) if sub_el is not None else ""
+                desc_el = el.select_one(".eventon_full_description, .evo_metarow_details")
+                age = _age_in_text(sub) or _age_in_text(desc_el.get_text(" ", strip=True) if desc_el is not None else "")
+                price = _price_in_text(sub)
+
                 nb, addr = VENUE_INFO.get("Laurelthirst Public House",
                                           ("Kerns", "2958 NE Glisan St"))
                 out.append({"title": title, "venue": "Laurelthirst Public House",
                             "neighborhood": nb, "address": addr,
                             "date": d.isoformat(), "time": tm,
                             "venueUrl": url, "imageUrl": img})
+                if age:
+                    out[-1]["age"] = age
+                if price:
+                    out[-1]["price"] = price
     except Exception as e:
         print(f"  WARN: laurelthirst parser aborted: {type(e).__name__}: {e}")
     out.sort(key=lambda s: (s["date"], s["time"], s["title"]))
