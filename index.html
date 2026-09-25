@@ -1956,6 +1956,17 @@ function parseDateQuery(q){
       const toFri = (5 - dow + 7) % 7;
       return {from: plus(dow === 0 ? 0 : toFri), to: plus(dow === 0 ? 0 : toFri + 2)};
     })
+  // Day names (Sep 24 2026, Nick: "friday" found only shows with Friday in
+  // the title). "friday" / "this friday" / "fri" = the coming Friday (today
+  // if it's Friday); "next friday" = the one after; "friday night" too.
+  // "sun" isn't a day here -- it's in too many band names (Sun Ra).
+  || cut(/\s(?:(this|next)\s+)?(monday|mon|tuesday|tues|tue|wednesday|weds|wed|thursday|thurs|thur|thu|friday|fri|saturday|sat|sunday)(?:\s+(?:night|nite))?\s/, m => {
+      const want = { mon:1, tue:2, wed:3, thu:4, fri:5, sat:6, sun:0 }[m[2].slice(0, 3)];
+      const dow = new Date(today + 'T12:00:00').getDay();
+      let n = (want - dow + 7) % 7;
+      if(m[1] === 'next') n += 7;
+      return {from: plus(n), to: plus(n)};
+    })
   || cut(/\s([a-z]{3,9})\.?(?:\s+(\d{4}))?\s/, m => {
       const mo = _DQ_MONTHS[m[1]];
       if(!mo) return null;
@@ -2228,7 +2239,7 @@ function filtered(){
   else if(!state.q.trim()) out = out.filter(s => !s.outOfTown);
   let q = state.q.trim().toLowerCase();   // a date typed in the query is cut out of it below
   if(q){
-    const dq = parseDateQuery(q);
+    const dq = parseDateQuery(q), _beforeDate = out, _whole = q;
     if(dq){
       if(dq.from < todayPacific){
         // Past dates come from the archive (Sep 18 2026). It loads once, on
@@ -2253,6 +2264,9 @@ function filtered(){
       q = dq.rest;                                   // "dante's oct 3" still matches Dante's
     }
     if(q) out = filterByQuery(out, q, showSearchText);
+    // A day or month word that is really part of a name ("Friday Music Pop
+    // Up") finds nothing on that date -- then search the whole thing as words.
+    if(dq && dq.rest && !out.length) out = filterByQuery(_beforeDate, _whole, showSearchText);
   }
    // FOLLOWING FILTER: hide-style collapse to shows whose band (band:: key) OR venue
    // (venue:: key) is hearted. Uses the SAME key construction as favoriting
