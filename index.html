@@ -413,6 +413,14 @@ body{
 /* Tallies under a listing (Sep 24 2026): hearts, going, people you follow */
 .s-tally{font-size:12.5px;color:var(--ink);opacity:.7;margin-top:3px;letter-spacing:.01em}
 .s-tally .t-heart{color:var(--rust)}
+/* Heating Up (Sep 24 2026) */
+.heat-btn{float:right;border:0;background:none;color:var(--cream);font-family:'Oswald',sans-serif;font-size:14px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;padding:4px 0 0 10px;line-height:1.2}
+.heat-btn:hover{color:#ffd9a0}
+.heat-btn .heat-n{font-weight:600;margin-left:4px}
+.s-heat{border:0;background:none;padding:0 2px;font-size:14px;line-height:1;cursor:pointer}
+.heat-bar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 0 14px;padding:10px 14px;border-radius:8px;background:rgba(255,255,255,.1);color:var(--cream);font-family:'Bitter',Georgia,serif;font-size:14px}
+.heat-x{border:0;background:none;color:var(--cream);font-size:22px;line-height:1;cursor:pointer;opacity:.8}
+.heat-x:hover{opacity:1}
 .s-tally .t-you{color:var(--forest);font-weight:600;opacity:1}
 .venue-tally{font-size:14px;margin-top:4px}
 .venue-tally:empty{display:none}
@@ -1531,6 +1539,47 @@ function tallyBump(kind, id, delta){
     });
   });
 }
+// Heating Up (Sep 24 2026, Nick). Shows gaining momentum: hearts and "I'm
+// going" from the LAST 7 DAYS (show_heat, schema-heating-up.sql), going
+// counting double. Upcoming music in the next 30 days scoring 3+ qualify, and
+// nothing about it shows -- not the "Heating Up 🔥N" button on the first day
+// header, not the 🔥 chips -- until at least 5 shows do.
+const HEAT_MIN_SCORE = 3, HEAT_MIN_SHOWS = 5, HEAT_DAYS = 30;
+let HEAT = { h: {}, g: {} }, HEAT_SET = new Set();
+function heatScore(s){ return 2 * ((s._slug && HEAT.g[s._slug]) || 0) + (HEAT.h[favKey(s)] || 0); }
+function heatLive(){ return HEAT_SET.size >= HEAT_MIN_SHOWS; }
+function heatRebuild(){
+  const today = new Intl.DateTimeFormat('en-CA',{timeZone:'America/Los_Angeles',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+  const end = new Date(today + 'T12:00:00'); end.setDate(end.getDate() + HEAT_DAYS);
+  const last = end.toISOString().slice(0, 10);
+  HEAT_SET = new Set(state.shows.filter(function(s){
+    return s._slug && s.date >= today && s.date <= last && s.contentType === 'music' && heatScore(s) >= HEAT_MIN_SCORE;
+  }).map(function(s){ return s._slug; }));
+}
+function loadHeat(tries){
+  const sb = window.__plAuth;
+  if(!sb){ if((tries || 0) < 25) setTimeout(function(){ loadHeat((tries || 0) + 1); }, 200); return; }
+  const keys = state.shows.map(favKey), slugs = state.shows.map(function(s){ return s._slug; }).filter(Boolean);
+  Promise.resolve(sb.rpc('show_heat', { p_keys: keys, p_slugs: slugs })).then(function(r){
+    if(!r || r.error){ if(r && r.error) console.warn('[heat]', r.error.message || r.error); return; }
+    const t = { h: {}, g: {} };
+    (r.data || []).forEach(function(x){ if(t[x.kind]) t[x.kind][x.id] = x.n; });
+    HEAT = t; heatRebuild();
+    if(isFeedRoute(parseRoute().type) && (heatLive() || state.heating)) reRenderCurrentView();
+  }).catch(function(){});
+}
+function heatOn(){
+  leaveSections('heating');
+  state.heating = true; state.view = 'shows'; state.selectedVenue = null;
+  try{ window.scrollTo(0, 0); }catch(_){}
+  render();
+}
+document.addEventListener('click', function(e){
+  const on = e.target.closest('[data-heat-on]'), off = e.target.closest('[data-heat-off]');
+  if(!on && !off) return;
+  e.preventDefault(); e.stopPropagation();
+  if(on) heatOn(); else { state.heating = false; render(); }
+}, true);
 // Pins and heart counts, once per page load (and again after a pin change).
 // Waits briefly for the Supabase client, which loads after this script.
 function loadPicksData(tries){
@@ -2042,6 +2091,7 @@ async function load(){
     loadPicksData();         // Picks: moderator pins + heart counts
     applyShowKinds();        // Music / Comedy / Not music, set on show pages
     loadTallies();           // hearts / going / people you follow, per card
+    loadHeat();              // Heating Up: this week's hearts + going
     state.stamp = data.generated || "";
     buildNeighborhoods();
     if(state.stamp){
@@ -2204,10 +2254,14 @@ function filtered(){
      const _have = new Set(out.map(function(x){ return x._slug; }));
      _allUpcoming.forEach(function(x){ if(PICK_PINS[x._slug] === 'in' && !_have.has(x._slug)) out.push(x); });
      out = out.filter(isPick);
+   } else if(state.heating){
+     out = out.filter(function(x){ return HEAT_SET.has(x._slug); });
    } else {
      out = applyTimeFilters(out);
    }
    sortShows(out);
+   // Heating Up: hottest first, then by date.
+   if(state.heating){ out.sort(function(a, b){ return heatScore(b) - heatScore(a) || (a.date < b.date ? -1 : a.date > b.date ? 1 : 0); }); }
    // Picks: your pinned shows lead, each group still in date order (Sep 22
    // 2026, Nick: "i would think the top").
    if(state.picks){
@@ -2409,6 +2463,7 @@ function viewPath(){
   if(state.comedy) return '/#/comedy';
   if(state.allAges) return '/#/all-ages';
   if(state.picks) return '/#/picks';
+  if(state.heating) return '/#/heating-up';
   if(state.following) return '/#/following';
   if(state.myShows) return '/#/saved';
   if(state.tonight) return '/#/tonight';
@@ -2529,6 +2584,8 @@ function render(){
     if(_pSet.size) _seg.push(_pSet.size + (_pSet.size===1?' person':' people'));
     _seg.push(list.length + ' show' + (list.length===1?'':'s'));
     $('#resultCount').textContent = list.length ? _seg.join(' \u00b7 ') : 'Following \u2014 no upcoming shows';
+  } else if(state.heating){
+    $('#resultCount').textContent = '\ud83d\udd25 Heating Up \u00b7 ' + list.length + ' show' + (list.length === 1 ? '' : 's');
   } else {
   $('#resultCount').textContent = list.length
     ? `${list.length} show${list.length>1?'s':''} found`
@@ -2544,7 +2601,7 @@ function render(){
   // Latest photos strip (Sep 18 2026): the front door to the galleries.
   // Only on the plain home feed -- no search, no pill -- so it never gets in
   // the way of someone looking for a specific thing.
-  const plainHome = !state.q.trim() && !state.tonight && !state.thisWeek && !state.picks && !state.myShows
+  const plainHome = !state.q.trim() && !state.tonight && !state.thisWeek && !state.picks && !state.heating && !state.myShows
     && !state.festivals && !state.allAges && !state.following && !state.byHood && !state.comedy && !state.outOfTown && !state.selectedVenue && state.view === 'shows';
   if(plainHome) mountPhotoStrip(wrap);
   if(plainHome) mountGiveawayBanner(wrap);
@@ -2554,7 +2611,12 @@ function render(){
   // Latest photos & clips, folded on every draw -- no longer in the listings.
   if(plainHome) mountPymk(wrap);
 
+  if(state.heating){
+    wrap.insertAdjacentHTML('beforeend', '<div class="heat-bar"><span>\ud83d\udd25 <b>Heating Up</b> \u00b7 shows people hearted or said they\u2019re going to this week</span>'
+      + '<button type="button" class="heat-x" data-heat-off aria-label="Back to all shows">&times;</button></div>');
+  }
   if(!list.length){
+    if(state.heating){ wrap.insertAdjacentHTML('beforeend', '<div class="empty"><h2>Nothing heating up yet</h2><p>Heart shows and tap \u201cI\u2019m going\u201d \u2014 the hottest ones land here.</p></div>'); return; }
     wrap.innerHTML = state.picks ? '<div class="empty"><h2>No picks right now</h2><p>Picks refresh every night.</p></div>' : state.following ? '<div class="empty"><h2>Nothing here yet</h2><p>Heart some bands and venues, or follow people from their profiles, to see their shows here.</p></div>' : state.myShows ? '<div class="empty"><h2>No favorites yet</h2><p>Tap the heart on a show to save it.</p></div>' : '<div class="empty"><h2>No Results Found.</h2><p>Try widening your dates or clearing the search.</p></div>';
     return;
   }
@@ -2609,14 +2671,19 @@ function render(){
       });
       return g;
     });
-  } else if(!state.picks){
+  } else if(!state.picks && !state.heating){
     // group by day (default view), no time-window filter
     const groups = {};
     list.forEach(s=>{(groups[s.date]=groups[s.date]||[]).push(s);});
     const days = Object.keys(groups).sort().map(date => [date, groups[date]]);
+    // "Heating Up 🔥6" on the right of the FIRST day header (Nick's layout),
+    // music feed only, once 5+ shows qualify.
+    let _heatBtn = (heatLive() && !state.comedy)
+      ? `<button type="button" class="heat-btn" data-heat-on title="Shows people are hearting and going to this week">Heating Up <span class="heat-n">\ud83d\udd25${HEAT_SET.size}</span></button>` : '';
     drawDaysInPieces(wrap, days, function(date, shows){
       const g = document.createElement('div'); g.className='daygroup';
-      g.innerHTML = `<div class="dayhead">${ordinalDate(date)}<span class="count">${shows.length} shows</span></div>`;
+      g.innerHTML = `<div class="dayhead">${_heatBtn}${ordinalDate(date)}<span class="count">${shows.length} shows</span></div>`;
+      _heatBtn = '';
       g.appendChild(listOf(shows));
       return g;
     });
@@ -3028,7 +3095,9 @@ function listOf(items, showDate){
       // Price when the source states one (Sep 20 2026). Absent means unknown.
       + (s.price ? `<span class="s-age s-price">${esc(s.price)}</span>` : '')
       // Every Pick carries one of our links (Sep 14 2026 label design).
-      + (state.picks && (s.affiliateUrl || s.resaleUrl) ? `<span class="s-age s-support">supports the site</span>` : '');
+      + (state.picks && (s.affiliateUrl || s.resaleUrl) ? `<span class="s-age s-support">supports the site</span>` : '')
+      // Heating Up chip: tap it and the feed switches to the hot list.
+      + (heatLive() && HEAT_SET.has(s._slug) && !state.heating ? `<button type="button" class="s-heat" data-heat-on title="Heating up \u2014 see what's hot this week">\ud83d\udd25</button>` : '');
 
     if(eff === 'b'){
       // VERTICAL: the big image on top; below it, the same row the main list
@@ -3186,7 +3255,7 @@ function enterVenueState(name){
   state.view = 'venues'; state.selectedVenue = name; state.q = '';
   $('#searchInput').value = '';
   state.picks=false; state.byHood=false; state.myShows=false;
-  state.tonight=false; state.thisWeek=false; state.following=false;
+  state.tonight=false; state.thisWeek=false; state.following=false; state.heating=false;
 }
 
 // Share the right link (Sep 22 2026, Nick: texting a show from the phone's
@@ -9104,7 +9173,7 @@ $('#byHoodToggle').addEventListener('click',()=>{const on=!state.byHood;leaveSec
             }
           }catch(_){}
         }
-        state.myShows=!state.myShows;if(state.myShows){state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');state.comedy=false;$('#comedyToggle').classList.remove('on');state.tonight=false;$('#tonightToggle').classList.remove('on');state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');state.byHood=false;$('#byHoodToggle').classList.remove('on');state.picks=false;$('#picksToggle').classList.remove('on');state.following=false;$('#followingToggle').classList.remove('on');}e.currentTarget.classList.toggle('on',state.myShows);render();});
+        state.myShows=!state.myShows;if(state.myShows){state.heating=false;state.view='shows';state.selectedVenue=null;$('#venuesToggle').classList.remove('on');state.comedy=false;$('#comedyToggle').classList.remove('on');state.tonight=false;$('#tonightToggle').classList.remove('on');state.thisWeek=false;$('#thisWeekToggle').classList.remove('on');state.byHood=false;$('#byHoodToggle').classList.remove('on');state.picks=false;$('#picksToggle').classList.remove('on');state.following=false;$('#followingToggle').classList.remove('on');}e.currentTarget.classList.toggle('on',state.myShows);render();});
         // Picks of the Week: dominant filter. Turning it on switches to the curated, vertical showcase
         // and clears the Tonight / This Week / My Shows / Venues filters so only picks are shown.
         $('#picksToggle').addEventListener('click',e=>{leaveSections('picks');
@@ -9145,7 +9214,7 @@ function leaveSections(except){
   // nothing because the address didn't change).
   if(except && !isFeedRoute(parseRoute().type)){ try{ history.pushState(null, '', '/'); }catch(_){} }
   const flags = {tonight:'tonightToggle', thisWeek:'thisWeekToggle', picks:'picksToggle', comedy:'comedyToggle',
-                 allAges:'allAgesToggle', outOfTown:'outOfTownToggle', festivals:'festivalsToggle', following:'followingToggle', myShows:'myShowsToggle', byHood:'byHoodToggle'};
+                 allAges:'allAgesToggle', outOfTown:'outOfTownToggle', festivals:'festivalsToggle', following:'followingToggle', myShows:'myShowsToggle', byHood:'byHoodToggle', heating:'heatingNone'};
   for(const k in flags){
     if(k === except) continue;
     if(state[k]){ state[k] = false; const el = document.getElementById(flags[k]); if(el) el.classList.remove('on'); }
@@ -9690,7 +9759,7 @@ function goHome(){
   location.hash = '';
   state.view='shows'; state.selectedVenue=null;
   state.tonight=false; state.thisWeek=false; state.picks=false; state.byHood=false;
-  state.myShows=false; state.comedy=false; state.following=false; state.q='';
+  state.myShows=false; state.comedy=false; state.following=false; state.heating=false; state.q='';
   // state.festivals was NOT being cleared here: clearTogglePills() below only
   // removes the lit class, and render()'s syncTogglePills() immediately
   // re-derives it from the still-true flag, so a logo click left the Festivals
