@@ -410,6 +410,10 @@ body{
 .list--a .s-when{margin-bottom:1px}
 .list--a .s-title{font-size:19px;margin:1px 0 2px}
 .list--a .s-sub{display:flex;flex-wrap:wrap;align-items:baseline;gap:7px;font-size:13.5px;color:var(--ink)}
+/* Tallies under a listing (Sep 24 2026): hearts, going, people you follow */
+.s-tally{font-size:12.5px;color:var(--ink);opacity:.7;margin-top:3px;letter-spacing:.01em}
+.s-tally .t-heart{color:var(--rust)}
+.s-tally .t-you{color:var(--forest);font-weight:600;opacity:1}
 .list--a .s-sub .rdot{opacity:.4}
 .list--a .s-foot{flex:0 0 auto;display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:10px;padding:14px 16px 14px 0}
 .list--a .s-foot .heart,.list--b .s-foot .heart{align-self:flex-end}
@@ -1467,6 +1471,49 @@ function rebuildPickSet(){
   }
   PICK_SET = out;
 }
+// Tallies under each listing (Sep 24 2026, Nick). One RPC for the whole feed:
+// hearts by favKey, "I'm going" by slug, and -- signed in -- how many people
+// you follow are going (show_tallies, schema-tallies.sql). The public line only
+// appears once a show has 3+ combined, so "\u2665 1" never makes a show look
+// empty; the "you follow" part always shows when it's there.
+const TALLY_MIN = 3;
+let TALLIES = { h: {}, g: {}, f: {} };
+function loadTallies(tries){
+  const sb = window.__plAuth;
+  if(!sb){ if((tries || 0) < 25) setTimeout(function(){ loadTallies((tries || 0) + 1); }, 200); return; }
+  const keys = state.shows.map(favKey), slugs = state.shows.map(function(s){ return s._slug; }).filter(Boolean);
+  Promise.resolve(sb.rpc('show_tallies', { p_keys: keys, p_slugs: slugs })).then(function(r){
+    if(!r || r.error){ if(r && r.error) console.warn('[tallies]', r.error.message || r.error); return; }
+    const t = { h: {}, g: {}, f: {} };
+    (r.data || []).forEach(function(x){ if(t[x.kind]) t[x.kind][x.id] = x.n; });
+    TALLIES = t;
+    if(isFeedRoute(parseRoute().type)) reRenderCurrentView();
+  }).catch(function(){});
+}
+function tallyHtml(s){
+  const h = TALLIES.h[favKey(s)] || 0, g = (s._slug && TALLIES.g[s._slug]) || 0, f = (s._slug && TALLIES.f[s._slug]) || 0;
+  const bits = [];
+  if(h + g >= TALLY_MIN){
+    if(h) bits.push('<span class="t-heart">\u2665</span> ' + h);
+    if(g) bits.push(g + ' going');
+  }
+  if(f) bits.push('<span class="t-you">' + f + ' you follow</span>');
+  return bits.length ? '<div class="s-tally">' + bits.join(' \u00b7 ') + '</div>' : '';
+}
+// After your own heart / going write succeeds, move the number and redraw
+// that card's line in place (no full re-render, no scroll jump).
+function tallyBump(kind, id, delta){
+  if(!id) return;
+  const t = TALLIES[kind]; t[id] = Math.max(0, (t[id] || 0) + delta);
+  state.shows.forEach(function(s){
+    if((kind === 'h' ? favKey(s) : s._slug) !== id || !s._slug) return;
+    document.querySelectorAll('.scard[data-slug="' + CSS.escape(s._slug) + '"]').forEach(function(card){
+      const body = card.querySelector('.s-body'); if(!body) return;
+      const old = body.querySelector('.s-tally'); if(old) old.remove();
+      const html = tallyHtml(s); if(html) body.insertAdjacentHTML('beforeend', html);
+    });
+  });
+}
 // Pins and heart counts, once per page load (and again after a pin change).
 // Waits briefly for the Supabase client, which loads after this script.
 function loadPicksData(tries){
@@ -1974,6 +2021,7 @@ async function load(){
     applyPosterOverrides();  // moderator-set posters, live (the build bakes them in nightly too)
     loadPicksData();         // Picks: moderator pins + heart counts
     applyShowKinds();        // Music / Comedy / Not music, set on show pages
+    loadTallies();           // hearts / going / people you follow, per card
     state.stamp = data.generated || "";
     buildNeighborhoods();
     if(state.stamp){
@@ -2973,6 +3021,7 @@ function listOf(items, showDate){
         +     `<div class="s-when">${dateBit||''}${(dateBit&&timeBit)?' \u00b7 ':''}${timeBit||''}</div>`
         +     `<div class="s-title">${titleHtml}</div>`
         +     `<div class="s-sub">${venueLink}${nb}${ageBit}${reasonChip}</div>`
+        +     tallyHtml(s)
         +   `</div>`
         +   `<div class="s-foot">${heartBtn(s)}${listenBtn(s.title, s.venue)}${planBtn(s)}</div>`
         + `</div>`;
@@ -2982,6 +3031,7 @@ function listOf(items, showDate){
         + `<div class="s-body">`
         +   `<div class="s-title">${titleHtml}</div>`
         +   `<div class="s-sub">${timeBit}${sep1}${dateBit}${(dateBit||timeBit)?`<span class="rdot">\u00b7</span>`:''}${venueLink}${nb}${ageBit}${reasonChip}</div>`
+        +   tallyHtml(s)
         + `</div>`
         + `<div class="s-foot">${heartBtn(s)}${listenBtn(s.title, s.venue)}${planBtn(s)}</div>`;
     }
@@ -7471,6 +7521,7 @@ function bindWhosGoing(host, slug){
         join.disabled = false;
         return;
       }
+      tallyBump('g', slug, 1);
       wgClearSay();
       await renderWhosGoing(host, slug);
     });
@@ -7496,6 +7547,7 @@ function bindWhosGoing(host, slug){
         leave.disabled = false;
         return;
       }
+      tallyBump('g', slug, -1);
       await renderWhosGoing(host, slug);
     });
   }
@@ -7727,6 +7779,11 @@ async function cmtAuthors(ids){
   return map;
 }
 
+// **bold** and *italic* in comments (Sep 24 2026, Nick). Runs on the
+// already-escaped text, so nothing but <b>/<i> can come out of it.
+function cmtMarks(t){
+  return t.replace(/\*\*([^*\n]+)\*\*/g, '<b>$1</b>').replace(/(^|[^*])\*([^*\s][^*\n]*?)\*(?!\*)/g, '$1<i>$2</i>');
+}
 function cmtRow(c, myUserId, hidden, resolved, authorHandle){
   if(c && MY_BLOCKS.has(c.user_id)) return '';   // someone you blocked (Sep 22 2026)
   const mine = myUserId && c.user_id === myUserId;
@@ -7735,7 +7792,7 @@ function cmtRow(c, myUserId, hidden, resolved, authorHandle){
   // the point of hiding it. The author still sees their own Delete.
   const body = hidden
     ? rpHiddenPlaceholder()
-    : '<p class="cmt-body">' + cmtLinkify(esc(c.body || ''), resolved) + '</p>';
+    : '<p class="cmt-body">' + cmtLinkify(cmtMarks(esc(c.body || '')), resolved) + '</p>';
   return '<li class="cmt" data-cmt-id="'+esc(c.id)+'">'
     + '<div class="cmt-top">'
       + avImg(c.user_id, c.display_name)
@@ -8277,7 +8334,7 @@ async function renderComments(host, slug){
   if(myUserId){
     html += '<form class="cmt-form" data-cmt-form>'
       + '<label class="sr-only" for="cmtInput">Add a comment</label>'
-      + '<textarea class="cmt-input" id="cmtInput" maxlength="'+CMT_MAX+'" placeholder="Add a comment… (@handle to mention someone)"></textarea>'
+      + '<textarea class="cmt-input" id="cmtInput" maxlength="'+CMT_MAX+'" placeholder="Add a comment… @handle to mention · **bold** · *italic*"></textarea>'
       + '<div class="cmt-form-foot">'
         + '<span class="cmt-counter" data-cmt-counter>0 / '+CMT_MAX+'</span>'
         + '<button type="submit" class="cmt-post" disabled>Post</button>'
@@ -8397,10 +8454,12 @@ function favKey(s){ return (s.venue||'') + '|' + (s.date||'') + '|' + (s.title||
               const rows = added.map(function(k){ return { fav_key: k }; });
               const { error } = await sb.from('user_favorites').insert(rows);
               if(error) console.warn('[favorites] save failed:', error.message);
+              else added.forEach(function(k){ tallyBump('h', k, 1); });
             }
             if(removed.length){
               const { error } = await sb.from('user_favorites').delete().in('fav_key', removed);
               if(error) console.warn('[favorites] remove failed:', error.message);
+              else removed.forEach(function(k){ tallyBump('h', k, -1); });
             }
           }catch(e){ console.warn('[favorites] save threw:', e); }
         })();
