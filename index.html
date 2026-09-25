@@ -428,6 +428,12 @@ body{
 .cmt-yt:hover img{opacity:1}
 .cmt-yt-play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:58px;height:40px;border-radius:10px;background:rgba(200,30,30,.9);color:#fff;font-size:18px;line-height:40px;text-align:center}
 .cmt-yt-frame{display:block;width:100%;max-width:420px;aspect-ratio:16/9;border:0;border-radius:8px;margin:6px 0 2px;background:#000}
+.cmt-yt-wrap{max-width:420px;margin:6px 0 4px}
+.cmt-yt-wrap .cmt-yt,.cmt-yt-wrap .cmt-yt-frame{margin:0}
+.cmt-yt-meta{display:block;padding:6px 2px 0;text-decoration:none;color:inherit}
+.cmt-yt-title{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-weight:600;font-size:14px;line-height:1.3}
+.cmt-yt-by{display:block;font-size:12px;opacity:.65;margin-top:2px}
+.cmt-yt-meta:hover .cmt-yt-title{text-decoration:underline}
 .s-tally .t-you .av{width:16px;height:16px;font-size:8px;vertical-align:middle;margin:0 4px 0 0;position:relative;top:-1px}
 .s-tally .t-you .av-stack{display:inline-flex;vertical-align:middle;margin-right:4px}
 .s-tally .t-you .av-stack .av{margin-right:0;vertical-align:0}
@@ -8248,9 +8254,42 @@ function cmtYouTube(raw){
 // A thumbnail with a play button; the player itself (youtube-nocookie) loads
 // only when someone taps, so a long thread doesn't pull in ten players.
 function cmtYtCard(id){
-  return '<button type="button" class="cmt-yt" data-yt="' + id + '" aria-label="Play video">'
+  return '<div class="cmt-yt-wrap">'
+    + '<button type="button" class="cmt-yt" data-yt="' + id + '" aria-label="Play video">'
     + '<img src="https://i.ytimg.com/vi/' + id + '/hqdefault.jpg" alt="" loading="lazy">'
-    + '<span class="cmt-yt-play" aria-hidden="true">&#9654;</span></button>';
+    + '<span class="cmt-yt-play" aria-hidden="true">&#9654;</span></button>'
+    // Title and channel under the video (Sep 25 2026, Nick). Filled in by
+    // cmtYtTitles() once the list is on the page; until then (or if YouTube
+    // won't say) it reads "YouTube video" and still links out.
+    + '<a class="cmt-yt-meta" data-yt-meta="' + id + '" href="https://www.youtube.com/watch?v=' + id + '" target="_blank" rel="noopener">'
+    + '<span class="cmt-yt-title">YouTube video</span><span class="cmt-yt-by">YouTube</span></a>'
+    + '</div>';
+}
+// Video titles: YouTube's public oEmbed, falling back to noembed (same data,
+// open to browsers) if YouTube refuses the request. One lookup per video per
+// visit; the answer is cached.
+const CMT_YT_TITLES = {};
+function cmtYtLookup(id){
+  if(CMT_YT_TITLES[id]) return CMT_YT_TITLES[id];
+  const watch = 'https://www.youtube.com/watch?v=' + id;
+  const get = function(u){ return fetch(u).then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); }); };
+  CMT_YT_TITLES[id] = get('https://www.youtube.com/oembed?format=json&url=' + encodeURIComponent(watch))
+    .catch(function(){ return get('https://noembed.com/embed?url=' + encodeURIComponent(watch)); })
+    .then(function(j){ return (j && j.title) ? { title: String(j.title), by: String(j.author_name || '') } : null; })
+    .catch(function(){ return null; });
+  return CMT_YT_TITLES[id];
+}
+function cmtYtTitles(root){
+  (root || document).querySelectorAll('[data-yt-meta]:not([data-yt-done])').forEach(function(a){
+    a.setAttribute('data-yt-done', '1');
+    const id = a.getAttribute('data-yt-meta');
+    if(!/^[A-Za-z0-9_-]{11}$/.test(id)) return;
+    cmtYtLookup(id).then(function(m){
+      if(!m) return;
+      a.querySelector('.cmt-yt-title').textContent = m.title;
+      a.querySelector('.cmt-yt-by').textContent = (m.by ? m.by + ' \u00b7 ' : '') + 'YouTube';
+    });
+  });
 }
 document.addEventListener('click', function(e){
   const b = e.target.closest('.cmt-yt[data-yt]');
@@ -8947,6 +8986,7 @@ async function renderComments(host, slug){
   }
 
   host.innerHTML = html;
+  cmtYtTitles(host);   // fill in video titles under YouTube cards
   bindComments(host, slug, myUserId);
 }
 
