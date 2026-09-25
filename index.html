@@ -413,7 +413,15 @@ body{
 /* Tallies under a listing (Sep 24 2026): hearts, going, people you follow */
 .s-tally{font-size:12.5px;color:var(--ink);opacity:.7;margin-top:3px;letter-spacing:.01em}
 .s-tally .t-heart{color:var(--rust)}
-.s-brk,.d-short,.hb-short,.scard .heart .h-n{display:none}
+.s-brk,.d-short,.hb-short{display:none}
+/* Heart count on the heart button, every layout (Sep 25 2026, Nick: "do the
+   same kind of heart indicator on desktop"): the tally line under a card
+   keeps going + people; hearts live on the button. Show pages keep hearts
+   in the pill. */
+.scard .s-tally .t-hearts,.scard .s-tally--h{display:none}
+.scard .heart{display:inline-flex;align-items:center;gap:4px}
+.scard .heart .h-n{font-family:'Oswald';font-weight:600;font-size:13px;color:var(--rust);letter-spacing:.02em;line-height:1}
+.scard .heart.on .h-n{color:var(--rust)}
 /* YouTube in comments (Sep 25 2026) */
 .cmt-yt{position:relative;display:block;width:100%;max-width:420px;aspect-ratio:16/9;margin:6px 0 2px;padding:0;border:0;border-radius:8px;overflow:hidden;background:#000;cursor:pointer}
 .cmt-yt img{width:100%;height:100%;object-fit:cover;display:block;opacity:.9}
@@ -659,9 +667,6 @@ body{
   .list--a .s-sub .d-short{display:inline;font-family:'Oswald';font-weight:600;letter-spacing:.05em;text-transform:uppercase}
   .list--a .s-sub .s-venue{font-size:14px}
   .list--a .s-sub .s-nb,.list--a .s-sub .s-age{font-size:9.5px;padding:3px 7px;letter-spacing:.06em}
-  .list--a .s-tally .t-hearts,.list--a .s-tally--h{display:none}
-  .scard .heart{display:inline-flex;align-items:center;gap:4px}
-  .scard .heart .h-n{display:inline;font-family:'Oswald';font-weight:600;font-size:13px;color:var(--rust);letter-spacing:.02em}
   .hb-long{display:none}
   .hb-short{display:inline}
   .heat-bar{font-size:13.5px;padding:9px 12px}
@@ -3308,7 +3313,7 @@ function listOf(items, showDate){
         +     `<div class="s-sub">${venueLink}${nb}${ageBit}${reasonChip}</div>`
         +     tallyHtml(s)
         +   `</div>`
-        +   `<div class="s-foot">${heartBtn(s)}${listenBtn(s.title, s.venue)}${planBtn(s)}</div>`
+        +   `<div class="s-foot">${heartBtn(s).replace('</button>', heartCountBit(s) + '</button>')}${listenBtn(s.title, s.venue)}${planBtn(s)}</div>`
         + `</div>`;
     } else {
       // HORIZONTAL: image left, body middle, listen+heart right
