@@ -622,3 +622,5 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **2026-09-24 — Report photo in the menu (cafd2bff)** — the avatar report flag left the Who's Going rows (unlabelled, on some rows only); the profile ⋯ menu offers "Report profile photo" when there is a photo, "Photo reported" after.
 
 - **2026-09-25 — Avatar size fix (3a0f5e98)** — phone photos (3-6 MB) hit the 2 MB avatar cap. avUpload now shrinks JPEG/PNG/WebP to 800px JPEG in the browser (pick up to 25 MB); GIFs still 2 MB as-is; bucket cap unchanged.
+
+- **2026-09-25 — Clip upload failures shown (HASH)** — the redraw after an upload erased the failure reason, so failed photos/clips looked like nothing happened (Charles Carroll, Parcels at Edgefield). Reason now persists; clip read times out at 15 s, frame grab at 6 s with a stand-in poster; clips capped at 50 MB (Supabase Free global limit); upload clock.
