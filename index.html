@@ -288,6 +288,8 @@ body{
   .hoodhead .count{font-family:'Oswald';font-weight:500;font-size:11px;color:rgba(243,234,215,.6);margin-left:8px;letter-spacing:.08em}
 
 .venue-header{margin-bottom:18px}
+.back-link{display:inline-block;margin:0 0 8px;font-family:'Oswald',sans-serif;font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:var(--cream);opacity:.8;text-decoration:none}
+.back-link:hover{opacity:1;text-decoration:underline}
 .venue-header .venue-name{font-family:'Alfa Slab One',serif;font-weight:400;font-size:26px;color:var(--cream);margin:6px 0 4px}
 .venue-header .venue-info{color:var(--cream);opacity:.85;font-size:14px}
 .venue-header .venue-when{font-family:'Oswald',sans-serif;letter-spacing:.03em}
@@ -2518,7 +2520,9 @@ function drawDaysInPieces(wrap, days, drawDay){
   _feedPager = {
     stop: stop,
     // Draw on until a given card exists (old #show-{id} share links).
-    untilId: function(id){ while(!stopped && !document.getElementById('show-' + id)) batch(); }
+    untilId: function(id){ while(!stopped && !document.getElementById('show-' + id)) batch(); },
+    // ...or a given slug (Back to where you were, Sep 24 2026).
+    untilSlug: function(sl){ while(!stopped && !wrap.querySelector('.scard[data-slug="' + CSS.escape(sl) + '"]')) batch(); }
   };
 }
 
@@ -3274,9 +3278,84 @@ function syncSharePath(route){
     if(location.pathname !== want) history.replaceState(history.state, '', want + location.search + location.hash);
   }catch(_){}
 }
+// ===== Back to where you were (Sep 24 2026, Nick) =====
+// "people can return to the place they were at in the feed". The feed is
+// drawn a week at a time and rebuilt on every visit, so the browser can't put
+// you back on its own. While you're on the feed we note the card at the top of
+// the screen (and which sections were on); when Back brings you to that feed
+// again, the same sections come back, the feed draws down to that card, and
+// it lands where it was. The logo still goes to the top, fresh.
+// NAV mirrors the tab's history for our own pages: one entry per address.
+if('scrollRestoration' in history){ try{ history.scrollRestoration = 'manual'; }catch(_){} }
+const NAV = [];                 // [{hash, anchor}]
+let NAV_FRESH = false;          // set by the logo: the next feed is a new visit, not a Back
+let FEED_ANCHOR = null, FEED_ANCHOR_HOLD = 0;
+const FEED_SNAP_KEYS = ['view','selectedVenue','tonight','thisWeek','picks','byHood','myShows','comedy','following','festivals','allAges','outOfTown','heating','q'];
+function feedAnchorNow(){
+  if(parseRoute().type !== 'feed' || state.view !== 'shows') return null;
+  const cards = document.querySelectorAll('#results .scard[data-slug]');
+  let pick = null;
+  for(const c of cards){ const r = c.getBoundingClientRect(); if(r.bottom > 90){ pick = { slug: c.dataset.slug, top: r.top }; break; } }
+  const snap = {}; FEED_SNAP_KEYS.forEach(function(k){ snap[k] = state[k]; });
+  return { slug: pick ? pick.slug : '', top: pick ? pick.top : 0, y: window.scrollY, snap: snap };
+}
+// Note the spot as you scroll, and at the moment you tap something (a venue
+// link jumps the page before the address changes, so the tap's note wins for
+// a second).
+let _faT = 0;
+window.addEventListener('scroll', function(){
+  if(Date.now() < FEED_ANCHOR_HOLD) return;
+  if(_faT) return;
+  _faT = setTimeout(function(){ _faT = 0; if(Date.now() >= FEED_ANCHOR_HOLD){ const a = feedAnchorNow(); if(a) FEED_ANCHOR = a; } }, 150);
+}, { passive: true });
+document.addEventListener('click', function(){
+  const a = feedAnchorNow();
+  if(a){ FEED_ANCHOR = a; FEED_ANCHOR_HOLD = Date.now() + 1000; }
+}, true);
+function navNote(){
+  // Returns the entry we just came BACK to, or null for a new page.
+  const h = location.hash || '';
+  const fresh = NAV_FRESH; NAV_FRESH = false;
+  const top = NAV[NAV.length - 1];
+  if(top && top.hash === h) return null;                       // same page, redrawn
+  if(!fresh && NAV.length >= 2 && NAV[NAV.length - 2].hash === h){ NAV.pop(); return NAV[NAV.length - 1]; }
+  // Leaving the feed for a page: keep where you were on the feed entry.
+  if(top && (top.hash === '' || top.hash === '#' || top.hash === '#/') && FEED_ANCHOR) top.anchor = FEED_ANCHOR;
+  NAV.push({ hash: h, anchor: null });
+  if(NAV.length > 60) NAV.shift();
+  return null;
+}
+function feedRestore(a){
+  if(a.snap) FEED_SNAP_KEYS.forEach(function(k){ state[k] = a.snap[k]; });
+  render();
+  if(a.slug && _feedPager && _feedPager.untilSlug) _feedPager.untilSlug(a.slug);
+  // Panels above the listings (photos, giveaway) arrive a moment later and
+  // push things down, so re-aim a few times -- unless you've started moving.
+  let moved = false;
+  const mark = function(){ moved = true; };
+  ['wheel', 'touchstart', 'keydown', 'mousedown'].forEach(function(ev){ window.addEventListener(ev, mark, { once: true, passive: true }); });
+  const go = function(){
+    if(moved || parseRoute().type !== 'feed') return;
+    const c = a.slug ? document.querySelector('#results .scard[data-slug="' + CSS.escape(a.slug) + '"]') : null;
+    const y = c ? c.getBoundingClientRect().top + window.scrollY - a.top : a.y;
+    window.scrollTo({ top: Math.max(0, y), behavior: 'instant' });
+  };
+  go(); requestAnimationFrame(go); setTimeout(go, 250); setTimeout(go, 700); setTimeout(go, 1500);
+  setTimeout(function(){ ['wheel', 'touchstart', 'keydown', 'mousedown'].forEach(function(ev){ window.removeEventListener(ev, mark); }); }, 2000);
+}
+// The "Back" link on a show page: your real Back when you came from inside
+// the site, the feed when the page was opened from a link.
+function goBack(){ if(NAV.length > 1) history.back(); else goHome(); }
+document.addEventListener('click', function(e){
+  const b = e.target.closest('[data-go-back]'); if(!b) return;
+  e.preventDefault(); e.stopPropagation(); goBack();
+});
+
 async function router(){
   var route = parseRoute();
+  var _back = navNote();
   syncSharePath(route);
+  if(route.type === 'feed' && _back && _back.anchor){ feedRestore(_back.anchor); return; }
   // A page you navigate INTO opens at its top (Sep 20 2026, Nick): a show
   // tapped halfway down the feed used to open still scrolled halfway down.
   if(route.type === 'show' || route.type === 'profile' || route.type === 'festival' || route.type === 'venue'){
@@ -5075,6 +5154,7 @@ function renderShowDetail(wrap, show, kind){
     + (show.price ? ' \u00b7 ' + esc(show.price) : '');
   var _m = mapsHref(show.address, show.venue);
   var head = '<div class="venue-header">'
+    + '<a href="#" class="back-link" data-go-back>&larr; ' + (NAV.length > 1 ? 'Back' : 'All shows') + '</a>'
     + '<h2 class="venue-name">' + esc(show.title||'') + '</h2>'
     + '<div class="venue-info venue-when">' + when + '</div>'
     + (where ? '<div class="venue-info venue-where">' + where + '</div>' : '')
@@ -9212,7 +9292,7 @@ function leaveSections(except){
   // leaves that page's address behind (Sep 24 2026, Nick: Picks showed with
   // #/stories still in the address bar, and tapping Liner Notes again did
   // nothing because the address didn't change).
-  if(except && !isFeedRoute(parseRoute().type)){ try{ history.pushState(null, '', '/'); }catch(_){} }
+  if(except && !isFeedRoute(parseRoute().type)){ try{ history.pushState(null, '', '/'); NAV.push({ hash: '', anchor: null }); }catch(_){} }
   const flags = {tonight:'tonightToggle', thisWeek:'thisWeekToggle', picks:'picksToggle', comedy:'comedyToggle',
                  allAges:'allAgesToggle', outOfTown:'outOfTownToggle', festivals:'festivalsToggle', following:'followingToggle', myShows:'myShowsToggle', byHood:'byHoodToggle', heating:'heatingNone'};
   for(const k in flags){
@@ -9756,6 +9836,7 @@ window.addEventListener("hashchange", router);
    still do their own partial resets inline; they are deliberately not
    rewired to call this yet. */
 function goHome(){
+  if(location.hash && location.hash !== '#') NAV_FRESH = true;   // the feed it lands on is new, not a Back
   location.hash = '';
   state.view='shows'; state.selectedVenue=null;
   state.tonight=false; state.thisWeek=false; state.picks=false; state.byHood=false;
