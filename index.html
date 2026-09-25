@@ -8580,29 +8580,78 @@ function swapPoster(card, url){
 // usual case just works.
 // Says 20, accepts 25 (Sep 20 2026, Nick): a clip trimmed "to 20" on a phone
 // often lands at 21-23 seconds, and the extra seconds shouldn't cost a post.
-const VD_MAX_S = 20, VD_ACCEPT_S = 25, VD_MAX_BYTES = 60 * 1024 * 1024;
+// Clip cap 50 MB (Sep 25 2026): Supabase's Free plan caps every bucket at a
+// 50 MB global limit whatever the bucket says, so a 50-60 MB clip passed our
+// check and was refused by storage. Raise this only if Storage settings'
+// global limit is raised first.
+const VD_MAX_S = 20, VD_ACCEPT_S = 25, VD_MAX_BYTES = 50 * 1024 * 1024, VD_MAX_MB = 50;
+// The read-before-upload had no timeout (Sep 25 2026, Charles Carroll's
+// Parcels clip): if a phone never finished loading the frame, the page sat
+// at "Uploading 1..." forever and nothing was sent. Now: 15 s to read the
+// clip at all; once its length is known, 6 s to grab a frame, and if that
+// stalls a plain poster frame stands in so the clip still posts.
+const VD_PROBE_MS = 15000, VD_FRAME_MS = 6000;
 function vdUrl(path){ try{ return phClient().storage.from('videos').getPublicUrl(path).data.publicUrl; }catch(e){ return ''; } }
+function vdStandInThumb(w, hgt){
+  return new Promise(function(resolve, reject){
+    const k = Math.min(1, 640 / Math.max(w || 1280, hgt || 720));
+    const cv = document.createElement('canvas'); cv.width = Math.round((w || 1280) * k); cv.height = Math.round((hgt || 720) * k);
+    const g = cv.getContext('2d');
+    g.fillStyle = '#2f4a3f'; g.fillRect(0, 0, cv.width, cv.height);
+    const r = Math.min(cv.width, cv.height) * 0.14, cx = cv.width / 2, cy = cv.height / 2;
+    g.fillStyle = '#f3ead7'; g.beginPath(); g.moveTo(cx - r * 0.6, cy - r); g.lineTo(cx + r, cy); g.lineTo(cx - r * 0.6, cy + r); g.closePath(); g.fill();
+    cv.toBlob(function(b){ b ? resolve({ blob: b, width: cv.width, height: cv.height }) : reject(new Error('Could not make a thumbnail.')); }, 'image/jpeg', PH_QUALITY);
+  });
+}
 function vdProbe(file){
   return new Promise(function(resolve, reject){
-    const v = document.createElement('video'); v.muted = true; v.playsInline = true; v.preload = 'metadata';
+    const v = document.createElement('video');
+    v.muted = true; v.playsInline = true; v.setAttribute('playsinline', ''); v.setAttribute('muted', ''); v.preload = 'auto';
     const url = URL.createObjectURL(file);
-    const done = function(err, out){ URL.revokeObjectURL(url); err ? reject(err) : resolve(out); };
+    let finished = false, meta = null, frameTimer = null;
+    const done = function(err, out){
+      if(finished) return; finished = true;
+      clearTimeout(readTimer); clearTimeout(frameTimer);
+      URL.revokeObjectURL(url);
+      err ? reject(err) : resolve(out);
+    };
+    const readTimer = setTimeout(function(){
+      done(new Error('This clip couldn\u2019t be read on this device. Try it again, or save it as an MP4 first.'));
+    }, VD_PROBE_MS);
+    const standIn = function(){
+      if(finished || !meta) return;
+      vdStandInThumb(meta.w, meta.h).then(function(t){ done(null, { thumb: t.blob, width: t.width, height: t.height, duration: meta.d }); }, done);
+    };
     v.onerror = function(){ done(new Error("This video can't play in your browser. Save it as an MP4 first.")); };
     v.onloadedmetadata = function(){
       if(!isFinite(v.duration) || v.duration > VD_ACCEPT_S + 0.5){ done(new Error('Clips are up to ' + VD_MAX_S + ' seconds. Trim it in your Photos app first.')); return; }
-      v.currentTime = Math.min(1, Math.max(0, v.duration / 2));
+      meta = { w: v.videoWidth, h: v.videoHeight, d: Math.round(v.duration) };
+      clearTimeout(readTimer);
+      frameTimer = setTimeout(standIn, VD_FRAME_MS);
+      try{ v.currentTime = Math.min(1, Math.max(0, v.duration / 2)); }catch(_){ standIn(); }
     };
     v.onseeked = function(){
+      if(finished) return;
       try{
         const w = v.videoWidth, hgt = v.videoHeight;
+        if(!w || !hgt){ standIn(); return; }
         const k = Math.min(1, PH_MAX_SIDE / Math.max(w, hgt));
         const cv = document.createElement('canvas'); cv.width = Math.round(w * k); cv.height = Math.round(hgt * k);
         cv.getContext('2d').drawImage(v, 0, 0, cv.width, cv.height);
-        cv.toBlob(function(b){ if(!b){ done(new Error('Could not read a frame.')); return; } done(null, { thumb: b, width: cv.width, height: cv.height, duration: Math.round(v.duration) }); }, 'image/jpeg', PH_QUALITY);
-      }catch(e){ done(e); }
+        cv.toBlob(function(b){ if(!b){ standIn(); return; } done(null, { thumb: b, width: cv.width, height: cv.height, duration: meta ? meta.d : Math.round(v.duration) }); }, 'image/jpeg', PH_QUALITY);
+      }catch(e){ standIn(); }
     };
     v.src = url;
+    try{ v.load(); }catch(_){}
   });
+}
+// A storage or database refusal in words a person can act on.
+function upWhy(err){
+  const m = String((err && (err.message || err.error || err.statusCode)) || err || '');
+  if(/exceed|too large|payload|413|maximum allowed size|entity too large/i.test(m)) return 'That file is too big. Clips are up to ' + VD_MAX_MB + ' MB \u2014 trim it shorter or record at 1080p.';
+  if(/network|failed to fetch|load failed|timed? ?out|abort/i.test(m)) return 'The upload got cut off. Check your connection and try again.';
+  if(/mime|content.?type|not allowed/i.test(m)) return 'That file type isn\u2019t accepted. Save it as an MP4 first.';
+  return m ? 'Upload error: ' + m : '';
 }
 
 async function mountPhotos(wrap, slug, show){
@@ -8613,6 +8662,10 @@ async function mountPhotos(wrap, slug, show){
   wrap.appendChild(host);
   if(!sb){ host.querySelector('.ph-state').textContent = 'Photos unavailable right now.'; return; }
   let myId = null;
+  // The result of the last upload. load() redraws the section, which used to
+  // wipe the "didn't upload" reason the instant it appeared (Sep 25 2026) --
+  // every failure looked like nothing happened. draw() shows it now.
+  let upMsg = '';
   try{ const me = (await sb.auth.getSession()).data.session; myId = me && me.user ? me.user.id : null; }catch(e){}
   const canAdd = !!myId && typeof claimedStubIds === 'function' && claimedStubIds().has(stubIdOf(show));
   async function load(){
@@ -8629,7 +8682,8 @@ async function mountPhotos(wrap, slug, show){
       html += '<div class="ph-add">'
         + (mine < PH_MAX_PER_SHOW
             ? '<button type="button" class="ph-add-btn" data-ph-pick>&#128247; Add photos or clips</button><input type="file" accept="image/*,video/*" multiple data-ph-file style="display:none">'
-              + '<span class="ph-note">From your night. Up to ' + PH_MAX_PER_SHOW + ' per show; clips up to ' + VD_MAX_S + ' seconds.</span>'
+              + (upMsg ? '<span class="ph-note ph-warn" role="alert">' + esc(upMsg) + '</span>' : '')
+              + '<span class="ph-note">From your night. Up to ' + PH_MAX_PER_SHOW + ' per show; clips up to ' + VD_MAX_S + ' seconds and ' + VD_MAX_MB + ' MB.</span>'
             : '<span class="ph-note">You\u2019ve added ' + PH_MAX_PER_SHOW + ' photos to this show.</span>')
         + '</div>';
     } else if(!myId){
@@ -8660,33 +8714,43 @@ async function mountPhotos(wrap, slug, show){
     if(inp) inp.addEventListener('change', async function(){
       const files = Array.from(inp.files || []).slice(0, PH_MAX_PER_SHOW - mine);
       if(!files.length) return;
-      const note = host.querySelector('.ph-note'); if(note) note.textContent = 'Uploading ' + files.length + '\u2026';
+      upMsg = '';
+      const note = host.querySelector('.ph-note:not(.ph-warn)') || host.querySelector('.ph-note'); if(note) note.textContent = 'Uploading ' + files.length + '\u2026';
+      host.querySelectorAll('.ph-warn').forEach(function(x){ x.remove(); });
+      let clock = null;
       let bad = 0;
       let why = '';
       for(const f of files){
         try{
           const stem = myId + '/' + slug.slice(0, 80) + '/' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
           if(/^video\//.test(f.type) || /\.(mp4|mov|webm|m4v)$/i.test(f.name)){
-            if(f.size > VD_MAX_BYTES){ bad++; why = 'Clips are up to 60 MB.'; continue; }
+            if(f.size > VD_MAX_BYTES){ bad++; why = 'That clip is ' + Math.round(f.size / 1048576) + ' MB; clips are up to ' + VD_MAX_MB + ' MB. Trim it shorter or record at 1080p.'; continue; }
+            if(note) note.textContent = 'Reading your clip\u2026';
             const probe = await vdProbe(f);                      // throws with a plain reason
+            // A 30-50 MB clip over cell data takes a while; a moving clock
+            // says it's working (Sep 25 2026).
+            const mb = Math.max(1, Math.round(f.size / 1048576)), t0 = Date.now();
+            const tick = function(){ if(note) note.textContent = 'Uploading your clip (' + mb + ' MB)\u2026 ' + Math.round((Date.now() - t0) / 1000) + 's \u2014 keep this page open.'; };
+            tick(); clock = setInterval(tick, 1000);
             const tpath = stem + '.jpg', vpath = stem + (/webm/i.test(f.type) ? '.webm' : '.mp4');
             const t = await sb.storage.from('photos').upload(tpath, probe.thumb, { contentType: 'image/jpeg', upsert: false });
-            if(t.error){ bad++; console.warn('[photos] thumb upload failed:', t.error.message); continue; }
+            if(t.error){ clearInterval(clock); bad++; why = upWhy(t.error); console.warn('[photos] thumb upload failed:', t.error.message); continue; }
             const vu = await sb.storage.from('videos').upload(vpath, f, { contentType: f.type || 'video/mp4', upsert: false });
-            if(vu.error){ bad++; console.warn('[photos] clip upload failed:', vu.error.message); await sb.storage.from('photos').remove([tpath]).catch(function(){}); continue; }
+            clearInterval(clock);
+            if(vu.error){ bad++; why = upWhy(vu.error); console.warn('[photos] clip upload failed:', vu.error.message); await sb.storage.from('photos').remove([tpath]).catch(function(){}); continue; }
             const r = await sb.rpc('add_show_video', { p_slug: slug, p_stub_id: stubIdOf(show), p_path: tpath, p_video_path: vpath, p_width: probe.width, p_height: probe.height, p_duration: probe.duration });
-            if(r.error){ bad++; console.warn('[photos] add clip failed:', r.error.message); await sb.storage.from('videos').remove([vpath]).catch(function(){}); await sb.storage.from('photos').remove([tpath]).catch(function(){}); }
+            if(r.error){ bad++; why = upWhy(r.error); console.warn('[photos] add clip failed:', r.error.message); await sb.storage.from('videos').remove([vpath]).catch(function(){}); await sb.storage.from('photos').remove([tpath]).catch(function(){}); }
             continue;
           }
           const out = await phResize(f);
           const path = stem + '.jpg';
           const up = await sb.storage.from('photos').upload(path, out.blob, { contentType: 'image/jpeg', upsert: false });
-          if(up.error){ bad++; console.warn('[photos] upload failed:', up.error.message); continue; }
+          if(up.error){ bad++; why = upWhy(up.error); console.warn('[photos] upload failed:', up.error.message); continue; }
           const r = await sb.rpc('add_show_photo', { p_slug: slug, p_stub_id: stubIdOf(show), p_path: path, p_width: out.width, p_height: out.height });
-          if(r.error){ bad++; console.warn('[photos] add failed:', r.error.message); await sb.storage.from('photos').remove([path]).catch(function(){}); }
-        }catch(e){ bad++; why = (e && e.message) || ''; console.warn('[photos] threw:', e); }
+          if(r.error){ bad++; why = upWhy(r.error); console.warn('[photos] add failed:', r.error.message); await sb.storage.from('photos').remove([path]).catch(function(){}); }
+        }catch(e){ clearInterval(clock); bad++; why = (e && e.message) || ''; console.warn('[photos] threw:', e); }
       }
-      if(bad && note) note.textContent = bad + (bad > 1 ? ' didn\u2019t upload. ' : ' didn\u2019t upload. ') + why;
+      upMsg = bad ? (bad === 1 && files.length === 1 ? 'That didn\u2019t upload. ' : bad + ' of ' + files.length + ' didn\u2019t upload. ') + (why || 'Try again in a minute.') : '';
       await load();
     });
   }
@@ -10268,6 +10332,7 @@ a.inbox-thread-who:hover{text-decoration:underline}
 .ph-head{display:flex;align-items:baseline;gap:10px;margin:0 0 12px;font-family:'Alfa Slab One',serif;font-weight:400;font-size:19px;color:var(--cream)}
 .ph-head .pf-count{font-family:'Oswald',sans-serif;font-size:14px;opacity:.7}
 .ph-state,.ph-note{font-family:'Bitter',Georgia,serif;font-size:13.5px;line-height:1.5;color:rgba(243,234,215,.8);padding:2px 0 6px}
+.ph-note.ph-warn{display:block;color:#ffd9a0;font-weight:600}
 .ph-add{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:2px 0 14px}
 .ph-add-btn{display:inline-flex;align-items:center;gap:8px;border:0;cursor:pointer;font-family:'Alfa Slab One',serif;text-transform:uppercase;letter-spacing:.04em;font-size:14px;padding:11px 16px;border-radius:4px;background:var(--rust);color:#fff;box-shadow:0 2px 0 rgba(0,0,0,.2)}
 .ph-add-btn:hover{filter:brightness(1.08)}
