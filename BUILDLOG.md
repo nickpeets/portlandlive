@@ -630,3 +630,5 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **2026-09-25 — Phone cards pass (38368f97)** — narrower poster (72px, 62px under 380px), date · time / venue / chips on separate lines via phone-only .s-brk spans, heart count on the heart button (.h-n) instead of the tally line, short "SAT OCT 31" dates on Heating Up cards, one-line banner and a "🔥 16" pill on the day header. Desktop unchanged except the banner wording ("in the past week").
 
 - **2026-09-25 — Goodfoot attempt notes (3d644b11)** — parse_goodfoot records each of its three windowed-browser attempts (events / empty / exception) into FETCH_NOTES so a zero shows "Tiers: attempt 1: empty · …" on the health line. The 4:21 PM build ran pre-push code (workflow was triggered before the 4:15 push): Kelly's and Realm cleared on their own.
+
+- **2026-09-25 — Heart count on the button everywhere (f772f615)** — the .h-n count next to the heart in the card corner is no longer phone-only; the under-card tally line hides hearts in all layouts (show pages keep them in the pill). Picks (layout B) cards get it too.
