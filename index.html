@@ -1511,11 +1511,12 @@ function loadTallies(tries){
 }
 function tallyBits(s, min){
   const h = TALLIES.h[favKey(s)] || 0, g = (s._slug && TALLIES.g[s._slug]) || 0, f = (s._slug && TALLIES.f[s._slug]) || 0;
+  // Order (Sep 25 2026, Nick): "5 going · @friend +4 you follow · ♥ 8" --
+  // going first, the people who are going right beside it, hearts last so
+  // the two numbers never sit side by side.
   const bits = [];
-  if(h + g >= min){
-    if(h) bits.push('<span class="t-heart">\u2665</span> ' + h);
-    if(g) bits.push(g + ' going');
-  }
+  const show = h + g >= min;
+  if(show && g) bits.push(g + ' going');
   // People you follow who are going: named right here, with their faces
   // (Sep 24 2026, Nick: the "@x going" chip and "1 you follow" said the same
   // thing twice -- one line now). Falls back to a count until names load.
@@ -1529,6 +1530,7 @@ function tallyBits(s, min){
   } else if(f){
     bits.push('<span class="t-you">' + f + ' you follow</span>');
   }
+  if(show && h) bits.push('<span class="t-heart">\u2665</span> ' + h);
   return bits.join(' \u00b7 ');
 }
 function tallyHtml(s){
@@ -1564,7 +1566,11 @@ function tallyBump(kind, id, delta){
 // counting double. Upcoming music in the next 30 days scoring 3+ qualify, and
 // nothing about it shows -- not the "Heating Up 🔥N" button on the first day
 // header, not the 🔥 chips -- until at least 5 shows do.
-const HEAT_MIN_SCORE = 3, HEAT_MIN_SHOWS = 5, HEAT_DAYS = 30;
+// 90 days, not 30 (Sep 25 2026): The Brothers Comatose, Oct 31, was the
+// hottest show on the site and sat just outside a 30-day window. Nick kept 90
+// on the condition that something tells him when to revisit it -- see
+// heatReviewFlag below.
+const HEAT_MIN_SCORE = 3, HEAT_MIN_SHOWS = 5, HEAT_DAYS = 90;
 let HEAT = { h: {}, g: {} }, HEAT_SET = new Set();
 function heatScore(s){ return 2 * ((s._slug && HEAT.g[s._slug]) || 0) + (HEAT.h[favKey(s)] || 0); }
 function heatLive(){ return HEAT_SET.size >= HEAT_MIN_SHOWS; }
@@ -1584,9 +1590,27 @@ function loadHeat(tries){
     if(!r || r.error){ if(r && r.error) console.warn('[heat]', r.error.message || r.error); return; }
     const t = { h: {}, g: {} };
     (r.data || []).forEach(function(x){ if(t[x.kind]) t[x.kind][x.id] = x.n; });
-    HEAT = t; heatRebuild();
+    HEAT = t; heatRebuild(); heatReviewFlag();
     if(isFeedRoute(parseRoute().type) && (heatLive() || state.heating)) reRenderCurrentView();
   }).catch(function(){});
+}
+// Revisit flag (Sep 25 2026, Nick: "keep 90, but build a flag to revisit").
+// Once Heating Up has 10+ shows, if more than half of its top 10 are a month
+// or more away, far-off on-sales are crowding out this week's hot shows --
+// time to give nearer shows a boost (full score inside 2 weeks, tapering
+// after). The flag lands in Feed health in the bookmark menu, moderators only.
+function heatReviewFlag(){
+  const extra = (window.__plHealthExtra || []).filter(function(i){ return i.kind !== 'note' || i.venue !== 'Heating Up'; });
+  const hot = state.shows.filter(function(s){ return HEAT_SET.has(s._slug); })
+    .sort(function(a, b){ return heatScore(b) - heatScore(a) || (a.date < b.date ? -1 : 1); });
+  if(hot.length >= 10){
+    const month = new Date(Date.now() + 30 * 864e5).toISOString().slice(0, 10);
+    const far = hot.slice(0, 10).filter(function(s){ return s.date > month; }).length;
+    if(far > 5) extra.push({ venue: 'Heating Up', kind: 'note',
+      text: far + ' of the top 10 are a month or more away, so this week\u2019s shows are getting crowded out. Time to revisit: give nearer shows a boost (full score inside 2 weeks, tapering after).' });
+  }
+  window.__plHealthExtra = extra;
+  try{ window.dispatchEvent(new Event('pl-health')); }catch(_){}
 }
 function heatOn(){
   leaveSections('heating');
@@ -10761,7 +10785,7 @@ a.fest-artist:hover{text-decoration:underline}
 })();
 </script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-    <script src="auth.js?v=20260925a" defer></script>
+    <script src="auth.js?v=20260925b" defer></script>
 <script>
 // ===== DID YOU MAKE IT? from your going marks (Sep 18 2026) =====
 // The shows you marked "I'm going" whose date has passed and that have no

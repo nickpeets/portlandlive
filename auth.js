@@ -525,11 +525,13 @@
     const slot = el.tickerEditor, btn = document.getElementById("quickMenuBtn");
     const isMod = !!(slot && !slot.hidden && slot.dataset.for);
     const h = window.__plHealth;
-    const items = (h && Array.isArray(h.items)) ? h.items : [];
+    // Build-time items from shows.json, plus notes the page works out itself
+    // (the Heating Up revisit flag).
+    const items = ((h && Array.isArray(h.items)) ? h.items : []).concat(window.__plHealthExtra || []);
     if (btn) btn.classList.toggle("has-alert", isMod && items.length > 0);
     if (!slot) return;
     const old = slot.querySelector(".feed-health"); if (old) old.remove();
-    if (!isMod || !h) return;
+    if (!isMod || (!h && !items.length)) return;
     const md = function (iso) {
       if (!iso) return "";
       const d = new Date(iso + "T12:00:00");
@@ -544,18 +546,19 @@
       if (i.kind === "dark") return v + "no shows on the site since " + md(i.since) + " (" + i.days + " days).";
       if (i.kind === "empty") return v + "page loaded but found nothing" + (i.why ? " (" + esc(i.why) + ")" : "") + ".";
       if (i.kind === "tm") return v + "got " + i.scraped + " of ~" + i.usual + "; kept " + i.added + " from " + md(i.since) + ".";
+      if (i.kind === "note") return v + esc(i.text || "");
       return v + esc(i.kind);
     };
     const box = document.createElement("div");
     box.className = "feed-health";
     if (!items.length) {
       box.innerHTML = '<div class="quick-menu-pill feed-health-head ok">\u2713 All venues scraping' +
-        (h.checked ? " \u00b7 " + md(h.checked) : "") + "</div>";
+        ((h && h.checked) ? " \u00b7 " + md(h.checked) : "") + "</div>";
     } else {
       box.innerHTML = '<button type="button" class="quick-menu-pill feed-health-head" aria-expanded="false">\u26a0 Feed health \u00b7 ' +
         items.length + (items.length === 1 ? " venue" : " venues") + ' <span class="ticker-caret">&#9656;</span></button>' +
         '<div class="feed-health-list" hidden>' + items.map(function (i) { return "<div>" + line(i) + "</div>"; }).join("") +
-        (h.checked ? '<div class="handle-edit-msg">Build checked ' + md(h.checked) + "</div>" : "") + "</div>";
+        ((h && h.checked) ? '<div class="handle-edit-msg">Build checked ' + md(h.checked) + "</div>" : "") + "</div>";
       box.querySelector("button").onclick = function (e) {
         e.stopPropagation();
         const list = box.querySelector(".feed-health-list"), open = list.hidden;
