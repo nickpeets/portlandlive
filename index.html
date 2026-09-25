@@ -4461,7 +4461,9 @@ async function renderGiveawayRoute(){
     + '<h3 class="gw-h">How to enter</h3>'
     + '<ol class="gw-steps"><li><b>Sign up</b> for a free Rain Or Shows account.</li>'
     + '<li><b>Tap \u201cI\u2019m going\u201d</b> on any show before entries close. That\u2019s your first entry.</li>'
-    + '<li><b>Share your invite link.</b> Every friend who joins through it and taps \u201cI\u2019m going\u201d on a show earns you one more entry.</li></ol>'
+    + '<li><b>Share your invite link.</b> Every friend who joins through it and taps \u201cI\u2019m going\u201d on a show earns you one more entry.</li>'
+    // Photos and clips count (Sep 24 2026, Nick): one entry per show.
+    + '<li><b>Post a photo or clip</b> from a show you went to. Each show you post from is one more entry, however many you post from it.</li></ol>'
     + '<div class="gw-me" data-gw-me></div>'
     + '<h3 class="gw-h">The rules</h3>'
     + '<div class="gw-rules"><p>Free to enter; no purchase necessary. Open to anyone 18 or older who can attend the show in Portland on October 31, 2026. One winner, drawn at random after entries close, with each entry counting once. The prize is one pair of tickets to ' + esc(g.title) + ' at the Aladdin Theater on October 31, 2026; it can\u2019t be exchanged for cash, and the winner must meet the show\u2019s own age rules. We\u2019ll message the winner on Rain Or Shows and by email; if we don\u2019t hear back within 48 hours we\u2019ll draw again. Rain Or Shows moderators can\u2019t win. Questions: <a href="mailto:giveaway@rainorshows.com">giveaway@rainorshows.com</a>.</p></div>'
@@ -4522,6 +4524,7 @@ async function renderGiveawayRoute(){
     + '<li>' + (st.base ? '&#10003; You\u2019re going to a show \u2014 1 entry' : 'Tap \u201cI\u2019m going\u201d on any show to get your first entry') + '</li>'
     + '<li>' + (st.invites | 0) + ' friend' + ((st.invites | 0) === 1 ? '' : 's') + ' joined and marked going \u2014 ' + (st.invites | 0) + ' more</li>'
     + ((st.pending | 0) ? '<li>' + st.pending + ' joined but haven\u2019t tapped \u201cI\u2019m going\u201d yet</li>' : '')
+    + '<li>' + (st.photos | 0) + ' show' + ((st.photos | 0) === 1 ? '' : 's') + ' with your photos or clips \u2014 ' + (st.photos | 0) + ' more</li>'
     + '</ul>'
     + (st.handle && open ? '<div class="gw-invite"><label>Your invite link</label><div class="gw-linkrow"><input type="text" readonly value="' + esc(link) + '"><button type="button" class="gw-copy" data-gw-copy>Copy</button></div></div>' : '')
     + (!st.handle ? '<p>Pick a handle in the bookmark menu to get your invite link.</p>' : '')
@@ -6576,6 +6579,34 @@ async function inboxLoad(){
       }
     }catch(e){ console.warn('[inbox] followers threw:', e); }
 
+    // ---- Photo likes (Sep 24 2026) ---------------------------------
+    // One row per photo or clip of yours that people liked: "Anita and 4
+    // others". The key carries the newest like's time, so a new like lights
+    // the row again. Opening it goes to the show's photos.
+    try{
+      const q = await sb.rpc('my_photo_likes', { p_limit: 30 });
+      if(!q.error){
+        const seenNow = txSeenMap();
+        (q.data || []).forEach(function(l){
+          const key = 'pl:' + l.photo_id + ':' + l.last_at;
+          const others = (l.n | 0) - 1;
+          items.push({
+            kind: 'photolike', seenKey: key, slug: l.show_slug || '',
+            otherId: l.last_user_id,
+            who: (l.last_name || 'Someone') + (others > 0 ? ' and ' + others + (others === 1 ? ' other' : ' others') : ''),
+            handle: l.last_handle || '',
+            kindLabel: 'Liked your ' + (l.kind === 'video' ? 'clip' : 'photo'),
+            snippet: l.title || '',
+            at: l.last_at,
+            unread: !seenNow[key],
+            empty: false
+          });
+        });
+      } else {
+        console.warn('[inbox] photo likes failed:', q.error.message);
+      }
+    }catch(e){ console.warn('[inbox] photo likes threw:', e); }
+
     // ---- Follow requests (Sep 17 2026) -------------------------------
     // These are the only notifications with a decision attached: a follow now
     // waits for you, so nobody reads a followers-only profile by subscribing
@@ -6683,7 +6714,7 @@ async function inboxLoad(){
     // own unread flag from dm_threads_mine, and the ticket/show pass below
     // does not know about it -- without this line DMs were dropped here, so
     // the badge never counted them.
-    const direct = items.filter(function(i){ return i.kind === 'report' || i.kind === 'mention' || i.kind === 'follow' || i.kind === 'followreq' || i.kind === 'didyou' || i.kind === 'dm'; });
+    const direct = items.filter(function(i){ return i.kind === 'report' || i.kind === 'mention' || i.kind === 'follow' || i.kind === 'followreq' || i.kind === 'didyou' || i.kind === 'photolike' || i.kind === 'dm'; });
     INBOX.items = items.filter(function(i){ return i.kind === 'ticket' || i.kind === 'show'; }).map(function(i){
       const m = latest[(i.kind === 'ticket' ? 't:' : 's:') + i.threadId];
       const unread = !!(m && m.sender_id !== uid
@@ -6835,6 +6866,7 @@ async function inboxOpenThread(idx){
   if(item.kind === 'follow'){ inboxOpenFollow(idx); return; }
   if(item.kind === 'followreq'){ inboxOpenFollowReq(idx); return; }
   if(item.kind === 'didyou'){ txMarkSeen(item.seenKey, item.at); item.unread = false; inboxRenderBadge(); inboxClose(); location.hash = '#/show/' + item.slug; return; }
+  if(item.kind === 'photolike'){ txMarkSeen(item.seenKey, item.at); item.unread = false; inboxRenderBadge(); inboxClose(); if(item.slug) location.hash = '#/show/' + item.slug; return; }
   if(item.kind === 'dm'){ inboxOpenDm(idx); return; }
 
   const sb = inboxClient();
@@ -7888,9 +7920,11 @@ async function mountPhotoStrip(wrap){
         // A tile opens the photo/clip right here, with the show, room and
         // date under it and an "Open show" link for more (Sep 18 2026).
         return '<button type="button" class="ph-strip-item" data-strip-src="' + esc(phUrl(x.path)) + '"' + (x.kind === 'video' && x.video_path ? ' data-strip-video="' + esc(vdUrl(x.video_path)) + '"' : '')
-          + ' data-strip-title="' + esc(x.title || '') + '" data-strip-venue="' + esc(x.venue || '') + '" data-strip-date="' + esc(x.show_date || '') + '" data-strip-by="' + esc(x.display_name || '') + '" data-strip-slug="' + esc(x.show_slug) + '" title="' + esc((x.title || '') + (x.venue ? ' at ' + x.venue : '')) + '">'
+          + ' data-strip-title="' + esc(x.title || '') + '" data-strip-venue="' + esc(x.venue || '') + '" data-strip-date="' + esc(x.show_date || '') + '" data-strip-by="' + esc(x.display_name || '') + '" data-strip-handle="' + esc(x.handle || '') + '" data-strip-id="' + esc(x.id || '') + '" data-strip-likes="' + (x.likes | 0) + '" data-strip-liked="' + (x.liked ? '1' : '') + '" data-strip-slug="' + esc(x.show_slug) + '" title="' + esc((x.title || '') + (x.venue ? ' at ' + x.venue : '')) + '">'
           + '<img src="' + esc(phUrl(x.path)) + '" alt="" loading="lazy">' + (x.kind === 'video' ? '<span class="ph-play ph-play-sm" aria-hidden="true">&#9654;</span>' : '')
-          + '<span class="ph-strip-cap"><b>' + esc(x.title || 'A show') + '</b><i>' + esc([x.venue, x.show_date ? ordinalDate(x.show_date) : ''].filter(Boolean).join(' \u00b7 ')) + '</i></span>'
+          + '<span class="ph-strip-cap"><b>' + esc(x.title || 'A show') + '</b><i>' + esc([x.venue, x.show_date ? ordinalDate(x.show_date) : ''].filter(Boolean).join(' \u00b7 ')) + '</i>'
+          + (x.display_name || (x.likes | 0) ? '<i class="ph-strip-by">' + esc(x.display_name ? 'by ' + x.display_name : '') + ((x.likes | 0) ? (x.display_name ? ' \u00b7 ' : '') + '\u2665 ' + (x.likes | 0) : '') + '</i>' : '')
+          + '</span>'
           + '</button>';
       }).join('') + '</div>';
   host.addEventListener('click', function(e){
@@ -7898,7 +7932,8 @@ async function mountPhotoStrip(wrap){
     if(!t) return;
     e.preventDefault(); e.stopPropagation();
     phLightbox(t.getAttribute('data-strip-src'), t.getAttribute('data-strip-video'),
-      { title: t.getAttribute('data-strip-title'), venue: t.getAttribute('data-strip-venue'), date: t.getAttribute('data-strip-date'), by: t.getAttribute('data-strip-by') },
+      { title: t.getAttribute('data-strip-title'), venue: t.getAttribute('data-strip-venue'), date: t.getAttribute('data-strip-date'), by: t.getAttribute('data-strip-by'),
+        handle: t.getAttribute('data-strip-handle'), id: t.getAttribute('data-strip-id'), likes: +t.getAttribute('data-strip-likes') || 0, liked: t.getAttribute('data-strip-liked') === '1' },
       t.getAttribute('data-strip-slug'));
   });
   host.querySelector('[data-strip-toggle]').addEventListener('click', function(){
@@ -8059,13 +8094,44 @@ function applyPosterOverrides(tries){
 // {title, venue, date}; when a slug is given a small "Open show" link sits
 // under the caption -- the strip uses this so a tap views the thing in
 // place instead of leaving the feed (Nick).
+// Photo likes (Sep 24 2026, Nick). One heart per photo or clip; the count is
+// public, who liked it is not. The same button appears on the show page grid
+// and in the viewer, and a tap updates every copy on the page.
+function phCredit(name, handle, word){
+  // "Photo by @nick" links to their profile wherever a photo is shown.
+  const who = handle ? '<a class="ph-credit" href="#/u/' + esc(handle) + '">' + esc(name || '@' + handle) + '</a>' : esc(name || 'Someone');
+  return (word ? word + ' by ' : '') + who;
+}
+function phLikeBtn(id, likes, liked){
+  if(!id) return '';
+  return '<button type="button" class="ph-like' + (liked ? ' on' : '') + '" data-ph-like="' + esc(id) + '" data-on="' + (liked ? '1' : '0') + '" aria-pressed="' + (liked ? 'true' : 'false') + '" title="' + (liked ? 'Unlike' : 'Like') + '">'
+    + '<span aria-hidden="true">' + (liked ? '\u2665' : '\u2661') + '</span> <span data-ph-n>' + (likes > 0 ? likes : '') + '</span></button>';
+}
+async function phToggleLike(btn){
+  const sb = phClient(), id = btn.getAttribute('data-ph-like');
+  if(!sb || !id) return;
+  if(!state._signedIn){ const x = document.getElementById('authSignInBtn'); if(x) x.click(); return; }
+  const on = btn.getAttribute('data-on') !== '1';
+  btn.disabled = true;
+  const r = await safeRpc(sb.rpc('photo_like', { p_id: id, p_on: on }));
+  btn.disabled = false;
+  const row = r && !r.error && Array.isArray(r.data) ? r.data[0] : null;
+  if(!row){ console.warn('[photos] like failed:', r && r.error && (r.error.message || r.error)); return; }
+  PH_LIKES[id] = { likes: row.likes | 0, liked: !!row.liked };
+  document.querySelectorAll('[data-ph-like="' + CSS.escape(id) + '"]').forEach(function(b){
+    b.outerHTML = phLikeBtn(id, row.likes | 0, !!row.liked);
+  });
+}
+const PH_LIKES = {};   // latest known count per photo id, so the viewer matches the grid
 function phLightbox(src, videoSrc, caption, slug){
   const box = document.createElement('div');
   box.className = 'ph-light';
-  const cap = caption && (caption.title || caption.venue || caption.by) ? '<div class="ph-light-cap">'
+  const lk = caption && caption.id ? (PH_LIKES[caption.id] || { likes: caption.likes | 0, liked: !!caption.liked }) : null;
+  const cap = caption && (caption.title || caption.venue || caption.by || caption.id) ? '<div class="ph-light-cap">'
       + (caption.title ? '<b>' + esc(caption.title) + '</b>' : '')
       + (caption.venue || caption.date ? '<span>' + esc([caption.venue, caption.date ? ordinalDate(caption.date) : ''].filter(Boolean).join(' \u00b7 ')) + '</span>' : '')
-      + (caption.by ? '<span class="ph-light-by">' + (videoSrc ? 'Clip' : 'Photo') + ' by ' + esc(caption.by) + '</span>' : '')
+      + (caption.by || caption.handle ? '<span class="ph-light-by">' + phCredit(caption.by, caption.handle, videoSrc ? 'Clip' : 'Photo') + '</span>' : '')
+      + (lk ? '<span class="ph-light-like">' + phLikeBtn(caption.id, lk.likes, lk.liked) + '</span>' : '')
       + (slug ? '<a href="#/show/' + esc(slug) + '" class="ph-light-link">Open show \u2192</a>' : '')
     + '</div>' : '';
   box.innerHTML = '<div class="ph-light-inner">' + (videoSrc
@@ -8074,7 +8140,9 @@ function phLightbox(src, videoSrc, caption, slug){
     + '<button type="button" class="ph-close" aria-label="Close">&times;</button>';
   box.addEventListener('click', function(ev){
     if(ev.target.closest('video') ) return;                    // controls
-    if(ev.target.closest('.ph-light-link')){ box.remove(); return; }
+    const lb = ev.target.closest('[data-ph-like]');
+    if(lb){ ev.preventDefault(); ev.stopPropagation(); phToggleLike(lb); return; }
+    if(ev.target.closest('.ph-light-link') || ev.target.closest('.ph-credit')){ box.remove(); return; }
     box.remove();
   });
   document.addEventListener('keydown', function esc_(ev){ if(ev.key === 'Escape'){ box.remove(); document.removeEventListener('keydown', esc_); } });
@@ -8214,9 +8282,13 @@ async function mountPhotos(wrap, slug, show){
       html += '<div class="ph-grid">' + rows.map(function(x){
         const isMine = x.user_id === myId;
         const isVideo = x.kind === 'video' && x.video_path;
+        PH_LIKES[x.id] = { likes: x.likes | 0, liked: !!x.liked };
         return '<figure class="ph-item' + (isVideo ? ' ph-item-video' : '') + '">'
-          + '<button type="button" class="ph-open" data-ph-open="' + esc(phUrl(x.path)) + '"' + (isVideo ? ' data-ph-video="' + esc(vdUrl(x.video_path)) + '"' : '') + ' data-ph-by="' + esc(x.display_name || '') + '" aria-label="' + (isVideo ? 'Play clip' : 'Open photo') + '"><img src="' + esc(phUrl(x.path)) + '" alt="" loading="lazy">' + (isVideo ? '<span class="ph-play" aria-hidden="true">&#9654;</span>' : '') + '</button>'
-          + '<figcaption class="ph-cap"><span class="ph-by">' + esc(x.display_name || 'Someone') + '</span>'
+          + '<button type="button" class="ph-open" data-ph-open="' + esc(phUrl(x.path)) + '"' + (isVideo ? ' data-ph-video="' + esc(vdUrl(x.video_path)) + '"' : '') + ' data-ph-by="' + esc(x.display_name || '') + '" data-ph-handle="' + esc(x.handle || '') + '" data-ph-id="' + esc(x.id) + '" aria-label="' + (isVideo ? 'Play clip' : 'Open photo') + '"><img src="' + esc(phUrl(x.path)) + '" alt="" loading="lazy">' + (isVideo ? '<span class="ph-play" aria-hidden="true">&#9654;</span>' : '')
+          // First in (Sep 24 2026, Nick): the first photo or clip anyone posted from this show.
+          + (x.is_first ? '<span class="ph-first">First in</span>' : '') + '</button>'
+          + '<figcaption class="ph-cap"><span class="ph-by">' + phCredit(x.display_name || 'Someone', x.handle, '') + '</span>'
+          + phLikeBtn(x.id, x.likes | 0, !!x.liked)
           + (isMine ? '<button type="button" class="ph-del" data-ph-del="' + esc(x.id) + '" data-ph-path="' + esc(x.path) + '" title="Delete photo" aria-label="Delete your photo">&times;</button>'
                     : (typeof rpButton === 'function' ? rpButton('photo', x.id, false, !!myId) : ''))
           + '</figcaption></figure>';
@@ -8266,6 +8338,9 @@ async function mountPhotos(wrap, slug, show){
     e.stopPropagation();
     const pick = e.target.closest('[data-ph-pick]');
     if(pick){ e.preventDefault(); const inp = host.querySelector('[data-ph-file]'); if(inp) inp.click(); return; }
+    const lk = e.target.closest('[data-ph-like]');
+    if(lk){ e.preventDefault(); phToggleLike(lk); return; }
+    if(e.target.closest('.ph-credit')) return;           // a normal link to their profile
     const del = e.target.closest('[data-ph-del]');
     if(del){
       e.preventDefault();
@@ -8281,7 +8356,9 @@ async function mountPhotos(wrap, slug, show){
     const open = e.target.closest('[data-ph-open]');
     if(open){
       e.preventDefault();
-      phLightbox(open.getAttribute('data-ph-open'), open.getAttribute('data-ph-video'), { by: open.getAttribute('data-ph-by') }, null);
+      const pid = open.getAttribute('data-ph-id'), lk0 = PH_LIKES[pid] || {};
+      phLightbox(open.getAttribute('data-ph-open'), open.getAttribute('data-ph-video'),
+        { by: open.getAttribute('data-ph-by'), handle: open.getAttribute('data-ph-handle'), id: pid, likes: lk0.likes | 0, liked: !!lk0.liked }, null);
     }
   });
   await load();
@@ -9834,6 +9911,20 @@ a.inbox-thread-who:hover{text-decoration:underline}
 .ph-by{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink)}
 .ph-cap .rp-btn{color:var(--ink)}
 .ph-del{background:none;border:0;color:var(--ink);opacity:.55;font-size:18px;line-height:1;cursor:pointer;padding:0 2px}
+/* Likes, credit, First in (Sep 24 2026) */
+.ph-cap{flex-wrap:nowrap}
+.ph-by{flex:1 1 auto;min-width:0}
+.ph-credit{color:inherit;text-decoration:none;border-bottom:1px dotted currentColor}
+.ph-credit:hover{color:var(--rust)}
+.ph-like{flex:0 0 auto;background:none;border:0;color:var(--ink);cursor:pointer;font-family:'Oswald',sans-serif;font-size:13px;padding:0 2px;line-height:1;white-space:nowrap}
+.ph-like span:first-child{font-size:15px;color:var(--rust)}
+.ph-like.on{font-weight:600}
+.ph-like:disabled{opacity:.5}
+.ph-first{position:absolute;left:6px;top:6px;background:var(--rust);color:#fff;font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:999px;box-shadow:0 1px 4px rgba(0,0,0,.4);pointer-events:none}
+.ph-light-by .ph-credit{color:#fff}
+.ph-light-like .ph-like{color:#fff;font-size:15px;padding:4px 10px;border:1px solid rgba(255,255,255,.4);border-radius:999px}
+.ph-light-like .ph-like span:first-child{color:#ff8a65}
+.ph-strip-cap i.ph-strip-by{opacity:.6;font-size:11px}
 .ph-del:hover{opacity:1;color:var(--rust)}
 .poster-edit{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:8px 0 4px;font-family:'Bitter',Georgia,serif;font-size:13px;color:rgba(243,234,215,.8)}
 .poster-edit-btn{border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.1);color:var(--cream);font-family:'Oswald',sans-serif;font-size:12.5px;letter-spacing:.04em;text-transform:uppercase;padding:6px 10px;border-radius:999px;cursor:pointer}
