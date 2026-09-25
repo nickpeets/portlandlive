@@ -372,7 +372,7 @@
   async function renderTickerEditor(userId) {
     const slot = el.tickerEditor;
     if (!slot) return;
-    if (!userId) { slot.hidden = true; slot.innerHTML = ""; slot.dataset.for = ""; return; }
+    if (!userId) { slot.hidden = true; slot.innerHTML = ""; slot.dataset.for = ""; paintHealth(); return; }
     // Once per signed-in user: refreshAuthUI runs several times as a session
     // settles, and each pass was appending its own Media line (Sep 19 2026).
     if (slot.dataset.for === userId && slot.innerHTML) return;
@@ -380,7 +380,7 @@
     let isMod = false;
     try { const r = await sb.rpc("is_moderator"); isMod = !r.error && r.data === true; } catch (_) {}
     if (run !== _tickerRun) return;
-    if (!isMod) { slot.hidden = true; slot.innerHTML = ""; return; }
+    if (!isMod) { slot.hidden = true; slot.innerHTML = ""; slot.dataset.for = ""; paintHealth(); return; }
     slot.dataset.for = userId;
     slot.hidden = false;
     const today = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Los_Angeles", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
@@ -499,7 +499,58 @@
         slot.appendChild(line);
       }
     } catch (_) {}
+    paintHealth();
   }
+
+  // Feed health (Sep 24 2026, Nick): the build's safety-net report, from
+  // shows.json "health" (index.html puts it on window.__plHealth and fires
+  // "pl-health"). Moderators only: a line in the menu under Ticker, and a
+  // rust dot on the bookmark button while anything needs a look.
+  function paintHealth() {
+    const slot = el.tickerEditor, btn = document.getElementById("quickMenuBtn");
+    const isMod = !!(slot && !slot.hidden && slot.dataset.for);
+    const h = window.__plHealth;
+    const items = (h && Array.isArray(h.items)) ? h.items : [];
+    if (btn) btn.classList.toggle("has-alert", isMod && items.length > 0);
+    if (!slot) return;
+    const old = slot.querySelector(".feed-health"); if (old) old.remove();
+    if (!isMod || !h) return;
+    const md = function (iso) {
+      if (!iso) return "";
+      const d = new Date(iso + "T12:00:00");
+      return isNaN(d) ? iso : d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    };
+    const esc = function (t) { return String(t == null ? "" : t).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); };
+    const line = function (i) {
+      const v = "<b>" + esc(i.venue) + "</b> \u2014 ";
+      if (i.kind === "zero") return v + "scraped 0. Showing " + i.shown + " from the last good scrape (" + md(i.since) + "). Drops off " + md(i.drops) + " unless fixed.";
+      if (i.kind === "partial") return v + "scraped " + i.scraped + " (usually ~" + i.usual + "). Added back " + i.added + " since " + md(i.since) + ". Drops off " + md(i.drops) + ".";
+      if (i.kind === "expired") return v + (i.seasonal ? "off-season; shows dropped after " : "shows DROPPED today after ") + i.days + " days without a good scrape.";
+      if (i.kind === "dark") return v + "no shows on the site since " + md(i.since) + " (" + i.days + " days).";
+      if (i.kind === "empty") return v + "page loaded but found nothing" + (i.why ? " (" + esc(i.why) + ")" : "") + ".";
+      if (i.kind === "tm") return v + "got " + i.scraped + " of ~" + i.usual + "; kept " + i.added + " from " + md(i.since) + ".";
+      return v + esc(i.kind);
+    };
+    const box = document.createElement("div");
+    box.className = "feed-health";
+    if (!items.length) {
+      box.innerHTML = '<div class="quick-menu-pill feed-health-head ok">\u2713 All venues scraping' +
+        (h.checked ? " \u00b7 " + md(h.checked) : "") + "</div>";
+    } else {
+      box.innerHTML = '<button type="button" class="quick-menu-pill feed-health-head" aria-expanded="false">\u26a0 Feed health \u00b7 ' +
+        items.length + (items.length === 1 ? " venue" : " venues") + ' <span class="ticker-caret">&#9656;</span></button>' +
+        '<div class="feed-health-list" hidden>' + items.map(function (i) { return "<div>" + line(i) + "</div>"; }).join("") +
+        (h.checked ? '<div class="handle-edit-msg">Build checked ' + md(h.checked) + "</div>" : "") + "</div>";
+      box.querySelector("button").onclick = function (e) {
+        e.stopPropagation();
+        const list = box.querySelector(".feed-health-list"), open = list.hidden;
+        list.hidden = !open; this.setAttribute("aria-expanded", open ? "true" : "false");
+        this.querySelector(".ticker-caret").innerHTML = open ? "&#9662;" : "&#9656;";
+      };
+    }
+    slot.appendChild(box);
+  }
+  window.addEventListener("pl-health", paintHealth);
 
   async function refreshAuthUI() {
     const { data: { session } } = await sb.auth.getSession();

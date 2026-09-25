@@ -1432,6 +1432,9 @@ def _tm_slim(ev):
     return out
 
 
+TM_HEALTH = []   # Ticketmaster pulls that fell back to the cache this build (-> shows.json "health")
+
+
 def tm_fetch_guarded(today, pulls, cache_path=None, fetch=None):
     """Run each Ticketmaster pull; when one fails or comes back far smaller
     than last time, use the last good pull for it instead of losing its shows.
@@ -1467,6 +1470,8 @@ def tm_fetch_guarded(today, pulls, cache_path=None, fetch=None):
             kept = [e for e in prev_ev if e.get("id") not in have]
             print(f"  WARN: Ticketmaster {key}: got {len(got)} events (last good: {len(prev_ev)}) -- "
                   f"kept {len(kept)} from the last good pull ({prev.get('at')})")
+            TM_HEALTH.append({"venue": "Ticketmaster " + str(key), "kind": "tm", "scraped": len(got),
+                              "usual": len(prev_ev), "added": len(kept), "since": prev.get("at") or ""})
             events += got + kept
         else:
             events += got
@@ -2163,10 +2168,12 @@ def update_news(shows, venues, today):
 
 
 def main():
-    shows = []
+    shows, health = [], {}
     if os.path.exists(MANUAL):
         try:
-            shows = json.load(open(MANUAL)).get("shows", [])
+            _m = json.load(open(MANUAL))
+            shows = _m.get("shows", [])
+            health = _m.get("_health") or {}
         except Exception as e:
             print(f"manual_shows.json unreadable: {e}")
     # The submissions line: shows venues and people sent in, reviewed and
@@ -2364,6 +2371,11 @@ def main():
         # Feed venues are unioned in so a submitted venue with no VENUE_INFO
         # row still appears once it has a show.
         "venues": _venue_directory(deduped),
+        # Feed health (Sep 24 2026): venues the safety net is holding, gone
+        # dark, or loading empty, plus Ticketmaster pulls served from the
+        # cache. Moderators see it in the bookmark menu; nobody else does.
+        "health": {"checked": health.get("checked", ""),
+                   "items": list(health.get("items") or []) + TM_HEALTH},
     }
     # Strip internal-only keys (leading underscore, e.g. the scraper's _hand
     # retention flag) so they never reach the public feed.

@@ -560,6 +560,21 @@ def safety_net_check():
         print("GATE FAILURE")
         sys.exit(1)
     print("  ok   safety net                    Goodfoot 0 -> kept 39; Big Room 2 of ~20 -> 18 added back; hand-added zoo kept; 14-day-dead room expired")
+    # Feed health: the same run as data for the moderator menu.
+    h = sv.net_health(rep, dict(lg, **{"Gone Room": "2026-09-01", "Ancient Room": "2026-07-01"}), today, t,
+                      [("Empty Source", "page loaded, 0 events")])
+    k = {i["venue"]: i for i in h["items"]}
+    ok = (k.get("The Goodfoot", {}).get("kind") == "zero" and k["The Goodfoot"]["shown"] == 39
+          and k["The Goodfoot"]["drops"] == "2026-10-01"
+          and k.get("Big Room", {}).get("kind") == "partial" and k["Big Room"]["added"] == 18
+          and k.get("Old Room", {}).get("kind") == "expired"
+          and k.get("Gone Room", {}).get("kind") == "dark" and "Ancient Room" not in k
+          and k.get("Empty Source", {}).get("kind") == "empty" and h["checked"] == "2026-09-24")
+    if not ok:
+        print(f"  FAIL feed health                  {h}")
+        print("GATE FAILURE")
+        sys.exit(1)
+    print("  ok   feed health                   held (0 and partial), expired, dark 23 days, empty source -> report; 85-day-dark room dropped off")
 
 
 if __name__ == "__main__":
