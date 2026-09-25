@@ -413,6 +413,7 @@ body{
 /* Tallies under a listing (Sep 24 2026): hearts, going, people you follow */
 .s-tally{font-size:12.5px;color:var(--ink);opacity:.7;margin-top:3px;letter-spacing:.01em}
 .s-tally .t-heart{color:var(--rust)}
+.s-brk,.d-short,.hb-short,.scard .heart .h-n{display:none}
 /* YouTube in comments (Sep 25 2026) */
 .cmt-yt{position:relative;display:block;width:100%;max-width:420px;aspect-ratio:16/9;margin:6px 0 2px;padding:0;border:0;border-radius:8px;overflow:hidden;background:#000;cursor:pointer}
 .cmt-yt img{width:100%;height:100%;object-fit:cover;display:block;opacity:.9}
@@ -631,7 +632,7 @@ body{
      and the date ran under the Listen button. On phones the buttons now form
      one row under the text, full card width, and the text gets the whole
      column beside the poster. */
-  .list--a .scard{display:grid;grid-template-columns:84px minmax(0,1fr);grid-template-rows:1fr auto;align-items:stretch}
+  .list--a .scard{display:grid;grid-template-columns:72px minmax(0,1fr);grid-template-rows:1fr auto;align-items:stretch}
   .list--a .s-media{grid-column:1;grid-row:1 / span 2;width:auto;min-height:0}
   .list--a .s-body{grid-column:2;grid-row:1;padding:12px 14px 6px;gap:5px;justify-content:flex-start}
   .list--a .s-foot{grid-column:2;grid-row:2;flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:flex-start;gap:8px;padding:4px 14px 12px}
@@ -642,6 +643,39 @@ body{
   .list--a .s-date{white-space:normal}
   .list--a .scard.no-media{grid-template-columns:minmax(0,1fr)}
   .list--a .scard.no-media .s-body,.list--a .scard.no-media .s-foot{grid-column:1;padding-left:16px}
+  /* Phone pass (Sep 25 2026, Nick: "the show cards on mobile are getting
+     pretty cramped"). Narrower poster; date · time on one line, venue on the
+     next, chips smaller on a third; the heart count on the heart button
+     instead of the tally line; a short date on Heating Up cards; the
+     Heating Up header button as a small pill so the date stops wrapping. */
+  .list--a .s-tile-t{font-size:12.5px}
+  .list--a .s-body{gap:4px}
+  .list--a .s-sub{gap:3px 6px;font-size:13.5px;line-height:1.35}
+  .list--a .s-sub .s-brk{display:block;flex-basis:100%;height:0}
+  .list--a .s-sub .s-brk-dt + .rdot-v{display:none}
+  .list--a .s-sub .s-date{order:-2}
+  .list--a .s-sub .rdot-dt{order:-1}
+  .list--a .s-sub .d-long{display:none}
+  .list--a .s-sub .d-short{display:inline;font-family:'Oswald';font-weight:600;letter-spacing:.05em;text-transform:uppercase}
+  .list--a .s-sub .s-venue{font-size:14px}
+  .list--a .s-sub .s-nb,.list--a .s-sub .s-age{font-size:9.5px;padding:3px 7px;letter-spacing:.06em}
+  .list--a .s-tally .t-hearts,.list--a .s-tally--h{display:none}
+  .scard .heart{display:inline-flex;align-items:center;gap:4px}
+  .scard .heart .h-n{display:inline;font-family:'Oswald';font-weight:600;font-size:13px;color:var(--rust);letter-spacing:.02em}
+  .hb-long{display:none}
+  .hb-short{display:inline}
+  .heat-bar{font-size:13.5px;padding:9px 12px}
+  .heat-btn{padding:4px 9px;margin-top:2px;border-radius:20px;background:rgba(243,234,215,.14);font-size:13px}
+  .heat-btn .heat-w{display:none}
+  .heat-btn .heat-n{margin-left:0}
+}
+@media (max-width:380px){
+  .list--a .scard{grid-template-columns:62px minmax(0,1fr)}
+  .list--a .s-title{font-size:17px}
+  .list--a .s-tile-t{font-size:11px}
+  .list--a .s-tile{padding:6px}
+  .list--a .s-foot{gap:6px;padding-right:10px}
+  .list--a .s-foot .listen,.list--a .s-foot .plan-btn{padding:5px 8px;font-size:10px}
 }
 
     /* Venue-page chips: tappable venue links surfaced above results on venue-name search match */
@@ -1536,12 +1570,29 @@ function tallyBits(s, min){
   } else if(f){
     bits.push('<span class="t-you">' + f + ' you follow</span>');
   }
-  if(show && h) bits.push('<span class="t-heart">\u2665</span> ' + h);
-  return bits.join(' \u00b7 ');
+  // Hearts carry their own separator so phones can hide the whole bit: there
+  // the number sits on the heart button instead (Sep 25 2026, Nick's phone
+  // pass -- "9 going · ♥ 6" ran together on a narrow card).
+  const hearts = (show && h) ? '<span class="t-hearts">' + (bits.length ? ' \u00b7 ' : '') + '<span class="t-heart">\u2665</span> ' + h + '</span>' : '';
+  return bits.join(' \u00b7 ') + hearts;
 }
 function tallyHtml(s){
   const b = tallyBits(s, TALLY_MIN);
-  return b ? '<div class="s-tally">' + b + '</div>' : '';
+  const onlyHearts = b && b.indexOf('<span class="t-hearts">') === 0;
+  return b ? '<div class="s-tally' + (onlyHearts ? ' s-tally--h' : '') + '">' + b + '</div>' : '';
+}
+// The number on a card's heart button (phones only, see .h-n).
+function heartCountBit(s){
+  const n = TALLIES.h[favKey(s)] || 0;
+  return n ? '<span class="h-n">' + n + '</span>' : '';
+}
+function heartCountRefresh(k){
+  const n = TALLIES.h[k] || 0;
+  document.querySelectorAll('.scard .heart[data-fav]').forEach(function(b){
+    if(b.getAttribute('data-fav') !== k) return;
+    const old = b.querySelector('.h-n'); if(old) old.remove();
+    if(n) b.insertAdjacentHTML('beforeend', '<span class="h-n">' + n + '</span>');
+  });
 }
 // Show pages carry the counts at any size (Sep 24 2026, Nick): counts only,
 // never who -- Who's Going below still decides whose names appear.
@@ -1558,6 +1609,7 @@ function tallyBump(kind, id, delta){
   if(!id) return;
   const t = TALLIES[kind]; t[id] = Math.max(0, (t[id] || 0) + delta);
   showTallyRefresh();
+  if(kind === 'h') heartCountRefresh(id);
   state.shows.forEach(function(s){
     if((kind === 'h' ? favKey(s) : s._slug) !== id || !s._slug) return;
     document.querySelectorAll('.scard[data-slug="' + CSS.escape(s._slug) + '"]').forEach(function(card){
@@ -1772,6 +1824,11 @@ function fmtDay(iso){
 function fmtShort(iso){
   const d = new Date(iso + "T12:00:00");
   return d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+}
+// "Sat Oct 31" -- the phone form of the date on Heating Up cards (Sep 25 2026).
+function shortDate(iso){
+  const d = new Date(iso + "T12:00:00");
+  return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()] + ' ' + ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()] + ' ' + d.getDate();
 }
 function ordinalDate(iso){
   const d = new Date(iso+"T12:00:00"); const n=d.getDate();
@@ -2747,7 +2804,7 @@ function render(){
   if(plainHome) mountPymk(wrap);
 
   if(state.heating){
-    wrap.insertAdjacentHTML('beforeend', '<div class="heat-bar"><span>\ud83d\udd25 <b>Heating Up</b> \u00b7 shows people hearted or said they\u2019re going to this week</span>'
+    wrap.insertAdjacentHTML('beforeend', '<div class="heat-bar"><span>\ud83d\udd25 <b>Heating Up</b> \u00b7 <span class="hb-long">shows people hearted or said they\u2019re going to in the past week</span><span class="hb-short">hottest in the past week</span></span>'
       + '<button type="button" class="heat-x" data-heat-off aria-label="Back to all shows">&times;</button></div>');
   }
   if(!list.length){
@@ -2814,7 +2871,7 @@ function render(){
     // "Heating Up 🔥6" on the right of the FIRST day header (Nick's layout),
     // music feed only, once 5+ shows qualify.
     let _heatBtn = (heatLive() && !state.comedy)
-      ? `<button type="button" class="heat-btn" data-heat-on title="Shows people are hearting and going to this week">Heating Up <span class="heat-n">\ud83d\udd25${HEAT_SET.size}</span></button>` : '';
+      ? `<button type="button" class="heat-btn" data-heat-on title="Shows people are hearting and going to this week"><span class="heat-w">Heating Up </span><span class="heat-n">\ud83d\udd25${HEAT_SET.size}</span></button>` : '';
     drawDaysInPieces(wrap, days, function(date, shows){
       const g = document.createElement('div'); g.className='daygroup';
       g.innerHTML = `<div class="dayhead">${_heatBtn}${ordinalDate(date)}<span class="count">${shows.length} shows</span></div>`;
@@ -3207,9 +3264,10 @@ function listOf(items, showDate){
     const reasonChip = followReasonChips(s, _followSet);
     const media = smediaFor(s);
     if(!media) c.classList.add('no-media');
-    const dateBit = showDate ? `<span class="s-date rdate">${ordinalDate(s.date)}</span>` : '';
+    // Phones show the short form (.d-short), desktop the long one (.d-long).
+    const dateBit = showDate ? `<span class="s-date rdate"><span class="d-long">${ordinalDate(s.date)}</span><span class="d-short">${shortDate(s.date)}</span></span>` : '';
     const timeBit = s.time ? `<span class="s-time">${esc(showTimes(s))}</span>` : '';
-    const sep1 = (dateBit && timeBit) ? `<span class="rdot">\u00b7</span>` : '';
+    const sep1 = (dateBit && timeBit) ? `<span class="rdot rdot-dt">\u00b7</span>` : '';
     // The title goes to the show's own page, not the venue's site. The card
     // body already navigates there on click; making the title a real anchor to
     // the same place keeps middle-click and open-in-new-tab working, and stops
@@ -3254,13 +3312,16 @@ function listOf(items, showDate){
         + `</div>`;
     } else {
       // HORIZONTAL: image left, body middle, listen+heart right
+      // .s-brk spans are line breaks that exist only on phones (Sep 25 2026,
+      // Nick's phone pass): date · time / venue / chips. Desktop hides them
+      // and the line reads as before.
       c.innerHTML = media
         + `<div class="s-body">`
         +   `<div class="s-title">${titleHtml}${heatBit}</div>`
-        +   `<div class="s-sub">${timeBit}${sep1}${dateBit}${(dateBit||timeBit)?`<span class="rdot">\u00b7</span>`:''}${venueLink}${nb}${ageBit}${reasonChip}</div>`
+        +   `<div class="s-sub">${timeBit}${sep1}${dateBit}${dateBit?'<span class="s-brk s-brk-dt"></span>':''}${(dateBit||timeBit)?`<span class="rdot rdot-v">\u00b7</span>`:''}${venueLink}${(nb||ageBit||reasonChip)?'<span class="s-brk s-brk-ch"></span>':''}${nb}${ageBit}${reasonChip}</div>`
         +   tallyHtml(s)
         + `</div>`
-        + `<div class="s-foot">${heartBtn(s)}${listenBtn(s.title, s.venue)}${planBtn(s)}</div>`;
+        + `<div class="s-foot">${heartBtn(s).replace('</button>', heartCountBit(s) + '</button>')}${listenBtn(s.title, s.venue)}${planBtn(s)}</div>`;
     }
     l.appendChild(c);
   });
