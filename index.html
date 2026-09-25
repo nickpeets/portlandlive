@@ -1475,10 +1475,10 @@ function rebuildPickSet(){
 }
 // Tallies under each listing (Sep 24 2026, Nick). One RPC for the whole feed:
 // hearts by favKey, "I'm going" by slug, and -- signed in -- how many people
-// you follow are going (show_tallies, schema-tallies.sql). The public line only
-// appears once a show has 3+ combined, so "\u2665 1" never makes a show look
-// empty; the "you follow" part always shows when it's there.
-const TALLY_MIN = 3;
+// you follow are going (show_tallies, schema-tallies.sql). Shows from the
+// first heart or "I'm going" (Sep 24 2026, Nick: the number should appear
+// when you heart a show) -- it was 3+ combined at first.
+const TALLY_MIN = 1;
 let TALLIES = { h: {}, g: {}, f: {} };
 function loadTallies(tries){
   const sb = window.__plAuth;
