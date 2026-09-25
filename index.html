@@ -288,8 +288,6 @@ body{
   .hoodhead .count{font-family:'Oswald';font-weight:500;font-size:11px;color:rgba(243,234,215,.6);margin-left:8px;letter-spacing:.08em}
 
 .venue-header{margin-bottom:18px}
-.back-link{display:inline-block;margin:0 0 8px;font-family:'Oswald',sans-serif;font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:var(--cream);opacity:.8;text-decoration:none}
-.back-link:hover{opacity:1;text-decoration:underline}
 .venue-header .venue-name{font-family:'Alfa Slab One',serif;font-weight:400;font-size:26px;color:var(--cream);margin:6px 0 4px}
 .venue-header .venue-info{color:var(--cream);opacity:.85;font-size:14px}
 .venue-header .venue-when{font-family:'Oswald',sans-serif;letter-spacing:.03em}
@@ -3343,13 +3341,6 @@ function feedRestore(a){
   go(); requestAnimationFrame(go); setTimeout(go, 250); setTimeout(go, 700); setTimeout(go, 1500);
   setTimeout(function(){ ['wheel', 'touchstart', 'keydown', 'mousedown'].forEach(function(ev){ window.removeEventListener(ev, mark); }); }, 2000);
 }
-// The "Back" link on a show page: your real Back when you came from inside
-// the site, the feed when the page was opened from a link.
-function goBack(){ if(NAV.length > 1) history.back(); else goHome(); }
-document.addEventListener('click', function(e){
-  const b = e.target.closest('[data-go-back]'); if(!b) return;
-  e.preventDefault(); e.stopPropagation(); goBack();
-});
 
 async function router(){
   var route = parseRoute();
@@ -5154,7 +5145,6 @@ function renderShowDetail(wrap, show, kind){
     + (show.price ? ' \u00b7 ' + esc(show.price) : '');
   var _m = mapsHref(show.address, show.venue);
   var head = '<div class="venue-header">'
-    + '<a href="#" class="back-link" data-go-back>&larr; ' + (NAV.length > 1 ? 'Back' : 'All shows') + '</a>'
     + '<h2 class="venue-name">' + esc(show.title||'') + '</h2>'
     + '<div class="venue-info venue-when">' + when + '</div>'
     + (where ? '<div class="venue-info venue-where">' + where + '</div>' : '')
