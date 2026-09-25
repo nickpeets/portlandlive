@@ -3346,6 +3346,7 @@ async function router(){
   var route = parseRoute();
   var _back = navNote();
   syncSharePath(route);
+  _routedHref = location.href;
   if(route.type === 'feed' && _back && _back.anchor){ feedRestore(_back.anchor); return; }
   // A page you navigate INTO opens at its top (Sep 20 2026, Nick): a show
   // tapped halfway down the feed used to open still scrolled halfway down.
@@ -9820,7 +9821,15 @@ function wiDeepLink(){
   el.classList.add("wi-flash");
   setTimeout(function(){ el.classList.remove("wi-flash"); }, 2400);
 }
-window.addEventListener("hashchange", router);
+// Back and Forward (Sep 24 2026): a show page's address is /show/<slug>/#/show/<slug>
+// (syncSharePath), so going Back to "/" changes the PATH as well as the hash,
+// and browsers treat that as a history step, not a hash change -- no
+// "hashchange" fires, only "popstate". The feed never redrew: the address
+// said "/" while the show page stayed up. Listen to both, route once.
+let _routedHref = null;
+function routeIfChanged(){ if(location.href !== _routedHref) router(); }
+window.addEventListener("hashchange", routeIfChanged);
+window.addEventListener("popstate", routeIfChanged);
 
 /* Brand click = "reset to default". Single reusable primitive: clears the
    route, every view/filter flag, the search box and the toggle pills, then
