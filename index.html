@@ -413,11 +413,14 @@ body{
 /* Tallies under a listing (Sep 24 2026): hearts, going, people you follow */
 .s-tally{font-size:12.5px;color:var(--ink);opacity:.7;margin-top:3px;letter-spacing:.01em}
 .s-tally .t-heart{color:var(--rust)}
+.s-tally .t-you .av{width:16px;height:16px;font-size:8px;vertical-align:-3px;margin-right:4px}
+.s-tally .t-you .av-stack{display:inline-flex;vertical-align:-3px;margin-right:4px}
+.s-tally .t-you .av-stack .av{margin-right:0;vertical-align:0}
 /* Heating Up (Sep 24 2026) */
 .heat-btn{float:right;border:0;background:none;color:var(--cream);font-family:'Oswald',sans-serif;font-size:14px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;padding:4px 0 0 10px;line-height:1.2}
 .heat-btn:hover{color:#ffd9a0}
 .heat-btn .heat-n{font-weight:600;margin-left:4px}
-.s-heat{border:0;background:none;padding:0 2px;font-size:14px;line-height:1;cursor:pointer}
+.s-heat{border:0;background:none;padding:0 2px;font-size:.8em;line-height:1;cursor:pointer;vertical-align:.08em}
 .heat-bar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 0 14px;padding:10px 14px;border-radius:8px;background:rgba(255,255,255,.1);color:var(--cream);font-family:'Bitter',Georgia,serif;font-size:14px}
 .heat-x{border:0;background:none;color:var(--cream);font-size:22px;line-height:1;cursor:pointer;opacity:.8}
 .heat-x:hover{opacity:1}
@@ -1508,7 +1511,19 @@ function tallyBits(s, min){
     if(h) bits.push('<span class="t-heart">\u2665</span> ' + h);
     if(g) bits.push(g + ' going');
   }
-  if(f) bits.push('<span class="t-you">' + f + ' you follow</span>');
+  // People you follow who are going: named right here, with their faces
+  // (Sep 24 2026, Nick: the "@x going" chip and "1 you follow" said the same
+  // thing twice -- one line now). Falls back to a count until names load.
+  const ppl = followPeopleFor(s);
+  if(ppl.length){
+    const nm = function(p){ return p.handle ? '@' + p.handle : (p.display_name || 'Someone'); };
+    // Nick's format: "[avatar] @wildandscenic +4 you follow".
+    const faces = avImg(ppl[0].user_id, ppl[0].display_name, 'av-xs');
+    const label = esc(nm(ppl[0])) + (ppl.length > 1 ? ' +' + (ppl.length - 1) : '') + ' you follow';
+    bits.push('<span class="t-you" title="' + esc(ppl.map(nm).join(', ')) + ' going">' + faces + label + '</span>');
+  } else if(f){
+    bits.push('<span class="t-you">' + f + ' you follow</span>');
+  }
   return bits.join(' \u00b7 ');
 }
 function tallyHtml(s){
@@ -2092,6 +2107,8 @@ async function load(){
     applyShowKinds();        // Music / Comedy / Not music, set on show pages
     loadTallies();           // hearts / going / people you follow, per card
     loadHeat();              // Heating Up: this week's hearts + going
+    // Names + faces of people you follow who are going, for the tally line.
+    followFeedLoad().then(function(){ if(Object.keys(FOLLOW_GOING.bySlug).length && isFeedRoute(parseRoute().type)) reRenderCurrentView(); });
     state.stamp = data.generated || "";
     buildNeighborhoods();
     if(state.stamp){
@@ -3045,7 +3062,8 @@ function followPeopleFor(s){
 function followReasonChips(s, followSet){
   if(!followSet) return '';
   const chips = [];
-  const people = followPeopleFor(s);
+  // People moved to the tally line under the card (Sep 24 2026).
+  const people = [];
   if(people.length === 1){
     const p = people[0];
     chips.push('<span class="follow-reason follow-reason-people" title="Someone you follow is going">'
@@ -3099,7 +3117,9 @@ function listOf(items, showDate){
       // Every Pick carries one of our links (Sep 14 2026 label design).
       + (state.picks && (s.affiliateUrl || s.resaleUrl) ? `<span class="s-age s-support">supports the site</span>` : '')
       // Heating Up chip: tap it and the feed switches to the hot list.
-      + (heatLive() && HEAT_SET.has(s._slug) && !state.heating ? `<button type="button" class="s-heat" data-heat-on title="Heating up \u2014 see what's hot this week">\ud83d\udd25</button>` : '');
+      ;
+    // 🔥 sits right after the title (Sep 24 2026, Nick's card format).
+    const heatBit = (heatLive() && HEAT_SET.has(s._slug) && !state.heating) ? ` <button type="button" class="s-heat" data-heat-on title="Heating up \u2014 see what's hot this week">\ud83d\udd25</button>` : '';
 
     if(eff === 'b'){
       // VERTICAL: the big image on top; below it, the same row the main list
@@ -3110,7 +3130,7 @@ function listOf(items, showDate){
         + `<div class="s-under">`
         +   `<div class="s-body">`
         +     `<div class="s-when">${dateBit||''}${(dateBit&&timeBit)?' \u00b7 ':''}${timeBit||''}</div>`
-        +     `<div class="s-title">${titleHtml}</div>`
+        +     `<div class="s-title">${titleHtml}${heatBit}</div>`
         +     `<div class="s-sub">${venueLink}${nb}${ageBit}${reasonChip}</div>`
         +     tallyHtml(s)
         +   `</div>`
@@ -3120,7 +3140,7 @@ function listOf(items, showDate){
       // HORIZONTAL: image left, body middle, listen+heart right
       c.innerHTML = media
         + `<div class="s-body">`
-        +   `<div class="s-title">${titleHtml}</div>`
+        +   `<div class="s-title">${titleHtml}${heatBit}</div>`
         +   `<div class="s-sub">${timeBit}${sep1}${dateBit}${(dateBit||timeBit)?`<span class="rdot">\u00b7</span>`:''}${venueLink}${nb}${ageBit}${reasonChip}</div>`
         +   tallyHtml(s)
         + `</div>`
@@ -9986,7 +10006,7 @@ $('.masthead-brand').addEventListener('click', function(){
       // The people half of ★ Following is per-account (Stage 10 Part 5):
       // drop the previous account's map, reload only if the pill is on.
       FOLLOW_GOING.bySlug = {}; FOLLOW_GOING.forKey = ''; FOLLOW_GOING.loadedAt = 0;
-      if(state.following) await followFeedLoad(true);
+      await followFeedLoad(true);        // every feed now (names on the tally line), not only Following
       reRenderCurrentView();
       // Badge follows the account too -- signing out must clear it, not leave
       // the previous user's count sitting in the header.
