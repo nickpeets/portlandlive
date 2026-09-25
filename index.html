@@ -414,6 +414,8 @@ body{
 .s-tally{font-size:12.5px;color:var(--ink);opacity:.7;margin-top:3px;letter-spacing:.01em}
 .s-tally .t-heart{color:var(--rust)}
 .s-tally .t-you{color:var(--forest);font-weight:600;opacity:1}
+.venue-tally{font-size:14px;margin-top:4px}
+.venue-tally:empty{display:none}
 .list--a .s-sub .rdot{opacity:.4}
 .list--a .s-foot{flex:0 0 auto;display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:10px;padding:14px 16px 14px 0}
 .list--a .s-foot .heart,.list--b .s-foot .heart{align-self:flex-end}
@@ -1487,24 +1489,39 @@ function loadTallies(tries){
     const t = { h: {}, g: {}, f: {} };
     (r.data || []).forEach(function(x){ if(t[x.kind]) t[x.kind][x.id] = x.n; });
     TALLIES = t;
+    showTallyRefresh();
     if(isFeedRoute(parseRoute().type)) reRenderCurrentView();
   }).catch(function(){});
 }
-function tallyHtml(s){
+function tallyBits(s, min){
   const h = TALLIES.h[favKey(s)] || 0, g = (s._slug && TALLIES.g[s._slug]) || 0, f = (s._slug && TALLIES.f[s._slug]) || 0;
   const bits = [];
-  if(h + g >= TALLY_MIN){
+  if(h + g >= min){
     if(h) bits.push('<span class="t-heart">\u2665</span> ' + h);
     if(g) bits.push(g + ' going');
   }
   if(f) bits.push('<span class="t-you">' + f + ' you follow</span>');
-  return bits.length ? '<div class="s-tally">' + bits.join(' \u00b7 ') + '</div>' : '';
+  return bits.join(' \u00b7 ');
+}
+function tallyHtml(s){
+  const b = tallyBits(s, TALLY_MIN);
+  return b ? '<div class="s-tally">' + b + '</div>' : '';
+}
+// Show pages carry the counts at any size (Sep 24 2026, Nick): counts only,
+// never who -- Who's Going below still decides whose names appear.
+function showTallyRefresh(){
+  document.querySelectorAll('.venue-tally[data-tally-slug]').forEach(function(el){
+    const slug = el.getAttribute('data-tally-slug');
+    const s = state.shows.find(function(x){ return x._slug === slug; });
+    el.innerHTML = s ? tallyBits(s, 1) : '';
+  });
 }
 // After your own heart / going write succeeds, move the number and redraw
 // that card's line in place (no full re-render, no scroll jump).
 function tallyBump(kind, id, delta){
   if(!id) return;
   const t = TALLIES[kind]; t[id] = Math.max(0, (t[id] || 0) + delta);
+  showTallyRefresh();
   state.shows.forEach(function(s){
     if((kind === 'h' ? favKey(s) : s._slug) !== id || !s._slug) return;
     document.querySelectorAll('.scard[data-slug="' + CSS.escape(s._slug) + '"]').forEach(function(card){
@@ -4986,6 +5003,9 @@ function renderShowDetail(wrap, show, kind){
     + '<h2 class="venue-name">' + esc(show.title||'') + '</h2>'
     + '<div class="venue-info venue-when">' + when + '</div>'
     + (where ? '<div class="venue-info venue-where">' + where + '</div>' : '')
+    + (kind === 'upcoming' && show._slug
+        ? '<div class="venue-info venue-tally s-tally" data-tally-slug="' + esc(show._slug) + '">' + tallyBits(show, 1) + '</div>'
+        : '')
     + (_m ? '<div class="venue-info venue-addr">'
               + (show.address ? esc(show.address) + ' ' : '')
               + '<a class="venue-dir" href="' + _m + '" target="_blank" rel="noopener">Directions</a>'
