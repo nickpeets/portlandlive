@@ -632,3 +632,5 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **2026-09-25 — Goodfoot attempt notes (3d644b11)** — parse_goodfoot records each of its three windowed-browser attempts (events / empty / exception) into FETCH_NOTES so a zero shows "Tiers: attempt 1: empty · …" on the health line. The 4:21 PM build ran pre-push code (workflow was triggered before the 4:15 push): Kelly's and Realm cleared on their own.
 
 - **2026-09-25 — Heart count on the button everywhere (f772f615)** — the .h-n count next to the heart in the card corner is no longer phone-only; the under-card tally line hides hearts in all layouts (show pages keep them in the pill). Picks (layout B) cards get it too.
+
+- **2026-09-25 — Nick's Picks + pin from the feed (8d96728c)** — Picks is named Nick's Picks on the desktop pill, phone Browse menu, empty state, About text and show-page pin labels. mountPickControls runs on every feed piece for moderators: a small corner 📌 Pin button (.pick-mod-feed) on main-feed cards that flips in place; Pin + Drop remain in the Picks view.
