@@ -1232,7 +1232,7 @@ body{
           <option value="" selected>Browse</option>
           <option value="following">&#9733; Following</option>
           <option value="venues">Venues</option>
-          <option value="picks">Picks</option>
+          <option value="picks">Nick’s Picks</option>
           <option value="comedy">Comedy</option>
           <option value="festivals" id="phoneBrowseFestivals" hidden>Festivals</option>
           <option value="allages">All Ages</option>
@@ -1253,9 +1253,9 @@ body{
         <span class="toggle" id="thisWeekToggle"></span>
         <span>This Week</span>
       </label>
-      <label class="pill pill-when" id="picksPill" title="Picks of the Week - curated, vertical showcase">
+      <label class="pill pill-when" id="picksPill" title="Nick’s Picks - shows worth your night this week">
         <span class="toggle" id="picksToggle"></span>
-        <span>Picks</span>
+        <span>Nick’s Picks</span>
       </label>
       <!-- ★ Following on desktop (Sep 23 2026, Nick): the same switch as the one
            in the bookmark menu, first in the row, signed-in members only.
@@ -1306,7 +1306,7 @@ body{
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
         <select id="browseSelect" aria-label="Browse">
           <option value="" selected>Browse</option>
-          <option value="picks">Picks</option>
+          <option value="picks">Nick’s Picks</option>
           <option value="allages">All Ages</option>
           <option value="festivals" id="browseFestivals" hidden>Festivals</option>
           <option value="outoftown">Further Out</option>
@@ -1712,23 +1712,30 @@ async function setPickPin(slug, pinState){
   if(pinState) PICK_PINS[slug] = pinState; else delete PICK_PINS[slug];
   return true;
 }
-// Moderator controls on each card while Picks is showing.
+// Moderator controls on each card. In the Picks view: Pin + Drop. In the
+// main feed (Sep 25 2026, Nick: "I'd like to pin shows for the week"): just
+// Pin, so a week's picks can be set by walking the feed instead of opening
+// each show page.
 async function mountPickControls(wrap){
   if(typeof rpIsModerator !== 'function' || !(await rpIsModerator())) return;
-  if(!state.picks || !wrap.isConnected) return;
+  if(!wrap.isConnected) return;
   wrap.querySelectorAll('.scard[data-slug]').forEach(function(card){
     if(card.querySelector('.pick-mod')) return;
     const slug = card.dataset.slug, pinned = PICK_PINS[slug] === 'in';
     const box = document.createElement('div');
-    box.className = 'pick-mod';
+    box.className = 'pick-mod' + (state.picks ? '' : ' pick-mod-feed');
     box.innerHTML = '<button type="button" class="pick-mod-btn' + (pinned ? ' on' : '') + '" data-pick-pin>' + (pinned ? '&#128204; Pinned' : '&#128204; Pin') + '</button>'
-      + '<button type="button" class="pick-mod-btn" data-pick-drop>&times; Drop</button>';
+      + (state.picks ? '<button type="button" class="pick-mod-btn" data-pick-drop>&times; Drop</button>' : '');
     box.addEventListener('click', async function(e){
       const pin = e.target.closest('[data-pick-pin]'), drop = e.target.closest('[data-pick-drop]');
       if(!pin && !drop) return;
       e.preventDefault(); e.stopPropagation();
       const next = drop ? 'out' : (PICK_PINS[slug] === 'in' ? null : 'in');
-      if(await setPickPin(slug, next)) render();
+      if(!(await setPickPin(slug, next))) return;
+      // In the feed, flip the button in place; no full redraw, no scroll jump.
+      if(state.picks){ render(); return; }
+      const b = box.querySelector('[data-pick-pin]'); const on = PICK_PINS[slug] === 'in';
+      b.classList.toggle('on', on); b.innerHTML = on ? '&#128204; Pinned' : '&#128204; Pin';
     });
     card.appendChild(box);
   });
@@ -1786,7 +1793,7 @@ async function mountPickPin(card, show, slug){
   if(!card.isConnected || (show.date || '') < pacificTodayISO()) return;
   const box = document.createElement('div');
   box.className = 'poster-edit';
-  function label(){ const st = PICK_PINS[slug]; return st === 'in' ? '&#128204; Pinned to Picks \u2014 unpin' : st === 'out' ? 'Dropped from Picks \u2014 pin instead' : '&#128204; Pin to Picks'; }
+  function label(){ const st = PICK_PINS[slug]; return st === 'in' ? '&#128204; Pinned to Nick\u2019s Picks \u2014 unpin' : st === 'out' ? 'Dropped from Nick\u2019s Picks \u2014 pin instead' : '&#128204; Pin to Nick\u2019s Picks'; }
   box.innerHTML = '<button type="button" class="poster-edit-btn" data-pick-page>' + label() + '</button>';
   cardTail(card).insertAdjacentElement('afterend', box);
   box.addEventListener('click', async function(e){
@@ -2814,7 +2821,7 @@ function render(){
   }
   if(!list.length){
     if(state.heating){ wrap.insertAdjacentHTML('beforeend', '<div class="empty"><h2>Nothing heating up yet</h2><p>Heart shows and tap \u201cI\u2019m going\u201d \u2014 the hottest ones land here.</p></div>'); return; }
-    wrap.innerHTML = state.picks ? '<div class="empty"><h2>No picks right now</h2><p>Picks refresh every night.</p></div>' : state.following ? '<div class="empty"><h2>Nothing here yet</h2><p>Heart some bands and venues, or follow people from their profiles, to see their shows here.</p></div>' : state.myShows ? '<div class="empty"><h2>No favorites yet</h2><p>Tap the heart on a show to save it.</p></div>' : '<div class="empty"><h2>No Results Found.</h2><p>Try widening your dates or clearing the search.</p></div>';
+    wrap.innerHTML = state.picks ? '<div class="empty"><h2>No picks right now</h2><p>Nick\u2019s Picks refresh every night.</p></div>' : state.following ? '<div class="empty"><h2>Nothing here yet</h2><p>Heart some bands and venues, or follow people from their profiles, to see their shows here.</p></div>' : state.myShows ? '<div class="empty"><h2>No favorites yet</h2><p>Tap the heart on a show to save it.</p></div>' : '<div class="empty"><h2>No Results Found.</h2><p>Try widening your dates or clearing the search.</p></div>';
     return;
   }
 
@@ -2882,11 +2889,13 @@ function render(){
       g.innerHTML = `<div class="dayhead">${_heatBtn}${ordinalDate(date)}<span class="count">${shows.length} shows</span></div>`;
       _heatBtn = '';
       g.appendChild(listOf(shows));
+      // Pin buttons for moderators land once the piece is in the page.
+      setTimeout(function(){ mountPickControls(g); }, 0);
       return g;
     });
   } else {
     wrap.appendChild(listOf(list, true));
-    if(state.picks) mountPickControls(wrap);
+    mountPickControls(wrap);
   }
 }
 
@@ -3656,7 +3665,7 @@ const STATIC_PAGES = {
   about: {title: 'About', html:
     '<p>Rain Or Shows is a guide to live music in Portland, Oregon. Every night, every room we can find \u2014 arenas to dive bars \u2014 in one place, updated every morning from the venues\u2019 own calendars.</p>'
   + '<p>Listings are pulled from public venue calendars and Ticketmaster, then checked for duplicates, rescheduled dates and cancellations. Times, ages and prices come from the venue. Always confirm with the venue before heading out \u2014 things change.</p>'
-  + '<p><strong>Miracles</strong> are spare tickets given away free, never sold. <strong>Picks</strong> are shows we think are worth your night. <strong>Stubs</strong> are your own record of where you\u2019ve been.</p>'
+  + '<p><strong>Miracles</strong> are spare tickets given away free, never sold. <strong>Nick\u2019s Picks</strong> are shows Nick thinks are worth your night. <strong>Stubs</strong> are your own record of where you\u2019ve been.</p>'
   + '<p>Missing a show? <a href="#/submit">Send it in.</a> Something wrong? <a href="mailto:corrections@rainorshows.com?subject=%5BROS%5D%20Correction">Let us know.</a> Run a venue and want your calendar handled a certain way? Same address.</p>'
   + '<p class="sub-lead" style="margin-top:18px"><a href="#/privacy">Privacy</a></p>'},
   privacy: {title: 'Privacy', html:
@@ -10430,6 +10439,11 @@ a.inbox-thread-who:hover{text-decoration:underline}
 .poster-edit-btn:hover{background:rgba(255,255,255,.2)}
 .poster-edit-clear{opacity:.7}
 .pick-mod{display:flex;gap:8px;padding:8px 12px 10px;border-top:1px dashed rgba(74,53,38,.25)}
+/* In the main feed the pin sits in the card's corner, no extra row. */
+.list--a .scard{position:relative}
+.pick-mod-feed{position:absolute;left:0;bottom:0;padding:0 0 6px 6px;border:0;z-index:3}
+.pick-mod-feed .pick-mod-btn{font-size:10.5px;padding:2px 7px;background:rgba(243,234,215,.92)}
+.pick-mod-feed .pick-mod-btn.on{background:var(--rust)}
 .pick-mod-btn{border:1px solid var(--rust);background:none;color:var(--rust);border-radius:999px;padding:4px 10px;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.05em;text-transform:uppercase;cursor:pointer}
 .pick-mod-btn.on{background:var(--rust);color:var(--cream)}
 /* Badges (Sep 23 2026) */
