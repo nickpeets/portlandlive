@@ -620,3 +620,5 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **2026-09-24 — Goodfoot windowed reader (bb9e68f0)** — fetch_headless_json(headed=True) launches a windowed Chromium on an Xvfb display (_Display; Playwright --with-deps installs Xvfb on the runner; falls back to headless with a note); The Goodfoot uses it. Headless stopped clearing their Cloudflare check Sep 24; windowed clears in ~1 s, 50 events.
 
 - **2026-09-24 — Report photo in the menu (cafd2bff)** — the avatar report flag left the Who's Going rows (unlabelled, on some rows only); the profile ⋯ menu offers "Report profile photo" when there is a photo, "Photo reported" after.
+
+- **2026-09-25 — Avatar size fix (3a0f5e98)** — phone photos (3-6 MB) hit the 2 MB avatar cap. avUpload now shrinks JPEG/PNG/WebP to 800px JPEG in the browser (pick up to 25 MB); GIFs still 2 MB as-is; bucket cap unchanged.
