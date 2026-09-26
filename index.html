@@ -456,6 +456,22 @@ body{
 .stub-foil{position:relative;display:inline-block;border-radius:6px;overflow:hidden}
 .stub.stub-foil{position:relative}
 .stub-foil canvas,.stub.stub-foil{filter:saturate(1.25) hue-rotate(-8deg)}
+.ghost-pin{justify-content:flex-end;min-width:120px}
+.ghost-num{display:block;filter:drop-shadow(0 2px 3px rgba(0,0,0,.3))}
+.ghost-count{display:inline-flex;align-items:center;gap:6px}
+.ghost-count .ghost-num{filter:none}
+.ghost-found{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
+.ghost-found a{font-size:13px;color:var(--cream);text-decoration:none;border:1px dashed rgba(240,179,94,.5);border-radius:999px;padding:3px 10px}
+.ghost-found a:hover{background:rgba(240,179,94,.15)}
+.gs-head{font-family:'Oswald',sans-serif;font-weight:500;letter-spacing:.06em;text-transform:uppercase;font-size:13px;color:var(--cream);margin:6px 0 8px;opacity:.85}
+.ghost-stubs{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}
+.ghost-stub{position:relative;display:flex;flex-direction:column;padding:0 0 10px;border-radius:6px;background:#e9dcc4;color:#4a3b28;text-decoration:none;filter:sepia(.55) saturate(.8);opacity:.72;box-shadow:0 3px 8px rgba(0,0,0,.25);overflow:hidden;border-left:6px dotted rgba(74,59,40,.35);transform:rotate(-.6deg)}
+.ghost-stub:nth-child(even){transform:rotate(.7deg)}
+.ghost-stub.was{opacity:1;filter:sepia(.25)}
+.gs-band{background:#4a3b28;color:#e9dcc4;font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:.14em;padding:3px 8px}
+.gs-name{font-family:'Alfa Slab One',serif;font-size:16px;line-height:1.15;padding:8px 10px 2px}
+.gs-years{font-family:'Courier New',monospace;font-size:12px;padding:0 10px}
+.gs-stamp{position:absolute;right:6px;bottom:6px;transform:rotate(-12deg);border:2px solid #9e2b1e;color:#9e2b1e;font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:.1em;padding:1px 5px;border-radius:3px;opacity:.85}
 .egg-ghosts{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
 .egg-ghost{display:flex;flex-direction:column;padding:9px 12px;border-radius:10px;background:#2a2620;color:#e9dcc4;text-decoration:none;border:1px dashed rgba(240,179,94,.45);filter:sepia(.3)}
 .egg-ghost b{font-family:'Alfa Slab One',serif;font-weight:400;font-size:15px}
@@ -10609,6 +10625,19 @@ function flyerMode(){
 
 // ---- The ghost card that floats up from a search ---------------------------
 let _ghostShown = '';
+// Ghost ranks (Sep 25 2026, Nick picked ranks + ghost stubs over one counter).
+const GHOST_RANKS = [[1, 'Wanderer', '\ud83d\udd6f\ufe0f'], [5, 'Medium', '\ud83d\udd2e'], [10, 'S\u00e9ance', '\ud83d\udc7b'], [14, 'Keeper of the Flame', '\ud83d\udd25']];
+function ghostRank(n){ let r = null; GHOST_RANKS.forEach(function(x){ if(n >= x[0]) r = x; }); return r; }
+// The ghost from the card, with the number of rooms found inside (Sep 25
+// 2026, Nick). Cream until all 14 are found, then gold.
+function ghostSvg(n, size){
+  const gold = n >= GHOSTS.length;
+  return '<svg class="ghost-num' + (gold ? ' gold' : '') + '" viewBox="0 0 64 72" width="' + (size || 56) + '" height="' + Math.round((size || 56) * 72 / 64) + '" aria-hidden="true">'
+    + '<path d="M32 3C16.5 3 7 14.5 7 30v36l6.3-5 6.2 5 6.3-5 6.2 5 6.3-5 6.2 5 6.3-5 6.2 5V30C57 14.5 47.5 3 32 3z" fill="' + (gold ? '#f0c75e' : '#f3e9d6') + '" stroke="' + (gold ? '#a8791a' : 'rgba(31,42,38,.35)') + '" stroke-width="1.5"/>'
+    + '<circle cx="23" cy="24" r="3.2" fill="#1f2a26"/><circle cx="41" cy="24" r="3.2" fill="#1f2a26"/>'
+    + '<text x="32" y="52" text-anchor="middle" font-family="Oswald, Arial Narrow, sans-serif" font-weight="700" font-size="' + (n > 9 ? 21 : 24) + '" fill="#1f2a26">' + n + '</text>'
+    + '</svg>';
+}
 function ghostFoundCount(){ return GHOSTS.filter(function(g){ return eggLocal().indexOf('ghost:' + g.slug) !== -1; }).length; }
 function ghostPopup(g){
   if(document.querySelector('.ghost-pop')) return;
@@ -10624,7 +10653,7 @@ function ghostPopup(g){
     + '<div class="ghost-where">' + esc(g.where) + ' \u00b7 ' + esc(g.years) + '</div>'
     + '<p class="ghost-line">' + esc(g.line) + '</p>'
     + '<ul class="ghost-facts">' + g.facts.slice(0, 3).map(function(f){ return '<li>' + esc(f) + '</li>'; }).join('') + '</ul>'
-    + '<div class="ghost-foot"><span class="ghost-count">Ghost hunter \u00b7 ' + ghostFoundCount() + ' of ' + GHOSTS.length + '</span>'
+    + '<div class="ghost-foot"><span class="ghost-count">' + (function(){ const n = ghostFoundCount(), r = ghostRank(n); return ghostSvg(n, 26) + '<span>' + (r ? esc(r[1]) + ' \u00b7 ' : '') + n + ' of ' + GHOSTS.length + ' found</span>'; })() + '</span>'
     + '<a class="ghost-go" href="#/ghost/' + esc(g.slug) + '">Pay tribute \u2192</a></div>'
     + '</div>';
   document.body.appendChild(pop);
@@ -10699,17 +10728,30 @@ async function eggProfileSection(page){
     const done = n >= of;
     return '<div class="egg-pin' + (done ? ' gold' : '') + '"><span class="egg-pin-e">' + emoji + '</span><b>' + label + '</b><span>' + n + ' of ' + of + '</span></div>';
   };
+  // Rooms found: the ghost with the count inside, and the rank it's reached
+  // (Wanderer 1, Medium 5, Seance 10, Keeper of the Flame 14).
+  const nF = found.length, rank = ghostRank(nF);
+  const ghostPin = '<div class="egg-pin ghost-pin' + (nF >= GHOSTS.length ? ' gold' : '') + '">' + ghostSvg(nF, 44)
+    + '<b>' + esc(rank ? rank[1] : 'Ghost hunter') + '</b><span>' + nF + ' of ' + GHOSTS.length + ' found</span></div>';
+  // A stub means you were there (Nick, Sep 25 2026): rooms you tapped
+  // "I was there" on get one. Rooms you've only found are listed as links.
+  const been = found.filter(function(g){ return visits.indexOf(g.slug) !== -1; });
+  const gstub = function(g){
+    return '<a class="ghost-stub was" href="#/ghost/' + esc(g.slug) + '">'
+      + '<span class="gs-band">ADMIT ONE</span>'
+      + '<span class="gs-name">' + esc(g.name) + '</span>'
+      + '<span class="gs-years">' + esc(g.years) + '</span>'
+      + '</a>';
+  };
   const sec = document.createElement('section'); sec.className = 'pf-section pf-eggs';
   sec.innerHTML = '<h3 class="pf-section-head">Easter eggs</h3>'
     + '<div class="egg-pins">'
     + pin('Egg hunter', eggN, EGG_LIST.length, '\ud83e\udd5a')
-    + pin('Ghost hunter', found.length, GHOSTS.length, '\ud83d\udc7b')
-    + pin('Was there', visits.length, GHOSTS.length, '\ud83d\udd6f\ufe0f')
+    + ghostPin
     + '</div>'
     + (found.length
-      ? '<div class="egg-ghosts">' + found.map(function(g){
-          return '<a class="egg-ghost" href="#/ghost/' + esc(g.slug) + '"><b>' + esc(g.name) + '</b><span>' + esc(g.years) + (visits.indexOf(g.slug) !== -1 ? ' \u00b7 \u2713 was there' : '') + '</span></a>';
-        }).join('') + '</div>'
+      ? '<div class="ghost-found">' + found.map(function(g){ return '<a href="#/ghost/' + esc(g.slug) + '">' + esc(g.name) + '</a>'; }).join('') + '</div>'
+        + (been.length ? '<h4 class="gs-head">Ghost stubs <span class="pf-count">' + been.length + '</span></h4><div class="ghost-stubs">' + been.map(gstub).join('') + '</div>' : '')
       : '<div class="pf-empty">There are easter eggs hidden around the site. None found yet.</div>');
   page.appendChild(sec);
 }
