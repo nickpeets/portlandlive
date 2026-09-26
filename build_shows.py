@@ -1218,6 +1218,35 @@ VENUE_HOME = {
 _TICKETING_HOSTS = re.compile(r"(^|\.)(etix|ticketweb|tixr|eventbrite|axs|seetickets|ticketmaster|dice|showclix|freshtix|bandsintown|songkick)\.", re.I)
 
 
+def tm_resale_keep(shows):
+    """Remember each row's Ticketmaster resale (Z) link before
+    tm_resale_links moves the Tickets button off it (Sep 25 2026): when Vivid
+    has no listing for the show, that resale link becomes the resale line."""
+    for r in shows:
+        for k in ("ticketUrl", "venueUrl"):
+            u = r.get(k) or ""
+            if _TM_RESALE.search(u):
+                r["_tmResale"] = u
+                break
+
+
+def tm_resale_fallback(shows):
+    """Resale line from Ticketmaster where Vivid has nothing (Sep 25 2026,
+    Nick). Vivid first -- 6% and a 30-day window -- then Ticketmaster resale
+    through the Impact link, 5% and 7 days. The Tickets button is never
+    touched: it stays on the real seller at face value. Returns the count."""
+    from urllib.parse import quote
+    tpl = AFFILIATE_TEMPLATES.get("ticketmaster")
+    n = 0
+    for r in shows:
+        z = r.pop("_tmResale", None)
+        if tpl and z and not r.get("resaleUrl") and not r.get("affiliateUrl"):
+            r["resaleUrl"] = tpl.format(url=quote(z, safe=""))
+            r["resaleFrom"] = None
+            n += 1
+    return n
+
+
 def tm_resale_links(shows):
     """Replace a Ticketmaster resale (Z) link with the venue's own page, learned
     from that venue's other rows (the site each one links to), else
@@ -2249,6 +2278,7 @@ def main():
     shows = drop_wrong_rows(shows)
     shows = drop_non_shows(shows)
     link_audit(shows)
+    tm_resale_keep(shows)
     _fixed = tm_resale_links(shows)
     print(f"  Out of town: {mark_out_of_town(shows)} show(s) at {len(OUT_OF_TOWN_VENUES)} far rooms")
     _tk, _af = apply_ticketers(shows)
@@ -2262,6 +2292,8 @@ def main():
         _vi = vivid_index(_vf, {r.get("venue") for r in shows})
         _vn = vivid_apply(shows, _vi)
         print(f"  Vivid: {len(_vi)} Portland-area events in the catalog -> {_vn} rows linked")
+    _tr = tm_resale_fallback(shows)
+    print(f"  Ticketmaster resale: {_tr} row(s) with no Vivid listing get the Ticketmaster resale link")
 
     # drop past shows
     # Drop past shows using US Pacific time (venues' local zone), not the
