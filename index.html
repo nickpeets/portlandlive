@@ -10782,7 +10782,7 @@ async function eggProfileSection(page){
   const sec = document.createElement('section'); sec.className = 'pf-section pf-eggs';
   sec.innerHTML = '<h3 class="pf-section-head">Easter eggs <span class="egg-private">only you can see this</span></h3>'
     + '<div class="egg-panel">'
-    + '<p class="egg-why">Little surprises hidden around the site. <b>Ghost venues</b> are Portland music rooms that have closed \u2014 search one by its name to find it and pay tribute.</p>'
+    + '<p class="egg-why"><b>Ghost venues</b> are Portland music rooms that have closed \u2014 search one by its name to find it and pay tribute.</p>'
     + '<div class="egg-tiles">'
     + '<div class="egg-tile"><span class="egg-tile-e">\ud83e\udd5a</span><div><b>' + eggN + ' of ' + EGG_LIST.length + '</b><span>easter eggs found</span></div></div>'
     + '<div class="egg-tile' + (nF >= GHOSTS.length ? ' gold' : '') + '">' + ghostSvg(nF, 40) + '<div><b>' + nF + ' of ' + GHOSTS.length + '</b><span>ghost venues found' + (rank ? ' \u00b7 rank: ' + esc(rank[1]) : '') + '</span></div></div>'
