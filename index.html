@@ -10579,10 +10579,12 @@ async function eggOnAuth(){
   if(!state._uid) return;
   const sb = window.__plAuth; if(!sb) return;
   let anon = []; try{ anon = JSON.parse(localStorage.getItem(EGG_ANON) || '[]') || []; localStorage.removeItem(EGG_ANON); }catch(_){}
-  const mine = eggLocal();
-  anon.forEach(function(e){ if(mine.indexOf(e) === -1) mine.push(e); safeRpc(sb.rpc('egg_found', { p_egg: e })); });
   const r = await safeRpc(sb.rpc('my_eggs'));
-  ((r && !r.error && r.data) || []).forEach(function(x){ if(mine.indexOf(x.egg) === -1) mine.push(x.egg); });
+  // The account's saved list is the truth when it answers (so a list cleaned
+  // up in the database stays clean here); this device's copy only stands in
+  // when the database can't be reached.
+  const mine = (r && !r.error && Array.isArray(r.data)) ? r.data.map(function(x){ return x.egg; }) : eggLocal();
+  anon.forEach(function(e){ if(mine.indexOf(e) === -1) mine.push(e); safeRpc(sb.rpc('egg_found', { p_egg: e })); });
   eggSave(mine);
 }
 function eggSyncUp(){}
@@ -10750,7 +10752,7 @@ async function eggProfileSection(page){
   let eggs = eggLocal(), visits = [];
   if(sb){
     const [e, v] = await Promise.all([safeRpc(sb.rpc('my_eggs')), safeRpc(sb.rpc('my_ghost_visits'))]);
-    if(e && !e.error && e.data) e.data.forEach(function(x){ if(eggs.indexOf(x.egg) === -1) eggs.push(x.egg); });
+    if(e && !e.error && Array.isArray(e.data)){ eggs = e.data.map(function(x){ return x.egg; }); eggSave(eggs); }
     if(v && !v.error && v.data) visits = v.data.map(function(x){ return x.ghost_slug; });
   }
   const eggN = EGG_LIST.filter(function(x){ return eggs.indexOf(x[0]) !== -1; }).length;
