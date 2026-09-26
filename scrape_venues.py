@@ -3308,7 +3308,7 @@ def parse_goodfoot(html, today):
     # each in a fresh browser, before the safety net has to hold the rows.
     events = []
     tried = []   # per attempt, for the feed-health line (Sep 25 2026)
-    for attempt in range(3):
+    for attempt in range(5):   # 5 tries, 15s apart (Sep 26 2026: 3 was not enough)
         try:
             data = fetch_headless_json(GOODFOOT_HOME, GOODFOOT_API, headed=True)
         except Exception as e:
@@ -3323,10 +3323,10 @@ def parse_goodfoot(html, today):
             break
         if data is not None:
             tried.append(f"attempt {attempt + 1}: " + ("empty" if isinstance(data, dict) else "not JSON"))
-        if attempt < 2:
+        if attempt < 4:
             print(f"  note: Goodfoot attempt {attempt + 1} came back empty; retrying")
             import time as _t
-            _t.sleep(8)
+            _t.sleep(15)
     FETCH_NOTES["The Goodfoot"] = " \u00b7 ".join(tried)
     nb, addr = VENUE_INFO.get("The Goodfoot", ("Buckman", "2845 SE Stark St"))
     out, seen = [], set()
