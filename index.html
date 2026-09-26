@@ -413,6 +413,9 @@ body{
 /* Tallies under a listing (Sep 24 2026): hearts, going, people you follow */
 .s-tally{font-size:12.5px;color:var(--ink);opacity:.7;margin-top:3px;letter-spacing:.01em}
 .s-tally .t-heart{color:var(--rust)}
+/* Sold out (Sep 25 2026) */
+.s-age.s-sold{background:var(--rust);color:#fff;letter-spacing:.06em;text-transform:uppercase}
+.s-sold-lg{font-size:.45em;vertical-align:middle;padding:4px 10px;border-radius:999px;font-family:'Oswald',sans-serif}
 /* Ghost venues + easter eggs (Sep 25 2026) */
 .ghost-pop{position:fixed;inset:0;z-index:4000;background:rgba(10,20,16,.6);display:flex;align-items:center;justify-content:center;padding:20px;animation:ghostIn .35s ease-out}
 @keyframes ghostIn{from{opacity:0}to{opacity:1}}
@@ -3239,7 +3242,7 @@ function smLinks(l){if(!l)return '';var a=function(u,n){return u?'<a target="_bl
 function openSample(title,venue){var r=smTier(title,venue);var h='';if(r.tier===1){h+='<span class="badge b1">Tier 1 \u00b7 best match</span>';h+='<h3>'+esc(r.artist)+'</h3>';h+='<div class="sub">'+esc(r.mediaType||'music')+'</div>';h+='<a class="playcard" target="_blank" rel="noopener" href="'+esc(r.links&&r.links.youtube)+'"><span class="ytlogo">\u25b6</span><span>Play \u201c'+esc(r.artist)+'\u201d on YouTube</span></a>';h+=smLinks(r.links);}else if(r.tier===2){h+='<span class="badge b2">Tier 2 \u00b7 search links</span>';h+='<h3>'+esc(r.artist)+'</h3>';h+='<div class="sub">'+(r.mediaType==='spoken'?'spoken-word / non-music act':'name needs a human eye')+'</div>';h+=smLinks(r.links);}else{h+='<span class="badge b3">Tier 3 \u00b7 no sample</span><h3>'+esc(title)+'</h3><div class="sub">no sample available</div>';}h+='<button class="sm-x" id="smx" type="button" aria-label="Close">\u00d7</button>';document.getElementById('smmodal').innerHTML=h;document.getElementById('smov').classList.add('on');var x=document.getElementById('smx');if(x)x.onclick=closeSample;}
 function closeSample(){var o=document.getElementById('smov');if(o)o.classList.remove('on');}
 function smediaFor(s){
-  const tile = `<div class="s-tile" style="background:${tileColor(s)}"><span class="s-tile-t">${esc(s.title)}</span></div>`;
+  const tile = `<div class="s-tile" style="background:${tileColor(s)}"><span class="s-tile-t">${esc(soldStrip(s.title))}</span></div>`;
   if(SHOW_IMAGES && s.imageUrl){
     return `<div class="s-media">${tile}<img class="s-img s-img--zoom" data-lb="1" loading="lazy" alt="" src="${esc(s.imageUrl)}" onerror="this.classList.add('s-img--broken')"><div class="s-scrim"></div></div>`;
   }
@@ -3344,8 +3347,8 @@ function listOf(items, showDate){
     // the one element people actually aim at from being the one that leaves
     // the site. The outbound link lives on the show page's Tickets button.
     const titleHtml = (s._slug
-      ? `<a class="rtitle" href="#/show/${encodeURIComponent(s._slug)}">${formatTitle(s.title)}</a>`
-      : `<span class="rtitle">${formatTitle(s.title)}</span>`);
+      ? `<a class="rtitle" href="#/show/${encodeURIComponent(s._slug)}">${formatTitle(soldStrip(s.title))}</a>`
+      : `<span class="rtitle">${formatTitle(soldStrip(s.title))}</span>`);
     const venueLink = `<a class="s-venue" href="#" data-venue="${esc(s.venue)}" title="View this venue">${esc(s.venue)}</a>`;
     const nb = s.neighborhood ? `<span class="s-nb">${esc(s.neighborhood)}</span>` : '';
     // Age chip. Rendered ONLY when the build actually resolved one -- most
@@ -3353,7 +3356,8 @@ function listOf(items, showDate){
     // know", never "all ages". Deliberately display-only: there's no age
     // filter yet, because filtering on data this sparse would hide almost the
     // whole feed while implying the coverage is complete.
-    const ageBit = (s.age
+    const ageBit = (s.soldOut ? `<span class="s-age s-sold">Sold out</span>` : '')
+      + (s.age
       ? `<span class="s-age s-age-${s.age === 'all-ages' ? 'all' : 'over'}">${esc(s.age === 'all-ages' ? 'All Ages' : s.age)}</span>`
       : '')
       // Price when the source states one (Sep 20 2026). Absent means unknown.
@@ -5405,6 +5409,12 @@ function mapsHref(address, venue){
 // A second, smaller line under the Tickets button on the show page --
 // never the button itself, never on cards, never near Miracles -- with the
 // decided disclosure beneath it.
+// Sold out (Sep 25 2026). The build sets show.soldOut from the venue's own
+// signals. Titles that say it ("SOLD OUT: X", "X - SOLD OUT -", "X (SOLD
+// OUT)") are shown without the words -- the chip says it instead. Display
+// only: the page address and stubs still use the title as the venue wrote it.
+const _SOLD_RE = /(^\s*sold[\s-]*out\s*[:!\-\u2013\u2014|]+\s*)|(\s*[\-\u2013\u2014(\[|]\s*sold[\s-]*out\s*[\-\u2013\u2014)\]!]*\s*$)|(^\s*[(\[]\s*sold[\s-]*out\s*[)\]]\s*)/i;
+function soldStrip(t){ const out = String(t || '').replace(_SOLD_RE, '').trim(); return out || String(t || ''); }
 function resaleLine(show){
   const u = (show && show.resaleUrl) || '';
   const tracked = !!(show && show.affiliateUrl);      // the Tickets button itself is a tracked link (Ticketmaster/TicketWeb via Impact, Sep 21 2026)
@@ -5414,7 +5424,7 @@ function resaleLine(show){
   }
   const from = show.resaleFrom ? ' \u2014 from $' + esc(String(Math.round(parseFloat(show.resaleFrom)))) : '';
   return '<div class="resale">'
-    + '<a class="resale-link" href="' + esc(u) + '" target="_blank" rel="noopener sponsored">Resale tickets on Vivid Seats' + from + '</a>'
+    + '<a class="resale-link" href="' + esc(u) + '" target="_blank" rel="noopener sponsored">' + (show.soldOut ? 'Sold out \u2014 resale tickets on Vivid Seats' : 'Resale tickets on Vivid Seats') + from + '</a>'
     + '<div class="aff-note">' + (tracked ? 'Tickets through these links support Rain Or Shows.' : 'Tickets through this link support Rain Or Shows.') + '</div>'
     + '</div>';
 }
@@ -5440,7 +5450,7 @@ function renderShowDetail(wrap, show, kind){
     + (show.price ? ' \u00b7 ' + esc(show.price) : '');
   var _m = mapsHref(show.address, show.venue);
   var head = '<div class="venue-header">'
-    + '<h2 class="venue-name">' + esc(show.title||'') + '</h2>'
+    + '<h2 class="venue-name">' + esc(soldStrip(show.title||'')) + (show.soldOut && kind === 'upcoming' ? ' <span class="s-age s-sold s-sold-lg">Sold out</span>' : '') + '</h2>'
     + '<div class="venue-info venue-when">' + when + '</div>'
     + (where ? '<div class="venue-info venue-where">' + where + '</div>' : '')
     + (_m ? '<div class="venue-info venue-addr">'
@@ -5461,7 +5471,7 @@ function renderShowDetail(wrap, show, kind){
       // A Facebook event link is where a free show's details live, not a
       // ticket sale -- label it for what it is (Wild Hare, Sep 17 2026).
       + ((show.affiliateUrl || show.venueUrl) ? '<a class="tix" href="'+esc(show.affiliateUrl || show.venueUrl)+'" target="_blank" rel="' + (show.affiliateUrl ? 'noopener sponsored' : 'noopener') + '">'
-          + (/(^|\.)facebook\.com$/i.test((function(){ try{ return new URL(show.venueUrl).hostname; }catch(_){ return ''; } })()) ? 'More info' : 'Tickets')
+          + (/(^|\.)facebook\.com$/i.test((function(){ try{ return new URL(show.venueUrl).hostname; }catch(_){ return ''; } })()) ? 'More info' : (show.soldOut ? 'Sold out \u00b7 venue page' : 'Tickets'))
           + '</a>' : '')
       + heartBtn(show)
       + planBtn(show)
@@ -5905,7 +5915,9 @@ async function renderExchange(host, slug){
   } else if(rows.length){
     html += '<div class="tx-state">Every miracle for this show has been handed off.</div>';
   } else {
-    html += '<div class="tx-state">No miracles posted for this show yet.</div>';
+    // A sold-out show is exactly where a spare ticket matters (Sep 25 2026).
+    const _sold = (state.shows || []).some(function(x){ return x._slug === slug && x.soldOut; });
+    html += '<div class="tx-state">' + (_sold ? 'This show is sold out \u2014 got a spare? Post a miracle.' : 'No miracles posted for this show yet.') + '</div>';
   }
 
   if(myUserId){

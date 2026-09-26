@@ -157,6 +157,8 @@ def dedupe_shows(shows):
             # non-empty, differing time they may be two real shows that day
             # -> flag instead of silently dropping.
             kept = seen[k]
+            if s.get("soldOut"):
+                kept["soldOut"] = True   # either copy saying sold out is enough
             t_new = (s.get("time") or "").strip()
             t_old = (kept.get("time") or "").strip()
             if t_new and t_old and t_new != t_old:
@@ -2335,6 +2337,14 @@ def main():
 
     apply_title_renames(shows)
     deduped, time_collisions = dedupe_shows(shows)
+    # Sold out (Sep 25 2026): venue pages flagged theirs while scraping; this
+    # catches the rest -- Ticketmaster rows, Monqui's Etix links, and titles
+    # that say it.
+    try:
+        _n_sold = _sv().mark_sold_out(deduped)
+        print(f"  Sold out: {sum(1 for s in deduped if s.get('soldOut'))} show(s) marked")
+    except Exception as e:
+        print(f"  WARN: sold-out pass skipped ({type(e).__name__}: {e})")
     deduped.sort(key=lambda s: (s["date"], s.get("venue",""), s.get("title","")))
     for i, s in enumerate(deduped, 1):
         s["id"] = i

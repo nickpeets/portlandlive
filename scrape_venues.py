@@ -6160,6 +6160,61 @@ SOURCES = [
               "https://www.danteslive.com/page/3/"]},
 ]
 
+# ---- Sold out (Sep 25 2026, Nick) ------------------------------------------
+# Venue pages say it in a structured way, and only those signals count -- a
+# phrase search would light up every comedian bio that mentions "sold-out
+# tours". Three signals:
+#   1. an RHP ticket button tagged sold-out (Roseland, Holocene, Hawthorne,
+#      Alberta Rose, Mississippi Pizza, the Cascade rooms): the show whose
+#      /event/ link sits in the same card
+#   2. an Etix ticket link that has turned into .../ticket/p/<id>/sold-out...
+#   3. the venue typing it into the title: "SOLD OUT: X", "X - SOLD OUT -",
+#      "X (SOLD OUT)". The title itself is left alone -- the page address is
+#      built from it -- and the site hides the words when it shows the title.
+_SOLD_TITLE = re.compile(r"(^\s*sold[\s-]*out\s*[:!\-\u2013\u2014|]+)|([\-\u2013\u2014(\[|]\s*sold[\s-]*out\s*[\-\u2013\u2014)\]!]*\s*$)|(^\s*[(\[]\s*sold[\s-]*out\s*[)\]])", re.I)
+_SOLD_ETIX = re.compile(r"etix\.com/ticket/p/\d+/sold-out", re.I)
+
+
+def _url_key(u):
+    from urllib.parse import unquote
+    u = unquote(str(u or "")).lower().split("#")[0].split("?")[0].rstrip("/")
+    return re.sub(r"^https?://(www\.)?", "", u)
+
+
+def rhp_sold_out_urls(html):
+    """Event URLs whose RHP ticket button is tagged sold-out."""
+    if not html or "sold-out" not in html:
+        return set()
+    out = set()
+    soup = BeautifulSoup(html, "html.parser")
+    for cta in soup.select(".rhp-event-cta.sold-out"):
+        el = cta
+        for _ in range(8):
+            el = el.parent
+            if el is None:
+                break
+            links = [a.get("href") or "" for a in el.select("a[href]")]
+            if any("/event" in h for h in links):
+                # The card: its event page and its ticket link (Roseland's
+                # rows carry the Etix link, Holocene's the event page).
+                out.update(_url_key(h) for h in links if "/event" in h or "etix.com" in h or "ticket" in h)
+                break
+    return out
+
+
+def mark_sold_out(rows, html=None):
+    """Set soldOut on rows the venue itself marks sold out. Returns the count."""
+    urls = rhp_sold_out_urls(html) if html else set()
+    n = 0
+    for r in rows or []:
+        link = (r.get("ticketUrl") or "") + " " + (r.get("venueUrl") or "")
+        if (_SOLD_TITLE.search(r.get("title") or "") or _SOLD_ETIX.search(link)
+                or (urls and (_url_key(r.get("venueUrl")) in urls or _url_key(r.get("ticketUrl")) in urls))):
+            r["soldOut"] = True
+            n += 1
+    return n
+
+
 def scrape():
     pacific = datetime.timezone(datetime.timedelta(hours=-8))
     today = datetime.datetime.now(pacific).date()
@@ -6201,6 +6256,7 @@ def scrape():
                     # browser. For firewalls that block on the connection,
                     # not the headers. Cheaper and steadier than headless.
                     rows = tls_rows(src, url, today)
+                    mark_sold_out(rows)
                 elif src.get("headless"):
                     # Headless tier, loop-owned fetch: Chromium clears the
                     # challenge and the parser gets ordinary rendered HTML, so
@@ -6208,9 +6264,13 @@ def scrape():
                     # wall. Kelly's Olympian lived here Sep 2026 until the
                     # TLS tier above got it back onto its JSON API.
                     from fetch_headless import fetch_headless
-                    rows = src["parser"](fetch_headless(url), today)
+                    page = fetch_headless(url)
+                    rows = src["parser"](page, today)
+                    mark_sold_out(rows, page if isinstance(page, str) else None)
                 else:
-                    rows = src["parser"](fetch(url), today)
+                    page = fetch(url)
+                    rows = src["parser"](page, today)
+                    mark_sold_out(rows, page if isinstance(page, str) else None)
                 # Reaching here means the fetch returned real content and the
                 # parser ran without raising -- so a zero count below is the
                 # parser's verdict on a live page, not a transport failure.

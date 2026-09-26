@@ -599,6 +599,22 @@ def safety_net_check():
         print("GATE FAILURE")
         sys.exit(1)
     print("  ok   tls fallback                  challenged chrome -> safari -> browser; quiet source stops at the handshakes; one health line per venue")
+    # Sold out (Sep 25 2026): only the venue's own structured signals count.
+    _d = datetime.date(2026, 9, 14)
+    _fx = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fixtures")
+    got = {}
+    for f, fn in (("roseland.html", sv.parse_mammoth), ("hawthorne-events.html", sv.parse_mammoth), ("holocene.html", sv.parse_holocene), ("mississippi-studios.html", sv.parse_msstudios)):
+        h = open(os.path.join(_fx, f), encoding="utf-8").read()
+        rows = fn(h, _d); sv.mark_sold_out(rows, h)
+        got[f] = sum(1 for r in rows if r.get("soldOut"))
+    titles = [{"title": t} for t in ("SOLD OUT: Am\u00e9lie Farren", "Dean Johnson - SOLD OUT -", "Blasting Company (SOLD OUT)", "Sold Out Sessions: a showcase", "The Sold Out Tour 2026", "comic on sold-out tours")]
+    sv.mark_sold_out(titles)
+    tmarks = [bool(r.get("soldOut")) for r in titles]
+    if got != {"roseland.html": 4, "hawthorne-events.html": 2, "holocene.html": 3, "mississippi-studios.html": 3} or tmarks != [True, True, True, False, False, False]:
+        print(f"  FAIL sold out                     {got} {tmarks}")
+        print("GATE FAILURE")
+        sys.exit(1)
+    print("  ok   sold out                      Roseland 4, Hawthorne 2, Holocene 3 (RHP buttons), Mississippi Studios 3 (Etix links); title markers yes, band names and bios no")
     # Turn! Turn! Turn! on Opendate (Sep 24 2026): the capture is the real
     # page, saved from the Codespace (the venue moved its calendar there).
     _od = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fixtures", "turn-opendate.html")
