@@ -615,26 +615,6 @@ def safety_net_check():
         print("GATE FAILURE")
         sys.exit(1)
     print("  ok   sold out                      Roseland 4, Hawthorne 2, Holocene 3 (RHP buttons), Mississippi Studios 3 (Etix links); title markers yes, band names and bios no")
-    # Ticketmaster resale where Vivid has nothing (Sep 25 2026).
-    import importlib.util as _ilu
-    _bspec = _ilu.spec_from_file_location("bs_tr", os.path.join(os.path.dirname(os.path.abspath(__file__)), "build_shows.py"))
-    _bs = _ilu.module_from_spec(_bspec); _bspec.loader.exec_module(_bs)
-    _z = "https://www.ticketmaster.com/event/Z7r9jZ1AAv_ja"
-    rows = [
-        {"title": "A", "venue": "Roseland Theater", "venueUrl": "https://www.etix.com/ticket/p/1/a", "ticketUrl": _z},
-        {"title": "B", "venue": "Roseland Theater", "venueUrl": "https://www.etix.com/ticket/p/2/b", "ticketUrl": _z, "resaleUrl": "https://vivid-seats.pxf.io/x"},
-        {"title": "C", "venue": "Moda Center", "venueUrl": "https://www.ticketmaster.com/c/event/1", "affiliateUrl": "https://ticketmaster.evyy.net/c/4969747/264167/4272?u=x", "ticketUrl": _z},
-        {"title": "D", "venue": "Kenton Club", "venueUrl": "https://kentonclub.com/"},
-    ]
-    _bs.tm_resale_keep(rows); _n = _bs.tm_resale_fallback(rows)
-    ok = (_n == 1 and rows[0]["resaleUrl"].startswith("https://ticketmaster.evyy.net/c/4969747/264167/4272?u=https%3A%2F%2Fwww.ticketmaster.com%2Fevent%2FZ")
-          and rows[0]["venueUrl"].startswith("https://www.etix.com") and rows[1]["resaleUrl"] == "https://vivid-seats.pxf.io/x"
-          and "resaleUrl" not in rows[2] and "resaleUrl" not in rows[3] and not any("_tmResale" in r for r in rows))
-    if not ok:
-        print(f"  FAIL tm resale fallback          {rows}")
-        print("GATE FAILURE")
-        sys.exit(1)
-    print("  ok   tm resale fallback            no Vivid -> Ticketmaster resale link; Vivid kept; Tickets button untouched; tracked TM shows skipped")
     # Turn! Turn! Turn! on Opendate (Sep 24 2026): the capture is the real
     # page, saved from the Codespace (the venue moved its calendar there).
     _od = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fixtures", "turn-opendate.html")

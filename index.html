@@ -5450,15 +5450,13 @@ function soldStrip(t){ const out = String(t || '').replace(_SOLD_RE, '').trim();
 function resaleLine(show){
   const u = (show && show.resaleUrl) || '';
   const tracked = !!(show && show.affiliateUrl);      // the Tickets button itself is a tracked link (Ticketmaster/TicketWeb via Impact, Sep 21 2026)
-  // Vivid Seats first; Ticketmaster resale where Vivid has no listing (Sep 25 2026).
-  const who = /^https:\/\/vivid-seats\.pxf\.io\//.test(u) ? 'Vivid Seats' : (/^https:\/\/ticketmaster\.evyy\.net\//.test(u) ? 'Ticketmaster' : '');
-  if(!who){
+  if(!/^https:\/\/vivid-seats\.pxf\.io\//.test(u)){
     // No resale line, but a tracked Tickets button still gets the disclosure.
     return tracked ? '<div class="resale"><div class="aff-note">Tickets through this link support Rain Or Shows.</div></div>' : '';
   }
   const from = show.resaleFrom ? ' \u2014 from $' + esc(String(Math.round(parseFloat(show.resaleFrom)))) : '';
   return '<div class="resale">'
-    + '<a class="resale-link" href="' + esc(u) + '" target="_blank" rel="noopener sponsored">' + (show.soldOut ? 'Sold out \u2014 resale tickets on ' : 'Resale tickets on ') + who + from + '</a>'
+    + '<a class="resale-link" href="' + esc(u) + '" target="_blank" rel="noopener sponsored">' + (show.soldOut ? 'Sold out \u2014 resale tickets on Vivid Seats' : 'Resale tickets on Vivid Seats') + from + '</a>'
     + '<div class="aff-note">' + (tracked ? 'Tickets through these links support Rain Or Shows.' : 'Tickets through this link support Rain Or Shows.') + '</div>'
     + '</div>';
 }
