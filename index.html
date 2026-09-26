@@ -4117,7 +4117,7 @@ function renderPeopleSearch(q){
     const r = await safeRpc(sb.rpc('search_profiles', { p_q: term, p_limit: 25 }));
     if(r && r.error) console.warn('[people] search failed:', r.error.message || r.error);
     if(_peopleSearchQ !== q) return;
-    const rows = (r && r.data) || [];
+    const rows = ((r && r.data) || []).filter(function(u){ return !isHiddenHandle(u.handle); });
     rows.forEach(function(u){ AV_CACHE[u.id] = { id: u.id, display_name: u.display_name, avatar_url: u.avatar_url }; });
     $('#resultCount').textContent = rows.length ? (rows.length + (rows.length === 1 ? ' person' : ' people')) : 'People';
     wrap.innerHTML = rows.length ? '<div class="people-list">' + rows.map(peopleRow).join('') + '</div>'
@@ -4281,7 +4281,7 @@ function mentionAutocomplete(input, after){
       const r = await safeRpc(sb.rpc('search_profiles', { p_q: q, p_limit: 6 }));
       const cur = tokenAtCaret();
       if(!cur || cur.q.toLowerCase() !== q) return;          // typed on
-      rows = ((r && !r.error && r.data) || []);
+      rows = ((r && !r.error && r.data) || []).filter(function(u){ return !isHiddenHandle(u.handle); });
       rows.forEach(function(u){ if(typeof AV_CACHE !== 'undefined') AV_CACHE[u.id] = { id: u.id, display_name: u.display_name, avatar_url: u.avatar_url }; });
       sel = 0; token = cur; draw();
     }, 160);
@@ -5061,6 +5061,7 @@ async function renderProfileRoute(handle){
   try{ session = (await sb.auth.getSession()).data.session; }catch(e){ session = null; }
   var myId = session && session.user ? session.user.id : null;
   var isMe = !!myId && myId === p.id;
+  if(isHiddenHandle(p.handle) && !isMe){ renderProfileNotFound(wrap, handle); return; }
 
   // profile_by_handle already carried the avatar; seed the cache so avImg
   // renders it without a second round trip through avLoad.
@@ -8271,7 +8272,7 @@ const MENTION_RE = /(^|[^A-Za-z0-9_])@([A-Za-z0-9_]{3,20})(?![A-Za-z0-9_])/g;
 function cmtLinkify(escaped, resolved){
   if(!resolved || !resolved.size) return escaped;
   return escaped.replace(MENTION_RE, function(all, pre, h){
-    if(!resolved.has(h.toLowerCase())) return all;
+    if(!resolved.has(h.toLowerCase()) || isHiddenHandle(h)) return all;
     return pre + '<a class="mention" href="#/u/' + encodeURIComponent(h) + '">@' + h + '</a>';
   });
 }
@@ -8298,9 +8299,15 @@ async function cmtMentions(ids){
 // come only from scoped resolvers (authors_for_comments, attendees_for_show):
 // never from a general id lookup, which D3 forbids. The handle charset is
 // inert in both the href and the text; attributes are double-quoted anyway.
+// Admin accounts have no public page (Sep 25 2026, Nick: "@rainorshows ...
+// it's an administrator account"). Their name shows as plain text, they don't
+// come up in people search, mentions or People you may know, and their
+// profile address says "not found" to everyone but themselves.
+const HIDDEN_HANDLES = new Set(['rainorshows']);
+function isHiddenHandle(h){ return HIDDEN_HANDLES.has(String(h || '').toLowerCase()); }
 function nameLink(name, handle){
   const text = esc(name || 'Someone');
-  if(!handle) return text;
+  if(!handle || isHiddenHandle(handle)) return text;
   return '<a class="name-link" href="#/u/' + encodeURIComponent(handle) + '">' + text + '</a>';
 }
 
@@ -8540,7 +8547,7 @@ async function mountPymk(parent){
   if(!rows || Date.now() - PYMK_CACHE.at > 5 * 60000){
     const r = await safeRpc(sb.rpc('people_you_may_know', { p_limit: 12 }));
     if(r.error){ console.warn('[pymk] failed:', r.error.message || r.error); host.remove(); return; }
-    rows = r.data || [];
+    rows = (r.data || []).filter(function(u){ return !isHiddenHandle(u.handle); });
     PYMK_CACHE.rows = rows; PYMK_CACHE.at = Date.now();
   }
   if(!host.isConnected || !rows.length){ host.remove(); return; }
@@ -8655,7 +8662,7 @@ function applyPosterOverrides(tries){
 // and in the viewer, and a tap updates every copy on the page.
 function phCredit(name, handle, word){
   // "Photo by @nick" links to their profile wherever a photo is shown.
-  const who = handle ? '<a class="ph-credit" href="#/u/' + esc(handle) + '">' + esc(name || '@' + handle) + '</a>' : esc(name || 'Someone');
+  const who = (handle && !isHiddenHandle(handle)) ? '<a class="ph-credit" href="#/u/' + esc(handle) + '">' + esc(name || '@' + handle) + '</a>' : esc(name || 'Someone');
   return (word ? word + ' by ' : '') + who;
 }
 function phLikeBtn(id, likes, liked){
