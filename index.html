@@ -413,6 +413,56 @@ body{
 /* Tallies under a listing (Sep 24 2026): hearts, going, people you follow */
 .s-tally{font-size:12.5px;color:var(--ink);opacity:.7;margin-top:3px;letter-spacing:.01em}
 .s-tally .t-heart{color:var(--rust)}
+/* Ghost venues + easter eggs (Sep 25 2026) */
+.ghost-pop{position:fixed;inset:0;z-index:4000;background:rgba(10,20,16,.6);display:flex;align-items:center;justify-content:center;padding:20px;animation:ghostIn .35s ease-out}
+@keyframes ghostIn{from{opacity:0}to{opacity:1}}
+.ghost-card{position:relative;width:100%;max-width:440px;border-radius:14px;background:#1f2a26;border:1px solid rgba(240,179,94,.45);color:var(--cream);padding:22px 24px;box-shadow:0 20px 50px rgba(0,0,0,.45);animation:ghostFloat .5s ease-out}
+@keyframes ghostFloat{from{transform:translateY(14px);opacity:.3}to{transform:none;opacity:1}}
+.ghost-x{position:absolute;right:12px;top:8px;background:none;border:0;color:var(--cream);opacity:.7;font-size:24px;cursor:pointer}
+.ghost-kicker{font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#f0b35e}
+.ghost-name,.ghost-h{font-family:'Alfa Slab One',serif;font-weight:400;font-size:28px;line-height:1.15;margin:4px 0 2px;color:var(--cream)}
+.ghost-where{font-size:13px;opacity:.8;font-family:'Oswald',sans-serif;letter-spacing:.04em}
+.ghost-line{font-family:'Bitter',Georgia,serif;font-size:15.5px;line-height:1.55;margin:12px 0 0}
+.ghost-facts{margin:12px 0 0;padding-left:18px;font-family:'Bitter',Georgia,serif;font-size:14px;line-height:1.55}
+.ghost-facts li{margin-bottom:5px}
+.ghost-foot{display:flex;align-items:center;gap:10px;margin-top:16px;padding-top:12px;border-top:1px solid rgba(243,233,214,.15)}
+.ghost-count{font-size:12px;background:rgba(240,179,94,.18);color:#f0b35e;padding:4px 10px;border-radius:999px}
+.ghost-go{margin-left:auto;background:#f0b35e;color:#1f2a26;font-family:'Oswald',sans-serif;letter-spacing:.06em;text-transform:uppercase;font-size:13px;padding:7px 14px;border-radius:999px;text-decoration:none}
+.ghost-page .ghost-facts,.ghost-page .ghost-line{color:var(--cream)}
+.ghost-page .ghost-where{color:var(--cream)}
+.ghost-src{margin-top:10px;font-size:12px;opacity:.75;color:var(--cream)}
+.ghost-src a{color:var(--cream)}
+.ghost-there{margin:22px 0 6px;padding:14px 16px;border-radius:12px;background:rgba(31,42,38,.55);border:1px dashed rgba(240,179,94,.4);color:var(--cream)}
+.ghost-there-head{display:flex;justify-content:space-between;align-items:baseline}
+.ghost-there-head h3{margin:0;font-family:'Alfa Slab One',serif;font-weight:400;font-size:18px}
+.ghost-there-btn{margin:10px 0 8px;border:1px solid #f0b35e;background:transparent;color:#f0b35e;font-family:'Oswald',sans-serif;letter-spacing:.06em;text-transform:uppercase;font-size:14px;padding:7px 16px;border-radius:999px;cursor:pointer}
+.ghost-there-btn.on{background:#f0b35e;color:#1f2a26}
+.ghost-people{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
+.ghost-person{display:inline-flex;align-items:center;gap:6px;color:var(--cream);text-decoration:none;font-size:14px}
+.ghost-person .av{width:22px;height:22px;font-size:10px}
+.ghost-others{font-size:13px;opacity:.8}
+.egg-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:4100;background:#1f2a26;color:var(--cream);border:1px solid rgba(240,179,94,.5);padding:10px 16px;border-radius:999px;font-family:'Oswald',sans-serif;letter-spacing:.04em;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,.35);transition:opacity .5s}
+.egg-toast.out{opacity:0}
+.egg-pins{display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 12px}
+.egg-pin{display:flex;flex-direction:column;align-items:center;min-width:104px;padding:10px 12px;border-radius:12px;background:rgba(243,233,214,.1);color:var(--cream);font-size:13px;position:relative;overflow:hidden}
+.egg-pin b{font-family:'Oswald',sans-serif;letter-spacing:.05em;text-transform:uppercase;font-size:13px;margin-top:2px}
+.egg-pin-e{font-size:22px}
+.egg-pin.gold{background:linear-gradient(135deg,#b8860b,#f5d76e 45%,#c9971c);color:#3a2a05}
+.egg-pin.gold::after,.stub-foil::after,.stub.stub-foil::after{content:'';position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.55) 45%,transparent 60%);background-size:250% 100%;animation:eggShimmer 3.2s linear infinite;pointer-events:none;mix-blend-mode:screen}
+@keyframes eggShimmer{from{background-position:120% 0}to{background-position:-120% 0}}
+.stub-foil{position:relative;display:inline-block;border-radius:6px;overflow:hidden}
+.stub.stub-foil{position:relative}
+.stub-foil canvas,.stub.stub-foil{filter:saturate(1.25) hue-rotate(-8deg)}
+.egg-ghosts{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.egg-ghost{display:flex;flex-direction:column;padding:9px 12px;border-radius:10px;background:#2a2620;color:#e9dcc4;text-decoration:none;border:1px dashed rgba(240,179,94,.45);filter:sepia(.3)}
+.egg-ghost b{font-family:'Alfa Slab One',serif;font-weight:400;font-size:15px}
+.egg-ghost span{font-size:12px;opacity:.8}
+body.flyer-mode #results img,body.flyer-mode .scard .s-thumb{filter:grayscale(1) contrast(1.6) brightness(1.05)}
+body.flyer-mode .scard{outline:2px dashed rgba(0,0,0,.55);outline-offset:4px;transform:rotate(-.4deg)}
+body.flyer-mode .scard:nth-child(even){transform:rotate(.5deg)}
+body.flyer-mode .masthead-word{font-family:'Courier New',monospace;letter-spacing:.02em;text-transform:none;background:#f3e9d6;color:#111;padding:0 6px;transform:rotate(-2deg);display:inline-block}
+body.flyer-mode .masthead-logo img{filter:grayscale(1) contrast(2)}
+@media (prefers-reduced-motion: reduce){.egg-pin.gold::after,.stub-foil::after{animation:none}.ghost-pop,.ghost-card{animation:none}}
 .s-brk,.d-short,.hb-short{display:none}
 /* Heart count on the heart button, every layout (Sep 25 2026, Nick: "do the
    same kind of heart indicator on desktop"): the tally line under a card
@@ -3417,6 +3467,8 @@ function parseRoute(){
   // email point at -- the token is the credential, no sign-in needed.
   if(/^#\/submit\/?$/.test(h)) return {type:'submit'};
   if(/^#\/about\/?$/.test(h)) return {type:'about'};
+  m = h.match(/^#\/ghost\/([^\/?#]+)\/?$/);
+  if(m) return {type:'ghost', slug: decodeURIComponent(m[1])};
   m = /^#\/messages\/([^?#]+)/.exec(h);
   if(m) return {type:'dm', handle: decodeURIComponent(m[1])};
   if(/^#\/messages\/?$/.test(h)) return {type:'dms'};
@@ -3574,6 +3626,7 @@ async function router(){
   if(route.type === 'profile'){ await renderProfileRoute(route.handle); return; }
   if(route.type === 'submit'){ renderSubmitRoute(); return; }
   if(route.type === 'about'){ renderStaticPage('about'); return; }
+  if(route.type === 'ghost'){ try{ window.scrollTo({ top: 0, behavior: 'instant' }); }catch(_){ window.scrollTo(0, 0); } await renderGhostRoute(route.slug); return; }
   if(route.type === 'dms'){ await renderMessagesRoute(); return; }
   if(route.type === 'dm'){ await renderThreadRoute(route.handle); return; }
   if(route.type === 'privacy'){ renderStaticPage('privacy'); return; }
@@ -3862,6 +3915,14 @@ function renderProfileNotFound(wrap, handle, msg){
 // exported wall are the same picture. There is no image and no slug in a
 // user_stubs row and nothing to fetch: past shows leave shows.json, so the
 // stub is the record. Drawn at 2x and scaled down by CSS.
+// The 10th, 20th, 30th... stub kept (oldest first) is foil.
+function stubFoilSet(stubs){
+  const key = function(o){ return String(o.mintedAt || o.created_at || o.date || ''); };
+  const order = (stubs || []).slice().sort(function(a, b){ return key(a) < key(b) ? -1 : key(a) > key(b) ? 1 : 0; });
+  const out = new Set();
+  order.forEach(function(o, i){ if((i + 1) % 10 === 0) out.add((o.title||'')+'|'+(o.venue||'')+'|'+(o.date||'')); });
+  return out;
+}
 function stubTileCanvas(o){
   var w = 360, h = 150, pad = 28, W = w + pad * 2, H = h + pad * 2;
   var dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -5250,7 +5311,14 @@ async function renderProfileRoute(handle){
   if(stubs.length){
     var grid = document.createElement('div');
     grid.className = 'pf-stubs';
-    stubs.forEach(function(o){ grid.appendChild(stubTileCanvas(o)); });
+    // Every 10th stub, in the order kept, comes out foil (Sep 25 2026).
+    const _foil = stubFoilSet(stubs);
+    stubs.forEach(function(o){
+      const t = stubTileCanvas(o);
+      if(_foil.has(stubIdOf(o))){ const w = document.createElement('span'); w.className = 'stub-foil'; w.appendChild(t); grid.appendChild(w); }
+      else grid.appendChild(t);
+    });
+    if(isMe && _foil.size) eggNoteFound('foil', 'Foil stub');
     st.appendChild(grid);
   } else {
     // Since Sep 17 2026 stubs_for_user returns nothing to a non-follower
@@ -5273,6 +5341,9 @@ async function renderProfileRoute(handle){
     bsecB.innerHTML = badgesSectionHtml(stubs);
     page.appendChild(bsecB);
   }
+
+  // Easter eggs found (Sep 25 2026): your own page only.
+  if(isMe){ await eggProfileSection(page); if(parseRoute().handle !== handle) return; }
 
   // Blocked people (Sep 22 2026): only on your own page, only when there are any.
   if(isMe){
@@ -7266,7 +7337,7 @@ async function inboxOpenThread(idx){
   if(item.kind === 'follow'){ inboxOpenFollow(idx); return; }
   if(item.kind === 'followreq'){ inboxOpenFollowReq(idx); return; }
   if(item.kind === 'didyou'){ txMarkSeen(item.seenKey, item.at); item.unread = false; inboxRenderBadge(); inboxClose(); location.hash = '#/show/' + item.slug; return; }
-  if(item.kind === 'photolike'){ txMarkSeen(item.seenKey, item.at); item.unread = false; inboxRenderBadge(); inboxClose(); if(item.slug) location.hash = '#/show/' + item.slug; return; }
+  if(item.kind === 'photolike'){ txMarkSeen(item.seenKey, item.at); item.unread = false; inboxRenderBadge(); inboxClose(); if(item.slug) location.hash = slugHref(item.slug); return; }
   if(item.kind === 'dm'){ inboxOpenDm(idx); return; }
 
   const sb = inboxClient();
@@ -7467,7 +7538,7 @@ function inboxOpenMention(idx){
   INBOX.open = false; INBOX.viewing = null;
   if(list) list.hidden = true;
   if(btn) btn.setAttribute('aria-expanded', 'false');
-  if(item.slug) location.hash = '#/show/' + encodeURIComponent(item.slug);
+  if(item.slug) location.hash = slugHref(item.slug);
 }
 
 // A new follower is read by opening it; it closes the panel and goes to
@@ -8768,7 +8839,7 @@ function upWhy(err){
   return m ? 'Upload error: ' + m : '';
 }
 
-async function mountPhotos(wrap, slug, show){
+async function mountPhotos(wrap, slug, show, opts){
   const sb = phClient();
   const host = document.createElement('section');
   host.className = 'ph-section';
@@ -8781,7 +8852,8 @@ async function mountPhotos(wrap, slug, show){
   // every failure looked like nothing happened. draw() shows it now.
   let upMsg = '';
   try{ const me = (await sb.auth.getSession()).data.session; myId = me && me.user ? me.user.id : null; }catch(e){}
-  const canAdd = !!myId && typeof claimedStubIds === 'function' && claimedStubIds().has(stubIdOf(show));
+  // opts.ghost: a ghost venue page -- "I was there" there is the ticket (Sep 25 2026).
+  const canAdd = opts ? !!(myId && opts.canAdd) : (!!myId && typeof claimedStubIds === 'function' && claimedStubIds().has(stubIdOf(show)));
   async function load(){
     const r = await Promise.resolve(sb.rpc('photos_for_show', { p_slug: slug })).catch(function(e){ return { error: e }; });
     if(!host.isConnected) return;
@@ -8801,9 +8873,9 @@ async function mountPhotos(wrap, slug, show){
             : '<span class="ph-note">You\u2019ve added ' + PH_MAX_PER_SHOW + ' photos to this show.</span>')
         + '</div>';
     } else if(!myId){
-      html += '<div class="ph-note">Went to this show? Sign in, tap \u201cI was there\u201d, and add your photos or clips.</div>';
+      html += '<div class="ph-note">' + (opts && opts.ghost ? 'Were you a regular? Sign in, tap \u201cI was there\u201d up top, and add your old photos, flyers or clips.' : 'Went to this show? Sign in, tap \u201cI was there\u201d, and add your photos or clips.') + '</div>';
     } else {
-      html += '<div class="ph-note">Only people with a stub for this show can add photos or clips.</div>';
+      html += '<div class="ph-note">' + (opts && opts.ghost ? 'Tap \u201cI was there\u201d up top to add your old photos, flyers or clips.' : 'Only people with a stub for this show can add photos or clips.') + '</div>';
     }
     if(rows.length){
       html += '<div class="ph-grid">' + rows.map(function(x){
@@ -8852,7 +8924,9 @@ async function mountPhotos(wrap, slug, show){
             const vu = await sb.storage.from('videos').upload(vpath, f, { contentType: f.type || 'video/mp4', upsert: false });
             clearInterval(clock);
             if(vu.error){ bad++; why = upWhy(vu.error); console.warn('[photos] clip upload failed:', vu.error.message); await sb.storage.from('photos').remove([tpath]).catch(function(){}); continue; }
-            const r = await sb.rpc('add_show_video', { p_slug: slug, p_stub_id: stubIdOf(show), p_path: tpath, p_video_path: vpath, p_width: probe.width, p_height: probe.height, p_duration: probe.duration });
+            const r = await (opts && opts.ghost
+              ? sb.rpc('add_ghost_video', { p_slug: slug, p_path: tpath, p_video_path: vpath, p_width: probe.width, p_height: probe.height, p_duration: probe.duration })
+              : sb.rpc('add_show_video', { p_slug: slug, p_stub_id: stubIdOf(show), p_path: tpath, p_video_path: vpath, p_width: probe.width, p_height: probe.height, p_duration: probe.duration }));
             if(r.error){ bad++; why = upWhy(r.error); console.warn('[photos] add clip failed:', r.error.message); await sb.storage.from('videos').remove([vpath]).catch(function(){}); await sb.storage.from('photos').remove([tpath]).catch(function(){}); }
             continue;
           }
@@ -8860,7 +8934,9 @@ async function mountPhotos(wrap, slug, show){
           const path = stem + '.jpg';
           const up = await sb.storage.from('photos').upload(path, out.blob, { contentType: 'image/jpeg', upsert: false });
           if(up.error){ bad++; why = upWhy(up.error); console.warn('[photos] upload failed:', up.error.message); continue; }
-          const r = await sb.rpc('add_show_photo', { p_slug: slug, p_stub_id: stubIdOf(show), p_path: path, p_width: out.width, p_height: out.height });
+          const r = await (opts && opts.ghost
+            ? sb.rpc('add_ghost_photo', { p_slug: slug, p_path: path, p_width: out.width, p_height: out.height })
+            : sb.rpc('add_show_photo', { p_slug: slug, p_stub_id: stubIdOf(show), p_path: path, p_width: out.width, p_height: out.height }));
           if(r.error){ bad++; why = upWhy(r.error); console.warn('[photos] add failed:', r.error.message); await sb.storage.from('photos').remove([path]).catch(function(){}); }
         }catch(e){ clearInterval(clock); bad++; why = (e && e.message) || ''; console.warn('[photos] threw:', e); }
       }
@@ -9455,7 +9531,9 @@ function favKey(s){ return (s.venue||'') + '|' + (s.date||'') + '|' + (s.title||
       cnt.textContent = stubs.length + (stubs.length===1?' stub':' stubs');
       sec.appendChild(cnt);
       const list=document.createElement('div'); list.className='stub-list';
-      stubs.forEach(s => list.appendChild(stubCard(s)));
+      const _foil = stubFoilSet(stubs);
+      stubs.forEach(function(s){ const c = stubCard(s); if(_foil.has(stubIdOf(s))) c.classList.add('stub-foil'); list.appendChild(c); });
+      if(_foil.size) eggNoteFound('foil', 'Foil stub');
       sec.appendChild(list); sec.appendChild(stubToolsRow(true)); wrap.appendChild(sec);
     }
     // Past saved shows have left the feed, but the favorite key (venue|date|title) still
@@ -10307,7 +10385,12 @@ function makeItRain(ms){
 let _eggLastQ = '';
 function eggSearch(v){
   const q = String(v || '').trim().toLowerCase();
-  if(q === 'rain' && _eggLastQ !== 'rain') makeItRain(5000);
+  if(q === 'rain' && _eggLastQ !== 'rain'){ makeItRain(5000); eggNoteFound('rain', 'Rain'); }
+  if(/^(donut|donuts|doughnut|doughnuts)$/.test(q) && _eggLastQ !== q){ makeItSprinkle(5000); eggNoteFound('sprinkles', 'Sprinkles'); }
+  // Ghost venues (Sep 25 2026): the full name of a closed room.
+  const g = ghostForQuery(q);
+  if(g && _ghostShown !== g.slug){ _ghostShown = g.slug; ghostPopup(g); }
+  if(!g) _ghostShown = '';
   _eggLastQ = q;
 }
 $('#searchInput').addEventListener('input', function(e){ eggSearch(e.target.value); });
@@ -10321,11 +10404,296 @@ $('.masthead-brand').addEventListener('click', function(){
   _eggTaps = [];
   const logo = document.querySelector('.masthead-logo');
   if(logo){ logo.classList.remove('egg-glow'); void logo.offsetWidth; logo.classList.add('egg-glow'); setTimeout(function(){ logo.classList.remove('egg-glow'); }, 1600); }
+  eggNoteFound('storm', 'Thunder');
   if(EGG_CALM) return;
   const f = document.createElement('div'); f.className = 'egg-flash'; document.body.appendChild(f);
   setTimeout(function(){ f.remove(); }, 900);
   setTimeout(function(){ makeItRain(4000); }, 350);
 });
+
+// ===== GHOST VENUES + EASTER EGGS, part 2 (Sep 25 2026, Nick) =============
+// Fourteen Portland rooms that are gone. Search a name and a card floats up;
+// "Pay tribute" opens an unlisted page (#/ghost/<slug>) where people say they
+// were there, post old photos/flyers/clips, and leave memories. Every fact
+// here was checked against the sources linked on the card before it went in.
+// Nothing about these rooms appears in the feed, the venue list, or the
+// Latest photos strip -- finding them is the fun.
+const GHOSTS = [
+  { slug:'satyricon', name:'Satyricon', where:'125 NW Sixth Ave \u00b7 Old Town', years:'1983\u20132010',
+    line:'The longest-running punk club in the West \u2014 the one they called the CBGB of the West Coast.',
+    facts:['The building was a horse stable in the early 1900s.', 'Named after the 1969 Fellini film.', 'Where Kurt Cobain and Courtney Love are said to have first met.', 'Closed in 2003, came back all-ages in 2006, closed for good in 2010, and was torn down in 2011.'],
+    src:[['Wikipedia','https://en.wikipedia.org/wiki/Satyricon_(nightclub)'],['Willamette Week','https://www.wweek.com/portland/article-12560-i-think-i-was-there.html']],
+    alias:['satyricon','the satyricon','satyricon club'] },
+  { slug:'la-luna', name:'La Luna', where:'215 SE 9th Ave \u00b7 Buckman', years:'1992\u20131999',
+    line:'The all-ages rock club at the heart of \u201990s Portland \u2014 \u201cthe best medium-size venue in Portland.\u201d',
+    facts:['The building was the Ninth Street Exit in the \u201970s and the Pine Street Theater from 1980 to 1991.', 'Radiohead, Pavement and Weezer played the main stage.', 'Elliott Smith played intimate shows up in the balcony.'],
+    src:[['Wikipedia','https://en.wikipedia.org/wiki/La_Luna_(Portland,_Oregon)'],['Willamette Week','https://www.wweek.com/music/2016/05/18/portlands-most-missed-all-ages-venues/']],
+    alias:['la luna','laluna','pine street theater','pine street theatre'] },
+  { slug:'x-ray-cafe', name:'X-Ray Cafe', where:'214 W Burnside St \u00b7 Old Town', years:'1990\u20131994',
+    line:'The scrappy all-ages hole-in-the-wall that shaped early-\u201990s Portland.',
+    facts:['Started by Benjamin Arthur Ellis and Tres Shannon, decorated with finds from the trash \u2014 lots of velvet paintings.', 'Bikini Kill, Green Day, Elliott Smith, Quasi and Dead Moon all played it.', 'Dead Moon played the closing night, August 16, 1994.', 'The subject of the 2000 documentary \u201cX-Ray Visions.\u201d'],
+    src:[['Oregon Encyclopedia','https://www.oregonencyclopedia.org/articles/x_ray_cafe/'],['Wikipedia','https://en.wikipedia.org/wiki/X-Ray_Cafe']],
+    alias:['x-ray cafe','xray cafe','x ray cafe','the x-ray cafe','the x-ray'] },
+  { slug:'berbatis-pan', name:'Berbati\u2019s Pan', where:'231 SW Ankeny St \u00b7 Old Town', years:'1994\u20132010',
+    line:'Downtown\u2019s indie-rock hub for the better part of two decades.',
+    facts:['The music room took over the old 24 Hour Church of Elvis space in 1994.', 'Five Fingers of Funk played the club\u2019s first show and its last, on New Year\u2019s Eve 2010.', 'The White Stripes headlined a famously oversold show here on July 12, 2001.', 'Voodoo Doughnut moved into the old atrium in 2011.'],
+    src:[['Wikipedia','https://en.wikipedia.org/wiki/Berbati%27s_Pan'],['Portland Mercury','https://www.portlandmercury.com/music/2010/12/30/3206164/farewell-berbatis-pan']],
+    alias:['berbatis','berbati\'s','berbatis pan','berbati\'s pan','berbati','berbati pan'] },
+  { slug:'meow-meow', name:'Meow Meow', where:'527 SE Pine St, later 320 SE 2nd Ave', years:'2000\u20132005',
+    line:'Portland\u2019s boldest all-ages club of the early 2000s.',
+    facts:['The first home of the PDX Pop Now festival.', 'It later became Loveland, then Rotture and Branx.'],
+    src:[['Willamette Week','https://www.wweek.com/music/2016/05/18/portlands-most-missed-all-ages-venues/']],
+    alias:['meow meow','meowmeow'] },
+  { slug:'backspace', name:'Backspace', where:'115 NW 5th Ave \u00b7 Old Town', years:'2003\u20132013',
+    line:'An internet caf\u00e9 and gallery that turned into an all-ages music home.',
+    facts:['Opened in 2003 by painter Eric Robison.', 'Photo booth, pinball machines and a treehouse inside.', 'After it closed, the space became part of Ground Kontrol.'],
+    src:[['Wikipedia','https://en.wikipedia.org/wiki/Backspace_(Portland,_Oregon)']],
+    alias:['backspace','back space','backspace cafe'] },
+  { slug:'slabtown', name:'Slabtown', where:'1033 NW 16th Ave \u00b7 Northwest', years:'\u201970s\u20132014',
+    line:'Punk, metal, garage rock and pinball in the shadow of the 405.',
+    facts:['Around in various incarnations since the \u201970s.', 'Doug Rogers bought it in 2012 and started all-ages shows in the back game room.', 'The last night was November 1, 2014 \u2014 the last independent all-ages rock club on the westside.'],
+    src:[['Willamette Week','https://www.wweek.com/portland/blog-32266-now-slabtown-is-closing.html'],['Willamette Week','https://www.wweek.com/portland/article-23710-closing-time.html']],
+    alias:['slabtown','slab town'] },
+  { slug:'ash-street-saloon', name:'Ash Street Saloon', where:'225 SW Ash St \u00b7 Old Town', years:'1994\u20132017',
+    line:'Downtown\u2019s rock \u2019n\u2019 roll boot camp \u2014 music seven nights a week.',
+    facts:['Opened on Halloween 1994.', 'Portugal. The Man played its first show here; Red Fang cut its teeth here.', 'Covers rarely topped five bucks.', 'The last show was New Year\u2019s Eve 2017.'],
+    src:[['Portland Mercury','https://www.portlandmercury.com/music/2017/12/27/19566714/remembering-the-legacy-of-the-ash-street-saloon']],
+    alias:['ash street','ash street saloon','ash st saloon','ash st','the ash street'] },
+  { slug:'jimmy-maks', name:'Jimmy Mak\u2019s', where:'221 NW 10th Ave \u00b7 Pearl', years:'1996\u20132016',
+    line:'The Pearl\u2019s jazz institution for twenty years.',
+    facts:['Opened on NW 9th in 1996 and moved across the street a decade later.', 'Mel Brown played weekly gigs here.', 'The last show was New Year\u2019s Eve 2016. A planned reopening never happened, as far as we know.'],
+    src:[['Wikipedia','https://en.wikipedia.org/wiki/Jimmy_Mak%27s'],['Willamette Week','https://www.wweek.com/news/2022/11/16/jazz-fans-await-a-clubs-resurrection-in-the-pearl-district/']],
+    alias:['jimmy maks','jimmy mak\'s','jimmy mak','jimmymaks'] },
+  { slug:'blue-monk', name:'The Blue Monk', where:'3341 SE Belmont St \u00b7 Sunnyside', years:'closed 2014',
+    line:'Italian upstairs, jazz in the basement.',
+    facts:['Named for the jazz it booked downstairs; it grew into swing nights and belly dancing too.', 'Closed in April 2014 after its lease was bought out.', 'The space became The Liquor Store.'],
+    src:[['Wikipedia','https://en.wikipedia.org/wiki/Blue_Monk_(Portland,_Oregon)']],
+    alias:['blue monk','the blue monk','bluemonk'] },
+  { slug:'tonic-lounge', name:'Tonic Lounge', where:'3100 NE Sandy Blvd \u00b7 Kerns', years:'closed 2019',
+    line:'A loud little room on NE Sandy.',
+    facts:['Briefly renamed Panic Room Caution: High Volume Bar, then The Raven, before going back to Tonic Lounge in 2017.', 'Closed August 31, 2019.'],
+    src:[['Wikipedia','https://en.wikipedia.org/wiki/Tonic_Lounge']],
+    alias:['tonic lounge','the tonic lounge'] },
+  { slug:'biddy-mcgraws', name:'Biddy McGraw\u2019s', where:'6000 NE Glisan St \u00b7 North Tabor', years:'mid-\u201990s\u20132019',
+    line:'An Irish pub with a tiny stage and live music most nights.',
+    facts:['Patricia O\u2019Neill opened it on SE Hawthorne in the mid-\u201990s and moved it to NE Glisan in 2000.', 'Sunday nights were a traditional Irish session.', 'Renamed O\u2019Neill Public House in 2016; the last pint was poured January 3, 2019.'],
+    src:[['Portland Tribune','https://portlandtribune.com/2019/01/18/glisan-landmark-oneill-pub-closes/'],['Willamette Week','https://www.wweek.com/bars/2019/01/14/longstanding-portland-irish-bar-oneill-pubic-house-formerly-known-as-biddy-mcgraws-has-closed/']],
+    alias:['biddys','biddy\'s','biddy mcgraws','biddy mcgraw\'s','biddy mcgraw','oneill pub','o\'neill pub','oneill public house'] },
+  { slug:'mt-tabor-theater', name:'Mt. Tabor Theater', where:'4811 SE Hawthorne Blvd \u00b7 Mt. Tabor', years:'1913\u20132016',
+    line:'A 1913 movie house that became a rock room.',
+    facts:['Opened in 1913 as the Alhambra movie theater.', 'Later known as Sabala\u2019s, the Mt. Tabor Legacy and the Mt. Tabor Theater, and the Alhambra again in 2013.', 'Closed in April 2016 and became the QuarterWorld arcade.'],
+    src:[['Wikipedia','https://en.wikipedia.org/wiki/Alhambra_Theatre_(Portland,_Oregon)'],['Cinema Treasures','https://cinematreasures.org/theaters/7661']],
+    alias:['mt tabor theater','mt. tabor theater','mount tabor theater','mt tabor theatre','mt. tabor theatre','mt tabor legacy','mt. tabor legacy','alhambra theatre','alhambra theater'] },
+  { slug:'green-room', name:'The Green Room', where:'2280 NW Thurman St \u00b7 Northwest', years:'closed',
+    line:'A cozy NW pub with live music every night.',
+    facts:['A hint of Irish pub, with a heated patio and tiki bar out back.', 'Thursdays were blues night; Chuck Warda hosted the Monday open mic.', 'It closed when the business next door expanded.'],
+    src:[['BarFly','http://www.barflymag.com/portland/bar/green-room']],
+    alias:['green room','the green room','greenroom'] }
+];
+const GHOST_BY_SLUG = {}; GHOSTS.forEach(function(g){ GHOST_BY_SLUG[g.slug] = g; });
+function ghostNorm(s){ return String(s || '').toLowerCase().replace(/[\u2018\u2019']/g, '\'').replace(/\s+/g, ' ').trim(); }
+function ghostForQuery(q){
+  q = ghostNorm(q);
+  if(q.length < 4) return null;
+  for(const g of GHOSTS){ if(g.alias.some(function(a){ return ghostNorm(a) === q; })) return g; }
+  return null;
+}
+// A slug that belongs to a ghost page, for links out of the bell and elsewhere.
+function slugHref(slug){
+  slug = String(slug || '');
+  return slug.indexOf('ghost-') === 0 ? '#/ghost/' + encodeURIComponent(slug.slice(6)) : '#/show/' + encodeURIComponent(slug);
+}
+
+// ---- Eggs found: this device always, the account too when signed in -------
+const EGG_LIST = [['rain','Rain'],['storm','Thunder'],['sprinkles','Sprinkles'],['flyer','Flyer mode'],['foil','Foil stub'],['ghost','A ghost']];
+const EGG_KEY = 'ros_eggs';
+function eggLocal(){ try{ return JSON.parse(localStorage.getItem(EGG_KEY) || '[]') || []; }catch(_){ return []; } }
+function eggFound(id){
+  const have = eggLocal();
+  const fresh = have.indexOf(id) === -1;
+  if(fresh){ have.push(id); try{ localStorage.setItem(EGG_KEY, JSON.stringify(have)); }catch(_){} }
+  const sb = window.__plAuth;
+  if(sb && state._signedIn) safeRpc(sb.rpc('egg_found', { p_egg: id }));
+  return fresh;
+}
+function eggSyncUp(){
+  const sb = window.__plAuth; if(!sb || !state._signedIn) return;
+  eggLocal().forEach(function(id){ safeRpc(sb.rpc('egg_found', { p_egg: id })); });
+}
+function eggToast(msg){
+  const t = document.createElement('div'); t.className = 'egg-toast'; t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(function(){ t.classList.add('out'); }, 2600);
+  setTimeout(function(){ t.remove(); }, 3200);
+}
+function eggNoteFound(id, label){
+  if(!eggFound(id)) return;
+  const n = EGG_LIST.filter(function(e){ return eggLocal().indexOf(e[0]) !== -1; }).length;
+  eggToast('\ud83e\udd5a Easter egg found: ' + label + ' \u00b7 ' + n + ' of ' + EGG_LIST.length);
+}
+
+// ---- Sprinkles ("donut") ------------------------------------------------------
+let _eggSprinkling = false;
+function makeItSprinkle(ms){
+  if(EGG_CALM || _eggSprinkling) return;
+  _eggSprinkling = true;
+  const cv = document.createElement('canvas'); cv.className = 'egg-rain'; document.body.appendChild(cv);
+  const ctx = cv.getContext('2d'); const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  function size(){ cv.width = innerWidth * dpr; cv.height = innerHeight * dpr; }
+  size(); addEventListener('resize', size);
+  const cols = ['#f25f8a','#ffd166','#6fd3ff','#9be07a','#ffffff','#c49bff','#ff8f4a'];
+  const bits = Array.from({ length: Math.round(Math.min(220, innerWidth / 4)) }, function(){
+    return { x: Math.random() * innerWidth, y: Math.random() * -innerHeight, v: 2.5 + Math.random() * 3.5, a: Math.random() * Math.PI, s: (Math.random() - .5) * .12, c: cols[Math.floor(Math.random() * cols.length)] };
+  });
+  const t0 = performance.now(), total = ms || 5000;
+  (function frame(t){
+    const age = t - t0, fade = Math.max(0, Math.min(1, (total - age) / 900));
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, innerWidth, innerHeight);
+    ctx.globalAlpha = fade; ctx.lineCap = 'round'; ctx.lineWidth = 3.2;
+    bits.forEach(function(b){
+      b.y += b.v; b.a += b.s; if(b.y > innerHeight + 10){ b.y = -10; b.x = Math.random() * innerWidth; }
+      ctx.strokeStyle = b.c; ctx.beginPath();
+      ctx.moveTo(b.x - Math.cos(b.a) * 5, b.y - Math.sin(b.a) * 5); ctx.lineTo(b.x + Math.cos(b.a) * 5, b.y + Math.sin(b.a) * 5); ctx.stroke();
+    });
+    if(age < total) requestAnimationFrame(frame);
+    else { removeEventListener('resize', size); cv.remove(); _eggSprinkling = false; }
+  })(t0);
+}
+
+// ---- Flyer mode: the Konami code, or swipe up-up-down-down on the logo -----
+function flyerMode(){
+  if(document.body.classList.contains('flyer-mode')) return;
+  document.body.classList.add('flyer-mode');
+  eggNoteFound('flyer', 'Flyer mode');
+  setTimeout(function(){ document.body.classList.remove('flyer-mode'); }, 30000);
+}
+(function(){
+  const code = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+  let i = 0;
+  document.addEventListener('keydown', function(e){
+    const k = e.key && e.key.length === 1 ? e.key.toLowerCase() : e.key;
+    i = (k === code[i]) ? i + 1 : (k === code[0] ? 1 : 0);
+    if(i === code.length){ i = 0; flyerMode(); }
+  });
+  const logo = document.querySelector('.masthead-brand'); if(!logo) return;
+  let sy = null, seq = [], last = 0;
+  logo.addEventListener('touchstart', function(e){ sy = e.touches[0].clientY; }, { passive: true });
+  logo.addEventListener('touchend', function(e){
+    if(sy == null) return;
+    const dy = e.changedTouches[0].clientY - sy; sy = null;
+    if(Math.abs(dy) < 25) return;
+    const now = Date.now(); if(now - last > 2500) seq = []; last = now;
+    seq.push(dy < 0 ? 'U' : 'D');
+    if(seq.slice(-4).join('') === 'UUDD'){ seq = []; flyerMode(); }
+  }, { passive: true });
+})();
+
+// ---- The ghost card that floats up from a search ---------------------------
+let _ghostShown = '';
+function ghostFoundCount(){ return GHOSTS.filter(function(g){ return eggLocal().indexOf('ghost:' + g.slug) !== -1; }).length; }
+function ghostPopup(g){
+  if(document.querySelector('.ghost-pop')) return;
+  const firstGhost = eggLocal().indexOf('ghost') === -1;
+  eggFound('ghost:' + g.slug);
+  if(firstGhost) eggNoteFound('ghost', 'A ghost');
+  const pop = document.createElement('div');
+  pop.className = 'ghost-pop'; pop.setAttribute('role', 'dialog'); pop.setAttribute('aria-label', g.name + ', a ghost venue');
+  pop.innerHTML = '<div class="ghost-card">'
+    + '<button type="button" class="ghost-x" aria-label="Close">&times;</button>'
+    + '<div class="ghost-kicker">\ud83d\udc7b Ghost venue</div>'
+    + '<div class="ghost-name">' + esc(g.name) + '</div>'
+    + '<div class="ghost-where">' + esc(g.where) + ' \u00b7 ' + esc(g.years) + '</div>'
+    + '<p class="ghost-line">' + esc(g.line) + '</p>'
+    + '<ul class="ghost-facts">' + g.facts.slice(0, 3).map(function(f){ return '<li>' + esc(f) + '</li>'; }).join('') + '</ul>'
+    + '<div class="ghost-foot"><span class="ghost-count">Ghost hunter \u00b7 ' + ghostFoundCount() + ' of ' + GHOSTS.length + '</span>'
+    + '<a class="ghost-go" href="#/ghost/' + esc(g.slug) + '">Pay tribute \u2192</a></div>'
+    + '</div>';
+  document.body.appendChild(pop);
+  const close = function(){ pop.remove(); document.removeEventListener('keydown', onKey); };
+  const onKey = function(e){ if(e.key === 'Escape') close(); };
+  document.addEventListener('keydown', onKey);
+  pop.addEventListener('click', function(e){
+    if(e.target === pop || e.target.closest('.ghost-x')) close();
+    else if(e.target.closest('.ghost-go')) close();
+  });
+}
+
+// ---- The tribute page --------------------------------------------------------
+async function renderGhostRoute(slug){
+  const g = GHOST_BY_SLUG[slug];
+  const wrap = $('#results'); wrap.innerHTML = '';
+  if(!g){ wrap.innerHTML = '<div class="empty"><h2>Nothing here</h2><p>That room isn\u2019t on our list.</p></div>'; return; }
+  eggFound('ghost:' + g.slug);
+  try{ document.title = g.name + ' (gone, not forgotten) \u2014 Rain Or Shows'; }catch(_){}
+  const page = document.createElement('div'); page.className = 'sub-page gw-page ghost-page';
+  page.innerHTML = '<div class="ghost-kicker">\ud83d\udc7b Ghost venue \u00b7 gone, not forgotten</div>'
+    + '<h1 class="ghost-h">' + esc(g.name) + '</h1>'
+    + '<div class="ghost-where">' + esc(g.where) + ' \u00b7 ' + esc(g.years) + '</div>'
+    + '<p class="ghost-line">' + esc(g.line) + '</p>'
+    + '<ul class="ghost-facts">' + g.facts.map(function(f){ return '<li>' + esc(f) + '</li>'; }).join('') + '</ul>'
+    + '<div class="ghost-src">Sources: ' + g.src.map(function(s){ return '<a href="' + esc(s[1]) + '" target="_blank" rel="noopener">' + esc(s[0]) + '</a>'; }).join(' \u00b7 ') + '</div>'
+    + '<section class="ghost-there"><div class="ghost-there-state">Loading\u2026</div></section>';
+  wrap.appendChild(page);
+  const sb = window.__plAuth;
+  const thereHost = page.querySelector('.ghost-there');
+  let mine = false;
+  if(sb){
+    const r = await safeRpc(sb.rpc('ghost_was_there', { p_slug: g.slug }));
+    if(!page.isConnected) return;
+    const rows = (r && !r.error && r.data) || [];
+    mine = rows.some(function(x){ return x.mine; });
+    const named = rows.filter(function(x){ return x.user_id; }), others = rows.length - named.length;
+    thereHost.innerHTML = '<div class="ghost-there-head"><h3>Who was there</h3><span class="tx-count">' + rows.length + (rows.length === 1 ? ' person' : ' people') + '</span></div>'
+      + '<button type="button" class="ghost-there-btn' + (mine ? ' on' : '') + '" data-ghost-there>' + (mine ? '\u2713 You were there' : 'I was there') + '</button>'
+      + (named.length ? '<div class="ghost-people">' + named.map(function(x){
+          return '<a class="ghost-person" href="' + (x.handle ? '#/u/' + esc(x.handle) : '#') + '">' + avImg(x.user_id, x.display_name, 'av-xs') + '<span>' + esc(x.display_name || 'Someone') + '</span></a>';
+        }).join('') + (others ? '<span class="ghost-others">and ' + others + (others === 1 ? ' other' : ' others') + '</span>' : '') + '</div>'
+        : (others ? '<div class="ghost-others">' + others + (others === 1 ? ' person was' : ' people were') + ' there.</div>' : '<div class="ghost-others">Be the first to say you were there.</div>'));
+    thereHost.querySelector('[data-ghost-there]').addEventListener('click', async function(){
+      if(!state._signedIn){ const b = document.getElementById('authSignInBtn'); if(b) b.click(); return; }
+      this.disabled = true;
+      const res = await safeRpc(sb.rpc('ghost_visit', { p_slug: g.slug, p_on: !mine }));
+      if(res && res.error){ this.disabled = false; return; }
+      renderGhostRoute(g.slug);
+    });
+  } else {
+    thereHost.innerHTML = '<div class="ghost-others">Unavailable right now.</div>';
+  }
+  const pseudo = { title: g.name, venue: g.name, date: '', _slug: 'ghost-' + g.slug };
+  mountPhotos(page, 'ghost-' + g.slug, pseudo, { ghost: true, canAdd: !!state._signedIn && mine });
+  mountComments(page, 'ghost-' + g.slug);
+}
+
+// ---- Your easter eggs, on your own profile ----------------------------------
+async function eggProfileSection(page){
+  eggSyncUp();
+  const sb = window.__plAuth;
+  let eggs = eggLocal(), visits = [];
+  if(sb){
+    const [e, v] = await Promise.all([safeRpc(sb.rpc('my_eggs')), safeRpc(sb.rpc('my_ghost_visits'))]);
+    if(e && !e.error && e.data) e.data.forEach(function(x){ if(eggs.indexOf(x.egg) === -1) eggs.push(x.egg); });
+    if(v && !v.error && v.data) visits = v.data.map(function(x){ return x.ghost_slug; });
+  }
+  const eggN = EGG_LIST.filter(function(x){ return eggs.indexOf(x[0]) !== -1; }).length;
+  const found = GHOSTS.filter(function(g){ return eggs.indexOf('ghost:' + g.slug) !== -1 || visits.indexOf(g.slug) !== -1; });
+  const pin = function(label, n, of, emoji){
+    const done = n >= of;
+    return '<div class="egg-pin' + (done ? ' gold' : '') + '"><span class="egg-pin-e">' + emoji + '</span><b>' + label + '</b><span>' + n + ' of ' + of + '</span></div>';
+  };
+  const sec = document.createElement('section'); sec.className = 'pf-section pf-eggs';
+  sec.innerHTML = '<h3 class="pf-section-head">Easter eggs</h3>'
+    + '<div class="egg-pins">'
+    + pin('Egg hunter', eggN, EGG_LIST.length, '\ud83e\udd5a')
+    + pin('Ghost hunter', found.length, GHOSTS.length, '\ud83d\udc7b')
+    + pin('Was there', visits.length, GHOSTS.length, '\ud83d\udd6f\ufe0f')
+    + '</div>'
+    + (found.length
+      ? '<div class="egg-ghosts">' + found.map(function(g){
+          return '<a class="egg-ghost" href="#/ghost/' + esc(g.slug) + '"><b>' + esc(g.name) + '</b><span>' + esc(g.years) + (visits.indexOf(g.slug) !== -1 ? ' \u00b7 \u2713 was there' : '') + '</span></a>';
+        }).join('') + '</div>'
+      : '<div class="pf-empty">There are easter eggs hidden around the site. None found yet.</div>');
+  page.appendChild(sec);
+}
 
 // ---- Favorites/stubs follow the signed-in account (Fork Stage 7) ----------
 // This subscription is what actually fixes the reported bug: signing out now
