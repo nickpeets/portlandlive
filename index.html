@@ -3648,6 +3648,9 @@ function feedRestore(a){
 
 async function router(){
   var route = parseRoute();
+  // Leaving a ghost page puts the tab title back (Sep 26 2026: it kept saying
+  // "The Green Room (gone, not forgotten)" on the home feed).
+  if(route.type !== 'ghost' && /gone, not forgotten/.test(document.title)) document.title = 'Rain Or Shows \u2014 Portland Live Music Listings';
   var _back = navNote();
   syncSharePath(route);
   _routedHref = location.href;
