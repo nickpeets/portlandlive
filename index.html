@@ -10541,20 +10541,36 @@ function slugHref(slug){
 
 // ---- Eggs found: this device always, the account too when signed in -------
 const EGG_LIST = [['rain','Rain'],['storm','Thunder'],['sprinkles','Sprinkles'],['flyer','Flyer mode'],['foil','Foil stub'],['ghost','A ghost']];
-const EGG_KEY = 'ros_eggs';
-function eggLocal(){ try{ return JSON.parse(localStorage.getItem(EGG_KEY) || '[]') || []; }catch(_){ return []; } }
+// Kept per account on this device (Sep 25 2026 fix: the first version kept
+// one list per browser, so signing in as someone else showed -- and saved --
+// the last person's finds). Signed out, finds go on an anonymous list that
+// joins whichever account signs in next, once.
+const EGG_ANON = 'ros_eggs_anon';
+try{ localStorage.removeItem('ros_eggs'); }catch(_){}      // the old shared list
+function eggKey(){ return state._uid ? 'ros_eggs:' + state._uid : EGG_ANON; }
+function eggLocal(){ try{ return JSON.parse(localStorage.getItem(eggKey()) || '[]') || []; }catch(_){ return []; } }
+function eggSave(list){ try{ localStorage.setItem(eggKey(), JSON.stringify(list)); }catch(_){} }
 function eggFound(id){
   const have = eggLocal();
   const fresh = have.indexOf(id) === -1;
-  if(fresh){ have.push(id); try{ localStorage.setItem(EGG_KEY, JSON.stringify(have)); }catch(_){} }
+  if(fresh){ have.push(id); eggSave(have); }
   const sb = window.__plAuth;
-  if(sb && state._signedIn) safeRpc(sb.rpc('egg_found', { p_egg: id }));
+  if(sb && state._uid) safeRpc(sb.rpc('egg_found', { p_egg: id }));
   return fresh;
 }
-function eggSyncUp(){
-  const sb = window.__plAuth; if(!sb || !state._signedIn) return;
-  eggLocal().forEach(function(id){ safeRpc(sb.rpc('egg_found', { p_egg: id })); });
+// On sign-in: this account's list = what it already has + anything found
+// while signed out on this device.
+async function eggOnAuth(){
+  if(!state._uid) return;
+  const sb = window.__plAuth; if(!sb) return;
+  let anon = []; try{ anon = JSON.parse(localStorage.getItem(EGG_ANON) || '[]') || []; localStorage.removeItem(EGG_ANON); }catch(_){}
+  const mine = eggLocal();
+  anon.forEach(function(e){ if(mine.indexOf(e) === -1) mine.push(e); safeRpc(sb.rpc('egg_found', { p_egg: e })); });
+  const r = await safeRpc(sb.rpc('my_eggs'));
+  ((r && !r.error && r.data) || []).forEach(function(x){ if(mine.indexOf(x.egg) === -1) mine.push(x.egg); });
+  eggSave(mine);
 }
+function eggSyncUp(){}
 function eggToast(msg){
   const t = document.createElement('div'); t.className = 'egg-toast'; t.textContent = msg;
   document.body.appendChild(t);
@@ -10776,6 +10792,8 @@ async function eggProfileSection(page){
     inboxStartPoll();
     sb.auth.onAuthStateChange(async function(_evt, session){
       state._signedIn = !!(session && session.user);
+      state._uid = (session && session.user) ? session.user.id : null;   // easter eggs are per account
+      eggOnAuth();
       // Moderator status and "what I've reported" are per-account; clearing
       // them here stops one account's answers being reused for the next.
       RP_IS_MOD = null;
