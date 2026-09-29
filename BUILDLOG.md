@@ -636,3 +636,5 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **2026-09-25 — Nick's Picks + pin from the feed (8d96728c)** — Picks is named Nick's Picks on the desktop pill, phone Browse menu, empty state, About text and show-page pin labels. mountPickControls runs on every feed piece for moderators: a small corner 📌 Pin button (.pick-mod-feed) on main-feed cards that flips in place; Pin + Drop remain in the Picks view.
 
 - **2026-09-25 — Search scrolls to top (982ef2d3)** — searchRender() wraps render() for both search boxes and jumps to the top when scrolled (Nick: typing a date into the masthead box left him deep in the old feed). The masthead box stays visible while focused and folds on blur, so the jump doesn't interrupt typing.
+
+- **2026-09-28 — Comments on Liner Notes (50f946e3)** — published stories get the show-page comments section (same comments table, slug story-<slug>, like ghost-<slug>): mentions, bold/italic, YouTube cards, report, delete own. slugHref routes story- slugs to #/story/; the bell labels story mentions "Liner Notes". Drafts get none.
