@@ -184,6 +184,10 @@ VENUE_INFO = {
     # town, the way Cascades Amphitheater does it.
     "Trout Lake Hall": ("Trout Lake, WA", "15 Guler Rd, Trout Lake, WA 98650"),
     "The Ruins": ("Hood River, OR", "13 Railroad St, Hood River, OR 97031"),
+    # Southern Oregon (Sep 29 2026, Nick) -- Out of Town.
+    "Ashland Armory": ("Ashland, OR", "208 Oak St, Ashland, OR 97520"),
+    "Talent Club": ("Talent, OR", "114 Talent Ave, Talent, OR 97540"),
+    "Britt Pavilion": ("Jacksonville, OR", "350 S 1st St, Jacksonville, OR 97530"),
 }
 
 def clean(s):
@@ -5849,6 +5853,116 @@ def parse_lyonsden(text, today):
     return rows
 
 
+# ---- Southern Oregon (Sep 29 2026, Nick): Ashland Armory, Talent Club, Britt.
+
+# Ashland Armory (Live at the Armory): Squarespace events at /calendar-of-events.
+# The excerpt is empty; the age is in the body, and nearly every show reads
+# "All Ages ... Full Bar 21+ w/ valid ID" -- the bar line is not the show's age.
+_ARMORY_BASE = "http://www.liveatthearmory.com/calendar-of-events"
+
+
+def parse_armory(text, today):
+    rows = _sqs_json_rows(text, today, "Ashland Armory", "http://www.liveatthearmory.com")
+    try:
+        bodies = {(e.get("fullUrl") or ""): _unhtml(e.get("body")) for e in (json.loads(text).get("upcoming") or [])}
+    except Exception:
+        bodies = {}
+    for r in rows:
+        b = bodies.get(r["venueUrl"].replace("http://www.liveatthearmory.com", ""), "")
+        if re.search(r"(?i)\ball[\s-]+ages\b", b):
+            r["age"] = "all-ages"
+        elif re.search(r"(?i)\b21\s*\+|\b21 and over\b", b):
+            r["age"] = "21+"
+    return rows
+
+
+# Talent Club (Talent, between Ashland and Medford): Elementor post loop at
+# /live-music/, one <article> per show with the venue's own category
+# (live-music / comedy), a date line, a time line, an h5 title and the poster.
+# The room is 21+ only (their footer), so every show is.
+_TALENT_PAGE = "https://talentclublive.com/live-music/"
+
+
+def parse_talentclub(html, today):
+    import html as _h
+    out, seen = [], set()
+    horizon = today + datetime.timedelta(days=HORIZON_DAYS)
+    for art in re.split(r"<article\b", html or "")[1:]:
+        art = art.split("</article>")[0]
+        cats = set(re.findall(r"event_category-([\w-]+)", art[:600]))
+        if not (cats & {"live-music", "comedy"}):
+            continue
+        link = re.search(r'href="(https://talentclublive\.com/event/[^"]+)"', art)
+        title = re.search(r'<h\d[^>]*elementor-heading-title[^>]*>(.*?)</h\d>', art, re.S)
+        info = [clean(_h.unescape(t)) for t in re.findall(r'elementor-post-info__item[^>]*>\s*([^<]*?)\s*<', art)]
+        if not (link and title and info):
+            continue
+        try:
+            d = datetime.datetime.strptime(info[0], "%A, %B %d, %Y").date()
+        except ValueError:
+            continue
+        if not (today <= d <= horizon):
+            continue
+        name = _unhtml(title.group(1))
+        tm = next((to_time(x) for x in info[1:] if to_time(x)), "")
+        key = (d, name.lower())
+        if not name or key in seen:
+            continue
+        seen.add(key)
+        img = re.search(r'<img[^>]+src="([^"]+)"', art)
+        out.append(_batch_row("Talent Club", d.isoformat(), tm, name, link.group(1),
+                              img.group(1) if img else "", "21+", "comedy" in cats))
+    return out
+
+
+# Britt Music & Arts Festival: tiles on britt.org/events/ (grid and calendar
+# views repeat them). Only Britt Pavilion shows are kept -- off-season events
+# at other rooms (a winery, Jacksonville City Hall, Gold Beach) are not the
+# Pavilion's address. Dates carry no year: the next one on or after the week
+# just gone. The Pavilion season is June to September, so this source is
+# empty most of the year (may_be_empty). Comedy headliners play the Pavilion
+# too; each show's own page says so ("comedian", "stand-up special").
+_BRITT_PAGE = "https://britt.org/events/"
+_BRITT_COMEDY = re.compile(r"(?i)\bcomedian\b|\bstand-?up (?:special|comedy|comic|tour)")
+
+
+def _britt_is_comedy(page_html):
+    return bool(_BRITT_COMEDY.search(_unhtml(page_html or "")))
+
+
+def parse_britt(html, today):
+    out, seen = [], set()
+    horizon = today + datetime.timedelta(days=HORIZON_DAYS)
+    for tile in re.split(r'<div class="tile--event\b', html or "")[1:]:
+        link = re.search(r'href="(https://britt\.org/events/[^"]+)"', tile)
+        title = re.search(r'<a class="h5"[^>]*>(.*?)</a>', tile, re.S)
+        md = re.search(r'<span class="month">\s*([A-Za-z]{3})\w*\.?\s+(\d{1,2})', tile)
+        loc = re.search(r'<p class="meta location[^"]*">\s*(.*?)\s*</p>', tile, re.S)
+        if not (link and title and md and loc) or link.group(1) in seen:
+            continue
+        seen.add(link.group(1))
+        if "britt pavilion" not in _unhtml(loc.group(1)).lower():
+            continue
+        try:
+            d = datetime.datetime.strptime("%s %s %d" % (md.group(1).title(), md.group(2), today.year), "%b %d %Y").date()
+        except ValueError:
+            continue
+        if d < today - datetime.timedelta(days=7):
+            d = d.replace(year=d.year + 1)
+        if not (today <= d <= horizon):
+            continue
+        tm = re.search(r'<span class="time">\s*([^<]+)', tile)
+        img = re.search(r'<img[^>]+src="([^"]+)"', tile)
+        comedy = False
+        try:
+            comedy = _britt_is_comedy(fetch(link.group(1)))
+        except Exception:
+            pass
+        out.append(_batch_row("Britt Pavilion", d.isoformat(), to_time(tm.group(1)) if tm else "",
+                              _unhtml(title.group(1)), link.group(1), img.group(1) if img else "", "", comedy))
+    return out
+
+
 # ---- Birch Street Uptown Lounge (Camas): a hand-typed lineup page,
 # "Friday, September 25th: Bass & Face" per line; music Fri/Sat 8-11 PM.
 _BIRCH_LINE = re.compile(r"(?i)\b(?:mon|tues|wednes|thurs|fri|satur|sun)day,?\s+([a-z]+)\s+(\d{1,2})(?:st|nd|rd|th)?\s*[:\-\u2013\u2014]\s*(.+?)(?=\s+(?:mon|tues|wednes|thurs|fri|satur|sun)day,?\s+[a-z]+\s+\d{1,2}|$)")
@@ -6116,6 +6230,11 @@ SOURCES = [
     # Columbia Gorge (Sep 2026)
     {"name": "Trout Lake Hall (troutlakehall.com)", "parser": parse_troutlakehall, "urls": [_TLH_HOME]},
     {"name": "The Ruins (theruins.org)", "parser": parse_theruins, "urls": [_RUINS_PAGE]},
+    # Southern Oregon (Sep 29 2026)
+    {"name": "Ashland Armory (liveatthearmory.com)", "parser": parse_armory, "urls": [_ARMORY_BASE + "?format=json"]},
+    {"name": "Talent Club (talentclublive.com)", "parser": parse_talentclub, "urls": [_TALENT_PAGE]},
+    # Open-air, June to September: empty the rest of the year is normal.
+    {"name": "Britt Pavilion (britt.org)", "parser": parse_britt, "may_be_empty": True, "urls": [_BRITT_PAGE]},
     {"name": "Laurelthirst (laurelthirst.com)", "parser": parse_laurelthirst, "urls": ["https://laurelthirst.com/music-calendar/"]},
     {"name": "Showdown Saloon", "parser": parse_showdown, "urls": ["https://showdownpdx.com/"]},
     {"name": "The Get Down", "parser": parse_getdown, "urls": ["https://thegetdownpdx.com/"]},

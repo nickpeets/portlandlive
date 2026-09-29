@@ -125,6 +125,9 @@ CASES = [
     ("barrel-room.html",        sv.parse_barrelroom,     6, {"time": 6, "imageUrl": 6},  "Eventbrite organizer page: upcomingEvents JSON; mailing-list entries skipped"),
     ("headliners-tribe.json",   sv.parse_headliners,    29, {"time": 29, "imageUrl": 29, "age": 28}, "Tribe REST page 1 (network stubbed, so no page 2); weekly karaoke/cornhole skipped"),
     ("reser-tribe.json",        sv.parse_reser,          3, {"time": 3, "imageUrl": 3},  "Tribe REST; kept by the venue's own Concert/Dance categories, not keywords"),
+    ("armory-sq.json",          sv.parse_armory,         4, {"time": 4, "imageUrl": 4, "age": 4}, "Squarespace events; age from the body, not the 21+ bar line (captured 2026-09-29)"),
+    ("talentclub.html",         sv.parse_talentclub,    16, {"time": 16, "imageUrl": 16, "age": 16, "contentType": 2}, "Elementor loop; venue's own live-music/comedy categories; room is 21+ (captured 2026-09-29)"),
+    ("britt-events.html",       sv.parse_britt,          1, {"time": 1, "imageUrl": 1},  "Pavilion tiles only, grid+calendar deduped, year inferred; off-site events dropped (captured 2026-09-29)"),
 ]
 
 # Pages that were captured and examined but publish NO listing data the
@@ -136,6 +139,7 @@ NEGATIVE = [
     ("aladdin.html",  "no age on the listing; every card links only to etix.com"),
     ("laurelthirst.html", "EventON renders the calendar by AJAX; this HTML is the shell. The real case is laurelthirst-sept2026.html below, fed through a stubbed _laurel_month"),
     ("tomorrows-verse.html", "Wix; events come from the JSON API, not this HTML -- the warmup blob has mainImage, the API tier fieldset did not"),
+    ("britt-event.html", "one britt.org show page (Jim Gaffigan); _britt_is_comedy() reads it -- checked below"),
     ("portland5-detail.html", "one portland5.com event page: dt/dd pairs for age and doors, og:image poster; _p5_detail() reads it, exercised in the enrichment path"),
 ]
 
@@ -174,6 +178,14 @@ def main():
     for fname, why in NEGATIVE:
         present = os.path.exists(os.path.join(FIX, fname))
         print(f"  {'ref ' if present else 'MISSING'} {fname:28s} negative fixture: {why}")
+    print()
+    # Britt: comedy is read from each show's own page (fetched live; the
+    # network is stubbed here, so check the reader on the captured page).
+    if sv._britt_is_comedy(load("britt-event.html")) and not sv._britt_is_comedy(load("talentclub.html")):
+        print("  ok   britt-event.html              comedy read from the show page (and not from a music page)")
+    else:
+        fails += 1
+        print("  FAIL britt-event.html              _britt_is_comedy() misread the captured pages")
     print()
     # The 1905: Turntable Tickets pages ten performances at a time, so the
     # parser fetches page 2..N itself. Feed it the captured page 2 through a

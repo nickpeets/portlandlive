@@ -1172,6 +1172,9 @@ OUT_OF_TOWN_VENUES = {
     "Tower Theatre",              # Bend
     "Midtown Music Hall",         # Bend
     "Domino Room",                # Bend
+    "Ashland Armory",             # Ashland (Sep 29 2026)
+    "Talent Club",                # Talent
+    "Britt Pavilion",             # Jacksonville
 }
 
 
@@ -1293,7 +1296,7 @@ VENUE_TICKETER = {
     "Walters Cultural Arts Center": "venue", "Old Liberty Theater": "venue", "Alberta Abbey": "venue",
     "Realm": "venue", "The Headliners Club": "venue", "Trout Lake Hall": "venue",
     "Aladdin Theater": "venue", "Hawthorne Theatre": "venue", "Revolution Hall": "venue",
-    "Bunk Bar": "venue", "The Siren Theater": "venue", "Tomorrow Theater": "venue",
+    "Bunk Bar": "venue", "The Siren Theater": "venue", "Britt Pavilion": "venue", "Tomorrow Theater": "venue",
     "The Off Beat": "venue", "Trinity Episcopal Cathedral": "venue", "The Get Down": "venue",
 }
 
