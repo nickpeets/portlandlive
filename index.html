@@ -1106,6 +1106,8 @@ body.flyer-mode .masthead-logo img{filter:grayscale(1) contrast(2)}
 .cmt-top{display:flex;align-items:center;gap:8px;margin-bottom:5px}
 .cmt-name{font-family:'Oswald',sans-serif;font-weight:600;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--forest)}
 .cmt-when{font-size:11.5px;color:#7c6a55}
+.cmt-top .cmt-like{font-size:12px;padding:0 4px}
+.cmt-top .cmt-like span:first-child{font-size:14px}
 .cmt-del{margin-left:auto;border:0;background:none;cursor:pointer;font-family:'Oswald',sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#7c6a55;padding:2px 4px;border-radius:6px}
 .cmt-del:hover{color:var(--rust-deep);background:rgba(181,86,43,.1)}
 .cmt-del:disabled{opacity:.5;cursor:default}
@@ -7178,6 +7180,31 @@ async function inboxLoad(){
       }
     }catch(e){ console.warn('[inbox] photo likes threw:', e); }
 
+    // ---- Comment likes (Sep 29 2026) -------------------------------
+    try{
+      const q = await sb.rpc('my_comment_likes', { p_limit: 30 });
+      if(!q.error){
+        const seenNow = txSeenMap();
+        (q.data || []).forEach(function(l){
+          const key = 'cl:' + l.comment_id + ':' + l.last_at;
+          const others = (l.n | 0) - 1;
+          items.push({
+            kind: 'commentlike', seenKey: key, slug: l.show_slug || '',
+            otherId: l.last_user_id,
+            who: (l.last_name || 'Someone') + (others > 0 ? ' and ' + others + (others === 1 ? ' other' : ' others') : ''),
+            handle: l.last_handle || '',
+            kindLabel: 'Liked your comment',
+            snippet: l.body || '',
+            at: l.last_at,
+            unread: !seenNow[key],
+            empty: false
+          });
+        });
+      } else {
+        console.warn('[inbox] comment likes failed:', q.error.message);
+      }
+    }catch(e){ console.warn('[inbox] comment likes threw:', e); }
+
     // ---- Follow requests (Sep 17 2026) -------------------------------
     // These are the only notifications with a decision attached: a follow now
     // waits for you, so nobody reads a followers-only profile by subscribing
@@ -7285,7 +7312,7 @@ async function inboxLoad(){
     // own unread flag from dm_threads_mine, and the ticket/show pass below
     // does not know about it -- without this line DMs were dropped here, so
     // the badge never counted them.
-    const direct = items.filter(function(i){ return i.kind === 'report' || i.kind === 'mention' || i.kind === 'follow' || i.kind === 'followreq' || i.kind === 'didyou' || i.kind === 'photolike' || i.kind === 'dm'; });
+    const direct = items.filter(function(i){ return i.kind === 'report' || i.kind === 'mention' || i.kind === 'follow' || i.kind === 'followreq' || i.kind === 'didyou' || i.kind === 'photolike' || i.kind === 'commentlike' || i.kind === 'dm'; });
     INBOX.items = items.filter(function(i){ return i.kind === 'ticket' || i.kind === 'show'; }).map(function(i){
       const m = latest[(i.kind === 'ticket' ? 't:' : 's:') + i.threadId];
       const unread = !!(m && m.sender_id !== uid
@@ -7437,7 +7464,7 @@ async function inboxOpenThread(idx){
   if(item.kind === 'follow'){ inboxOpenFollow(idx); return; }
   if(item.kind === 'followreq'){ inboxOpenFollowReq(idx); return; }
   if(item.kind === 'didyou'){ txMarkSeen(item.seenKey, item.at); item.unread = false; inboxRenderBadge(); inboxClose(); location.hash = '#/show/' + item.slug; return; }
-  if(item.kind === 'photolike'){ txMarkSeen(item.seenKey, item.at); item.unread = false; inboxRenderBadge(); inboxClose(); if(item.slug) location.hash = slugHref(item.slug); return; }
+  if(item.kind === 'photolike' || item.kind === 'commentlike'){ txMarkSeen(item.seenKey, item.at); item.unread = false; inboxRenderBadge(); inboxClose(); if(item.slug) location.hash = slugHref(item.slug); return; }
   if(item.kind === 'dm'){ inboxOpenDm(idx); return; }
 
   const sb = inboxClient();
@@ -8482,7 +8509,38 @@ document.addEventListener('click', function(e){
   f.title = 'YouTube video';
   b.replaceWith(f);
 });
-function cmtRow(c, myUserId, hidden, resolved, authorHandle){
+// Hearts on comments (Sep 29 2026, Nick): same heart as photos. Counts are
+// public; who liked is never listed; your bell says who liked yours.
+function cmtLikeBtn(id, likes, liked){
+  return '<button type="button" class="ph-like cmt-like' + (liked ? ' on' : '') + '" data-cmt-like="' + esc(id) + '" data-on="' + (liked ? '1' : '0') + '" aria-pressed="' + (liked ? 'true' : 'false') + '" title="' + (liked ? 'Unlike' : 'Like') + '">'
+    + '<span aria-hidden="true">' + (liked ? '\u2665' : '\u2661') + '</span> <span>' + (likes > 0 ? likes : '') + '</span></button>';
+}
+async function cmtLikes(ids){
+  const map = {};
+  const sb = cmtClient();
+  if(!sb || !ids.length) return map;
+  try{
+    const { data, error } = await sb.rpc('comment_likes_for', { p_ids: ids });
+    if(error){ console.warn('[comments] likes failed:', error.message); return map; }
+    (data || []).forEach(function(r){ map[r.comment_id] = { likes: r.likes | 0, liked: !!r.liked }; });
+  }catch(e){ console.warn('[comments] likes threw:', e); }
+  return map;
+}
+async function cmtToggleLike(btn){
+  const sb = cmtClient(), id = btn.getAttribute('data-cmt-like');
+  if(!sb || !id) return;
+  let signedIn = false;
+  try{ signedIn = !!(await sb.auth.getSession()).data.session; }catch(_){}
+  if(!signedIn){ const x = document.getElementById('authSignInBtn'); if(x) x.click(); return; }
+  const on = btn.getAttribute('data-on') !== '1';
+  btn.disabled = true;
+  const r = await safeRpc(sb.rpc('comment_like', { p_id: id, p_on: on }));
+  btn.disabled = false;
+  const row = r && !r.error && Array.isArray(r.data) ? r.data[0] : null;
+  if(!row){ console.warn('[comments] like failed:', r && r.error && (r.error.message || r.error)); return; }
+  btn.outerHTML = cmtLikeBtn(id, row.likes | 0, !!row.liked);
+}
+function cmtRow(c, myUserId, hidden, resolved, authorHandle, like){
   if(c && MY_BLOCKS.has(c.user_id)) return '';   // someone you blocked (Sep 22 2026)
   const mine = myUserId && c.user_id === myUserId;
   // A reported comment keeps its byline but loses its body. Showing who wrote
@@ -8501,6 +8559,7 @@ function cmtRow(c, myUserId, hidden, resolved, authorHandle){
       + avImg(c.user_id, c.display_name)
       + '<span class="cmt-name">' + nameLink(c.display_name, authorHandle) + '</span>'
       + '<span class="cmt-when">' + esc(cmtRelTime(c.created_at)) + '</span>'
+      + (hidden ? '' : cmtLikeBtn(c.id, like ? like.likes : 0, !!(like && like.liked)))
       + (mine ? '<button type="button" class="cmt-del" data-cmt-del="'+esc(c.id)+'">Delete</button>' : '')
       + (hidden ? '' : rpButton('comment', c.id, mine, !!myUserId))
     + '</div>'
@@ -9137,8 +9196,8 @@ async function renderComments(host, slug){
   const ids = rows.map(function(c){ return c.id; });
   // Both are supabase builders (thenables); Promise.all adopts them. Neither
   // is chained with .catch -- the try/catch lives inside each loader.
-  const both = await Promise.all([cmtMentions(ids), cmtAuthors(ids)]);
-  const mentions = both[0], authors = both[1];
+  const both = await Promise.all([cmtMentions(ids), cmtAuthors(ids), cmtLikes(ids)]);
+  const mentions = both[0], authors = both[1], likes = both[2];
   await avLoad(rows.map(function(c){ return c.user_id; }));
   if(myUserId) await rpLoadMine();
   const count = rows.length;
@@ -9147,7 +9206,7 @@ async function renderComments(host, slug){
     + '</div>';
 
   html += count
-    ? '<ul class="cmts-list">' + rows.map(function(c){ return cmtRow(c, myUserId, hiddenSet.has(c.id), mentions[c.id], authors[c.id]); }).join('') + '</ul>'
+    ? '<ul class="cmts-list">' + rows.map(function(c){ return cmtRow(c, myUserId, hiddenSet.has(c.id), mentions[c.id], authors[c.id], likes[c.id]); }).join('') + '</ul>'
     : '<div class="cmts-state">No comments yet — be the first.</div>';
 
   if(myUserId){
@@ -9223,6 +9282,8 @@ function bindComments(host, slug, myUserId){
   }
 
   host.addEventListener('click', async function(e){
+    const lk = e.target.closest('[data-cmt-like]');
+    if(lk){ e.preventDefault(); e.stopPropagation(); await cmtToggleLike(lk); return; }
     const del = e.target.closest('[data-cmt-del]');
     if(!del) return;
     e.preventDefault();
