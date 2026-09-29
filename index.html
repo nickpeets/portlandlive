@@ -4648,6 +4648,12 @@ async function renderStoryRoute(key){
     + '<div class="sr-paper">' + srBlocksHtml(s.body) + '</div>'
     + '</article>';
   srMountShows(wrap);
+  // Comments on Liner Notes (Sep 28 2026, Nick): published stories only --
+  // a draft preview has no permanent slug and no readers yet.
+  if(s.status === 'published' && s.slug){
+    const art = wrap.querySelector('.sr-article');
+    if(art) mountComments(art, 'story-' + s.slug);
+  }
 }
 async function renderStoryEditRoute(id){
   const wrap = $('#results');
@@ -7056,7 +7062,7 @@ async function inboxLoad(){
             // inboxShowLabel only knows the upcoming feed and returns '' for
             // an archived show; a mention on one would otherwise render a
             // blank line.
-            kindLabel: 'Mentioned you' + (label ? ' \u00b7 ' + label : ' \u00b7 a past show'),
+            kindLabel: 'Mentioned you' + (label ? ' \u00b7 ' + label : String(m.show_slug || '').indexOf('story-') === 0 ? ' \u00b7 Liner Notes' : ' \u00b7 a past show'),
             snippet: String(m.body || '').slice(0, 80),
             at: m.created_at,
             unread: !seenNow['mn:' + m.mention_id],
@@ -10554,6 +10560,7 @@ function ghostForQuery(q){
 // A slug that belongs to a ghost page, for links out of the bell and elsewhere.
 function slugHref(slug){
   slug = String(slug || '');
+  if(slug.indexOf('story-') === 0) return '#/story/' + encodeURIComponent(slug.slice(6));
   return slug.indexOf('ghost-') === 0 ? '#/ghost/' + encodeURIComponent(slug.slice(6)) : '#/show/' + encodeURIComponent(slug);
 }
 
