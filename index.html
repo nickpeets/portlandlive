@@ -4483,7 +4483,7 @@ async function linerNotesDot(){
   if(!STORIES_VISIBLE){ on(false); return; }
   const sb = window.__plAuth; if(!sb){ on(false); return; }
   const r = await safeRpc(sb.rpc('stories_list'));
-  const newest = ((r && !r.error && r.data) || []).filter(function(x){ return x.status === 'published' && x.published_at; })
+  const newest = ((r && !r.error && r.data) || []).filter(function(x){ return srLive(x) && x.published_at; })
     .map(function(x){ return Date.parse(x.published_at); }).sort(function(a, b){ return b - a; })[0] || 0;
   let seen = 0; try{ seen = +localStorage.getItem(LN_SEEN) || 0; }catch(_){}
   on(newest > seen && Date.now() - newest < 14 * 864e5);
@@ -4521,6 +4521,14 @@ function srText(md){
 function srShowSlug(v){
   const m = /(?:#\/show\/|\/show\/)([^\/?#\s]+)/.exec(String(v || ''));
   return m ? decodeURIComponent(m[1]) : String(v || '').trim();
+}
+// Scheduled posts (Sep 29 2026, Nick): a published story whose time is still
+// ahead is "scheduled" -- the database only shows it to readers once that time
+// passes; writers see it on the desk until then.
+function srLive(s){ return !!s && s.status === 'published' && (!s.published_at || Date.parse(s.published_at) <= Date.now()); }
+function srScheduled(s){ return !!s && s.status === 'published' && !!s.published_at && Date.parse(s.published_at) > Date.now(); }
+function srWhenTime(iso){
+  try{ return new Date(iso).toLocaleString('en-US', { timeZone: 'America/Los_Angeles', weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }); }catch(_){ return ''; }
 }
 function srWhen(iso){
   try{ return new Date(iso).toLocaleDateString('en-US', { timeZone: 'America/Los_Angeles', month: 'short', day: 'numeric', year: 'numeric' }); }catch(_){ return ''; }
@@ -4600,12 +4608,19 @@ async function renderStoriesRoute(){
   const r = await safeRpc(sb.rpc('stories_list'));
   if(parseRoute().type !== 'stories') return;
   const rows = (r && !r.error && r.data) || [];
-  const pub = rows.filter(function(s){ return s.status === 'published'; });
+  const pub = rows.filter(srLive);
+  const sched = rows.filter(srScheduled).sort(function(a, b){ return Date.parse(a.published_at) - Date.parse(b.published_at); });
   const drafts = rows.filter(function(s){ return s.status !== 'published'; });
   let html = '<div class="sr-page"><div class="sr-kicker">Liner Notes</div>';
   if(STORIES_WRITER){
     html += '<div class="sr-desk"><a class="sr-new" href="#/stories/edit/new">+ New story</a>'
       + '<span class="sr-desk-note">Only you and Tim see this bar.</span></div>';
+    if(sched.length){
+      html += '<div class="sr-drafts"><div class="sr-drafts-h">Scheduled <span class="count">' + sched.length + '</span></div>'
+        + sched.map(function(s){
+            return '<a class="sr-draft" href="#/stories/edit/' + esc(s.id) + '"><b>' + esc(s.title || 'Untitled') + '</b><span>' + esc(s.author_name || s.author_handle || '') + ' \u00b7 goes live ' + esc(srWhenTime(s.published_at)) + '</span></a>';
+          }).join('') + '</div>';
+    }
     if(drafts.length){
       html += '<div class="sr-drafts"><div class="sr-drafts-h">Drafts <span class="count">' + drafts.length + '</span></div>'
         + drafts.map(function(s){
@@ -4641,7 +4656,7 @@ async function renderStoryRoute(key){
   if(!s){ srNotFound(wrap); return; }
   try{ if(typeof trackView === 'function') trackView('/#/story/' + (s.slug || s.id)); }catch(_){}
   wrap.innerHTML = '<article class="sr-page sr-article">'
-    + '<div class="sr-kicker"><a href="#/stories">Liner Notes</a>' + (s.status !== 'published' ? ' \u00b7 <span class="sr-draftflag">Draft preview</span>' : '') + '</div>'
+    + '<div class="sr-kicker"><a href="#/stories">Liner Notes</a>' + (s.status !== 'published' ? ' \u00b7 <span class="sr-draftflag">Draft preview</span>' : srScheduled(s) ? ' \u00b7 <span class="sr-draftflag sr-schedflag">Scheduled \u00b7 ' + esc(srWhenTime(s.published_at)) + '</span>' : '') + '</div>'
     + '<h1 class="sr-title">' + esc(s.title || 'Untitled') + '</h1>'
     + '<div class="sr-by">' + srByline(s) + (s.can_edit ? ' \u00b7 <a href="#/stories/edit/' + esc(s.id) + '">Edit</a>' : '') + '</div>'
     + (s.cover_url ? '<img class="sr-cover" src="' + esc(s.cover_url) + '" alt="">' : '')
@@ -4650,7 +4665,7 @@ async function renderStoryRoute(key){
   srMountShows(wrap);
   // Comments on Liner Notes (Sep 28 2026, Nick): published stories only --
   // a draft preview has no permanent slug and no readers yet.
-  if(s.status === 'published' && s.slug){
+  if(srLive(s) && s.slug){
     const art = wrap.querySelector('.sr-article');
     if(art) mountComments(art, 'story-' + s.slug);
   }
@@ -4669,7 +4684,7 @@ async function renderStoryEditRoute(id){
     const r = await safeRpc(sb.rpc('story_get', { p_key: id }));
     const s = r && !r.error && Array.isArray(r.data) ? r.data[0] : null;
     if(!s){ srNotFound(wrap); return; }
-    st = { id: s.id, title: s.title || '', cover_url: s.cover_url || '', body: Array.isArray(s.body) && s.body.length ? s.body : [{ type: 'text', md: '' }], status: s.status, slug: s.slug, updated_at: s.updated_at };
+    st = { id: s.id, title: s.title || '', cover_url: s.cover_url || '', body: Array.isArray(s.body) && s.body.length ? s.body : [{ type: 'text', md: '' }], status: s.status, slug: s.slug, updated_at: s.updated_at, published_at: s.published_at };
   }
   if(parseRoute().type !== 'storyedit') return;
   // A copy of the open story is kept on this device as you type, so nothing
@@ -4716,7 +4731,7 @@ async function renderStoryEditRoute(id){
   }
   function draw(msg){
     root.innerHTML = '<div class="sr-page se-page">'
-      + '<div class="sr-kicker"><a href="#/stories">Liner Notes</a> \u00b7 ' + (st.status === 'published' ? 'Published' : 'Draft') + '</div>'
+      + '<div class="sr-kicker"><a href="#/stories">Liner Notes</a> \u00b7 ' + (srScheduled(st) ? 'Scheduled \u00b7 goes live ' + esc(srWhenTime(st.published_at)) : st.status === 'published' ? 'Published' : 'Draft') + '</div>'
       + '<input type="text" class="se-title" data-se-title placeholder="Title" value="' + esc(st.title) + '">'
       + '<div class="se-cover">' + (st.cover_url ? '<img src="' + esc(st.cover_url) + '" alt=""><button type="button" data-se-cover-clear>Remove cover</button>' : '') + '<button type="button" class="se-upload" data-se-cover>' + (st.cover_url ? 'Change cover photo' : 'Add a cover photo') + '</button></div>'
       + st.body.map(blockHtml).join('')
@@ -4725,8 +4740,17 @@ async function renderStoryEditRoute(id){
       + (st.id && st.status !== 'published' ? '<button type="button" data-se-delete>Delete draft</button>' : '')
       + '<button type="button" data-se-save>' + (st.status === 'published' ? 'Save changes' : 'Save draft') + '</button>'
       + '<button type="button" data-se-preview>Preview</button>'
-      + '<button type="button" class="se-pub" data-se-publish>' + (st.status === 'published' ? 'Unpublish' : 'Publish') + '</button></div>'
+      + (srLive(st) ? '' : '<span class="se-when"><input type="datetime-local" data-se-when value="' + esc(seWhenValue()) + '" aria-label="Date and time to publish"><button type="button" data-se-schedule>' + (srScheduled(st) ? 'Reschedule' : 'Schedule') + '</button></span>'
+          + (srScheduled(st) ? '<button type="button" data-se-unschedule>Unschedule</button>' : ''))
+      + '<button type="button" class="se-pub" data-se-publish>' + (srLive(st) ? 'Unpublish' : srScheduled(st) ? 'Publish now' : 'Publish') + '</button></div>'
       + '<input type="file" accept="image/*" data-se-file hidden><input type="file" accept="audio/mpeg,audio/mp4,audio/x-m4a,.mp3,.m4a" data-se-afile hidden></div>';
+  }
+  // The schedule box: the story's time if it has one, else tomorrow 9 AM, in
+  // this device's local time (what datetime-local shows and reads).
+  function seWhenValue(){
+    const d = srScheduled(st) ? new Date(st.published_at) : (function(){ const x = new Date(); x.setDate(x.getDate() + 1); x.setHours(9, 0, 0, 0); return x; })();
+    const z = function(n){ return String(n).padStart(2, '0'); };
+    return d.getFullYear() + '-' + z(d.getMonth() + 1) + '-' + z(d.getDate()) + 'T' + z(d.getHours()) + ':' + z(d.getMinutes());
   }
   function collect(){
     const t = root.querySelector('[data-se-title]'); if(t) st.title = t.value;
@@ -4818,14 +4842,37 @@ async function renderStoryEditRoute(id){
       dropBackup(); dirty = false;
       location.hash = '#/stories'; return;
     }
+    if((el = q('data-se-schedule'))){
+      const inp = root.querySelector('[data-se-when]');
+      const when = inp && inp.value ? new Date(inp.value) : null;
+      if(!when || isNaN(when.getTime())){ draw('Pick a date and time first.'); return; }
+      if(when.getTime() <= Date.now() + 60000){ draw('Pick a time in the future.'); return; }
+      if(!(st.title || '').trim() && !((root.querySelector('[data-se-title]') || {}).value || '').trim()){ draw('Give it a title first.'); return; }
+      el.disabled = true;
+      if(!(await save())) return;
+      const r = await safeRpc(sb.rpc('story_schedule', { p_id: st.id, p_at: when.toISOString() }));
+      if(r.error){ draw('Couldn\u2019t schedule: ' + (r.error.message || r.error)); return; }
+      st.status = 'published'; st.published_at = when.toISOString(); st.slug = r.data || st.slug;
+      draw('Scheduled. It goes live ' + srWhenTime(st.published_at) + ' (Portland time). You can keep editing until then.');
+      return;
+    }
+    if((el = q('data-se-unschedule'))){
+      el.disabled = true;
+      if(!(await save())) return;
+      const r = await safeRpc(sb.rpc('story_publish', { p_id: st.id, p_publish: false }));
+      if(r.error){ draw('Couldn\u2019t unschedule: ' + (r.error.message || r.error)); return; }
+      st.status = 'draft'; st.published_at = null;
+      draw('Unscheduled. It\u2019s a draft again.');
+      return;
+    }
     if((el = q('data-se-publish'))){
       el.disabled = true;
-      const going = st.status !== 'published';
+      const going = !srLive(st);
       if(going && !(st.title || '').trim() && !((root.querySelector('[data-se-title]') || {}).value || '').trim()){ draw('Give it a title first.'); return; }
       if(!(await save())) return;
       const r = await safeRpc(sb.rpc('story_publish', { p_id: st.id, p_publish: going }));
       if(r.error){ draw('Couldn\u2019t ' + (going ? 'publish' : 'unpublish') + ': ' + (r.error.message || r.error)); return; }
-      st.status = going ? 'published' : 'draft'; st.slug = r.data || st.slug;
+      st.status = going ? 'published' : 'draft'; st.slug = r.data || st.slug; st.published_at = going ? new Date().toISOString() : st.published_at;
       if(going){ location.hash = '#/story/' + encodeURIComponent(st.slug); return; }
       draw('Unpublished. It\u2019s a draft again.');
     }
@@ -4839,7 +4886,7 @@ async function mountStoryStrip(wrap){
   const anchor = wrap.querySelector('.gw-banner'); if(anchor) anchor.insertAdjacentElement('afterend', host); else wrap.insertBefore(host, wrap.firstChild);
   const sb = window.__plAuth; if(!sb){ host.remove(); return; }
   const r = await safeRpc(sb.rpc('stories_list'));
-  const s = ((r && !r.error && r.data) || []).find(function(x){ return x.status === 'published'; });
+  const s = ((r && !r.error && r.data) || []).find(function(x){ return srLive(x); });
   if(!host.isConnected || !s || Date.now() - new Date(s.published_at).getTime() > 5 * 864e5){ host.remove(); return; }
   host.href = '#/story/' + encodeURIComponent(s.slug);
   host.innerHTML = (s.cover_url ? '<span class="sr-strip-img" style="background-image:url(\'' + esc(s.cover_url) + '\')"></span>' : '')
@@ -11004,6 +11051,9 @@ a.inbox-thread-who:hover{text-decoration:underline}
 .sr-kicker{font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:.12em;text-transform:uppercase;opacity:.85;margin:0 0 8px}
 .sr-kicker a{color:var(--cream)}
 .sr-draftflag{background:var(--rust);border-radius:999px;padding:1px 8px;letter-spacing:.06em}
+.sr-schedflag{background:#3d5a6c}
+.se-when{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap}
+.se-when input{background:none;color:var(--cream);border:1px solid rgba(243,234,215,.5);border-radius:8px;padding:6px 8px;font:14px 'Bitter',Georgia,serif;color-scheme:dark}
 .sr-title{font-family:'Alfa Slab One',serif;font-weight:400;font-size:32px;line-height:1.12;margin:0 0 10px;color:var(--cream)}
 .sr-by{font-family:'Bitter',Georgia,serif;font-size:14.5px;margin:0 0 16px}
 .sr-by a{color:var(--cream)}
