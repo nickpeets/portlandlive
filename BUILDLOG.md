@@ -638,3 +638,5 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **2026-09-25 — Search scrolls to top (982ef2d3)** — searchRender() wraps render() for both search boxes and jumps to the top when scrolled (Nick: typing a date into the masthead box left him deep in the old feed). The masthead box stays visible while focused and folds on blur, so the jump doesn't interrupt typing.
 
 - **2026-09-28 — Comments on Liner Notes (50f946e3)** — published stories get the show-page comments section (same comments table, slug story-<slug>, like ghost-<slug>): mentions, bold/italic, YouTube cards, report, delete own. slugHref routes story- slugs to #/story/; the bell labels story mentions "Liner Notes". Drafts get none.
+
+- **2026-09-29 — Liner Notes: scheduled posts (a2030e05)** — Schedule/Reschedule/Unschedule/Publish now in the editor (datetime-local, device time); Scheduled section on the desk; readers see a story only once published_at passes (stories_list/story_get gate, no cron). SQL: supabase/schema-stories-schedule.sql (story_schedule RPC; story_publish no longer reuses a future time). Share page (og/story) follows at the next nightly build.
