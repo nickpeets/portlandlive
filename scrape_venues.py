@@ -3964,42 +3964,63 @@ FETCH_NOTES = {}
 
 
 def tls_rows(src, url, today):
-    """TLS tier with two fallbacks (Sep 25 2026). Cloudflare now and then
-    challenges the build's connection even with Chrome's handshake -- Kelly's
-    and Realm both came back empty on one build and full on the next. So: the
-    Chrome handshake; if that is challenged or empty, a Safari handshake; if
-    that is too, a real windowed browser (the tier that clears The Goodfoot).
-    Sources marked may_be_empty stop after the handshakes -- an empty calendar
-    is normal for them and not worth a browser every night."""
+    """TLS tier with fallbacks (Sep 25 2026): Chrome handshake, Safari
+    handshake, then a windowed browser (the tier that clears The Goodfoot).
+    Sep 29 2026: the runner's challenge flaps within hours, so if all fail the
+    handshakes get one more round after a pause; the browser tier is windowed
+    for plain pages too (Realm's ran headless) and names its exception.
+    Sources marked may_be_empty stop after the handshakes."""
     tried = []
-    for imp in ("chrome", "safari"):
-        try:
-            rows = src["parser"](fetch_tls(url, impersonate=imp), today) or []
-            if rows:
-                if imp != "chrome":
-                    print(f"  note: {src['name']}: cleared with the {imp} handshake")
-                    FETCH_NOTES[src["name"]] = " \u00b7 ".join(tried + [f"{imp}: {len(rows)} rows"])
-                return rows
-            why = "0 events"
-        except Exception as e:
-            why = type(e).__name__
-        tried.append(f"{imp}: {why}")
-        print(f"  note: {src['name']}: {imp} handshake gave {why}")
+
+    def handshakes(tag=""):
+        for imp in ("chrome", "safari"):
+            try:
+                rows = src["parser"](fetch_tls(url, impersonate=imp), today) or []
+                if rows:
+                    if imp != "chrome" or tag:
+                        print(f"  note: {src['name']}: cleared with the {imp} handshake{tag}")
+                        FETCH_NOTES[src["name"]] = " \u00b7 ".join(tried + [f"{imp}{tag}: {len(rows)} rows"])
+                    return rows
+                why = "0 events"
+            except Exception as e:
+                why = type(e).__name__
+            tried.append(f"{imp}{tag}: {why}")
+            print(f"  note: {src['name']}: {imp} handshake{tag} gave {why}")
+        return []
+
+    rows = handshakes()
+    if rows:
+        return rows
     if src.get("may_be_empty"):
         FETCH_NOTES[src["name"]] = " \u00b7 ".join(tried)
         return []
-    FETCH_NOTES[src["name"]] = " \u00b7 ".join(tried + ["browser: failed"])
     from fetch_headless import fetch_headless, fetch_headless_json
-    if "/wp-json/" in url:
-        home = url.split("/wp-json/")[0] + "/"
-        data = fetch_headless_json(home, url, headed=True)
-        text = json.dumps(data) if data else ""
-    else:
-        text = fetch_headless(url)
-    rows = src["parser"](text, today) or []
-    print(f"  note: {src['name']}: browser fallback got {len(rows)} rows")
-    FETCH_NOTES[src["name"]] = " \u00b7 ".join(tried + [f"browser: {len(rows)} rows" if text else "browser: no page"])
+    try:
+        if "/wp-json/" in url:
+            home = url.split("/wp-json/")[0] + "/"
+            data = fetch_headless_json(home, url, headed=True)
+            text = json.dumps(data) if data else ""
+        else:
+            text = fetch_headless(url, headed=True)
+        rows = src["parser"](text, today) or []
+        tried.append(f"browser: {len(rows)} rows" if text else "browser: no page")
+        print(f"  note: {src['name']}: browser fallback got {len(rows)} rows")
+    except Exception as e:
+        rows = []
+        tried.append(f"browser: {type(e).__name__}")
+        print(f"  note: {src['name']}: browser fallback gave {type(e).__name__}: {e}")
+    if rows:
+        FETCH_NOTES[src["name"]] = " \u00b7 ".join(tried)
+        return rows
+    time.sleep(TLS_RETRY_PAUSE_S)
+    rows = handshakes(" retry")
+    if not rows:
+        FETCH_NOTES[src["name"]] = " \u00b7 ".join(tried)
     return rows
+
+
+# Pause before tls_rows' second round of handshakes (~1 min for two venues).
+TLS_RETRY_PAUSE_S = 30
 
 
 def parse_kellys_olympian(html_text, today):

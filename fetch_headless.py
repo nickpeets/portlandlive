@@ -161,15 +161,19 @@ def _wait_out_challenge(page, budget_s):
         f"challenge did not clear within {budget_s}s (title={page.title()!r})")
 
 
-def fetch_headless(url, wait_s=25, settle_s=2):
-    """Rendered HTML of `url` after the bot challenge clears."""
+def fetch_headless(url, wait_s=25, settle_s=2, headed=False):
+    """Rendered HTML of `url` after the bot challenge clears. headed=True asks
+    for a windowed browser (Sep 29 2026: Realm's fallback ran headless)."""
     try:
         from playwright.sync_api import sync_playwright
     except ImportError as e:
         raise HeadlessUnavailable("playwright not installed") from e
 
-    with sync_playwright() as p:
-        browser = _launch(p)
+    with _Display() as disp, sync_playwright() as p:
+        use_window = headed and disp.ok
+        if headed and not use_window:
+            print("  note: no display for a windowed browser (Xvfb missing); trying headless")
+        browser = _launch_headed(p) if use_window else _launch(p)
         try:
             ctx = _new_context(browser)
             page = ctx.new_page()
