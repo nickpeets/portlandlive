@@ -71,12 +71,12 @@
     "Veterans Memorial Coliseum": "2026-09-30",
     "Wonder Ballroom": "2026-09-30",
     "McMenamins Wilsonville Old Church & Pub": "2026-09-30",
-    "Realm": "2026-09-29",
+    "Realm": "2026-09-30",
     "The Reser": "2026-09-30",
     "Theater of the Clouds": "2026-09-30",
     "Trout Lake Hall": "2026-09-30",
     "Hawthorne Lounge": "2026-09-30",
-    "LaVerne's": "2026-09-24",
+    "LaVerne's": "2026-09-30",
     "Birch Street Uptown Lounge": "2026-09-30",
     "Portland Art Museum": "2026-09-30",
     "Curious Comedy Theater": "2026-09-30",
@@ -111,19 +111,34 @@
     "checked": "2026-09-30",
     "items": [
       {
-        "venue": "Realm",
+        "venue": "Britt Pavilion",
         "kind": "zero",
         "scraped": 0,
-        "shown": 26,
-        "since": "2026-09-29",
-        "drops": "2026-10-07",
-        "days": 1,
-        "why": "chrome: ChallengeError · safari: ChallengeError · browser: 0 rows"
+        "shown": 1,
+        "since": "2026-09-30",
+        "drops": "2026-10-08",
+        "days": 0,
+        "why": "ChallengeError: challenge signature 'One moment' from https://britt.org/events/"
       },
       {
-        "venue": "LaVerne's (lavernespdx.com)",
-        "kind": "quiet",
-        "why": "nothing upcoming posted yet (latest listing 2026-09-24)"
+        "venue": "Talent Club",
+        "kind": "zero",
+        "scraped": 0,
+        "shown": 16,
+        "since": "2026-09-30",
+        "drops": "2026-10-08",
+        "days": 0,
+        "why": "ChallengeError: challenge signature 'One moment' from https://talentclublive.com/live-music/"
+      },
+      {
+        "venue": "Vancouver Elks Lodge",
+        "kind": "zero",
+        "scraped": 0,
+        "shown": 9,
+        "since": "2026-09-30",
+        "drops": "2026-10-08",
+        "days": 0,
+        "why": "ChallengeError: challenge signature 'One moment' from https://elks823.org/wp-json/tribe/events/v1/events?per_page=50"
       },
       {
         "venue": "Cascades Amphitheater (livenation.com)",
@@ -1388,290 +1403,300 @@
       "_hand": true
     },
     {
-      "title": "YUNG BAE",
-      "venue": "Realm",
-      "neighborhood": "Central Eastside",
-      "address": "615 SE Alder St, Portland, OR 97214",
-      "date": "2026-10-01",
-      "time": "",
-      "venueUrl": "https://realmpdx.com/yungbae",
-      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/09/2026.10.01-YUNG-BAE-square-768x768.jpg",
-      "age": "21+"
+      "title": "Jim Gaffigan",
+      "venue": "Britt Pavilion",
+      "neighborhood": "Jacksonville, OR",
+      "address": "350 S 1st St, Jacksonville, OR 97530",
+      "date": "2026-09-30",
+      "time": "8:00 PM",
+      "venueUrl": "https://britt.org/events/jim-gaffigan/",
+      "imageUrl": "https://britt.org/wp-content/uploads/2026/01/JimGaffigan_square-1024x1024.jpg",
+      "age": "",
+      "contentType": "comedy"
     },
     {
-      "title": "MPH: PORTLAND, FOREVER",
-      "venue": "Realm",
-      "neighborhood": "Central Eastside",
-      "address": "615 SE Alder St, Portland, OR 97214",
+      "title": "Blues Dogs",
+      "venue": "Talent Club",
+      "neighborhood": "Talent, OR",
+      "address": "114 Talent Ave, Talent, OR 97540",
       "date": "2026-10-02",
-      "time": "",
-      "venueUrl": "https://realmpdx.com/mph",
-      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/06/mph-web--768x768.webp",
+      "time": "8:00 PM",
+      "venueUrl": "https://talentclublive.com/event/blues-dogs/",
+      "imageUrl": "https://talentclublive.com/wp-content/uploads/2026/09/BLUES-DOGS-768x977.jpg",
       "age": "21+"
     },
     {
-      "title": "R&B FEST: DAYTIME SHOW",
-      "venue": "Realm",
-      "neighborhood": "Central Eastside",
-      "address": "615 SE Alder St, Portland, OR 97214",
+      "title": "Barry The Fish Melton and The Scholer System",
+      "venue": "Talent Club",
+      "neighborhood": "Talent, OR",
+      "address": "114 Talent Ave, Talent, OR 97540",
       "date": "2026-10-03",
-      "time": "",
-      "venueUrl": "https://likeit-loveit.com/us/events/r-and-b-fest-realm-pdx-398/?gad_source=1&gad_campaignid=23937517899&gbraid=0AAAAACKIL_jEKiJpzJW6os3OS2F7mkvnk&gclid=Cj0KCQjwg5zTBhCLARIsAP2AFU6qyxWDaPPGIRH7kZp_LfcqxXvdnX7g8hvlDe3UwmAK51NjhUuvAQwaApH_EALw_wcB",
-      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/07/square-768x768.jpg",
+      "time": "8:00 PM",
+      "venueUrl": "https://talentclublive.com/event/barry-the-fish-melton-and-the-scholer-system/",
+      "imageUrl": "https://talentclublive.com/wp-content/uploads/2026/08/barry-fish-melton-new-768x576.jpg",
       "age": "21+"
     },
     {
-      "title": "LYNY w/ FLAVA D",
-      "venue": "Realm",
-      "neighborhood": "Central Eastside",
-      "address": "615 SE Alder St, Portland, OR 97214",
-      "date": "2026-10-03",
-      "time": "",
-      "venueUrl": "https://realmpdx.com/lyny",
-      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/08/2026.10.03-LYNY-square-1-768x768.jpg",
-      "age": "21+"
-    },
-    {
-      "title": "DIMOND SAINTS w/ SATURNA, YOKO",
-      "venue": "Realm",
-      "neighborhood": "Central Eastside",
-      "address": "615 SE Alder St, Portland, OR 97214",
-      "date": "2026-10-09",
-      "time": "",
-      "venueUrl": "https://realmpdx.com/saints",
-      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/07/images.jpeg",
-      "age": "21+"
-    },
-    {
-      "title": "JESSICA AUDIFFRED: 360 EXPERIENCE - EXTENDED 3 HOUR SET",
-      "venue": "Realm",
-      "neighborhood": "Central Eastside",
-      "address": "615 SE Alder St, Portland, OR 97214",
+      "title": "Sean McLean and the Vibetenders",
+      "venue": "Talent Club",
+      "neighborhood": "Talent, OR",
+      "address": "114 Talent Ave, Talent, OR 97540",
       "date": "2026-10-10",
-      "time": "",
-      "venueUrl": "https://realmpdx.com/jessica",
-      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/06/jessica-aud-card-768x768.webp",
+      "time": "8:00 PM",
+      "venueUrl": "https://talentclublive.com/event/sean-mclean-and-the-vibetenders/",
+      "imageUrl": "https://talentclublive.com/wp-content/uploads/2025/08/sean-mclean-2-768x1024.jpg",
       "age": "21+"
     },
     {
-      "title": "OTT. w/ MFINITY",
-      "venue": "Realm",
-      "neighborhood": "Central Eastside",
-      "address": "615 SE Alder St, Portland, OR 97214",
+      "title": "Wes Urbaniak and The Mountain Folk",
+      "venue": "Talent Club",
+      "neighborhood": "Talent, OR",
+      "address": "114 Talent Ave, Talent, OR 97540",
+      "date": "2026-10-14",
+      "time": "8:00 PM",
+      "venueUrl": "https://talentclublive.com/event/wes-urbaniak-and-the-mountain-folk/",
+      "imageUrl": "https://talentclublive.com/wp-content/uploads/2026/09/Wes-Urbaniak-and-The-Mountain-Folk-768x1024.jpg",
+      "age": "21+"
+    },
+    {
+      "title": "Analog Dog",
+      "venue": "Talent Club",
+      "neighborhood": "Talent, OR",
+      "address": "114 Talent Ave, Talent, OR 97540",
       "date": "2026-10-15",
-      "time": "",
-      "venueUrl": "https://realmpdx.com/ott",
-      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/06/Otts-Happy-Place-square-768x768.jpg",
+      "time": "8:00 PM",
+      "venueUrl": "https://talentclublive.com/event/analog-dog/",
+      "imageUrl": "https://talentclublive.com/wp-content/uploads/2025/11/analog-dog-1-768x1067.jpg",
       "age": "21+"
     },
     {
-      "title": "GALANTIS",
-      "venue": "Realm",
-      "neighborhood": "Central Eastside",
-      "address": "615 SE Alder St, Portland, OR 97214",
-      "date": "2026-10-16",
-      "time": "",
-      "venueUrl": "https://wl.eventim.us/event/galantis/691419?afflky=RealmNightclub",
-      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/06/Galantis-card-768x768.webp",
-      "age": "21+"
-    },
-    {
-      "title": "RAY VOLPE: VOLPETRON ETERNAL",
-      "venue": "Realm",
-      "neighborhood": "Central Eastside",
-      "address": "615 SE Alder St, Portland, OR 97214",
+      "title": "Two21Fly",
+      "venue": "Talent Club",
+      "neighborhood": "Talent, OR",
+      "address": "114 Talent Ave, Talent, OR 97540",
       "date": "2026-10-17",
-      "time": "",
-      "venueUrl": "https://realmpdx.com/rayvolpe",
-      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/07/01-IMGL7390_@omarmaliksalah-768x768.jpg",
+      "time": "8:00 PM",
+      "venueUrl": "https://talentclublive.com/event/two21fly/",
+      "imageUrl": "https://talentclublive.com/wp-content/uploads/2023/06/two21fly-2-1-768x960.jpg",
       "age": "21+"
     },
     {
-      "title": "JUELZ: DRAMATICA TOUR",
-      "venue": "Realm",
-      "neighborhood": "Central Eastside",
-      "address": "615 SE Alder St, Portland, OR 97214",
+      "title": "Comedy Night w/ Marc Yaffee",
+      "venue": "Talent Club",
+      "neighborhood": "Talent, OR",
+      "address": "114 Talent Ave, Talent, OR 97540",
+      "date": "2026-10-18",
+      "time": "7:00 PM",
+      "venueUrl": "https://talentclublive.com/event/marc-yaffee/",
+      "imageUrl": "https://talentclublive.com/wp-content/uploads/2026/07/Sunday-Funday-Marc-Yaffee-768x960.jpg",
+      "age": "21+",
+      "contentType": "comedy"
+    },
+    {
+      "title": "Dusk Dept.",
+      "venue": "Talent Club",
+      "neighborhood": "Talent, OR",
+      "address": "114 Talent Ave, Talent, OR 97540",
       "date": "2026-10-23",
-      "time": "",
-      "venueUrl": "https://realmpdx.com/juelz",
-      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/07/ERIC-PHOTO-SIB-768x768.png",
+      "time": "8:00 PM",
+      "venueUrl": "https://talentclublive.com/event/dusk-dept/",
+      "imageUrl": "https://talentclublive.com/wp-content/uploads/2026/09/dusk-dept-fixed-768x1024.jpg",
       "age": "21+"
     },
     {
-      "title": "CID: OUT OF SERVICE TOUR",
-      "venue": "Realm",
-      "neighborhood": "Central Eastside",
-      "address": "615 SE Alder St, Portland, OR 97214",
+      "title": "Electric Eel w/ Blackstrap Bluegrass",
+      "venue": "Talent Club",
+      "neighborhood": "Talent, OR",
+      "address": "114 Talent Ave, Talent, OR 97540",
       "date": "2026-10-24",
-      "time": "",
-      "venueUrl": "https://realmpdx.com/CID",
-      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/07/DSC01275-768x768.jpg",
+      "time": "8:00 PM",
+      "venueUrl": "https://talentclublive.com/event/electric-eel-2/",
+      "imageUrl": "https://talentclublive.com/wp-content/uploads/2023/11/electric-eel-sat-768x994.jpg",
       "age": "21+"
     },
     {
-      "title": "HAUNTED PALACE: TOKIMONSTA w/ MR. CARMACK, BIANCA OBLIVION, EPISCOOL",
-      "venue": "Realm",
-      "neighborhood": "Central Eastside",
-      "address": "615 SE Alder St, Portland, OR 97214",
+      "title": "Steely Dead - A Sonic Fusion of the Grateful Dead and Steely Dan",
+      "venue": "Talent Club",
+      "neighborhood": "Talent, OR",
+      "address": "114 Talent Ave, Talent, OR 97540",
+      "date": "2026-10-27",
+      "time": "8:00 PM",
+      "venueUrl": "https://talentclublive.com/event/steely-dead/",
+      "imageUrl": "https://talentclublive.com/wp-content/uploads/2026/07/steely-dead-768x960.jpg",
+      "age": "21+"
+    },
+    {
+      "title": "State of Terrapin (Night 1)",
+      "venue": "Talent Club",
+      "neighborhood": "Talent, OR",
+      "address": "114 Talent Ave, Talent, OR 97540",
+      "date": "2026-10-29",
+      "time": "8:00 PM",
+      "venueUrl": "https://talentclublive.com/event/state-of-terrapin/",
+      "imageUrl": "https://talentclublive.com/wp-content/uploads/2025/11/state-of-terrapin-1-768x1024.jpg",
+      "age": "21+"
+    },
+    {
+      "title": "State of Terrapin (Night 2)",
+      "venue": "Talent Club",
+      "neighborhood": "Talent, OR",
+      "address": "114 Talent Ave, Talent, OR 97540",
       "date": "2026-10-30",
-      "time": "",
-      "venueUrl": "https://realmpdx.com/halloween",
-      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/07/2026.10.30-TOKIMONSTA-square-768x768.jpg",
+      "time": "8:00 PM",
+      "venueUrl": "https://talentclublive.com/event/state-of-terrapin-2/",
+      "imageUrl": "https://talentclublive.com/wp-content/uploads/2025/11/state-of-terrapin-1-768x1024.jpg",
       "age": "21+"
     },
     {
-      "title": "HAUNTED PALACE: SIDEPIECE w/ SCRIPT",
-      "venue": "Realm",
-      "neighborhood": "Central Eastside",
-      "address": "615 SE Alder St, Portland, OR 97214",
+      "title": "Collin & Co. Big Band Halloween Hootenanny",
+      "venue": "Talent Club",
+      "neighborhood": "Talent, OR",
+      "address": "114 Talent Ave, Talent, OR 97540",
       "date": "2026-10-31",
-      "time": "",
-      "venueUrl": "https://realmpdx.com/halloween",
-      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/07/2026.10.31-SIDEPIECE-square-768x768.jpg",
+      "time": "8:00 PM",
+      "venueUrl": "https://talentclublive.com/event/halloween-anniversary-bash-w-collin-co/",
+      "imageUrl": "https://talentclublive.com/wp-content/uploads/2024/09/collin-halloween-768x1024.jpg",
       "age": "21+"
     },
     {
-      "title": "CUT COPY (DJ SET)",
-      "venue": "Realm",
-      "neighborhood": "Central Eastside",
-      "address": "615 SE Alder St, Portland, OR 97214",
-      "date": "2026-11-05",
-      "time": "",
-      "venueUrl": "https://realmpdx.com/cutcopy",
-      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/08/2026.11.05-CUT-COPY-square-768x768.jpg",
-      "age": "21+"
-    },
-    {
-      "title": "DAILY BREAD: VANISHING POINT TOUR (2 NIGHTS)",
-      "venue": "Realm",
-      "neighborhood": "Central Eastside",
-      "address": "615 SE Alder St, Portland, OR 97214",
-      "date": "2026-11-06",
-      "time": "",
-      "venueUrl": "https://realmpdx.com/dailybread",
-      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/07/DB-Press-Shot-1_@mybrainiswarm-768x768.jpg",
-      "age": "21+"
-    },
-    {
-      "title": "DAILY BREAD: VANISHING POINT TOUR (2 NIGHTS)",
-      "venue": "Realm",
-      "neighborhood": "Central Eastside",
-      "address": "615 SE Alder St, Portland, OR 97214",
-      "date": "2026-11-07",
-      "time": "",
-      "venueUrl": "https://realmpdx.com/dailybread",
-      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/07/DB-Press-Shot-1_@mybrainiswarm-768x768.jpg",
-      "age": "21+"
-    },
-    {
-      "title": "BEAUZ",
-      "venue": "Realm",
-      "neighborhood": "Central Eastside",
-      "address": "615 SE Alder St, Portland, OR 97214",
-      "date": "2026-11-13",
-      "time": "",
-      "venueUrl": "https://realmpdx.com/beauz",
-      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/08/2026.11.13-BEAUZ-square-768x768.jpg",
-      "age": "21+"
-    },
-    {
-      "title": "RICHARD FINGER",
-      "venue": "Realm",
-      "neighborhood": "Central Eastside",
-      "address": "615 SE Alder St, Portland, OR 97214",
-      "date": "2026-11-14",
-      "time": "",
-      "venueUrl": "https://realmpdx.com/finger",
-      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/08/26.11.14-RICHARD-FINGER-square.jpg",
-      "age": "21+"
-    },
-    {
-      "title": "EMANCIPATOR: CHRYSALIS TOUR",
-      "venue": "Realm",
-      "neighborhood": "Central Eastside",
-      "address": "615 SE Alder St, Portland, OR 97214",
+      "title": "Watkins Glen’s Super Deluxe Allstar Band",
+      "venue": "Talent Club",
+      "neighborhood": "Talent, OR",
+      "address": "114 Talent Ave, Talent, OR 97540",
       "date": "2026-11-20",
-      "time": "",
-      "venueUrl": "https://realmpdx.com/emancipator",
-      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/07/2026.11.20-EMANCIPATOR-square-768x768.jpg",
+      "time": "8:00 PM",
+      "venueUrl": "https://talentclublive.com/event/watkins-glen/",
+      "imageUrl": "https://talentclublive.com/wp-content/uploads/2024/01/watkins-glen-3-768x960.jpg",
       "age": "21+"
     },
     {
-      "title": "DENNETT: BACK TO THE ROADHOUSE TOUR (360 SET)",
-      "venue": "Realm",
-      "neighborhood": "Central Eastside",
-      "address": "615 SE Alder St, Portland, OR 97214",
-      "date": "2026-11-25",
-      "time": "",
-      "venueUrl": "https://realmpdx.com/dennett",
-      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/08/2026.11.25-DENNETT-square-768x768.jpg",
+      "title": "Brett’s House Party",
+      "venue": "Talent Club",
+      "neighborhood": "Talent, OR",
+      "address": "114 Talent Ave, Talent, OR 97540",
+      "date": "2026-11-21",
+      "time": "8:00 PM",
+      "venueUrl": "https://talentclublive.com/event/bretts-house-party/",
+      "imageUrl": "https://talentclublive.com/wp-content/uploads/2026/09/brets-house-party-768x768.jpg",
       "age": "21+"
     },
     {
-      "title": "GRAVAGERZ: BEDROOM TO THE WORLD",
-      "venue": "Realm",
-      "neighborhood": "Central Eastside",
-      "address": "615 SE Alder St, Portland, OR 97214",
-      "date": "2026-11-27",
-      "time": "",
-      "venueUrl": "https://realmpdx.com/gravagerz",
-      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/09/DSC_3903-768x768.jpg",
-      "age": "21+"
+      "title": "Comedy Night w/ Monica Nevi",
+      "venue": "Talent Club",
+      "neighborhood": "Talent, OR",
+      "address": "114 Talent Ave, Talent, OR 97540",
+      "date": "2026-11-22",
+      "time": "7:30 PM",
+      "venueUrl": "https://talentclublive.com/event/comedy-night-w-monica-nevi/",
+      "imageUrl": "https://talentclublive.com/wp-content/uploads/2026/07/Sunday-Funday-Monica-Nevi-768x960.jpg",
+      "age": "21+",
+      "contentType": "comedy"
     },
     {
-      "title": "SABAI x HOANG presents SECOND CHANCE TOUR",
-      "venue": "Realm",
-      "neighborhood": "Central Eastside",
-      "address": "615 SE Alder St, Portland, OR 97214",
-      "date": "2026-12-04",
-      "time": "",
-      "venueUrl": "https://realmpdx.com/secondchance",
-      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/07/SABAIxHoang_Composite.png",
-      "age": "21+"
+      "title": "Taska Party Band",
+      "venue": "Vancouver Elks Lodge",
+      "neighborhood": "Vancouver, WA",
+      "address": "11605 SE McGillivray Blvd, Vancouver, WA 98683",
+      "date": "2026-09-30",
+      "time": "7:00 PM",
+      "venueUrl": "https://elks823.org/event/taska-party-band-7pm/2026-09-30/",
+      "imageUrl": "https://elks823.org/wp-content/uploads/2026/06/Wednesdays.webp",
+      "age": "",
+      "price": "$6"
     },
     {
-      "title": "TVBOO: Business in the Front, Party in the Back Tour",
-      "venue": "Realm",
-      "neighborhood": "Central Eastside",
-      "address": "615 SE Alder St, Portland, OR 97214",
-      "date": "2026-12-05",
-      "time": "",
-      "venueUrl": "https://realmpdx.com/tvboo",
-      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/07/MG_3634-2-768x768.jpg",
-      "age": "21+"
+      "title": "Elk Town Music",
+      "venue": "Vancouver Elks Lodge",
+      "neighborhood": "Vancouver, WA",
+      "address": "11605 SE McGillivray Blvd, Vancouver, WA 98683",
+      "date": "2026-10-02",
+      "time": "7:00 PM",
+      "venueUrl": "https://elks823.org/event/elk-town-music-7pm-2/2026-10-02/",
+      "imageUrl": "https://elks823.org/wp-content/uploads/2025/11/Elk-Town-Music-FB-post-1.png",
+      "age": ""
     },
     {
-      "title": "INZO: LOCAL VOID TAKEOVER (2 NIGHTS)",
-      "venue": "Realm",
-      "neighborhood": "Central Eastside",
-      "address": "615 SE Alder St, Portland, OR 97214",
-      "date": "2026-12-11",
-      "time": "",
-      "venueUrl": "https://realmpdx.com/inzo",
-      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/08/2026.12.11-12-INZO-square-768x768.jpg",
-      "age": "21+"
+      "title": "SlimJims Band",
+      "venue": "Vancouver Elks Lodge",
+      "neighborhood": "Vancouver, WA",
+      "address": "11605 SE McGillivray Blvd, Vancouver, WA 98683",
+      "date": "2026-10-07",
+      "time": "7:00 PM",
+      "venueUrl": "https://elks823.org/event/slimjims-band-7pm/2026-10-07/",
+      "imageUrl": "https://elks823.org/wp-content/uploads/2026/06/Wednesdays.webp",
+      "age": "",
+      "price": "$6"
     },
     {
-      "title": "INZO: LOCAL VOID TAKEOVER (2 NIGHTS)",
-      "venue": "Realm",
-      "neighborhood": "Central Eastside",
-      "address": "615 SE Alder St, Portland, OR 97214",
-      "date": "2026-12-12",
-      "time": "",
-      "venueUrl": "https://realmpdx.com/inzo",
-      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/08/2026.12.11-12-INZO-square-768x768.jpg",
-      "age": "21+"
+      "title": "Taska Party Band",
+      "venue": "Vancouver Elks Lodge",
+      "neighborhood": "Vancouver, WA",
+      "address": "11605 SE McGillivray Blvd, Vancouver, WA 98683",
+      "date": "2026-10-14",
+      "time": "7:00 PM",
+      "venueUrl": "https://elks823.org/event/taska-party-band-7pm/2026-10-14/",
+      "imageUrl": "https://elks823.org/wp-content/uploads/2026/06/Wednesdays.webp",
+      "age": "",
+      "price": "$6"
     },
     {
-      "title": "BEATS ANTIQUE w/ DAVID STARFIRE, SAVEJ",
-      "venue": "Realm",
-      "neighborhood": "Central Eastside",
-      "address": "615 SE Alder St, Portland, OR 97214",
-      "date": "2026-12-19",
-      "time": "",
-      "venueUrl": "https://realmpdx.com/beatsantique",
-      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/07/36469832_10155757524950669_2705325223154024448_n-768x768.jpg",
-      "age": "21+"
+      "title": "Officer Steak Night, 5PM, with Live Music by SlimJims",
+      "venue": "Vancouver Elks Lodge",
+      "neighborhood": "Vancouver, WA",
+      "address": "11605 SE McGillivray Blvd, Vancouver, WA 98683",
+      "date": "2026-10-16",
+      "time": "5:00 PM",
+      "venueUrl": "https://elks823.org/event/officer-steak-night-5pm-with-live-music-by-northerland-2026-10-16/",
+      "imageUrl": "https://elks823.org/wp-content/uploads/2026/08/SteakNight-Oct16.webp",
+      "age": "",
+      "price": "$27"
+    },
+    {
+      "title": "SlimJims Band",
+      "venue": "Vancouver Elks Lodge",
+      "neighborhood": "Vancouver, WA",
+      "address": "11605 SE McGillivray Blvd, Vancouver, WA 98683",
+      "date": "2026-10-21",
+      "time": "7:00 PM",
+      "venueUrl": "https://elks823.org/event/slimjims-band-7pm/2026-10-21/",
+      "imageUrl": "https://elks823.org/wp-content/uploads/2026/06/Wednesdays.webp",
+      "age": "",
+      "price": "$6"
+    },
+    {
+      "title": "Taska Party Band",
+      "venue": "Vancouver Elks Lodge",
+      "neighborhood": "Vancouver, WA",
+      "address": "11605 SE McGillivray Blvd, Vancouver, WA 98683",
+      "date": "2026-10-28",
+      "time": "7:00 PM",
+      "venueUrl": "https://elks823.org/event/taska-party-band-7pm/2026-10-28/",
+      "imageUrl": "https://elks823.org/wp-content/uploads/2026/06/Wednesdays.webp",
+      "age": "",
+      "price": "$6"
+    },
+    {
+      "title": "SlimJims Band",
+      "venue": "Vancouver Elks Lodge",
+      "neighborhood": "Vancouver, WA",
+      "address": "11605 SE McGillivray Blvd, Vancouver, WA 98683",
+      "date": "2026-11-04",
+      "time": "7:00 PM",
+      "venueUrl": "https://elks823.org/event/slimjims-band-7pm/2026-11-04/",
+      "imageUrl": "https://elks823.org/wp-content/uploads/2026/06/Wednesdays.webp",
+      "age": "",
+      "price": "$6"
+    },
+    {
+      "title": "Elk Town Music",
+      "venue": "Vancouver Elks Lodge",
+      "neighborhood": "Vancouver, WA",
+      "address": "11605 SE McGillivray Blvd, Vancouver, WA 98683",
+      "date": "2026-11-06",
+      "time": "7:00 PM",
+      "venueUrl": "https://elks823.org/event/elk-town-music-7pm-2/2026-11-06/",
+      "imageUrl": "https://elks823.org/wp-content/uploads/2025/11/Elk-Town-Music-FB-post-1.png",
+      "age": ""
     },
     {
       "title": "Rome Wood Presents",
@@ -2065,6 +2090,314 @@
       "age": "21+"
     },
     {
+      "title": "YUNG BAE",
+      "venue": "Realm",
+      "neighborhood": "Central Eastside",
+      "address": "615 SE Alder St, Portland, OR 97214",
+      "date": "2026-10-01",
+      "time": "",
+      "venueUrl": "https://realmpdx.com/yungbae",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/09/2026.10.01-YUNG-BAE-square-768x768.jpg",
+      "age": "21+"
+    },
+    {
+      "title": "MPH: PORTLAND, FOREVER",
+      "venue": "Realm",
+      "neighborhood": "Central Eastside",
+      "address": "615 SE Alder St, Portland, OR 97214",
+      "date": "2026-10-02",
+      "time": "",
+      "venueUrl": "https://realmpdx.com/mph",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/06/mph-web--768x768.webp",
+      "age": "21+"
+    },
+    {
+      "title": "R&B FEST: DAYTIME SHOW",
+      "venue": "Realm",
+      "neighborhood": "Central Eastside",
+      "address": "615 SE Alder St, Portland, OR 97214",
+      "date": "2026-10-03",
+      "time": "",
+      "venueUrl": "https://likeit-loveit.com/us/events/r-and-b-fest-realm-pdx-398/?gad_source=1&gad_campaignid=23937517899&gbraid=0AAAAACKIL_jEKiJpzJW6os3OS2F7mkvnk&gclid=Cj0KCQjwg5zTBhCLARIsAP2AFU6qyxWDaPPGIRH7kZp_LfcqxXvdnX7g8hvlDe3UwmAK51NjhUuvAQwaApH_EALw_wcB",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/07/square-768x768.jpg",
+      "age": "21+"
+    },
+    {
+      "title": "LYNY w/ FLAVA D",
+      "venue": "Realm",
+      "neighborhood": "Central Eastside",
+      "address": "615 SE Alder St, Portland, OR 97214",
+      "date": "2026-10-03",
+      "time": "",
+      "venueUrl": "https://realmpdx.com/lyny",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/08/2026.10.03-LYNY-square-1-768x768.jpg",
+      "age": "21+"
+    },
+    {
+      "title": "DIMOND SAINTS w/ SATURNA, YOKO",
+      "venue": "Realm",
+      "neighborhood": "Central Eastside",
+      "address": "615 SE Alder St, Portland, OR 97214",
+      "date": "2026-10-09",
+      "time": "",
+      "venueUrl": "https://realmpdx.com/saints",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/07/images.jpeg",
+      "age": "21+"
+    },
+    {
+      "title": "JESSICA AUDIFFRED: 360 EXPERIENCE - EXTENDED 3 HOUR SET",
+      "venue": "Realm",
+      "neighborhood": "Central Eastside",
+      "address": "615 SE Alder St, Portland, OR 97214",
+      "date": "2026-10-10",
+      "time": "",
+      "venueUrl": "https://realmpdx.com/jessica",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/06/jessica-aud-card-768x768.webp",
+      "age": "21+"
+    },
+    {
+      "title": "OTT. w/ MFINITY",
+      "venue": "Realm",
+      "neighborhood": "Central Eastside",
+      "address": "615 SE Alder St, Portland, OR 97214",
+      "date": "2026-10-15",
+      "time": "",
+      "venueUrl": "https://realmpdx.com/ott",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/06/Otts-Happy-Place-square-768x768.jpg",
+      "age": "21+"
+    },
+    {
+      "title": "GALANTIS",
+      "venue": "Realm",
+      "neighborhood": "Central Eastside",
+      "address": "615 SE Alder St, Portland, OR 97214",
+      "date": "2026-10-16",
+      "time": "",
+      "venueUrl": "https://wl.eventim.us/event/galantis/691419?afflky=RealmNightclub",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/06/Galantis-card-768x768.webp",
+      "age": "21+"
+    },
+    {
+      "title": "RAY VOLPE: VOLPETRON ETERNAL",
+      "venue": "Realm",
+      "neighborhood": "Central Eastside",
+      "address": "615 SE Alder St, Portland, OR 97214",
+      "date": "2026-10-17",
+      "time": "",
+      "venueUrl": "https://realmpdx.com/rayvolpe",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/07/01-IMGL7390_@omarmaliksalah-768x768.jpg",
+      "age": "21+"
+    },
+    {
+      "title": "JUELZ: DRAMATICA TOUR",
+      "venue": "Realm",
+      "neighborhood": "Central Eastside",
+      "address": "615 SE Alder St, Portland, OR 97214",
+      "date": "2026-10-23",
+      "time": "",
+      "venueUrl": "https://realmpdx.com/juelz",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/07/ERIC-PHOTO-SIB-768x768.png",
+      "age": "21+"
+    },
+    {
+      "title": "CID: OUT OF SERVICE TOUR",
+      "venue": "Realm",
+      "neighborhood": "Central Eastside",
+      "address": "615 SE Alder St, Portland, OR 97214",
+      "date": "2026-10-24",
+      "time": "",
+      "venueUrl": "https://realmpdx.com/CID",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/07/DSC01275-768x768.jpg",
+      "age": "21+"
+    },
+    {
+      "title": "HAUNTED PALACE: TOKIMONSTA w/ MR. CARMACK, BIANCA OBLIVION, EPISCOOL",
+      "venue": "Realm",
+      "neighborhood": "Central Eastside",
+      "address": "615 SE Alder St, Portland, OR 97214",
+      "date": "2026-10-30",
+      "time": "",
+      "venueUrl": "https://realmpdx.com/halloween",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/07/2026.10.30-TOKIMONSTA-square-768x768.jpg",
+      "age": "21+"
+    },
+    {
+      "title": "HAUNTED PALACE: SIDEPIECE w/ SCRIPT",
+      "venue": "Realm",
+      "neighborhood": "Central Eastside",
+      "address": "615 SE Alder St, Portland, OR 97214",
+      "date": "2026-10-31",
+      "time": "",
+      "venueUrl": "https://realmpdx.com/halloween",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/07/2026.10.31-SIDEPIECE-square-768x768.jpg",
+      "age": "21+"
+    },
+    {
+      "title": "CUT COPY (DJ SET)",
+      "venue": "Realm",
+      "neighborhood": "Central Eastside",
+      "address": "615 SE Alder St, Portland, OR 97214",
+      "date": "2026-11-05",
+      "time": "",
+      "venueUrl": "https://realmpdx.com/cutcopy",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/08/2026.11.05-CUT-COPY-square-768x768.jpg",
+      "age": "21+"
+    },
+    {
+      "title": "DAILY BREAD: VANISHING POINT TOUR (2 NIGHTS)",
+      "venue": "Realm",
+      "neighborhood": "Central Eastside",
+      "address": "615 SE Alder St, Portland, OR 97214",
+      "date": "2026-11-06",
+      "time": "",
+      "venueUrl": "https://realmpdx.com/dailybread",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/07/DB-Press-Shot-1_@mybrainiswarm-768x768.jpg",
+      "age": "21+"
+    },
+    {
+      "title": "DAILY BREAD: VANISHING POINT TOUR (2 NIGHTS)",
+      "venue": "Realm",
+      "neighborhood": "Central Eastside",
+      "address": "615 SE Alder St, Portland, OR 97214",
+      "date": "2026-11-07",
+      "time": "",
+      "venueUrl": "https://realmpdx.com/dailybread",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/07/DB-Press-Shot-1_@mybrainiswarm-768x768.jpg",
+      "age": "21+"
+    },
+    {
+      "title": "BEAUZ",
+      "venue": "Realm",
+      "neighborhood": "Central Eastside",
+      "address": "615 SE Alder St, Portland, OR 97214",
+      "date": "2026-11-13",
+      "time": "",
+      "venueUrl": "https://realmpdx.com/beauz",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/08/2026.11.13-BEAUZ-square-768x768.jpg",
+      "age": "21+"
+    },
+    {
+      "title": "RICHARD FINGER",
+      "venue": "Realm",
+      "neighborhood": "Central Eastside",
+      "address": "615 SE Alder St, Portland, OR 97214",
+      "date": "2026-11-14",
+      "time": "",
+      "venueUrl": "https://realmpdx.com/finger",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/08/26.11.14-RICHARD-FINGER-square.jpg",
+      "age": "21+"
+    },
+    {
+      "title": "EMANCIPATOR: CHRYSALIS TOUR",
+      "venue": "Realm",
+      "neighborhood": "Central Eastside",
+      "address": "615 SE Alder St, Portland, OR 97214",
+      "date": "2026-11-20",
+      "time": "",
+      "venueUrl": "https://realmpdx.com/emancipator",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/07/2026.11.20-EMANCIPATOR-square-768x768.jpg",
+      "age": "21+"
+    },
+    {
+      "title": "DENNETT: BACK TO THE ROADHOUSE TOUR (360 SET)",
+      "venue": "Realm",
+      "neighborhood": "Central Eastside",
+      "address": "615 SE Alder St, Portland, OR 97214",
+      "date": "2026-11-25",
+      "time": "",
+      "venueUrl": "https://realmpdx.com/dennett",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/08/2026.11.25-DENNETT-square-768x768.jpg",
+      "age": "21+"
+    },
+    {
+      "title": "GRAVAGERZ: BEDROOM TO THE WORLD",
+      "venue": "Realm",
+      "neighborhood": "Central Eastside",
+      "address": "615 SE Alder St, Portland, OR 97214",
+      "date": "2026-11-27",
+      "time": "",
+      "venueUrl": "https://realmpdx.com/gravagerz",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/09/DSC_3903-768x768.jpg",
+      "age": "21+"
+    },
+    {
+      "title": "SEVEN LIONS",
+      "venue": "Realm",
+      "neighborhood": "Central Eastside",
+      "address": "615 SE Alder St, Portland, OR 97214",
+      "date": "2026-11-28",
+      "time": "",
+      "venueUrl": "https://realmpdx.com/sevenlions",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/09/2026.11.28-SEVEN-LIONS-square-768x768.jpg",
+      "age": "21+"
+    },
+    {
+      "title": "SABAI x HOANG presents SECOND CHANCE TOUR",
+      "venue": "Realm",
+      "neighborhood": "Central Eastside",
+      "address": "615 SE Alder St, Portland, OR 97214",
+      "date": "2026-12-04",
+      "time": "",
+      "venueUrl": "https://realmpdx.com/secondchance",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/07/SABAIxHoang_Composite.png",
+      "age": "21+"
+    },
+    {
+      "title": "TVBOO: Business in the Front, Party in the Back Tour",
+      "venue": "Realm",
+      "neighborhood": "Central Eastside",
+      "address": "615 SE Alder St, Portland, OR 97214",
+      "date": "2026-12-05",
+      "time": "",
+      "venueUrl": "https://realmpdx.com/tvboo",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/07/MG_3634-2-768x768.jpg",
+      "age": "21+"
+    },
+    {
+      "title": "INZO: LOCAL VOID TAKEOVER (2 NIGHTS)",
+      "venue": "Realm",
+      "neighborhood": "Central Eastside",
+      "address": "615 SE Alder St, Portland, OR 97214",
+      "date": "2026-12-11",
+      "time": "",
+      "venueUrl": "https://realmpdx.com/inzo",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/08/2026.12.11-12-INZO-square-768x768.jpg",
+      "age": "21+"
+    },
+    {
+      "title": "INZO: LOCAL VOID TAKEOVER (2 NIGHTS)",
+      "venue": "Realm",
+      "neighborhood": "Central Eastside",
+      "address": "615 SE Alder St, Portland, OR 97214",
+      "date": "2026-12-12",
+      "time": "",
+      "venueUrl": "https://realmpdx.com/inzo",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/08/2026.12.11-12-INZO-square-768x768.jpg",
+      "age": "21+"
+    },
+    {
+      "title": "HEDEX: NU ERA TOUR",
+      "venue": "Realm",
+      "neighborhood": "Central Eastside",
+      "address": "615 SE Alder St, Portland, OR 97214",
+      "date": "2026-12-18",
+      "time": "",
+      "venueUrl": "https://realmpdx.com/hedex",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/09/2026.12.18-HEDEX-square-1-768x767.jpg",
+      "age": "21+"
+    },
+    {
+      "title": "BEATS ANTIQUE w/ DAVID STARFIRE, SAVEJ",
+      "venue": "Realm",
+      "neighborhood": "Central Eastside",
+      "address": "615 SE Alder St, Portland, OR 97214",
+      "date": "2026-12-19",
+      "time": "",
+      "venueUrl": "https://realmpdx.com/beatsantique",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/07/36469832_10155757524950669_2705325223154024448_n-768x768.jpg",
+      "age": "21+"
+    },
+    {
       "title": "Casa Sueño (Night 1) w/Mt. Terror",
       "venue": "Strum PDX",
       "neighborhood": "Buckman",
@@ -2120,12 +2453,34 @@
       "age": "all-ages"
     },
     {
+      "title": "R.E.M. Tribute show",
+      "venue": "Strum PDX",
+      "neighborhood": "Buckman",
+      "address": "1415 SE Stark St #C, Portland, OR 97214",
+      "date": "2026-11-21",
+      "time": "7:00 PM",
+      "venueUrl": "https://strumpdx.com/shows/",
+      "imageUrl": "",
+      "age": "all-ages"
+    },
+    {
       "title": "Lyle Brewer",
       "venue": "Strum PDX",
       "neighborhood": "Buckman",
       "address": "1415 SE Stark St #C, Portland, OR 97214",
       "date": "2026-12-06",
       "time": "3:00 PM",
+      "venueUrl": "https://strumpdx.com/shows/",
+      "imageUrl": "",
+      "age": "all-ages"
+    },
+    {
+      "title": "THMPR feat: Steve Berlin",
+      "venue": "Strum PDX",
+      "neighborhood": "Buckman",
+      "address": "1415 SE Stark St #C, Portland, OR 97214",
+      "date": "2026-12-11",
+      "time": "7:00 PM",
       "venueUrl": "https://strumpdx.com/shows/",
       "imageUrl": "",
       "age": "all-ages"
@@ -3429,24 +3784,57 @@
       "contentType": "comedy"
     },
     {
-      "title": "SuperWave's 80s Halloween Party!",
+      "title": "Dance Floor Mafia",
       "venue": "The Wild Hare Saloon",
       "neighborhood": "Oregon City",
       "address": "1656 S Beavercreek Rd, Oregon City, OR 97045",
-      "date": "2026-10-31",
+      "date": "2026-10-30",
       "time": "8:00 PM",
-      "venueUrl": "https://www.facebook.com/events/1128404879519095",
+      "venueUrl": "https://www.facebook.com/events/1110021348043270",
       "imageUrl": "",
       "age": "21+"
     },
     {
-      "title": "Bottleneck Blues Band",
+      "title": "Vikings In The Basement",
       "venue": "The Wild Hare Saloon",
       "neighborhood": "Oregon City",
       "address": "1656 S Beavercreek Rd, Oregon City, OR 97045",
-      "date": "2026-10-08",
+      "date": "2026-10-10",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.facebook.com/events/1798324891308716",
+      "imageUrl": "",
+      "age": "21+"
+    },
+    {
+      "title": "Midnight & Moonshine",
+      "venue": "The Wild Hare Saloon",
+      "neighborhood": "Oregon City",
+      "address": "1656 S Beavercreek Rd, Oregon City, OR 97045",
+      "date": "2026-10-22",
       "time": "7:00 PM",
-      "venueUrl": "https://www.facebook.com/events/1641819054234501",
+      "venueUrl": "https://www.facebook.com/events/1476975687602866",
+      "imageUrl": "",
+      "age": "21+"
+    },
+    {
+      "title": "Smokeshow",
+      "venue": "The Wild Hare Saloon",
+      "neighborhood": "Oregon City",
+      "address": "1656 S Beavercreek Rd, Oregon City, OR 97045",
+      "date": "2026-10-24",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.facebook.com/events/1542050497956517",
+      "imageUrl": "",
+      "age": "21+"
+    },
+    {
+      "title": "Time Machine",
+      "venue": "The Wild Hare Saloon",
+      "neighborhood": "Oregon City",
+      "address": "1656 S Beavercreek Rd, Oregon City, OR 97045",
+      "date": "2026-10-02",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.facebook.com/events/1756097985597264",
       "imageUrl": "",
       "age": "21+"
     },
@@ -3473,24 +3861,46 @@
       "age": "21+"
     },
     {
-      "title": "Vikings In The Basement",
+      "title": "Brian Odell",
       "venue": "The Wild Hare Saloon",
       "neighborhood": "Oregon City",
       "address": "1656 S Beavercreek Rd, Oregon City, OR 97045",
-      "date": "2026-10-10",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.facebook.com/events/1798324891308716",
+      "date": "2026-10-15",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.facebook.com/events/1741816637106552",
       "imageUrl": "",
       "age": "21+"
     },
     {
-      "title": "Time Machine",
+      "title": "SuperWave's 80s Halloween Party!",
       "venue": "The Wild Hare Saloon",
       "neighborhood": "Oregon City",
       "address": "1656 S Beavercreek Rd, Oregon City, OR 97045",
-      "date": "2026-10-02",
+      "date": "2026-10-31",
       "time": "8:00 PM",
-      "venueUrl": "https://www.facebook.com/events/1756097985597264",
+      "venueUrl": "https://www.facebook.com/events/1128404879519095",
+      "imageUrl": "",
+      "age": "21+"
+    },
+    {
+      "title": "Paradox",
+      "venue": "The Wild Hare Saloon",
+      "neighborhood": "Oregon City",
+      "address": "1656 S Beavercreek Rd, Oregon City, OR 97045",
+      "date": "2026-10-16",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.facebook.com/events/1095054622874232",
+      "imageUrl": "",
+      "age": "21+"
+    },
+    {
+      "title": "Lip Bomb",
+      "venue": "The Wild Hare Saloon",
+      "neighborhood": "Oregon City",
+      "address": "1656 S Beavercreek Rd, Oregon City, OR 97045",
+      "date": "2026-10-23",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.facebook.com/events/1031155772989891",
       "imageUrl": "",
       "age": "21+"
     },
@@ -3517,28 +3927,6 @@
       "age": "21+"
     },
     {
-      "title": "Lip Bomb",
-      "venue": "The Wild Hare Saloon",
-      "neighborhood": "Oregon City",
-      "address": "1656 S Beavercreek Rd, Oregon City, OR 97045",
-      "date": "2026-10-23",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.facebook.com/events/1031155772989891",
-      "imageUrl": "",
-      "age": "21+"
-    },
-    {
-      "title": "Smokeshow",
-      "venue": "The Wild Hare Saloon",
-      "neighborhood": "Oregon City",
-      "address": "1656 S Beavercreek Rd, Oregon City, OR 97045",
-      "date": "2026-10-24",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.facebook.com/events/1542050497956517",
-      "imageUrl": "",
-      "age": "21+"
-    },
-    {
       "title": "Stormy Creek Co.",
       "venue": "The Wild Hare Saloon",
       "neighborhood": "Oregon City",
@@ -3550,46 +3938,13 @@
       "age": "21+"
     },
     {
-      "title": "Paradox",
+      "title": "Bottleneck Blues Band",
       "venue": "The Wild Hare Saloon",
       "neighborhood": "Oregon City",
       "address": "1656 S Beavercreek Rd, Oregon City, OR 97045",
-      "date": "2026-10-16",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.facebook.com/events/1095054622874232",
-      "imageUrl": "",
-      "age": "21+"
-    },
-    {
-      "title": "Brian Odell",
-      "venue": "The Wild Hare Saloon",
-      "neighborhood": "Oregon City",
-      "address": "1656 S Beavercreek Rd, Oregon City, OR 97045",
-      "date": "2026-10-15",
+      "date": "2026-10-08",
       "time": "7:00 PM",
-      "venueUrl": "https://www.facebook.com/events/1741816637106552",
-      "imageUrl": "",
-      "age": "21+"
-    },
-    {
-      "title": "Dance Floor Mafia",
-      "venue": "The Wild Hare Saloon",
-      "neighborhood": "Oregon City",
-      "address": "1656 S Beavercreek Rd, Oregon City, OR 97045",
-      "date": "2026-10-30",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.facebook.com/events/1110021348043270",
-      "imageUrl": "",
-      "age": "21+"
-    },
-    {
-      "title": "Midnight & Moonshine",
-      "venue": "The Wild Hare Saloon",
-      "neighborhood": "Oregon City",
-      "address": "1656 S Beavercreek Rd, Oregon City, OR 97045",
-      "date": "2026-10-22",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.facebook.com/events/1476975687602866",
+      "venueUrl": "https://www.facebook.com/events/1641819054234501",
       "imageUrl": "",
       "age": "21+"
     },
@@ -4320,6 +4675,17 @@
       "age": ""
     },
     {
+      "title": "Pandemic Fairies",
+      "venue": "Tigardville Station",
+      "neighborhood": "Tigard",
+      "address": "12370 SW Main St, Tigard, OR 97223",
+      "date": "2026-10-04",
+      "time": "2:00 PM",
+      "venueUrl": "https://tigardvillestation.com/events",
+      "imageUrl": "",
+      "age": ""
+    },
+    {
       "title": "DJ Tony",
       "venue": "Tigardville Station",
       "neighborhood": "Tigard",
@@ -4347,7 +4713,7 @@
       "neighborhood": "Tigard",
       "address": "12370 SW Main St, Tigard, OR 97223",
       "date": "2026-10-10",
-      "time": "4:00 PM",
+      "time": "6:00 PM",
       "venueUrl": "https://tigardvillestation.com/events",
       "imageUrl": "",
       "age": ""
@@ -4386,6 +4752,39 @@
       "age": ""
     },
     {
+      "title": "Black Slax",
+      "venue": "Tigardville Station",
+      "neighborhood": "Tigard",
+      "address": "12370 SW Main St, Tigard, OR 97223",
+      "date": "2026-10-24",
+      "time": "7:00 PM",
+      "venueUrl": "https://tigardvillestation.com/events",
+      "imageUrl": "",
+      "age": ""
+    },
+    {
+      "title": "Henry Estate Winery Tasting/Paint the Town",
+      "venue": "Tigardville Station",
+      "neighborhood": "Tigard",
+      "address": "12370 SW Main St, Tigard, OR 97223",
+      "date": "2026-10-25",
+      "time": "1:00 PM",
+      "venueUrl": "https://tigardvillestation.com/events",
+      "imageUrl": "",
+      "age": ""
+    },
+    {
+      "title": "Trick or Treat on Main St.",
+      "venue": "Tigardville Station",
+      "neighborhood": "Tigard",
+      "address": "12370 SW Main St, Tigard, OR 97223",
+      "date": "2026-10-30",
+      "time": "3:30 PM",
+      "venueUrl": "https://tigardvillestation.com/events",
+      "imageUrl": "",
+      "age": ""
+    },
+    {
       "title": "Nytebyrds",
       "venue": "Tigardville Station",
       "neighborhood": "Tigard",
@@ -4402,6 +4801,226 @@
       "neighborhood": "Tigard",
       "address": "12370 SW Main St, Tigard, OR 97223",
       "date": "2026-10-31",
+      "time": "7:00 PM",
+      "venueUrl": "https://tigardvillestation.com/events",
+      "imageUrl": "",
+      "age": ""
+    },
+    {
+      "title": "Exit 52",
+      "venue": "Tigardville Station",
+      "neighborhood": "Tigard",
+      "address": "12370 SW Main St, Tigard, OR 97223",
+      "date": "2026-11-06",
+      "time": "7:00 PM",
+      "venueUrl": "https://tigardvillestation.com/events",
+      "imageUrl": "",
+      "age": ""
+    },
+    {
+      "title": "Hidden Track (Formally know as Passion Cats)n Cats",
+      "venue": "Tigardville Station",
+      "neighborhood": "Tigard",
+      "address": "12370 SW Main St, Tigard, OR 97223",
+      "date": "2026-11-07",
+      "time": "7:00 PM",
+      "venueUrl": "https://tigardvillestation.com/events",
+      "imageUrl": "",
+      "age": ""
+    },
+    {
+      "title": "Lipbomb",
+      "venue": "Tigardville Station",
+      "neighborhood": "Tigard",
+      "address": "12370 SW Main St, Tigard, OR 97223",
+      "date": "2026-11-13",
+      "time": "7:00 PM",
+      "venueUrl": "https://tigardvillestation.com/events",
+      "imageUrl": "",
+      "age": ""
+    },
+    {
+      "title": "Rewound Sound",
+      "venue": "Tigardville Station",
+      "neighborhood": "Tigard",
+      "address": "12370 SW Main St, Tigard, OR 97223",
+      "date": "2026-11-14",
+      "time": "7:00 PM",
+      "venueUrl": "https://tigardvillestation.com/events",
+      "imageUrl": "",
+      "age": ""
+    },
+    {
+      "title": "Taylor Gaddi",
+      "venue": "Tigardville Station",
+      "neighborhood": "Tigard",
+      "address": "12370 SW Main St, Tigard, OR 97223",
+      "date": "2026-11-20",
+      "time": "7:00 PM",
+      "venueUrl": "https://tigardvillestation.com/events",
+      "imageUrl": "",
+      "age": ""
+    },
+    {
+      "title": "Probable Cause",
+      "venue": "Tigardville Station",
+      "neighborhood": "Tigard",
+      "address": "12370 SW Main St, Tigard, OR 97223",
+      "date": "2026-11-21",
+      "time": "7:00 PM",
+      "venueUrl": "https://tigardvillestation.com/events",
+      "imageUrl": "",
+      "age": ""
+    },
+    {
+      "title": "DJ Tony",
+      "venue": "Tigardville Station",
+      "neighborhood": "Tigard",
+      "address": "12370 SW Main St, Tigard, OR 97223",
+      "date": "2026-11-25",
+      "time": "7:00 PM",
+      "venueUrl": "https://tigardvillestation.com/events",
+      "imageUrl": "",
+      "age": ""
+    },
+    {
+      "title": "Thanksgiving Day",
+      "venue": "Tigardville Station",
+      "neighborhood": "Tigard",
+      "address": "12370 SW Main St, Tigard, OR 97223",
+      "date": "2026-11-26",
+      "time": "3:00 PM",
+      "venueUrl": "https://tigardvillestation.com/events",
+      "imageUrl": "",
+      "age": ""
+    },
+    {
+      "title": "Bon Ton Rulers",
+      "venue": "Tigardville Station",
+      "neighborhood": "Tigard",
+      "address": "12370 SW Main St, Tigard, OR 97223",
+      "date": "2026-11-27",
+      "time": "7:00 PM",
+      "venueUrl": "https://tigardvillestation.com/events",
+      "imageUrl": "",
+      "age": ""
+    },
+    {
+      "title": "Sweet Sam Band",
+      "venue": "Tigardville Station",
+      "neighborhood": "Tigard",
+      "address": "12370 SW Main St, Tigard, OR 97223",
+      "date": "2026-11-28",
+      "time": "7:00 PM",
+      "venueUrl": "https://tigardvillestation.com/events",
+      "imageUrl": "",
+      "age": ""
+    },
+    {
+      "title": "Angel Bouchet",
+      "venue": "Tigardville Station",
+      "neighborhood": "Tigard",
+      "address": "12370 SW Main St, Tigard, OR 97223",
+      "date": "2026-12-04",
+      "time": "7:00 PM",
+      "venueUrl": "https://tigardvillestation.com/events",
+      "imageUrl": "",
+      "age": ""
+    },
+    {
+      "title": "Beadheads",
+      "venue": "Tigardville Station",
+      "neighborhood": "Tigard",
+      "address": "12370 SW Main St, Tigard, OR 97223",
+      "date": "2026-12-05",
+      "time": "7:00 PM",
+      "venueUrl": "https://tigardvillestation.com/events",
+      "imageUrl": "",
+      "age": ""
+    },
+    {
+      "title": "Christmas Double Feature",
+      "venue": "Tigardville Station",
+      "neighborhood": "Tigard",
+      "address": "12370 SW Main St, Tigard, OR 97223",
+      "date": "2026-12-10",
+      "time": "7:00 PM",
+      "venueUrl": "https://tigardvillestation.com/events",
+      "imageUrl": "",
+      "age": ""
+    },
+    {
+      "title": "Kevin Selfe",
+      "venue": "Tigardville Station",
+      "neighborhood": "Tigard",
+      "address": "12370 SW Main St, Tigard, OR 97223",
+      "date": "2026-12-11",
+      "time": "7:00 PM",
+      "venueUrl": "https://tigardvillestation.com/events",
+      "imageUrl": "",
+      "age": ""
+    },
+    {
+      "title": "Dischords",
+      "venue": "Tigardville Station",
+      "neighborhood": "Tigard",
+      "address": "12370 SW Main St, Tigard, OR 97223",
+      "date": "2026-12-12",
+      "time": "7:00 PM",
+      "venueUrl": "https://tigardvillestation.com/events",
+      "imageUrl": "",
+      "age": ""
+    },
+    {
+      "title": "Wiseguys",
+      "venue": "Tigardville Station",
+      "neighborhood": "Tigard",
+      "address": "12370 SW Main St, Tigard, OR 97223",
+      "date": "2026-12-18",
+      "time": "7:00 PM",
+      "venueUrl": "https://tigardvillestation.com/events",
+      "imageUrl": "",
+      "age": ""
+    },
+    {
+      "title": "NyteByrds",
+      "venue": "Tigardville Station",
+      "neighborhood": "Tigard",
+      "address": "12370 SW Main St, Tigard, OR 97223",
+      "date": "2026-12-19",
+      "time": "7:00 PM",
+      "venueUrl": "https://tigardvillestation.com/events",
+      "imageUrl": "",
+      "age": ""
+    },
+    {
+      "title": "Christmas Eve",
+      "venue": "Tigardville Station",
+      "neighborhood": "Tigard",
+      "address": "12370 SW Main St, Tigard, OR 97223",
+      "date": "2026-12-24",
+      "time": "11:00 AM",
+      "venueUrl": "https://tigardvillestation.com/events",
+      "imageUrl": "",
+      "age": ""
+    },
+    {
+      "title": "Christmas Day",
+      "venue": "Tigardville Station",
+      "neighborhood": "Tigard",
+      "address": "12370 SW Main St, Tigard, OR 97223",
+      "date": "2026-12-25",
+      "time": "11:00 AM",
+      "venueUrl": "https://tigardvillestation.com/events",
+      "imageUrl": "",
+      "age": ""
+    },
+    {
+      "title": "Anni Piper",
+      "venue": "Tigardville Station",
+      "neighborhood": "Tigard",
+      "address": "12370 SW Main St, Tigard, OR 97223",
+      "date": "2026-12-26",
       "time": "7:00 PM",
       "venueUrl": "https://tigardvillestation.com/events",
       "imageUrl": "",
@@ -5665,6 +6284,30 @@
       "contentType": "comedy"
     },
     {
+      "title": "Dump Your Jokes - Open Mic",
+      "venue": "Kickstand Comedy",
+      "neighborhood": "Hosford-Abernethy",
+      "address": "1006 SE Hawthorne Blvd, Portland, OR 97214",
+      "date": "2026-11-07",
+      "time": "5:00 PM",
+      "venueUrl": "https://www.crowdwork.com/e/dump-your-jokes-open-mic",
+      "imageUrl": "https://cdn.fourthwalltickets.com/uploads/event/imgs/18247/Dump_Your_Jokes_-slideshow-2.png",
+      "age": "",
+      "contentType": "comedy"
+    },
+    {
+      "title": "Dump Your Jokes - Open Mic",
+      "venue": "Kickstand Comedy",
+      "neighborhood": "Hosford-Abernethy",
+      "address": "1006 SE Hawthorne Blvd, Portland, OR 97214",
+      "date": "2026-12-05",
+      "time": "5:00 PM",
+      "venueUrl": "https://www.crowdwork.com/e/dump-your-jokes-open-mic",
+      "imageUrl": "https://cdn.fourthwalltickets.com/uploads/event/imgs/18247/Dump_Your_Jokes_-slideshow-2.png",
+      "age": "",
+      "contentType": "comedy"
+    },
+    {
       "title": "Good Vibes: Saturday Night House Teams",
       "venue": "Kickstand Comedy",
       "neighborhood": "Hosford-Abernethy",
@@ -6145,6 +6788,42 @@
       "contentType": "comedy"
     },
     {
+      "title": "Grace & Bryant",
+      "venue": "Kickstand Comedy",
+      "neighborhood": "Hosford-Abernethy",
+      "address": "1006 SE Hawthorne Blvd, Portland, OR 97214",
+      "date": "2026-12-04",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.crowdwork.com/e/grace-bryant",
+      "imageUrl": "https://cdn.fourthwalltickets.com/uploads/event/imgs/7523/Grace___Bryant_Square.png",
+      "age": "",
+      "contentType": "comedy"
+    },
+    {
+      "title": "Grace & Bryant",
+      "venue": "Kickstand Comedy",
+      "neighborhood": "Hosford-Abernethy",
+      "address": "1006 SE Hawthorne Blvd, Portland, OR 97214",
+      "date": "2026-12-04",
+      "time": "9:00 PM",
+      "venueUrl": "https://www.crowdwork.com/e/grace-bryant",
+      "imageUrl": "https://cdn.fourthwalltickets.com/uploads/event/imgs/7523/Grace___Bryant_Square.png",
+      "age": "",
+      "contentType": "comedy"
+    },
+    {
+      "title": "Grace & Bryant",
+      "venue": "Kickstand Comedy",
+      "neighborhood": "Hosford-Abernethy",
+      "address": "1006 SE Hawthorne Blvd, Portland, OR 97214",
+      "date": "2026-12-05",
+      "time": "9:00 PM",
+      "venueUrl": "https://www.crowdwork.com/e/grace-bryant",
+      "imageUrl": "https://cdn.fourthwalltickets.com/uploads/event/imgs/7523/Grace___Bryant_Square.png",
+      "age": "",
+      "contentType": "comedy"
+    },
+    {
       "title": "The Astrolo-Show",
       "venue": "Kickstand Comedy",
       "neighborhood": "Hosford-Abernethy",
@@ -6234,14 +6913,14 @@
       "age": "21+"
     },
     {
-      "title": "Overcalc (Baltimore) + National Hair + Soup Purse",
+      "title": "National Hair + Overcalc (Baltimore) + Soup Purse",
       "venue": "Turn! Turn! Turn!",
       "neighborhood": "Humboldt",
       "address": "8 NE Killingsworth St, Portland, OR 97211",
       "date": "2026-10-05",
       "time": "8:00 PM",
-      "venueUrl": "https://app.opendate.io/e/overcalc-baltimore-national-hair-soup-purse-october-05-2026-755377",
-      "imageUrl": "https://s3.amazonaws.com/opendate-aws-assets/confirms/main_event_images/000/755/377/compressed/Screenshot_2026-09-22_at_7.04.05%E2%80%AFPM.jpg?1790129162",
+      "venueUrl": "https://app.opendate.io/e/national-hair-overcalc-baltimore-soup-purse-october-05-2026-755377",
+      "imageUrl": "https://s3.amazonaws.com/opendate-aws-assets/confirms/main_event_images/000/755/377/compressed/unnamed-1.jpg?1790804992",
       "age": "21+"
     },
     {
@@ -7367,6 +8046,18 @@
       "contentType": "comedy"
     },
     {
+      "title": "Chris Distefano",
+      "venue": "Helium Comedy Club",
+      "neighborhood": "Central Eastside",
+      "address": "1510 SE 9th Ave, Portland, OR 97214",
+      "date": "2026-10-10",
+      "time": "4:00 PM",
+      "venueUrl": "https://portland.heliumcomedy.com/shows/386383",
+      "imageUrl": "https://files.seatengine.com/talent/headshots/photos/95391/full/data",
+      "age": "",
+      "contentType": "comedy"
+    },
+    {
       "title": "Jerry Wayne Longmire (Neon Room)",
       "venue": "Helium Comedy Club",
       "neighborhood": "Central Eastside",
@@ -7384,8 +8075,8 @@
       "neighborhood": "Central Eastside",
       "address": "1510 SE 9th Ave, Portland, OR 97214",
       "date": "2026-10-10",
-      "time": "4:00 PM",
-      "venueUrl": "https://portland.heliumcomedy.com/shows/386383",
+      "time": "6:30 PM",
+      "venueUrl": "https://portland.heliumcomedy.com/shows/386384",
       "imageUrl": "https://files.seatengine.com/talent/headshots/photos/95391/full/data",
       "age": "",
       "contentType": "comedy"
@@ -7399,18 +8090,6 @@
       "time": "6:30 PM",
       "venueUrl": "https://portland.heliumcomedy.com/shows/378388",
       "imageUrl": "https://files.seatengine.com/talent/headshots/photos/89951/full/data",
-      "age": "",
-      "contentType": "comedy"
-    },
-    {
-      "title": "Chris Distefano",
-      "venue": "Helium Comedy Club",
-      "neighborhood": "Central Eastside",
-      "address": "1510 SE 9th Ave, Portland, OR 97214",
-      "date": "2026-10-10",
-      "time": "6:30 PM",
-      "venueUrl": "https://portland.heliumcomedy.com/shows/386384",
-      "imageUrl": "https://files.seatengine.com/talent/headshots/photos/95391/full/data",
       "age": "",
       "contentType": "comedy"
     },
@@ -9143,6 +9822,18 @@
       "contentType": "comedy"
     },
     {
+      "title": "Ify and Erika Solve Every Problem",
+      "venue": "Helium Comedy Club",
+      "neighborhood": "Central Eastside",
+      "address": "1510 SE 9th Ave, Portland, OR 97214",
+      "date": "2026-12-12",
+      "time": "4:00 PM",
+      "venueUrl": "https://portland.heliumcomedy.com/shows/390153",
+      "imageUrl": "https://files.seatengine.com/talent/headshots/photos/96384/full/data",
+      "age": "",
+      "contentType": "comedy"
+    },
+    {
       "title": "Dave Attell",
       "venue": "Helium Comedy Club",
       "neighborhood": "Central Eastside",
@@ -9381,6 +10072,17 @@
       "imageUrl": "https://files.seatengine.com/talent/headshots/photos/94817/full/data",
       "age": "",
       "contentType": "comedy"
+    },
+    {
+      "title": "ATLaVerne’s: Guest Shift from Atlanta",
+      "venue": "LaVerne's",
+      "neighborhood": "Woodlawn",
+      "address": "700 NE Dekum St, Portland, OR 97211",
+      "date": "2026-10-05",
+      "time": "6:00 PM",
+      "venueUrl": "https://lavernespdx.com/events",
+      "imageUrl": "https://images.squarespace-cdn.com/content/v1/683b4336d7073618fb3d496d/077cb2ea-568d-44cb-99f9-8263261a030f/ATL+POPUP+IG+STORY-1.jpg",
+      "age": ""
     },
     {
       "title": "Soul Cookin’",
@@ -9743,6 +10445,96 @@
       "price": "$6"
     },
     {
+      "title": "DomProv",
+      "venue": "Funhouse Lounge",
+      "neighborhood": "Hosford-Abernethy",
+      "address": "2432 SE 11th Ave, Portland, OR 97214",
+      "date": "2026-11-07",
+      "time": "10:00 PM",
+      "venueUrl": "https://www.funhouselounge.com/calendar/",
+      "imageUrl": ""
+    },
+    {
+      "title": "DomProv",
+      "venue": "Funhouse Lounge",
+      "neighborhood": "Hosford-Abernethy",
+      "address": "2432 SE 11th Ave, Portland, OR 97214",
+      "date": "2026-12-05",
+      "time": "10:00 PM",
+      "venueUrl": "https://www.funhouselounge.com/calendar/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Roast Battle Portland",
+      "venue": "Funhouse Lounge",
+      "neighborhood": "Hosford-Abernethy",
+      "address": "2432 SE 11th Ave, Portland, OR 97214",
+      "date": "2026-10-01",
+      "time": "10:00 PM",
+      "venueUrl": "https://www.funhouselounge.com/calendar/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Roast Battle Portland",
+      "venue": "Funhouse Lounge",
+      "neighborhood": "Hosford-Abernethy",
+      "address": "2432 SE 11th Ave, Portland, OR 97214",
+      "date": "2026-11-05",
+      "time": "10:00 PM",
+      "venueUrl": "https://www.funhouselounge.com/calendar/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Roast Battle Portland",
+      "venue": "Funhouse Lounge",
+      "neighborhood": "Hosford-Abernethy",
+      "address": "2432 SE 11th Ave, Portland, OR 97214",
+      "date": "2026-12-03",
+      "time": "10:00 PM",
+      "venueUrl": "https://www.funhouselounge.com/calendar/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Stranger Things the Musical Parody",
+      "venue": "Funhouse Lounge",
+      "neighborhood": "Hosford-Abernethy",
+      "address": "2432 SE 11th Ave, Portland, OR 97214",
+      "date": "2026-10-30",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.funhouselounge.com/calendar/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Stranger Things the Musical Parody",
+      "venue": "Funhouse Lounge",
+      "neighborhood": "Hosford-Abernethy",
+      "address": "2432 SE 11th Ave, Portland, OR 97214",
+      "date": "2026-10-04",
+      "time": "5:00 PM",
+      "venueUrl": "https://www.funhouselounge.com/calendar/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Stranger Things the Musical Parody",
+      "venue": "Funhouse Lounge",
+      "neighborhood": "Hosford-Abernethy",
+      "address": "2432 SE 11th Ave, Portland, OR 97214",
+      "date": "2026-10-11",
+      "time": "5:00 PM",
+      "venueUrl": "https://www.funhouselounge.com/calendar/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Stranger Things the Musical Parody",
+      "venue": "Funhouse Lounge",
+      "neighborhood": "Hosford-Abernethy",
+      "address": "2432 SE 11th Ave, Portland, OR 97214",
+      "date": "2026-10-25",
+      "time": "5:00 PM",
+      "venueUrl": "https://www.funhouselounge.com/calendar/",
+      "imageUrl": ""
+    },
+    {
       "title": "Banana Bread Comedy",
       "venue": "Funhouse Lounge",
       "neighborhood": "Hosford-Abernethy",
@@ -9769,6 +10561,166 @@
       "address": "2432 SE 11th Ave, Portland, OR 97214",
       "date": "2026-12-11",
       "time": "10:00 PM",
+      "venueUrl": "https://www.funhouselounge.com/calendar/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Center of Attention",
+      "venue": "Funhouse Lounge",
+      "neighborhood": "Hosford-Abernethy",
+      "address": "2432 SE 11th Ave, Portland, OR 97214",
+      "date": "2026-10-24",
+      "time": "10:00 PM",
+      "venueUrl": "https://www.funhouselounge.com/calendar/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Center of Attention",
+      "venue": "Funhouse Lounge",
+      "neighborhood": "Hosford-Abernethy",
+      "address": "2432 SE 11th Ave, Portland, OR 97214",
+      "date": "2026-11-28",
+      "time": "10:00 PM",
+      "venueUrl": "https://www.funhouselounge.com/calendar/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Center of Attention",
+      "venue": "Funhouse Lounge",
+      "neighborhood": "Hosford-Abernethy",
+      "address": "2432 SE 11th Ave, Portland, OR 97214",
+      "date": "2026-12-26",
+      "time": "10:00 PM",
+      "venueUrl": "https://www.funhouselounge.com/calendar/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Midnight Mic (late night stand up open mic)",
+      "venue": "Funhouse Lounge",
+      "neighborhood": "Hosford-Abernethy",
+      "address": "2432 SE 11th Ave, Portland, OR 97214",
+      "date": "2026-10-02",
+      "time": "11:55 PM",
+      "venueUrl": "https://www.funhouselounge.com/calendar/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Midnight Mic (late night stand up open mic)",
+      "venue": "Funhouse Lounge",
+      "neighborhood": "Hosford-Abernethy",
+      "address": "2432 SE 11th Ave, Portland, OR 97214",
+      "date": "2026-10-09",
+      "time": "11:55 PM",
+      "venueUrl": "https://www.funhouselounge.com/calendar/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Midnight Mic (late night stand up open mic)",
+      "venue": "Funhouse Lounge",
+      "neighborhood": "Hosford-Abernethy",
+      "address": "2432 SE 11th Ave, Portland, OR 97214",
+      "date": "2026-10-16",
+      "time": "11:55 PM",
+      "venueUrl": "https://www.funhouselounge.com/calendar/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Midnight Mic (late night stand up open mic)",
+      "venue": "Funhouse Lounge",
+      "neighborhood": "Hosford-Abernethy",
+      "address": "2432 SE 11th Ave, Portland, OR 97214",
+      "date": "2026-10-23",
+      "time": "11:55 PM",
+      "venueUrl": "https://www.funhouselounge.com/calendar/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Midnight Mic (late night stand up open mic)",
+      "venue": "Funhouse Lounge",
+      "neighborhood": "Hosford-Abernethy",
+      "address": "2432 SE 11th Ave, Portland, OR 97214",
+      "date": "2026-10-30",
+      "time": "11:55 PM",
+      "venueUrl": "https://www.funhouselounge.com/calendar/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Midnight Mic (late night stand up open mic)",
+      "venue": "Funhouse Lounge",
+      "neighborhood": "Hosford-Abernethy",
+      "address": "2432 SE 11th Ave, Portland, OR 97214",
+      "date": "2026-11-06",
+      "time": "11:55 PM",
+      "venueUrl": "https://www.funhouselounge.com/calendar/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Midnight Mic (late night stand up open mic)",
+      "venue": "Funhouse Lounge",
+      "neighborhood": "Hosford-Abernethy",
+      "address": "2432 SE 11th Ave, Portland, OR 97214",
+      "date": "2026-11-13",
+      "time": "11:55 PM",
+      "venueUrl": "https://www.funhouselounge.com/calendar/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Midnight Mic (late night stand up open mic)",
+      "venue": "Funhouse Lounge",
+      "neighborhood": "Hosford-Abernethy",
+      "address": "2432 SE 11th Ave, Portland, OR 97214",
+      "date": "2026-11-20",
+      "time": "11:55 PM",
+      "venueUrl": "https://www.funhouselounge.com/calendar/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Midnight Mic (late night stand up open mic)",
+      "venue": "Funhouse Lounge",
+      "neighborhood": "Hosford-Abernethy",
+      "address": "2432 SE 11th Ave, Portland, OR 97214",
+      "date": "2026-11-27",
+      "time": "11:55 PM",
+      "venueUrl": "https://www.funhouselounge.com/calendar/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Midnight Mic (late night stand up open mic)",
+      "venue": "Funhouse Lounge",
+      "neighborhood": "Hosford-Abernethy",
+      "address": "2432 SE 11th Ave, Portland, OR 97214",
+      "date": "2026-12-04",
+      "time": "11:55 PM",
+      "venueUrl": "https://www.funhouselounge.com/calendar/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Midnight Mic (late night stand up open mic)",
+      "venue": "Funhouse Lounge",
+      "neighborhood": "Hosford-Abernethy",
+      "address": "2432 SE 11th Ave, Portland, OR 97214",
+      "date": "2026-12-11",
+      "time": "11:55 PM",
+      "venueUrl": "https://www.funhouselounge.com/calendar/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Midnight Mic (late night stand up open mic)",
+      "venue": "Funhouse Lounge",
+      "neighborhood": "Hosford-Abernethy",
+      "address": "2432 SE 11th Ave, Portland, OR 97214",
+      "date": "2026-12-18",
+      "time": "11:55 PM",
+      "venueUrl": "https://www.funhouselounge.com/calendar/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Midnight Mic (late night stand up open mic)",
+      "venue": "Funhouse Lounge",
+      "neighborhood": "Hosford-Abernethy",
+      "address": "2432 SE 11th Ave, Portland, OR 97214",
+      "date": "2026-12-25",
+      "time": "11:55 PM",
       "venueUrl": "https://www.funhouselounge.com/calendar/",
       "imageUrl": ""
     },
@@ -9863,62 +10815,12 @@
       "imageUrl": ""
     },
     {
-      "title": "Martini Tonight comedy show",
+      "title": "Beetlejuice; a staged reading",
       "venue": "Funhouse Lounge",
       "neighborhood": "Hosford-Abernethy",
       "address": "2432 SE 11th Ave, Portland, OR 97214",
-      "date": "2026-10-16",
-      "time": "10:00 PM",
-      "venueUrl": "https://www.funhouselounge.com/calendar/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Martini Tonight comedy show",
-      "venue": "Funhouse Lounge",
-      "neighborhood": "Hosford-Abernethy",
-      "address": "2432 SE 11th Ave, Portland, OR 97214",
-      "date": "2026-11-20",
-      "time": "10:00 PM",
-      "venueUrl": "https://www.funhouselounge.com/calendar/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Martini Tonight comedy show",
-      "venue": "Funhouse Lounge",
-      "neighborhood": "Hosford-Abernethy",
-      "address": "2432 SE 11th Ave, Portland, OR 97214",
-      "date": "2026-12-18",
-      "time": "10:00 PM",
-      "venueUrl": "https://www.funhouselounge.com/calendar/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Leave Your Troubles at the Door",
-      "venue": "Funhouse Lounge",
-      "neighborhood": "Hosford-Abernethy",
-      "address": "2432 SE 11th Ave, Portland, OR 97214",
-      "date": "2026-10-02",
-      "time": "10:00 PM",
-      "venueUrl": "https://www.funhouselounge.com/calendar/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Leave Your Troubles at the Door",
-      "venue": "Funhouse Lounge",
-      "neighborhood": "Hosford-Abernethy",
-      "address": "2432 SE 11th Ave, Portland, OR 97214",
-      "date": "2026-11-06",
-      "time": "10:00 PM",
-      "venueUrl": "https://www.funhouselounge.com/calendar/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Leave Your Troubles at the Door",
-      "venue": "Funhouse Lounge",
-      "neighborhood": "Hosford-Abernethy",
-      "address": "2432 SE 11th Ave, Portland, OR 97214",
-      "date": "2026-12-04",
-      "time": "10:00 PM",
+      "date": "2026-10-23",
+      "time": "7:00 PM",
       "venueUrl": "https://www.funhouselounge.com/calendar/",
       "imageUrl": ""
     },
@@ -9953,46 +10855,6 @@
       "imageUrl": ""
     },
     {
-      "title": "Beetlejuice; a staged reading",
-      "venue": "Funhouse Lounge",
-      "neighborhood": "Hosford-Abernethy",
-      "address": "2432 SE 11th Ave, Portland, OR 97214",
-      "date": "2026-10-23",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.funhouselounge.com/calendar/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Roast Battle Portland",
-      "venue": "Funhouse Lounge",
-      "neighborhood": "Hosford-Abernethy",
-      "address": "2432 SE 11th Ave, Portland, OR 97214",
-      "date": "2026-10-01",
-      "time": "10:00 PM",
-      "venueUrl": "https://www.funhouselounge.com/calendar/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Roast Battle Portland",
-      "venue": "Funhouse Lounge",
-      "neighborhood": "Hosford-Abernethy",
-      "address": "2432 SE 11th Ave, Portland, OR 97214",
-      "date": "2026-11-05",
-      "time": "10:00 PM",
-      "venueUrl": "https://www.funhouselounge.com/calendar/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Roast Battle Portland",
-      "venue": "Funhouse Lounge",
-      "neighborhood": "Hosford-Abernethy",
-      "address": "2432 SE 11th Ave, Portland, OR 97214",
-      "date": "2026-12-03",
-      "time": "10:00 PM",
-      "venueUrl": "https://www.funhouselounge.com/calendar/",
-      "imageUrl": ""
-    },
-    {
       "title": "Murder Mystery Machine",
       "venue": "Funhouse Lounge",
       "neighborhood": "Hosford-Abernethy",
@@ -10003,41 +10865,151 @@
       "imageUrl": ""
     },
     {
+      "title": "Roast Battle Portland",
+      "venue": "Funhouse Lounge",
+      "neighborhood": "Hosford-Abernethy",
+      "address": "2432 SE 11th Ave, Portland, OR 97214",
+      "date": "2026-10-15",
+      "time": "10:00 PM",
+      "venueUrl": "https://www.funhouselounge.com/calendar/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Roast Battle Portland",
+      "venue": "Funhouse Lounge",
+      "neighborhood": "Hosford-Abernethy",
+      "address": "2432 SE 11th Ave, Portland, OR 97214",
+      "date": "2026-11-19",
+      "time": "10:00 PM",
+      "venueUrl": "https://www.funhouselounge.com/calendar/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Roast Battle Portland",
+      "venue": "Funhouse Lounge",
+      "neighborhood": "Hosford-Abernethy",
+      "address": "2432 SE 11th Ave, Portland, OR 97214",
+      "date": "2026-12-17",
+      "time": "10:00 PM",
+      "venueUrl": "https://www.funhouselounge.com/calendar/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Roast Battle Portland",
+      "venue": "Funhouse Lounge",
+      "neighborhood": "Hosford-Abernethy",
+      "address": "2432 SE 11th Ave, Portland, OR 97214",
+      "date": "2026-10-23",
+      "time": "10:00 PM",
+      "venueUrl": "https://www.funhouselounge.com/calendar/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Roast Battle Portland",
+      "venue": "Funhouse Lounge",
+      "neighborhood": "Hosford-Abernethy",
+      "address": "2432 SE 11th Ave, Portland, OR 97214",
+      "date": "2026-11-27",
+      "time": "10:00 PM",
+      "venueUrl": "https://www.funhouselounge.com/calendar/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Roast Battle Portland",
+      "venue": "Funhouse Lounge",
+      "neighborhood": "Hosford-Abernethy",
+      "address": "2432 SE 11th Ave, Portland, OR 97214",
+      "date": "2026-12-25",
+      "time": "10:00 PM",
+      "venueUrl": "https://www.funhouselounge.com/calendar/",
+      "imageUrl": ""
+    },
+    {
+      "title": "DomProv",
+      "venue": "Funhouse Lounge",
+      "neighborhood": "Hosford-Abernethy",
+      "address": "2432 SE 11th Ave, Portland, OR 97214",
+      "date": "2026-10-03",
+      "time": "10:00 PM",
+      "venueUrl": "https://www.funhouselounge.com/calendar/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Private Movie afterparty",
+      "venue": "Funhouse Lounge",
+      "neighborhood": "Hosford-Abernethy",
+      "address": "2432 SE 11th Ave, Portland, OR 97214",
+      "date": "2026-10-10",
+      "time": "10:00 PM",
+      "venueUrl": "https://www.funhouselounge.com/calendar/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Martini Tonight comedy show",
+      "venue": "Funhouse Lounge",
+      "neighborhood": "Hosford-Abernethy",
+      "address": "2432 SE 11th Ave, Portland, OR 97214",
+      "date": "2026-10-16",
+      "time": "10:00 PM",
+      "venueUrl": "https://www.funhouselounge.com/calendar/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Martini Tonight comedy show",
+      "venue": "Funhouse Lounge",
+      "neighborhood": "Hosford-Abernethy",
+      "address": "2432 SE 11th Ave, Portland, OR 97214",
+      "date": "2026-11-20",
+      "time": "10:00 PM",
+      "venueUrl": "https://www.funhouselounge.com/calendar/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Martini Tonight comedy show",
+      "venue": "Funhouse Lounge",
+      "neighborhood": "Hosford-Abernethy",
+      "address": "2432 SE 11th Ave, Portland, OR 97214",
+      "date": "2026-12-18",
+      "time": "10:00 PM",
+      "venueUrl": "https://www.funhouselounge.com/calendar/",
+      "imageUrl": ""
+    },
+    {
       "title": "Stranger Things the Musical Parody",
       "venue": "Funhouse Lounge",
       "neighborhood": "Hosford-Abernethy",
       "address": "2432 SE 11th Ave, Portland, OR 97214",
-      "date": "2026-10-30",
+      "date": "2026-10-24",
       "time": "7:00 PM",
       "venueUrl": "https://www.funhouselounge.com/calendar/",
       "imageUrl": ""
     },
     {
-      "title": "Center of Attention",
+      "title": "Leave Your Troubles at the Door",
       "venue": "Funhouse Lounge",
       "neighborhood": "Hosford-Abernethy",
       "address": "2432 SE 11th Ave, Portland, OR 97214",
-      "date": "2026-10-24",
+      "date": "2026-10-02",
       "time": "10:00 PM",
       "venueUrl": "https://www.funhouselounge.com/calendar/",
       "imageUrl": ""
     },
     {
-      "title": "Center of Attention",
+      "title": "Leave Your Troubles at the Door",
       "venue": "Funhouse Lounge",
       "neighborhood": "Hosford-Abernethy",
       "address": "2432 SE 11th Ave, Portland, OR 97214",
-      "date": "2026-11-28",
+      "date": "2026-11-06",
       "time": "10:00 PM",
       "venueUrl": "https://www.funhouselounge.com/calendar/",
       "imageUrl": ""
     },
     {
-      "title": "Center of Attention",
+      "title": "Leave Your Troubles at the Door",
       "venue": "Funhouse Lounge",
       "neighborhood": "Hosford-Abernethy",
       "address": "2432 SE 11th Ave, Portland, OR 97214",
-      "date": "2026-12-26",
+      "date": "2026-12-04",
       "time": "10:00 PM",
       "venueUrl": "https://www.funhouselounge.com/calendar/",
       "imageUrl": ""
@@ -10159,276 +11131,6 @@
       "address": "2432 SE 11th Ave, Portland, OR 97214",
       "date": "2026-11-28",
       "time": "7:00 PM",
-      "venueUrl": "https://www.funhouselounge.com/calendar/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Roast Battle Portland",
-      "venue": "Funhouse Lounge",
-      "neighborhood": "Hosford-Abernethy",
-      "address": "2432 SE 11th Ave, Portland, OR 97214",
-      "date": "2026-10-23",
-      "time": "10:00 PM",
-      "venueUrl": "https://www.funhouselounge.com/calendar/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Roast Battle Portland",
-      "venue": "Funhouse Lounge",
-      "neighborhood": "Hosford-Abernethy",
-      "address": "2432 SE 11th Ave, Portland, OR 97214",
-      "date": "2026-11-27",
-      "time": "10:00 PM",
-      "venueUrl": "https://www.funhouselounge.com/calendar/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Roast Battle Portland",
-      "venue": "Funhouse Lounge",
-      "neighborhood": "Hosford-Abernethy",
-      "address": "2432 SE 11th Ave, Portland, OR 97214",
-      "date": "2026-12-25",
-      "time": "10:00 PM",
-      "venueUrl": "https://www.funhouselounge.com/calendar/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Private Movie afterparty",
-      "venue": "Funhouse Lounge",
-      "neighborhood": "Hosford-Abernethy",
-      "address": "2432 SE 11th Ave, Portland, OR 97214",
-      "date": "2026-10-10",
-      "time": "10:00 PM",
-      "venueUrl": "https://www.funhouselounge.com/calendar/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Midnight Mic (late night stand up open mic)",
-      "venue": "Funhouse Lounge",
-      "neighborhood": "Hosford-Abernethy",
-      "address": "2432 SE 11th Ave, Portland, OR 97214",
-      "date": "2026-10-02",
-      "time": "11:55 PM",
-      "venueUrl": "https://www.funhouselounge.com/calendar/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Midnight Mic (late night stand up open mic)",
-      "venue": "Funhouse Lounge",
-      "neighborhood": "Hosford-Abernethy",
-      "address": "2432 SE 11th Ave, Portland, OR 97214",
-      "date": "2026-10-09",
-      "time": "11:55 PM",
-      "venueUrl": "https://www.funhouselounge.com/calendar/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Midnight Mic (late night stand up open mic)",
-      "venue": "Funhouse Lounge",
-      "neighborhood": "Hosford-Abernethy",
-      "address": "2432 SE 11th Ave, Portland, OR 97214",
-      "date": "2026-10-16",
-      "time": "11:55 PM",
-      "venueUrl": "https://www.funhouselounge.com/calendar/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Midnight Mic (late night stand up open mic)",
-      "venue": "Funhouse Lounge",
-      "neighborhood": "Hosford-Abernethy",
-      "address": "2432 SE 11th Ave, Portland, OR 97214",
-      "date": "2026-10-23",
-      "time": "11:55 PM",
-      "venueUrl": "https://www.funhouselounge.com/calendar/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Midnight Mic (late night stand up open mic)",
-      "venue": "Funhouse Lounge",
-      "neighborhood": "Hosford-Abernethy",
-      "address": "2432 SE 11th Ave, Portland, OR 97214",
-      "date": "2026-10-30",
-      "time": "11:55 PM",
-      "venueUrl": "https://www.funhouselounge.com/calendar/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Midnight Mic (late night stand up open mic)",
-      "venue": "Funhouse Lounge",
-      "neighborhood": "Hosford-Abernethy",
-      "address": "2432 SE 11th Ave, Portland, OR 97214",
-      "date": "2026-11-06",
-      "time": "11:55 PM",
-      "venueUrl": "https://www.funhouselounge.com/calendar/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Midnight Mic (late night stand up open mic)",
-      "venue": "Funhouse Lounge",
-      "neighborhood": "Hosford-Abernethy",
-      "address": "2432 SE 11th Ave, Portland, OR 97214",
-      "date": "2026-11-13",
-      "time": "11:55 PM",
-      "venueUrl": "https://www.funhouselounge.com/calendar/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Midnight Mic (late night stand up open mic)",
-      "venue": "Funhouse Lounge",
-      "neighborhood": "Hosford-Abernethy",
-      "address": "2432 SE 11th Ave, Portland, OR 97214",
-      "date": "2026-11-20",
-      "time": "11:55 PM",
-      "venueUrl": "https://www.funhouselounge.com/calendar/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Midnight Mic (late night stand up open mic)",
-      "venue": "Funhouse Lounge",
-      "neighborhood": "Hosford-Abernethy",
-      "address": "2432 SE 11th Ave, Portland, OR 97214",
-      "date": "2026-11-27",
-      "time": "11:55 PM",
-      "venueUrl": "https://www.funhouselounge.com/calendar/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Midnight Mic (late night stand up open mic)",
-      "venue": "Funhouse Lounge",
-      "neighborhood": "Hosford-Abernethy",
-      "address": "2432 SE 11th Ave, Portland, OR 97214",
-      "date": "2026-12-04",
-      "time": "11:55 PM",
-      "venueUrl": "https://www.funhouselounge.com/calendar/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Midnight Mic (late night stand up open mic)",
-      "venue": "Funhouse Lounge",
-      "neighborhood": "Hosford-Abernethy",
-      "address": "2432 SE 11th Ave, Portland, OR 97214",
-      "date": "2026-12-11",
-      "time": "11:55 PM",
-      "venueUrl": "https://www.funhouselounge.com/calendar/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Midnight Mic (late night stand up open mic)",
-      "venue": "Funhouse Lounge",
-      "neighborhood": "Hosford-Abernethy",
-      "address": "2432 SE 11th Ave, Portland, OR 97214",
-      "date": "2026-12-18",
-      "time": "11:55 PM",
-      "venueUrl": "https://www.funhouselounge.com/calendar/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Midnight Mic (late night stand up open mic)",
-      "venue": "Funhouse Lounge",
-      "neighborhood": "Hosford-Abernethy",
-      "address": "2432 SE 11th Ave, Portland, OR 97214",
-      "date": "2026-12-25",
-      "time": "11:55 PM",
-      "venueUrl": "https://www.funhouselounge.com/calendar/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Stranger Things the Musical Parody",
-      "venue": "Funhouse Lounge",
-      "neighborhood": "Hosford-Abernethy",
-      "address": "2432 SE 11th Ave, Portland, OR 97214",
-      "date": "2026-10-24",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.funhouselounge.com/calendar/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Roast Battle Portland",
-      "venue": "Funhouse Lounge",
-      "neighborhood": "Hosford-Abernethy",
-      "address": "2432 SE 11th Ave, Portland, OR 97214",
-      "date": "2026-10-15",
-      "time": "10:00 PM",
-      "venueUrl": "https://www.funhouselounge.com/calendar/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Roast Battle Portland",
-      "venue": "Funhouse Lounge",
-      "neighborhood": "Hosford-Abernethy",
-      "address": "2432 SE 11th Ave, Portland, OR 97214",
-      "date": "2026-11-19",
-      "time": "10:00 PM",
-      "venueUrl": "https://www.funhouselounge.com/calendar/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Roast Battle Portland",
-      "venue": "Funhouse Lounge",
-      "neighborhood": "Hosford-Abernethy",
-      "address": "2432 SE 11th Ave, Portland, OR 97214",
-      "date": "2026-12-17",
-      "time": "10:00 PM",
-      "venueUrl": "https://www.funhouselounge.com/calendar/",
-      "imageUrl": ""
-    },
-    {
-      "title": "DomProv",
-      "venue": "Funhouse Lounge",
-      "neighborhood": "Hosford-Abernethy",
-      "address": "2432 SE 11th Ave, Portland, OR 97214",
-      "date": "2026-11-07",
-      "time": "10:00 PM",
-      "venueUrl": "https://www.funhouselounge.com/calendar/",
-      "imageUrl": ""
-    },
-    {
-      "title": "DomProv",
-      "venue": "Funhouse Lounge",
-      "neighborhood": "Hosford-Abernethy",
-      "address": "2432 SE 11th Ave, Portland, OR 97214",
-      "date": "2026-12-05",
-      "time": "10:00 PM",
-      "venueUrl": "https://www.funhouselounge.com/calendar/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Stranger Things the Musical Parody",
-      "venue": "Funhouse Lounge",
-      "neighborhood": "Hosford-Abernethy",
-      "address": "2432 SE 11th Ave, Portland, OR 97214",
-      "date": "2026-10-04",
-      "time": "5:00 PM",
-      "venueUrl": "https://www.funhouselounge.com/calendar/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Stranger Things the Musical Parody",
-      "venue": "Funhouse Lounge",
-      "neighborhood": "Hosford-Abernethy",
-      "address": "2432 SE 11th Ave, Portland, OR 97214",
-      "date": "2026-10-11",
-      "time": "5:00 PM",
-      "venueUrl": "https://www.funhouselounge.com/calendar/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Stranger Things the Musical Parody",
-      "venue": "Funhouse Lounge",
-      "neighborhood": "Hosford-Abernethy",
-      "address": "2432 SE 11th Ave, Portland, OR 97214",
-      "date": "2026-10-25",
-      "time": "5:00 PM",
-      "venueUrl": "https://www.funhouselounge.com/calendar/",
-      "imageUrl": ""
-    },
-    {
-      "title": "DomProv",
-      "venue": "Funhouse Lounge",
-      "neighborhood": "Hosford-Abernethy",
-      "address": "2432 SE 11th Ave, Portland, OR 97214",
-      "date": "2026-10-03",
-      "time": "10:00 PM",
       "venueUrl": "https://www.funhouselounge.com/calendar/",
       "imageUrl": ""
     },
@@ -10576,6 +11278,17 @@
       "age": ""
     },
     {
+      "title": "Fraxiom (Chicago) + Saoirse Dream",
+      "venue": "Swan Dive",
+      "neighborhood": "Central Eastside",
+      "address": "727 SE Grand Ave, Portland, OR 97214",
+      "date": "2026-09-30",
+      "time": "5:00 PM",
+      "venueUrl": "https://www.swandivepdx.com/events-2-1/events-2-1/fraxiom-chicago-saoirse-dream",
+      "imageUrl": "https://images.squarespace-cdn.com/content/v1/68f2a66eb54bb61e843997cc/1790796934042-EB8FYI4KMOPKGKBYHOLN/Screenshot+2026-09-30+133418.png",
+      "age": ""
+    },
+    {
       "title": "WELL & GOOD dARK DISCOTHQUE",
       "venue": "Swan Dive",
       "neighborhood": "Central Eastside",
@@ -10653,6 +11366,17 @@
       "age": ""
     },
     {
+      "title": "MT80's Video Dance Party",
+      "venue": "Swan Dive",
+      "neighborhood": "Central Eastside",
+      "address": "727 SE Grand Ave, Portland, OR 97214",
+      "date": "2026-10-16",
+      "time": "6:00 PM",
+      "venueUrl": "https://www.swandivepdx.com/events-2-1/events-2-1/mt80s-video-dance-party-kw27d",
+      "imageUrl": "https://images.squarespace-cdn.com/content/v1/68f2a66eb54bb61e843997cc/1779234860612-WDIX9UFPQYQI9FAMO4I3/Screenshot_20230616_110904.jpg",
+      "age": ""
+    },
+    {
       "title": "Sleaze Pleaze Saturdayz Music Video Dance Party",
       "venue": "Swan Dive",
       "neighborhood": "Central Eastside",
@@ -10697,6 +11421,17 @@
       "age": ""
     },
     {
+      "title": "Sleaze Pleaze Saturdayz Music Video Dance Party",
+      "venue": "Swan Dive",
+      "neighborhood": "Central Eastside",
+      "address": "727 SE Grand Ave, Portland, OR 97214",
+      "date": "2026-10-31",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.swandivepdx.com/events-2-1/events-2-1/sleaze-pleaze-saturdayz-music-video-dance-party-tesw5-cwz5d-39sdm-eaa32-xzm9s-j49se-mmlze-ses63-h8tar-ak7dc-pn8bd-wd5z3",
+      "imageUrl": "https://images.squarespace-cdn.com/content/v1/68f2a66eb54bb61e843997cc/1779235267395-AK5FH1GMF41OUHCMYRCO/Screenshot_20240925_152500.jpg",
+      "age": ""
+    },
+    {
       "title": "Triptides",
       "venue": "Swan Dive",
       "neighborhood": "Central Eastside",
@@ -10717,6 +11452,36 @@
       "venueUrl": "https://www.swandivepdx.com/events-2-1/events-2-1/dog-daughter-ray-ramano-mean-sun",
       "imageUrl": "https://images.squarespace-cdn.com/content/v1/68f2a66eb54bb61e843997cc/1787868393541-SYLFWT4IUFIBVD59YQFE/Screenshot+2026-08-27+150452.png",
       "age": ""
+    },
+    {
+      "title": "Open Mic",
+      "venue": "The Waypost",
+      "neighborhood": "Boise/Eliot",
+      "address": "3120 N Williams Ave, Portland, OR 97227",
+      "date": "2026-10-04",
+      "time": "7:00 PM",
+      "venueUrl": "https://thewaypost.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Open Mic",
+      "venue": "The Waypost",
+      "neighborhood": "Boise/Eliot",
+      "address": "3120 N Williams Ave, Portland, OR 97227",
+      "date": "2026-11-01",
+      "time": "7:00 PM",
+      "venueUrl": "https://thewaypost.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Open Mic",
+      "venue": "The Waypost",
+      "neighborhood": "Boise/Eliot",
+      "address": "3120 N Williams Ave, Portland, OR 97227",
+      "date": "2026-12-06",
+      "time": "7:00 PM",
+      "venueUrl": "https://thewaypost.com/",
+      "imageUrl": ""
     },
     {
       "title": "Karaoke!!",
@@ -10849,36 +11614,6 @@
       "imageUrl": ""
     },
     {
-      "title": "Open Mic",
-      "venue": "The Waypost",
-      "neighborhood": "Boise/Eliot",
-      "address": "3120 N Williams Ave, Portland, OR 97227",
-      "date": "2026-10-04",
-      "time": "7:00 PM",
-      "venueUrl": "https://thewaypost.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Open Mic",
-      "venue": "The Waypost",
-      "neighborhood": "Boise/Eliot",
-      "address": "3120 N Williams Ave, Portland, OR 97227",
-      "date": "2026-11-01",
-      "time": "7:00 PM",
-      "venueUrl": "https://thewaypost.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Open Mic",
-      "venue": "The Waypost",
-      "neighborhood": "Boise/Eliot",
-      "address": "3120 N Williams Ave, Portland, OR 97227",
-      "date": "2026-12-06",
-      "time": "7:00 PM",
-      "venueUrl": "https://thewaypost.com/",
-      "imageUrl": ""
-    },
-    {
       "title": "Classical Revolution - Classical Music Open Mic",
       "venue": "The Waypost",
       "neighborhood": "Boise/Eliot",
@@ -10905,36 +11640,6 @@
       "address": "3120 N Williams Ave, Portland, OR 97227",
       "date": "2026-12-13",
       "time": "6:30 PM",
-      "venueUrl": "https://thewaypost.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Open Mic",
-      "venue": "The Waypost",
-      "neighborhood": "Boise/Eliot",
-      "address": "3120 N Williams Ave, Portland, OR 97227",
-      "date": "2026-10-18",
-      "time": "7:00 PM",
-      "venueUrl": "https://thewaypost.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Open Mic",
-      "venue": "The Waypost",
-      "neighborhood": "Boise/Eliot",
-      "address": "3120 N Williams Ave, Portland, OR 97227",
-      "date": "2026-11-15",
-      "time": "7:00 PM",
-      "venueUrl": "https://thewaypost.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Open Mic",
-      "venue": "The Waypost",
-      "neighborhood": "Boise/Eliot",
-      "address": "3120 N Williams Ave, Portland, OR 97227",
-      "date": "2026-12-20",
-      "time": "7:00 PM",
       "venueUrl": "https://thewaypost.com/",
       "imageUrl": ""
     },
@@ -11069,110 +11774,34 @@
       "imageUrl": ""
     },
     {
-      "title": "Taska Party Band",
-      "venue": "Vancouver Elks Lodge",
-      "neighborhood": "Vancouver, WA",
-      "address": "11605 SE McGillivray Blvd, Vancouver, WA 98683",
-      "date": "2026-09-30",
+      "title": "Open Mic",
+      "venue": "The Waypost",
+      "neighborhood": "Boise/Eliot",
+      "address": "3120 N Williams Ave, Portland, OR 97227",
+      "date": "2026-10-18",
       "time": "7:00 PM",
-      "venueUrl": "https://elks823.org/event/taska-party-band-7pm/2026-09-30/",
-      "imageUrl": "https://elks823.org/wp-content/uploads/2026/06/Wednesdays.webp",
-      "age": "",
-      "price": "$6"
+      "venueUrl": "https://thewaypost.com/",
+      "imageUrl": ""
     },
     {
-      "title": "Elk Town Music",
-      "venue": "Vancouver Elks Lodge",
-      "neighborhood": "Vancouver, WA",
-      "address": "11605 SE McGillivray Blvd, Vancouver, WA 98683",
-      "date": "2026-10-02",
+      "title": "Open Mic",
+      "venue": "The Waypost",
+      "neighborhood": "Boise/Eliot",
+      "address": "3120 N Williams Ave, Portland, OR 97227",
+      "date": "2026-11-15",
       "time": "7:00 PM",
-      "venueUrl": "https://elks823.org/event/elk-town-music-7pm-2/2026-10-02/",
-      "imageUrl": "https://elks823.org/wp-content/uploads/2025/11/Elk-Town-Music-FB-post-1.png",
-      "age": ""
+      "venueUrl": "https://thewaypost.com/",
+      "imageUrl": ""
     },
     {
-      "title": "SlimJims Band",
-      "venue": "Vancouver Elks Lodge",
-      "neighborhood": "Vancouver, WA",
-      "address": "11605 SE McGillivray Blvd, Vancouver, WA 98683",
-      "date": "2026-10-07",
+      "title": "Open Mic",
+      "venue": "The Waypost",
+      "neighborhood": "Boise/Eliot",
+      "address": "3120 N Williams Ave, Portland, OR 97227",
+      "date": "2026-12-20",
       "time": "7:00 PM",
-      "venueUrl": "https://elks823.org/event/slimjims-band-7pm/2026-10-07/",
-      "imageUrl": "https://elks823.org/wp-content/uploads/2026/06/Wednesdays.webp",
-      "age": "",
-      "price": "$6"
-    },
-    {
-      "title": "Taska Party Band",
-      "venue": "Vancouver Elks Lodge",
-      "neighborhood": "Vancouver, WA",
-      "address": "11605 SE McGillivray Blvd, Vancouver, WA 98683",
-      "date": "2026-10-14",
-      "time": "7:00 PM",
-      "venueUrl": "https://elks823.org/event/taska-party-band-7pm/2026-10-14/",
-      "imageUrl": "https://elks823.org/wp-content/uploads/2026/06/Wednesdays.webp",
-      "age": "",
-      "price": "$6"
-    },
-    {
-      "title": "Officer Steak Night, 5PM, with Live Music by SlimJims",
-      "venue": "Vancouver Elks Lodge",
-      "neighborhood": "Vancouver, WA",
-      "address": "11605 SE McGillivray Blvd, Vancouver, WA 98683",
-      "date": "2026-10-16",
-      "time": "5:00 PM",
-      "venueUrl": "https://elks823.org/event/officer-steak-night-5pm-with-live-music-by-northerland-2026-10-16/",
-      "imageUrl": "https://elks823.org/wp-content/uploads/2026/08/SteakNight-Oct16.webp",
-      "age": "",
-      "price": "$27"
-    },
-    {
-      "title": "SlimJims Band",
-      "venue": "Vancouver Elks Lodge",
-      "neighborhood": "Vancouver, WA",
-      "address": "11605 SE McGillivray Blvd, Vancouver, WA 98683",
-      "date": "2026-10-21",
-      "time": "7:00 PM",
-      "venueUrl": "https://elks823.org/event/slimjims-band-7pm/2026-10-21/",
-      "imageUrl": "https://elks823.org/wp-content/uploads/2026/06/Wednesdays.webp",
-      "age": "",
-      "price": "$6"
-    },
-    {
-      "title": "Taska Party Band",
-      "venue": "Vancouver Elks Lodge",
-      "neighborhood": "Vancouver, WA",
-      "address": "11605 SE McGillivray Blvd, Vancouver, WA 98683",
-      "date": "2026-10-28",
-      "time": "7:00 PM",
-      "venueUrl": "https://elks823.org/event/taska-party-band-7pm/2026-10-28/",
-      "imageUrl": "https://elks823.org/wp-content/uploads/2026/06/Wednesdays.webp",
-      "age": "",
-      "price": "$6"
-    },
-    {
-      "title": "SlimJims Band",
-      "venue": "Vancouver Elks Lodge",
-      "neighborhood": "Vancouver, WA",
-      "address": "11605 SE McGillivray Blvd, Vancouver, WA 98683",
-      "date": "2026-11-04",
-      "time": "7:00 PM",
-      "venueUrl": "https://elks823.org/event/slimjims-band-7pm/2026-11-04/",
-      "imageUrl": "https://elks823.org/wp-content/uploads/2026/06/Wednesdays.webp",
-      "age": "",
-      "price": "$6"
-    },
-    {
-      "title": "Elk Town Music",
-      "venue": "Vancouver Elks Lodge",
-      "neighborhood": "Vancouver, WA",
-      "address": "11605 SE McGillivray Blvd, Vancouver, WA 98683",
-      "date": "2026-11-06",
-      "time": "7:00 PM",
-      "venueUrl": "https://elks823.org/event/elk-town-music-7pm-2/2026-11-06/",
-      "imageUrl": "https://elks823.org/wp-content/uploads/2025/11/Elk-Town-Music-FB-post-1.png",
-      "age": ""
+      "venueUrl": "https://thewaypost.com/",
+      "imageUrl": ""
     },
     {
       "title": "Portland Blues & Jazz Dance Society",
@@ -11678,6 +12307,16 @@
       "venue": "Threshold Brewing",
       "neighborhood": "Montavilla",
       "address": "403 SE 79th Ave, Portland, OR 97215",
+      "date": "2026-10-23",
+      "time": "5:30 PM",
+      "venueUrl": "https://www.threshold.beer",
+      "imageUrl": ""
+    },
+    {
+      "title": "Zabavva Band Anniversary",
+      "venue": "Threshold Brewing",
+      "neighborhood": "Montavilla",
+      "address": "403 SE 79th Ave, Portland, OR 97215",
       "date": "2026-10-24",
       "time": "6:30 PM",
       "venueUrl": "https://www.threshold.beer",
@@ -11814,11 +12453,121 @@
       "imageUrl": ""
     },
     {
+      "title": "Larry’s Basement",
+      "venue": "Threshold Brewing",
+      "neighborhood": "Montavilla",
+      "address": "403 SE 79th Ave, Portland, OR 97215",
+      "date": "2026-12-06",
+      "time": "4:30 PM",
+      "venueUrl": "https://www.threshold.beer",
+      "imageUrl": ""
+    },
+    {
+      "title": "Jam Night Hosted by Dan Hess & Friends",
+      "venue": "Beach Hut Deli Tigard",
+      "neighborhood": "Tigard",
+      "address": "12436 SW Main St, Tigard, OR 97223",
+      "date": "2026-10-01",
+      "time": "7:00 PM",
+      "venueUrl": "https://beachhutdeli.com/store/tigard/",
+      "imageUrl": ""
+    },
+    {
       "title": "Joel Astley Band",
       "venue": "Beach Hut Deli Tigard",
       "neighborhood": "Tigard",
       "address": "12436 SW Main St, Tigard, OR 97223",
       "date": "2026-10-02",
+      "time": "7:00 PM",
+      "venueUrl": "https://beachhutdeli.com/store/tigard/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Sarah Lodge Band",
+      "venue": "Beach Hut Deli Tigard",
+      "neighborhood": "Tigard",
+      "address": "12436 SW Main St, Tigard, OR 97223",
+      "date": "2026-10-03",
+      "time": "7:00 PM",
+      "venueUrl": "https://beachhutdeli.com/store/tigard/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Trail End Boys",
+      "venue": "Beach Hut Deli Tigard",
+      "neighborhood": "Tigard",
+      "address": "12436 SW Main St, Tigard, OR 97223",
+      "date": "2026-10-09",
+      "time": "7:00 PM",
+      "venueUrl": "https://beachhutdeli.com/store/tigard/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Superwave",
+      "venue": "Beach Hut Deli Tigard",
+      "neighborhood": "Tigard",
+      "address": "12436 SW Main St, Tigard, OR 97223",
+      "date": "2026-10-10",
+      "time": "7:00 PM",
+      "venueUrl": "https://beachhutdeli.com/store/tigard/",
+      "imageUrl": ""
+    },
+    {
+      "title": "TBA",
+      "venue": "Beach Hut Deli Tigard",
+      "neighborhood": "Tigard",
+      "address": "12436 SW Main St, Tigard, OR 97223",
+      "date": "2026-10-16",
+      "time": "7:00 PM",
+      "venueUrl": "https://beachhutdeli.com/store/tigard/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Soundcheck",
+      "venue": "Beach Hut Deli Tigard",
+      "neighborhood": "Tigard",
+      "address": "12436 SW Main St, Tigard, OR 97223",
+      "date": "2026-10-17",
+      "time": "7:00 PM",
+      "venueUrl": "https://beachhutdeli.com/store/tigard/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Timothy James",
+      "venue": "Beach Hut Deli Tigard",
+      "neighborhood": "Tigard",
+      "address": "12436 SW Main St, Tigard, OR 97223",
+      "date": "2026-10-23",
+      "time": "7:00 PM",
+      "venueUrl": "https://beachhutdeli.com/store/tigard/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Timmy B and The Guilty Pleasures",
+      "venue": "Beach Hut Deli Tigard",
+      "neighborhood": "Tigard",
+      "address": "12436 SW Main St, Tigard, OR 97223",
+      "date": "2026-10-24",
+      "time": "7:00 PM",
+      "venueUrl": "https://beachhutdeli.com/store/tigard/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Mystic Mama Band-Halloween Costume Contest",
+      "venue": "Beach Hut Deli Tigard",
+      "neighborhood": "Tigard",
+      "address": "12436 SW Main St, Tigard, OR 97223",
+      "date": "2026-10-30",
+      "time": "7:00 PM",
+      "venueUrl": "https://beachhutdeli.com/store/tigard/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Glitter and Gasoline-Halloween Costume Contest",
+      "venue": "Beach Hut Deli Tigard",
+      "neighborhood": "Tigard",
+      "address": "12436 SW Main St, Tigard, OR 97223",
+      "date": "2026-10-31",
       "time": "7:00 PM",
       "venueUrl": "https://beachhutdeli.com/store/tigard/",
       "imageUrl": ""
@@ -13106,7 +13855,7 @@
       "neighborhood": "Downtown",
       "address": "426 SW Washington St, Portland, OR 97204",
       "date": "2026-09-30",
-      "time": "9:00 PM",
+      "time": "8:00 PM",
       "venueUrl": "https://kellysolympian.com/show/rome-streetz-feat-fergie-baby-sha-hef/",
       "imageUrl": "https://kellysolympian.com/wp-content/uploads/2026/07/0021789267_0.jpg",
       "age": ""
@@ -13645,7 +14394,7 @@
       "date": "2026-10-29",
       "time": "7:00 PM",
       "venueUrl": "https://www.eventbrite.com/e/an-evening-with-mary-flower-and-leon-cotter-tickets-1999194901768",
-      "imageUrl": "https://img.evbuc.com/https%3A%2F%2Fcdn.evbuc.com%2Fimages%2F1172110783%2F2792921854121%2F1%2Foriginal.20251202-005015?crop=focalpoint&fit=crop&h=174&w=383&auto=format%2Ccompress&q=75&sharp=10&fp-x=0.486&fp-y=0.104&s=ff393e70da81b766bec826df7fea8235"
+      "imageUrl": "https://img.evbuc.com/https%3A%2F%2Fcdn.evbuc.com%2Fimages%2F1194754689%2F2792921854121%2F1%2Foriginal.20260930-191633?crop=focalpoint&fit=crop&h=200&w=450&auto=format%2Ccompress&q=75&sharp=10&fp-x=0.813&fp-y=0.069&s=e407b69cb953bdaf8c6f5b62623f26e7"
     },
     {
       "title": "My Darling Clementine",
@@ -13748,21 +14497,21 @@
       "imageUrl": ""
     },
     {
-      "title": "Bromf",
+      "title": "Hermit Crab + Gladys + TBA + TBA",
       "venue": "Starday Tavern",
       "neighborhood": "Brentwood-Darlington",
       "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-11-08",
-      "time": "5:30 PM",
+      "date": "2026-10-23",
+      "time": "8:00 PM",
       "venueUrl": "https://www.stardaytavern.com/",
       "imageUrl": ""
     },
     {
-      "title": "Friends With Salad + Sad Snack + Jokers Republic + Colectivo Caskada",
+      "title": "Joseph Konty",
       "venue": "Starday Tavern",
       "neighborhood": "Brentwood-Darlington",
       "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-10-12",
+      "date": "2026-11-27",
       "time": "8:00 PM",
       "venueUrl": "https://www.stardaytavern.com/",
       "imageUrl": ""
@@ -13778,141 +14527,21 @@
       "imageUrl": ""
     },
     {
-      "title": "Party Portal Shaqtime",
+      "title": "Gnosis Drum & Bass",
       "venue": "Starday Tavern",
       "neighborhood": "Brentwood-Darlington",
       "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-10-13",
-      "time": "10:00 PM",
+      "date": "2026-12-02",
+      "time": "9:00 PM",
       "venueUrl": "https://www.stardaytavern.com/",
       "imageUrl": ""
     },
     {
-      "title": "Party Portal Shaqtime",
+      "title": "Elvis Birthday Show",
       "venue": "Starday Tavern",
       "neighborhood": "Brentwood-Darlington",
       "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-11-10",
-      "time": "10:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Party Portal Shaqtime",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-12-08",
-      "time": "10:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "The Last Argonauts + TBD + TBD",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-12-19",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Vanessa Veselka",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-10-07",
-      "time": "5:30 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Champale Supernova",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-11-13",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Seb El Zin",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-11-21",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Jenée & The Getaway",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-10-07",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Noah Powell & The Fantastic Happy Hour Band",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-10-14",
-      "time": "6:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Noah Powell & The Fantastic Happy Hour Band",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-11-11",
-      "time": "6:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Noah Powell & The Fantastic Happy Hour Band",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-12-09",
-      "time": "6:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "James Houlahan - (California)",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-10-18",
-      "time": "5:30 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Brian Granse",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-10-15",
-      "time": "5:30 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Dub Orquestra",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-11-19",
+      "date": "2026-10-01",
       "time": "8:00 PM",
       "venueUrl": "https://www.stardaytavern.com/",
       "imageUrl": ""
@@ -13948,42 +14577,82 @@
       "imageUrl": ""
     },
     {
-      "title": "Deer Lodge",
+      "title": "Vanessa Veselka",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-10-07",
+      "time": "5:30 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Superocean + TBA + TBA",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-12-05",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Chris' Birthday Bash",
       "venue": "Starday Tavern",
       "neighborhood": "Brentwood-Darlington",
       "address": "6517 SE Foster Rd, Portland, OR 97206",
       "date": "2026-10-22",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Twisted Blue + Izy Cactus",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-12-04",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Jenée & The Getaway",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-10-07",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Heather Christie & The Starlettes",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-10-09",
       "time": "5:30 PM",
       "venueUrl": "https://www.stardaytavern.com/",
       "imageUrl": ""
     },
     {
-      "title": "Deer Lodge",
+      "title": "Heather Christie & The Starlettes",
       "venue": "Starday Tavern",
       "neighborhood": "Brentwood-Darlington",
       "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-11-26",
+      "date": "2026-11-13",
       "time": "5:30 PM",
       "venueUrl": "https://www.stardaytavern.com/",
       "imageUrl": ""
     },
     {
-      "title": "Deer Lodge",
+      "title": "Heather Christie & The Starlettes",
       "venue": "Starday Tavern",
       "neighborhood": "Brentwood-Darlington",
       "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-12-24",
+      "date": "2026-12-11",
       "time": "5:30 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Volume Bomb Halloween",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-10-31",
-      "time": "",
       "venueUrl": "https://www.stardaytavern.com/",
       "imageUrl": ""
     },
@@ -14118,36 +14787,6 @@
       "imageUrl": ""
     },
     {
-      "title": "Heather Christie & The Starlettes",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-10-23",
-      "time": "5:30 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Heather Christie & The Starlettes",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-11-27",
-      "time": "5:30 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Heather Christie & The Starlettes",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-12-25",
-      "time": "5:30 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
       "title": "Blue Flags Black Grass + Dumpster Joe & The Boys",
       "venue": "Starday Tavern",
       "neighborhood": "Brentwood-Darlington",
@@ -14178,6 +14817,86 @@
       "imageUrl": ""
     },
     {
+      "title": "Pulpit Supply",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-10-17",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Champale Supernova",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-11-13",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Country Side Ride",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-10-30",
+      "time": "9:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Country Side Ride",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-12-25",
+      "time": "9:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Gnosis Drum & Bass",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-10-14",
+      "time": "9:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Gnosis Drum & Bass",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-11-11",
+      "time": "9:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Scott Strickland",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-11-21",
+      "time": "5:30 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Bad Creature + The Gibbons + The Cosmonauts",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-10-16",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
       "title": "Fuck by fuck off 2026",
       "venue": "Starday Tavern",
       "neighborhood": "Brentwood-Darlington",
@@ -14188,22 +14907,92 @@
       "imageUrl": ""
     },
     {
-      "title": "2nd Base",
+      "title": "The Bootleggers + Portland Reggae Alliance",
       "venue": "Starday Tavern",
       "neighborhood": "Brentwood-Darlington",
       "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-11-20",
+      "date": "2026-11-04",
       "time": "8:00 PM",
       "venueUrl": "https://www.stardaytavern.com/",
       "imageUrl": ""
     },
     {
-      "title": "Elvis Christmas Eve",
+      "title": "Party Portal Shaqtime",
       "venue": "Starday Tavern",
       "neighborhood": "Brentwood-Darlington",
       "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-12-24",
-      "time": "",
+      "date": "2026-10-20",
+      "time": "10:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Party Portal Shaqtime",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-11-17",
+      "time": "10:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Party Portal Shaqtime",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-12-15",
+      "time": "10:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Someday Diamonds",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-10-30",
+      "time": "5:30 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Romo's Party Portal Shaqtime",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-10-27",
+      "time": "10:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Romo's Party Portal Shaqtime",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-11-24",
+      "time": "10:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Romo's Party Portal Shaqtime",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-12-22",
+      "time": "10:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "The Flowtenders Power Friday",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-11-06",
+      "time": "8:00 PM",
       "venueUrl": "https://www.stardaytavern.com/",
       "imageUrl": ""
     },
@@ -14218,12 +15007,342 @@
       "imageUrl": ""
     },
     {
-      "title": "Elvis Birthday Show",
+      "title": "Noah Powell & The Fantastic Happy Hour Band",
       "venue": "Starday Tavern",
       "neighborhood": "Brentwood-Darlington",
       "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-10-01",
+      "date": "2026-10-28",
+      "time": "6:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Noah Powell & The Fantastic Happy Hour Band",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-11-25",
+      "time": "6:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Noah Powell & The Fantastic Happy Hour Band",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-12-23",
+      "time": "6:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Noah Powell & The Fantastic Happy Hour Band",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-10-14",
+      "time": "6:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Noah Powell & The Fantastic Happy Hour Band",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-11-11",
+      "time": "6:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Noah Powell & The Fantastic Happy Hour Band",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-12-09",
+      "time": "6:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Deer Lodge",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-10-22",
+      "time": "5:30 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Deer Lodge",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-11-26",
+      "time": "5:30 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Deer Lodge",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-12-24",
+      "time": "5:30 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Jared Nels + Wolf Truck",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-10-15",
       "time": "8:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "2nd Base",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-11-20",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Seb El Zin",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-11-21",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "El Sobrente & The Remainders",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-10-25",
+      "time": "5:30 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "El Sobrente & The Remainders",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-11-29",
+      "time": "5:30 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "El Sobrente & The Remainders",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-12-27",
+      "time": "5:30 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Dj Nordicktrak",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-11-14",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Sam Henson Holiday Happy Hour",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-12-04",
+      "time": "4:30 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "John St. Just + TBA + TBA",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-10-02",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Party Portal Shaqtime",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-10-13",
+      "time": "10:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Party Portal Shaqtime",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-11-10",
+      "time": "10:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Party Portal Shaqtime",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-12-08",
+      "time": "10:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Emo Night w Reggie",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-09-30",
+      "time": "10:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Emo Night w Reggie",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-10-28",
+      "time": "10:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Emo Night w Reggie",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-11-25",
+      "time": "10:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Friends With Salad + Sad Snack + Jokers Republic + Colectivo Caskada",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-10-12",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "James Houlahan - (California)",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-10-18",
+      "time": "5:30 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Elvis Christmas Eve",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-12-24",
+      "time": "",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Dub Orquestra",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-11-19",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Heather Christie & The Starlettes",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-10-23",
+      "time": "5:30 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Heather Christie & The Starlettes",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-11-27",
+      "time": "5:30 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Heather Christie & The Starlettes",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-12-25",
+      "time": "5:30 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Aiden Fritchman",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-12-05",
+      "time": "5:30 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Funkanalia Residency",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-11-07",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Volume Bomb Halloween",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-10-31",
+      "time": "",
       "venueUrl": "https://www.stardaytavern.com/",
       "imageUrl": ""
     },
@@ -14254,6 +15373,146 @@
       "address": "6517 SE Foster Rd, Portland, OR 97206",
       "date": "2026-12-08",
       "time": "7:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Claes Almroth Trio",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-10-29",
+      "time": "5:30 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Karaoke",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-10-25",
+      "time": "9:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Karaoke",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-11-22",
+      "time": "9:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Karaoke",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-12-27",
+      "time": "9:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Bromf",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-11-08",
+      "time": "5:30 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Claes Almroth Trio",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-11-12",
+      "time": "5:30 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Claes Almroth Trio",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-12-10",
+      "time": "5:30 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Sad Times Presents!",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-10-24",
+      "time": "9:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Brian Granse",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-10-15",
+      "time": "5:30 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Jen Howard",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-11-22",
+      "time": "6:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "DYE DYE FUN RAISER",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-10-03",
+      "time": "",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Special Guest By Flowtenders",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-11-06",
+      "time": "5:30 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Thee Honeybuds",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-12-10",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.stardaytavern.com/",
+      "imageUrl": ""
+    },
+    {
+      "title": "Boy Dinner + TBD + TBD",
+      "venue": "Starday Tavern",
+      "neighborhood": "Brentwood-Darlington",
+      "address": "6517 SE Foster Rd, Portland, OR 97206",
+      "date": "2026-12-18",
+      "time": "8:00 PM",
       "venueUrl": "https://www.stardaytavern.com/",
       "imageUrl": ""
     },
@@ -14338,132 +15597,12 @@
       "imageUrl": ""
     },
     {
-      "title": "Karaoke",
+      "title": "The Last Argonauts + TBD + TBD",
       "venue": "Starday Tavern",
       "neighborhood": "Brentwood-Darlington",
       "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-12-27",
+      "date": "2026-12-19",
       "time": "8:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Chris' Birthday Bash",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-10-22",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Jared Nels + Wolf Truck",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-10-15",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Special Guest By Flowtenders",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-11-06",
-      "time": "5:30 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Boy Dinner + TBD + TBD",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-12-18",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Scott Strickland",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-11-21",
-      "time": "5:30 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Jen Howard",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-11-22",
-      "time": "6:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "El Sobrente & The Remainders",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-10-25",
-      "time": "5:30 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "El Sobrente & The Remainders",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-11-29",
-      "time": "5:30 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "El Sobrente & The Remainders",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-12-27",
-      "time": "5:30 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Gnosis Drum & Bass",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-12-02",
-      "time": "9:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Gnosis Drum & Bass",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-10-14",
-      "time": "9:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Gnosis Drum & Bass",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-11-11",
-      "time": "9:00 PM",
       "venueUrl": "https://www.stardaytavern.com/",
       "imageUrl": ""
     },
@@ -14474,396 +15613,6 @@
       "address": "6517 SE Foster Rd, Portland, OR 97206",
       "date": "2026-12-12",
       "time": "",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "The Bootleggers + Portland Reggae Alliance",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-11-04",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Bad Creature + The Gibbons + The Cosmonauts",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-10-16",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Superocean + TBA + TBA",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-12-05",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Country Side Ride",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-10-30",
-      "time": "9:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Country Side Ride",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-12-25",
-      "time": "9:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Pulpit Supply",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-10-17",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Karaoke",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-10-25",
-      "time": "9:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Karaoke",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-11-22",
-      "time": "9:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Dj Nordicktrak",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-11-14",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Party Portal Shaqtime",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-10-20",
-      "time": "10:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Party Portal Shaqtime",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-11-17",
-      "time": "10:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Party Portal Shaqtime",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-12-15",
-      "time": "10:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "John St. Just + TBA + TBA",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-10-02",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Claes Almroth Trio",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-10-29",
-      "time": "5:30 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Noah Powell & The Fantastic Happy Hour Band",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-10-28",
-      "time": "6:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Noah Powell & The Fantastic Happy Hour Band",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-11-25",
-      "time": "6:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Noah Powell & The Fantastic Happy Hour Band",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-12-23",
-      "time": "6:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Funkanalia Residency",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-11-07",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Emo Night w Reggie",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-09-30",
-      "time": "10:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Emo Night w Reggie",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-10-28",
-      "time": "10:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Emo Night w Reggie",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-11-25",
-      "time": "10:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Joseph Konty",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-11-27",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "The Flowtenders Power Friday",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-11-06",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "DYE DYE FUN RAISER",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-10-03",
-      "time": "",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Sam Henson Holiday Happy Hour",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-12-04",
-      "time": "4:30 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Romo's Party Portal Shaqtime",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-10-27",
-      "time": "10:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Romo's Party Portal Shaqtime",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-11-24",
-      "time": "10:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Romo's Party Portal Shaqtime",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-12-22",
-      "time": "10:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Heather Christie & The Starlettes",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-10-09",
-      "time": "5:30 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Heather Christie & The Starlettes",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-11-13",
-      "time": "5:30 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Heather Christie & The Starlettes",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-12-11",
-      "time": "5:30 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Hermit Crab + Gladys + TBA + TBA",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-10-23",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Thee Honeybuds",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-12-10",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Twisted Blue + Izy Cactus",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-12-04",
-      "time": "8:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Claes Almroth Trio",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-11-12",
-      "time": "5:30 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Claes Almroth Trio",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-12-10",
-      "time": "5:30 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Someday Diamonds",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-10-30",
-      "time": "5:30 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Sad Times Presents!",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-10-24",
-      "time": "9:00 PM",
-      "venueUrl": "https://www.stardaytavern.com/",
-      "imageUrl": ""
-    },
-    {
-      "title": "Aiden Fritchman",
-      "venue": "Starday Tavern",
-      "neighborhood": "Brentwood-Darlington",
-      "address": "6517 SE Foster Rd, Portland, OR 97206",
-      "date": "2026-12-05",
-      "time": "5:30 PM",
       "venueUrl": "https://www.stardaytavern.com/",
       "imageUrl": ""
     },
@@ -14967,13 +15716,13 @@
       "age": "21+"
     },
     {
-      "title": "Decadent80s Day Club with DJ NoN",
+      "title": "Decadent 80s Day Club with DJ NoN",
       "venue": "White Eagle Saloon",
       "neighborhood": "Boise/Eliot",
       "address": "836 N Russell St, Portland, OR 97227",
       "date": "2026-10-10",
       "time": "1:00 PM",
-      "venueUrl": "https://www.mcmenamins.com/events/278567-decadent80s-day-club-with-dj-non",
+      "venueUrl": "https://www.mcmenamins.com/events/278567-decadent-80s-day-club-with-dj-non",
       "imageUrl": "https://cdn.mcmenamins.com/system/uploads/MadborgAssets/_v/80sDayClub26.jpg/gallery_preview.jpg",
       "age": "all-ages"
     },
@@ -15935,6 +16684,17 @@
       "age": "all-ages"
     },
     {
+      "title": "Craig Hates Running - Documentary Screening + Q&A presented by Portland Track",
+      "venue": "Mission Theater",
+      "neighborhood": "Nob Hill/NW",
+      "address": "1624 NW Glisan St, Portland, OR 97209",
+      "date": "2026-10-25",
+      "time": "5:00 PM",
+      "venueUrl": "https://www.mcmenamins.com/events/279130-craig-hates-running-documentary-screening-qa-presented-by-portland-track",
+      "imageUrl": "https://cdn.mcmenamins.com/system/uploads/MadborgAssets/_v/MissionTheaterGeneric.jpg/gallery_preview.jpg",
+      "age": "all-ages"
+    },
+    {
       "title": "Kyle Gordon",
       "venue": "Mission Theater",
       "neighborhood": "Nob Hill/NW",
@@ -16254,7 +17014,7 @@
       "age": "21+"
     },
     {
-      "title": "Say My Name Art Exhibition by Ideal PDX",
+      "title": "Say My Name Art Exhibition by Ideal PDX Honoring Dia de los Muertos",
       "venue": "Kennedy School",
       "neighborhood": "Concordia",
       "address": "5736 NE 33rd Ave, Portland, OR 97211",
@@ -16306,6 +17066,17 @@
       "time": "7:00 PM",
       "venueUrl": "https://www.mcmenamins.com/events/274888-loosewig-jazz-series-hosted-by-brent-follis",
       "imageUrl": "https://cdn.mcmenamins.com/system/uploads/MadborgAssets/_v/bret-follis.jpg/gallery_preview.jpg",
+      "age": "all-ages"
+    },
+    {
+      "title": "Getting Back",
+      "venue": "Kennedy School",
+      "neighborhood": "Concordia",
+      "address": "5736 NE 33rd Ave, Portland, OR 97211",
+      "date": "2026-11-19",
+      "time": "6:00 PM",
+      "venueUrl": "https://www.mcmenamins.com/events/279131-getting-back",
+      "imageUrl": "https://cdn.mcmenamins.com/system/uploads/MadborgAssets/_v/GettingBack26.jpg/gallery_preview.jpg",
       "age": "all-ages"
     },
     {
@@ -17333,17 +18104,6 @@
       "age": "21+"
     },
     {
-      "title": "The Wayfarer Incident",
-      "venue": "No Fun",
-      "neighborhood": "Buckman",
-      "address": "1709 SE Hawthorne Blvd",
-      "date": "2026-10-06",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.nofunportland.com/events/the-wayfarer-incident-tba-tba",
-      "imageUrl": "",
-      "age": "21+"
-    },
-    {
       "title": "Faint Shape • Stroganoff • Zero Cool",
       "venue": "No Fun",
       "neighborhood": "Buckman",
@@ -17476,14 +18236,14 @@
       "age": "21+"
     },
     {
-      "title": "Subvert Savant • Moushumi Ghose",
+      "title": "KalloHumina • Subvert Savant • Moushumi Ghose",
       "venue": "No Fun",
       "neighborhood": "Buckman",
       "address": "1709 SE Hawthorne Blvd",
       "date": "2026-10-29",
       "time": "7:00 PM",
-      "venueUrl": "https://www.nofunportland.com/events/subvert-savant-moushumi-ghose-tba",
-      "imageUrl": "",
+      "venueUrl": "https://www.nofunportland.com/events/kallohumina-subvert-savant-moushumi-ghose",
+      "imageUrl": "https://images.squarespace-cdn.com/content/v1/65973d9d92af572923b87cfc/1790806651548-TWB14XE2U5WY87M2EVY2/KalloSavantGhoseFB.jpg",
       "age": "21+"
     },
     {
@@ -17760,6 +18520,17 @@
       "venueUrl": "https://shows.bunksandwiches.com/",
       "imageUrl": "https://cdn.filepicker.io/api/file/MywToS5T6q13SGI2bZWq",
       "age": "21+"
+    },
+    {
+      "title": "Olivia Awbrey Band, Crystal Canopy, Amber Ambedo, Cellographic",
+      "venue": "Bunk Bar",
+      "neighborhood": "Central Eastside",
+      "address": "1028 SE Water Ave",
+      "date": "2026-11-13",
+      "time": "8:00 PM",
+      "venueUrl": "https://shows.bunksandwiches.com/",
+      "imageUrl": "https://cdn.filepicker.io/api/file/iY7Rw3LzQqi4v1zodw4n",
+      "age": ""
     },
     {
       "title": "BASIC",
@@ -19664,7 +20435,7 @@
       "imageUrl": "https://ucarecdn.com/4efcfd64-4d88-438b-b8d4-5087e4494cb9/"
     },
     {
-      "title": "BARN BURNER: Sean McLean & the Vibetenders / Family Mystic",
+      "title": "BARN BURNER: Family Mystic / Sean McLean & the Vibetenders",
       "venue": "Trout Lake Hall",
       "neighborhood": "Trout Lake, WA",
       "address": "15 Guler Rd, Trout Lake, WA 98650",
@@ -19784,6 +20555,16 @@
       "imageUrl": "https://static.wixstatic.com/media/fd5ed8_5e2a7e46488c4a918790995f864940dc~mv2.png"
     },
     {
+      "title": "The Honey Jays and Ten30: 90's Night; A Benefit for CASA",
+      "venue": "The Ruins",
+      "neighborhood": "Hood River, OR",
+      "address": "13 Railroad St, Hood River, OR 97031",
+      "date": "2026-10-17",
+      "time": "6:00 PM",
+      "venueUrl": "https://www.theruins.org/event-details/the-honey-jays-and-ten30-90s-night-a-benefit-for-casa",
+      "imageUrl": "https://static.wixstatic.com/media/fd5ed8_8a5ef9a0ce8f48caa9eca29a8a970bc1~mv2.jpeg"
+    },
+    {
       "title": "The Sweet Lillies",
       "venue": "The Ruins",
       "neighborhood": "Hood River, OR",
@@ -19836,196 +20617,6 @@
       "venueUrl": "http://www.liveatthearmory.com/calendar-of-events/2026/11/17/the-california-honeydrops",
       "imageUrl": "https://static1.squarespace.com/static/535b2e9de4b0776c36c81d0c/535b6039e4b0c25f42bdd043/6a6d3fafa9b5546fa21fe992/1785560466792/",
       "age": "all-ages"
-    },
-    {
-      "title": "Blues Dogs",
-      "venue": "Talent Club",
-      "neighborhood": "Talent, OR",
-      "address": "114 Talent Ave, Talent, OR 97540",
-      "date": "2026-10-02",
-      "time": "8:00 PM",
-      "venueUrl": "https://talentclublive.com/event/blues-dogs/",
-      "imageUrl": "https://talentclublive.com/wp-content/uploads/2026/09/BLUES-DOGS-768x977.jpg",
-      "age": "21+"
-    },
-    {
-      "title": "Barry The Fish Melton and The Scholer System",
-      "venue": "Talent Club",
-      "neighborhood": "Talent, OR",
-      "address": "114 Talent Ave, Talent, OR 97540",
-      "date": "2026-10-03",
-      "time": "8:00 PM",
-      "venueUrl": "https://talentclublive.com/event/barry-the-fish-melton-and-the-scholer-system/",
-      "imageUrl": "https://talentclublive.com/wp-content/uploads/2026/08/barry-fish-melton-new-768x576.jpg",
-      "age": "21+"
-    },
-    {
-      "title": "Sean McLean and the Vibetenders",
-      "venue": "Talent Club",
-      "neighborhood": "Talent, OR",
-      "address": "114 Talent Ave, Talent, OR 97540",
-      "date": "2026-10-10",
-      "time": "8:00 PM",
-      "venueUrl": "https://talentclublive.com/event/sean-mclean-and-the-vibetenders/",
-      "imageUrl": "https://talentclublive.com/wp-content/uploads/2025/08/sean-mclean-2-768x1024.jpg",
-      "age": "21+"
-    },
-    {
-      "title": "Wes Urbaniak and The Mountain Folk",
-      "venue": "Talent Club",
-      "neighborhood": "Talent, OR",
-      "address": "114 Talent Ave, Talent, OR 97540",
-      "date": "2026-10-14",
-      "time": "8:00 PM",
-      "venueUrl": "https://talentclublive.com/event/wes-urbaniak-and-the-mountain-folk/",
-      "imageUrl": "https://talentclublive.com/wp-content/uploads/2026/09/Wes-Urbaniak-and-The-Mountain-Folk-768x1024.jpg",
-      "age": "21+"
-    },
-    {
-      "title": "Analog Dog",
-      "venue": "Talent Club",
-      "neighborhood": "Talent, OR",
-      "address": "114 Talent Ave, Talent, OR 97540",
-      "date": "2026-10-15",
-      "time": "8:00 PM",
-      "venueUrl": "https://talentclublive.com/event/analog-dog/",
-      "imageUrl": "https://talentclublive.com/wp-content/uploads/2025/11/analog-dog-1-768x1067.jpg",
-      "age": "21+"
-    },
-    {
-      "title": "Two21Fly",
-      "venue": "Talent Club",
-      "neighborhood": "Talent, OR",
-      "address": "114 Talent Ave, Talent, OR 97540",
-      "date": "2026-10-17",
-      "time": "8:00 PM",
-      "venueUrl": "https://talentclublive.com/event/two21fly/",
-      "imageUrl": "https://talentclublive.com/wp-content/uploads/2023/06/two21fly-2-1-768x960.jpg",
-      "age": "21+"
-    },
-    {
-      "title": "Comedy Night w/ Marc Yaffee",
-      "venue": "Talent Club",
-      "neighborhood": "Talent, OR",
-      "address": "114 Talent Ave, Talent, OR 97540",
-      "date": "2026-10-18",
-      "time": "7:00 PM",
-      "venueUrl": "https://talentclublive.com/event/marc-yaffee/",
-      "imageUrl": "https://talentclublive.com/wp-content/uploads/2026/07/Sunday-Funday-Marc-Yaffee-768x960.jpg",
-      "age": "21+",
-      "contentType": "comedy"
-    },
-    {
-      "title": "Dusk Dept.",
-      "venue": "Talent Club",
-      "neighborhood": "Talent, OR",
-      "address": "114 Talent Ave, Talent, OR 97540",
-      "date": "2026-10-23",
-      "time": "8:00 PM",
-      "venueUrl": "https://talentclublive.com/event/dusk-dept/",
-      "imageUrl": "https://talentclublive.com/wp-content/uploads/2026/09/dusk-dept-fixed-768x1024.jpg",
-      "age": "21+"
-    },
-    {
-      "title": "Electric Eel w/ Blackstrap Bluegrass",
-      "venue": "Talent Club",
-      "neighborhood": "Talent, OR",
-      "address": "114 Talent Ave, Talent, OR 97540",
-      "date": "2026-10-24",
-      "time": "8:00 PM",
-      "venueUrl": "https://talentclublive.com/event/electric-eel-2/",
-      "imageUrl": "https://talentclublive.com/wp-content/uploads/2023/11/electric-eel-sat-768x994.jpg",
-      "age": "21+"
-    },
-    {
-      "title": "Steely Dead - A Sonic Fusion of the Grateful Dead and Steely Dan",
-      "venue": "Talent Club",
-      "neighborhood": "Talent, OR",
-      "address": "114 Talent Ave, Talent, OR 97540",
-      "date": "2026-10-27",
-      "time": "8:00 PM",
-      "venueUrl": "https://talentclublive.com/event/steely-dead/",
-      "imageUrl": "https://talentclublive.com/wp-content/uploads/2026/07/steely-dead-768x960.jpg",
-      "age": "21+"
-    },
-    {
-      "title": "State of Terrapin (Night 1)",
-      "venue": "Talent Club",
-      "neighborhood": "Talent, OR",
-      "address": "114 Talent Ave, Talent, OR 97540",
-      "date": "2026-10-29",
-      "time": "8:00 PM",
-      "venueUrl": "https://talentclublive.com/event/state-of-terrapin/",
-      "imageUrl": "https://talentclublive.com/wp-content/uploads/2025/11/state-of-terrapin-1-768x1024.jpg",
-      "age": "21+"
-    },
-    {
-      "title": "State of Terrapin (Night 2)",
-      "venue": "Talent Club",
-      "neighborhood": "Talent, OR",
-      "address": "114 Talent Ave, Talent, OR 97540",
-      "date": "2026-10-30",
-      "time": "8:00 PM",
-      "venueUrl": "https://talentclublive.com/event/state-of-terrapin-2/",
-      "imageUrl": "https://talentclublive.com/wp-content/uploads/2025/11/state-of-terrapin-1-768x1024.jpg",
-      "age": "21+"
-    },
-    {
-      "title": "Collin & Co. Big Band Halloween Hootenanny",
-      "venue": "Talent Club",
-      "neighborhood": "Talent, OR",
-      "address": "114 Talent Ave, Talent, OR 97540",
-      "date": "2026-10-31",
-      "time": "8:00 PM",
-      "venueUrl": "https://talentclublive.com/event/halloween-anniversary-bash-w-collin-co/",
-      "imageUrl": "https://talentclublive.com/wp-content/uploads/2024/09/collin-halloween-768x1024.jpg",
-      "age": "21+"
-    },
-    {
-      "title": "Watkins Glen’s Super Deluxe Allstar Band",
-      "venue": "Talent Club",
-      "neighborhood": "Talent, OR",
-      "address": "114 Talent Ave, Talent, OR 97540",
-      "date": "2026-11-20",
-      "time": "8:00 PM",
-      "venueUrl": "https://talentclublive.com/event/watkins-glen/",
-      "imageUrl": "https://talentclublive.com/wp-content/uploads/2024/01/watkins-glen-3-768x960.jpg",
-      "age": "21+"
-    },
-    {
-      "title": "Brett’s House Party",
-      "venue": "Talent Club",
-      "neighborhood": "Talent, OR",
-      "address": "114 Talent Ave, Talent, OR 97540",
-      "date": "2026-11-21",
-      "time": "8:00 PM",
-      "venueUrl": "https://talentclublive.com/event/bretts-house-party/",
-      "imageUrl": "https://talentclublive.com/wp-content/uploads/2026/09/brets-house-party-768x768.jpg",
-      "age": "21+"
-    },
-    {
-      "title": "Comedy Night w/ Monica Nevi",
-      "venue": "Talent Club",
-      "neighborhood": "Talent, OR",
-      "address": "114 Talent Ave, Talent, OR 97540",
-      "date": "2026-11-22",
-      "time": "7:30 PM",
-      "venueUrl": "https://talentclublive.com/event/comedy-night-w-monica-nevi/",
-      "imageUrl": "https://talentclublive.com/wp-content/uploads/2026/07/Sunday-Funday-Monica-Nevi-768x960.jpg",
-      "age": "21+",
-      "contentType": "comedy"
-    },
-    {
-      "title": "Jim Gaffigan",
-      "venue": "Britt Pavilion",
-      "neighborhood": "Jacksonville, OR",
-      "address": "350 S 1st St, Jacksonville, OR 97530",
-      "date": "2026-09-30",
-      "time": "8:00 PM",
-      "venueUrl": "https://britt.org/events/jim-gaffigan/",
-      "imageUrl": "https://britt.org/wp-content/uploads/2026/01/JimGaffigan_square-1024x1024.jpg",
-      "age": "",
-      "contentType": "comedy"
     },
     {
       "title": "Rhapsody in Red",
@@ -20425,7 +21016,7 @@
       "date": "2026-10-17",
       "time": "6:00 PM",
       "venueUrl": "https://laurelthirst.com/events/coopfest-pete-krebs-gossamer-wings-mouldy-hearts/",
-      "imageUrl": "",
+      "imageUrl": "https://laurelthirst.com/wp-content/uploads/2026/09/coopfest2026bposter-02-1024x1024.jpg",
       "age": "21+",
       "price": "Free"
     },
@@ -22056,7 +22647,7 @@
       "date": "2026-10-08",
       "time": "",
       "venueUrl": "https://www.tixr.com/groups/thegetdownpdx/events/da-tweekaz-201502",
-      "imageUrl": "https://cdn.prod.website-files.com/661e975a7da244076909169e/6abc11416029a8f9f06b12f2_96890277-5d25-4d3b-b813-d51ebf13ceb3.webp"
+      "imageUrl": "https://cdn.prod.website-files.com/661e975a7da244076909169e/6abc11416029a8f9f06b12ef_1fa18ac5-a0ae-4c58-94ab-8da55060884d.webp"
     },
     {
       "title": "Satin Jackets",
@@ -22327,7 +22918,7 @@
       "time": "8:00 PM",
       "venueUrl": "https://www.jacklondonrevue.com/tm-event/alicia-witt/",
       "ticketUrl": "https://www.ticketweb.com/event/alicia-witt-jack-london-revue-tickets/14221284?pl=jacklondon&REFID=clientsitewp",
-      "imageUrl": "https://i.ticketweb.com/i/00/12/93/92/34_Original.jpg?v=6",
+      "imageUrl": "https://i.ticketweb.com/i/00/12/93/92/34_Original.jpg?v=9",
       "age": "21+"
     },
     {
@@ -22895,6 +23486,18 @@
       "age": "21+"
     },
     {
+      "title": "THE ROYAL WE",
+      "venue": "Jack London Revue",
+      "neighborhood": "Downtown",
+      "address": "529 SW 4th Ave",
+      "date": "2026-12-12",
+      "time": "8:00 PM",
+      "venueUrl": "https://www.jacklondonrevue.com/tm-event/the-royal-we/",
+      "ticketUrl": "https://www.ticketweb.com/event/the-royal-we-jack-london-revue-tickets/14347494?pl=jacklondon&REFID=clientsitewp",
+      "imageUrl": "https://i.ticketweb.com/i/00/13/06/32/44_Original.jpg?v=5",
+      "age": "21+"
+    },
+    {
       "title": "MARIA MAZZOTTA",
       "venue": "Jack London Revue",
       "neighborhood": "Downtown",
@@ -23376,7 +23979,8 @@
       "date": "2026-09-30",
       "time": "7:00 PM",
       "venueUrl": "https://albertarosetheatre.com/event/dancing-with-the-rose-city-stars/alberta-rose-theatre/portland-oregon/",
-      "imageUrl": "https://albertarosetheatre.com/wp-content/uploads/2026/08/dancing-with-the-rose-city-stars.jfif"
+      "imageUrl": "https://albertarosetheatre.com/wp-content/uploads/2026/08/dancing-with-the-rose-city-stars.jfif",
+      "soldOut": true
     },
     {
       "title": "Blues in the Gorge Guitar Masters",
@@ -23673,6 +24277,17 @@
       "time": "7:00 PM",
       "venueUrl": "https://albertarosetheatre.com/event/science-on-tap-save-the-planet-recycle-or-not/alberta-rose-theatre/portland-oregon/",
       "imageUrl": "https://albertarosetheatre.com/wp-content/uploads/2026/05/science-on-tap-save-the-planet-recycle-or-not.jfif"
+    },
+    {
+      "title": "Rizo & Making Movies",
+      "venue": "Alberta Rose Theatre",
+      "neighborhood": "Alberta Arts",
+      "address": "3000 NE Alberta St",
+      "date": "2026-12-15",
+      "time": "8:00 PM",
+      "venueUrl": "https://albertarosetheatre.com/event/rizo-making-movies/alberta-rose-theatre/portland-oregon/",
+      "imageUrl": "https://albertarosetheatre.com/wp-content/uploads/2026/09/rizo-making-movies-1.jfif",
+      "contentType": "comedy"
     },
     {
       "title": "Peter Rowan Sam Grisman Duo: A Special Evening of Songs & Stories",
@@ -25464,10 +26079,9 @@
       "address": "1300 SE Stark St",
       "date": "2026-09-30",
       "time": "8:00 PM",
-      "venueUrl": "https://www.etix.com/ticket/p/57504690/sold-outsnarky-puppy-portland-revolution-hall",
+      "venueUrl": "https://www.etix.com/ticket/p/57504690/snarky-puppy-portland-revolution-hall",
       "imageUrl": "https://cdn.etix.com/etix/performance-image/performance_image_1200w/a78089bc1424dac888d10d4f1d10652d.jpg",
-      "age": "21+",
-      "soldOut": true
+      "age": "21+"
     },
     {
       "title": "A.J. Croce Presents CROCE PLAYS CROCE",
@@ -25703,9 +26317,10 @@
       "address": "1300 SE Stark St",
       "date": "2026-10-15",
       "time": "8:00 PM",
-      "venueUrl": "https://www.etix.com/ticket/p/64152163/locked-on-blazers-live-podcast-portland-show-bar-at-revolution-hall",
+      "venueUrl": "https://www.etix.com/ticket/p/64152163/sold-outlocked-on-blazers-live-podcast-portland-show-bar-at-revolution-hall",
       "imageUrl": "https://cdn.etix.com/etix/performance-image/performance_image_1200w/28a68b9429e1fab44ba43e7683e15b76.jpg",
-      "age": "21+"
+      "age": "21+",
+      "soldOut": true
     },
     {
       "title": "Two Dykes and a Mic: Soaking Wet Tour",
@@ -26498,13 +27113,13 @@
       "age": "all-ages"
     },
     {
-      "title": "BANG A GONG: A GLAM DANCE PARTY",
+      "title": "BANG A GONG: A GLAM DANCE PARTY – 21+",
       "venue": "Holocene",
       "neighborhood": "Central Eastside",
       "address": "1001 SE Morrison St",
       "date": "2026-09-30",
       "time": "8:30 PM",
-      "venueUrl": "https://www.holocene.org/event/bang-a-gong-a-glam-dance-party/holocene/portland/",
+      "venueUrl": "https://www.holocene.org/event/bang-a-gong-a-glam-dance-party-21/holocene/portland/",
       "imageUrl": "https://www.holocene.org/wp-content/uploads/2026/08/bang-a-gong-a-glam-dance-party.jpeg"
     },
     {
@@ -26851,6 +27466,16 @@
       "imageUrl": "https://www.holocene.org/wp-content/uploads/2026/08/betty-a-queer-dance-party-halloween-edition-21.jpeg"
     },
     {
+      "title": "Dylan Thom – 21+",
+      "venue": "Holocene",
+      "neighborhood": "Central Eastside",
+      "address": "1001 SE Morrison St",
+      "date": "2026-11-04",
+      "time": "7:00 PM",
+      "venueUrl": "https://www.holocene.org/event/dylan-thom-21/holocene/portland/",
+      "imageUrl": "https://www.holocene.org/wp-content/uploads/2026/09/dylan-thom-21.jpeg"
+    },
+    {
       "title": "Shanghai Quitian – w/ Dabda – EARLY SHOW! – All Ages",
       "venue": "Holocene",
       "neighborhood": "Central Eastside",
@@ -27134,7 +27759,7 @@
       "date": "2026-10-03",
       "time": "8:00 PM",
       "venueUrl": "https://wonderballroom.com/event/los-thuthanaka/wonder-ballroom/portland-oregon/",
-      "imageUrl": "https://wonderballroom.com/wp-content/uploads/2026/06/los-thuthanaka.jfif",
+      "imageUrl": "https://wonderballroom.com/wp-content/uploads/2026/09/los-thuthanaka.jfif",
       "age": "all-ages"
     },
     {
@@ -27218,23 +27843,12 @@
       "soldOut": true
     },
     {
-      "title": "*POSTPONED To TBD Date* Hazlett",
-      "venue": "Wonder Ballroom",
-      "neighborhood": "Eliot/Boise",
-      "address": "128 NE Russell St",
-      "date": "2026-10-17",
-      "time": "8:00 PM",
-      "venueUrl": "https://wonderballroom.com/event/postponed-to-tbd-date-hazlett/wonder-ballroom/portland-oregon/",
-      "imageUrl": "https://wonderballroom.com/wp-content/uploads/2026/06/hazlett.jfif",
-      "age": "all-ages"
-    },
-    {
       "title": "SiM – HOOMAN WORLD TOUR",
       "venue": "Wonder Ballroom",
       "neighborhood": "Eliot/Boise",
       "address": "128 NE Russell St",
       "date": "2026-10-18",
-      "time": "8:30 PM",
+      "time": "8:00 PM",
       "venueUrl": "https://wonderballroom.com/event/sim-hooman-world-tour/wonder-ballroom/portland-oregon/",
       "imageUrl": "https://wonderballroom.com/wp-content/uploads/2026/05/sim-hooman-world-tour.jfif",
       "age": "all-ages"
@@ -27293,7 +27907,8 @@
       "time": "5:00 PM",
       "venueUrl": "https://wonderballroom.com/event/nice-as-fk-back-as-fk-nice-as-ever/wonder-ballroom/portland-oregon/",
       "imageUrl": "https://wonderballroom.com/wp-content/uploads/2026/09/nice-as-fk-back-as-fk-nice-as-ever.jfif",
-      "age": ""
+      "age": "",
+      "soldOut": true
     },
     {
       "title": "Knox",
@@ -29146,7 +29761,7 @@
       "imageUrl": ""
     },
     {
-      "title": "Rockers for Knockers. Fuck Cancer! w/ Dartgun and The Vignettes and more",
+      "title": "Rockers for Knockers. w/ Dartgun and The Vignettes and more",
       "venue": "Spare Room",
       "neighborhood": "Cully",
       "address": "4830 NE 42nd Ave",
@@ -29276,12 +29891,22 @@
       "imageUrl": ""
     },
     {
-      "title": "Goat Yogis",
+      "title": "Joseph Konty Band",
       "venue": "Switchback Saloon",
       "neighborhood": "Richmond",
       "address": "4847 SE Division St",
-      "date": "2026-10-08",
-      "time": "6:00 PM",
+      "date": "2026-10-03",
+      "time": "5:30 PM",
+      "venueUrl": "https://switchbacksaloon.com/schedule.html",
+      "imageUrl": ""
+    },
+    {
+      "title": "DJ: Lloyd Depriste",
+      "venue": "Switchback Saloon",
+      "neighborhood": "Richmond",
+      "address": "4847 SE Division St",
+      "date": "2026-10-31",
+      "time": "8:30 PM",
       "venueUrl": "https://switchbacksaloon.com/schedule.html",
       "imageUrl": ""
     },
@@ -29290,17 +29915,7 @@
       "venue": "Switchback Saloon",
       "neighborhood": "Richmond",
       "address": "4847 SE Division St",
-      "date": "2026-10-17",
-      "time": "5:30 PM",
-      "venueUrl": "https://switchbacksaloon.com/schedule.html",
-      "imageUrl": ""
-    },
-    {
-      "title": "Joseph Konty Band",
-      "venue": "Switchback Saloon",
-      "neighborhood": "Richmond",
-      "address": "4847 SE Division St",
-      "date": "2026-10-03",
+      "date": "2026-10-31",
       "time": "5:30 PM",
       "venueUrl": "https://switchbacksaloon.com/schedule.html",
       "imageUrl": ""
@@ -29316,42 +29931,12 @@
       "imageUrl": ""
     },
     {
-      "title": "Tentative Record Release Concert",
-      "venue": "Switchback Saloon",
-      "neighborhood": "Richmond",
-      "address": "4847 SE Division St",
-      "date": "2026-10-10",
-      "time": "5:00 PM",
-      "venueUrl": "https://switchbacksaloon.com/schedule.html",
-      "imageUrl": ""
-    },
-    {
-      "title": "Ezra Meredith",
-      "venue": "Switchback Saloon",
-      "neighborhood": "Richmond",
-      "address": "4847 SE Division St",
-      "date": "2026-10-02",
-      "time": "6:30 PM",
-      "venueUrl": "https://switchbacksaloon.com/schedule.html",
-      "imageUrl": ""
-    },
-    {
       "title": "Taylor Kingman",
       "venue": "Switchback Saloon",
       "neighborhood": "Richmond",
       "address": "4847 SE Division St",
-      "date": "2026-10-24",
-      "time": "8:00 PM",
-      "venueUrl": "https://switchbacksaloon.com/schedule.html",
-      "imageUrl": ""
-    },
-    {
-      "title": "Courage Country Christmas (Time TBD)",
-      "venue": "Switchback Saloon",
-      "neighborhood": "Richmond",
-      "address": "4847 SE Division St",
-      "date": "2026-12-19",
-      "time": "",
+      "date": "2026-10-17",
+      "time": "5:30 PM",
       "venueUrl": "https://switchbacksaloon.com/schedule.html",
       "imageUrl": ""
     },
@@ -29366,6 +29951,46 @@
       "imageUrl": ""
     },
     {
+      "title": "Courage Country Christmas (Time TBD)",
+      "venue": "Switchback Saloon",
+      "neighborhood": "Richmond",
+      "address": "4847 SE Division St",
+      "date": "2026-12-19",
+      "time": "",
+      "venueUrl": "https://switchbacksaloon.com/schedule.html",
+      "imageUrl": ""
+    },
+    {
+      "title": "Taylor Kingman",
+      "venue": "Switchback Saloon",
+      "neighborhood": "Richmond",
+      "address": "4847 SE Division St",
+      "date": "2026-10-24",
+      "time": "8:00 PM",
+      "venueUrl": "https://switchbacksaloon.com/schedule.html",
+      "imageUrl": ""
+    },
+    {
+      "title": "Ezra Meredith",
+      "venue": "Switchback Saloon",
+      "neighborhood": "Richmond",
+      "address": "4847 SE Division St",
+      "date": "2026-10-02",
+      "time": "6:30 PM",
+      "venueUrl": "https://switchbacksaloon.com/schedule.html",
+      "imageUrl": ""
+    },
+    {
+      "title": "Joseph Konty Band",
+      "venue": "Switchback Saloon",
+      "neighborhood": "Richmond",
+      "address": "4847 SE Division St",
+      "date": "2026-11-07",
+      "time": "5:30 PM",
+      "venueUrl": "https://switchbacksaloon.com/schedule.html",
+      "imageUrl": ""
+    },
+    {
       "title": "Taylor Kingman",
       "venue": "Switchback Saloon",
       "neighborhood": "Richmond",
@@ -29386,12 +30011,12 @@
       "imageUrl": ""
     },
     {
-      "title": "DJ: Lloyd Depriste",
+      "title": "Tentative Record Release Concert",
       "venue": "Switchback Saloon",
       "neighborhood": "Richmond",
       "address": "4847 SE Division St",
-      "date": "2026-10-31",
-      "time": "8:30 PM",
+      "date": "2026-10-10",
+      "time": "5:00 PM",
       "venueUrl": "https://switchbacksaloon.com/schedule.html",
       "imageUrl": ""
     },
@@ -29406,22 +30031,12 @@
       "imageUrl": ""
     },
     {
-      "title": "Taylor Kingman",
+      "title": "Goat Yogis",
       "venue": "Switchback Saloon",
       "neighborhood": "Richmond",
       "address": "4847 SE Division St",
-      "date": "2026-10-31",
-      "time": "5:30 PM",
-      "venueUrl": "https://switchbacksaloon.com/schedule.html",
-      "imageUrl": ""
-    },
-    {
-      "title": "Joseph Konty Band",
-      "venue": "Switchback Saloon",
-      "neighborhood": "Richmond",
-      "address": "4847 SE Division St",
-      "date": "2026-11-07",
-      "time": "5:30 PM",
+      "date": "2026-10-08",
+      "time": "6:00 PM",
       "venueUrl": "https://switchbacksaloon.com/schedule.html",
       "imageUrl": ""
     },
