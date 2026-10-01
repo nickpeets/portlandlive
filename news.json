@@ -4,29 +4,43 @@
    "text": "This weekend: Northwest Roots Fest Oct 3-4. Full lineup on the site.",
    "auto": true,
    "key": "fest:northwest-roots-fest-2026",
-   "from": "2026-09-30",
+   "from": "2026-10-01",
    "until": "2026-10-04",
    "url": "#/festival/northwest-roots-fest-2026"
   },
   {
-   "text": "Welcome Jenny, Kerry, Singacoustic, Longo, Lori, PNWSunshine and 14 more to Rain Or Shows.",
+   "text": "Welcome Jenny, Kerry, Singacoustic, Longo, Lori, PNWSunshine and 8 more to Rain Or Shows.",
    "auto": true,
    "key": "members:rolling",
-   "from": "2026-09-30",
-   "until": "2026-09-30"
+   "from": "2026-10-01",
+   "until": "2026-10-01"
+  },
+  {
+   "text": "Gone, not forgotten: type the name of a closed Portland room into the search box. Find them all and your profile earns a badge.",
+   "auto": true,
+   "key": "hand:7182f766-d1cc-4253-8077-ffae4747099f",
+   "from": "2026-10-01",
+   "until": "2026-10-30"
+  },
+  {
+   "text": "Gone, not forgotten: type the name of a closed Portland room into the search box. Find them all and your profile earns a badge.",
+   "auto": true,
+   "key": "hand:bbc16115-4518-4538-ab6d-cba7f5d75f3b",
+   "from": "2026-10-01",
+   "until": "2026-11-14"
   },
   {
    "text": "Who's in? Ask your friends. Tap it on any show and text them the invite.",
    "auto": true,
    "key": "hand:3978aa25-bfbd-46ec-8fe4-84108dbfac31",
-   "from": "2026-09-30",
+   "from": "2026-10-01",
    "until": "2026-10-26"
   },
   {
    "text": "Hear it before you go: Tap ▶Listen on any show.",
    "auto": true,
    "key": "hand:4d8205a8-f87b-430f-b89c-16cacb2f9112",
-   "from": "2026-09-30",
+   "from": "2026-10-01",
    "until": "2026-10-26"
   },
   {
@@ -36,14 +50,6 @@
    "from": "2026-09-29",
    "until": "2026-10-06",
    "at": "2026-09-29T22:25:51+00:00"
-  },
-  {
-   "text": "6 new venues on the calendar: Threshold Brewing, Hoku Events, Hopworks Brewery and 3 more.",
-   "auto": true,
-   "key": "venues:2026-09-23:2026-09-23T18:45:23+00:00",
-   "from": "2026-09-23",
-   "until": "2026-09-30",
-   "at": "2026-09-23T18:45:23+00:00"
   }
  ],
  "announced": [
@@ -55,6 +61,8 @@
   "fest:st-johns-music-fest-2026",
   "hand:3978aa25-bfbd-46ec-8fe4-84108dbfac31",
   "hand:4d8205a8-f87b-430f-b89c-16cacb2f9112",
+  "hand:7182f766-d1cc-4253-8077-ffae4747099f",
+  "hand:bbc16115-4518-4538-ab6d-cba7f5d75f3b",
   "member:2026-09-16:nay nay",
   "member:2026-09-16:shorty",
   "member:2026-09-17:chad",
