@@ -650,3 +650,5 @@ Matched cards show a muted reason chip (venue priority on a double-match), compu
 - **2026-10-01 — Past shows in search (d74d7630)** — a no-date search with no upcoming match lists the last 90 days of the archive under "Past shows", newest first, 30 max; empty state shrinks to one line. Skipped under Tonight/This Week/Heating Up; Comedy pill searches past comedy.
 
 - **2026-10-01 — Public easter eggs panel (b0b014c6)** — eggProfileSection draws on any profile the viewer can see: own page via my_eggs/my_ghost_visits, others via eggs_for_user (schema-eggs-public.sql, gated by can_see_upcoming like stubs). Withheld profiles get the one-line stubs-style notice. Visitors see found rooms and ghost stubs, not just counts; the Badges row still shows the count only.
+
+- **2026-10-01 — Story links never 404 (a1705293)** — 404.html sends /og/story/<slug>/ to #/story/<slug> when the share page is not built yet (story posted after the morning build). Preview card still comes from the next build.
