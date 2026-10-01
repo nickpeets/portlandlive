@@ -5486,8 +5486,9 @@ async function renderProfileRoute(handle){
     page.appendChild(bsecB);
   }
 
-  // Easter eggs found (Sep 25 2026): your own page only.
-  if(isMe){ await eggProfileSection(page); if(parseRoute().handle !== handle) return; }
+  // Easter eggs found (Sep 25 2026). Oct 1 2026 (Nick): shown to anyone who
+  // can see the profile, through the same gate as stubs (eggs_for_user).
+  await eggProfileSection(page, p, isMe, withheld); if(parseRoute().handle !== handle) return;
 
   // Blocked people (Sep 22 2026): only on your own page, only when there are any.
   if(isMe){
@@ -10913,16 +10914,33 @@ async function renderGhostRoute(slug){
   mountComments(page, 'ghost-' + g.slug);
 }
 
-// ---- Your easter eggs, on your own profile ----------------------------------
-async function eggProfileSection(page){
-  eggSyncUp();
+// ---- Easter eggs on a profile (yours, or anyone's you can see) --------------
+async function eggProfileSection(page, p, isMe, withheld){
   const sb = window.__plAuth;
-  let eggs = eggLocal(), visits = [];
-  if(sb){
-    const [e, v] = await Promise.all([safeRpc(sb.rpc('my_eggs')), safeRpc(sb.rpc('my_ghost_visits'))]);
-    if(e && !e.error && Array.isArray(e.data)){ eggs = e.data.map(function(x){ return x.egg; }); eggSave(eggs); }
-    if(v && !v.error && v.data) visits = v.data.map(function(x){ return x.ghost_slug; });
+  let eggs = [], visits = [];
+  if(isMe){
+    eggSyncUp();
+    eggs = eggLocal();
+    if(sb){
+      const [e, v] = await Promise.all([safeRpc(sb.rpc('my_eggs')), safeRpc(sb.rpc('my_ghost_visits'))]);
+      if(e && !e.error && Array.isArray(e.data)){ eggs = e.data.map(function(x){ return x.egg; }); eggSave(eggs); }
+      if(v && !v.error && v.data) visits = v.data.map(function(x){ return x.ghost_slug; });
+    }
+  } else {
+    // Someone else's page: one gated read (eggs_for_user). A withheld
+    // profile gets the same one-line notice the stubs use, nothing else.
+    const held = withheld ? withheld('easter eggs') : '';
+    if(held){
+      const h = document.createElement('section'); h.className = 'pf-section pf-eggs';
+      h.innerHTML = '<h3 class="pf-section-head">Easter eggs</h3><div class="pf-empty">' + held + '</div>';
+      page.appendChild(h); return;
+    }
+    if(!sb || !p || !p.id) return;
+    const r = await safeRpc(sb.rpc('eggs_for_user', { p_target: p.id }));
+    if(!r || r.error || !Array.isArray(r.data)) return;
+    r.data.forEach(function(x){ if(x.kind === 'egg') eggs.push(x.key); else if(x.kind === 'visit') visits.push(x.key); });
   }
+  const who = isMe ? 'you' : esc((p && p.display_name) || 'they');
   const eggN = EGG_LIST.filter(function(x){ return eggs.indexOf(x[0]) !== -1; }).length;
   const found = GHOSTS.filter(function(g){ return eggs.indexOf('ghost:' + g.slug) !== -1 || visits.indexOf(g.slug) !== -1; });
   const pin = function(label, n, of, emoji){
@@ -10948,7 +10966,7 @@ async function eggProfileSection(page){
   // really make sense" and the room names were "impossible to see"). Cream
   // card, dark text, a line saying what this is and that only you see it.
   const sec = document.createElement('section'); sec.className = 'pf-section pf-eggs';
-  sec.innerHTML = '<h3 class="pf-section-head">Easter eggs <span class="egg-private">only you can see this</span></h3>'
+  sec.innerHTML = '<h3 class="pf-section-head">Easter eggs' + (isMe ? ' <span class="egg-private">people who can see your profile see this</span>' : '') + '</h3>'
     + '<div class="egg-panel">'
     + '<p class="egg-why"><b>Ghost venues</b> are Portland music rooms that have closed \u2014 search one by its name to find it and pay tribute.</p>'
     + '<div class="egg-tiles">'
@@ -10956,12 +10974,12 @@ async function eggProfileSection(page){
     + '<div class="egg-tile' + (nF >= GHOSTS.length ? ' gold' : '') + '">' + ghostSvg(nF, 40) + '<div><b>' + nF + ' of ' + GHOSTS.length + '</b><span>ghost venues found' + (rank ? ' \u00b7 rank: ' + esc(rank[1]) : '') + '</span></div></div>'
     + '</div>'
     + (found.length
-      ? '<div class="egg-sub">Your ghost venues</div><div class="ghost-found">' + found.map(function(g){
+      ? '<div class="egg-sub">' + (isMe ? 'Your ghost venues' : 'Ghost venues found') + '</div><div class="ghost-found">' + found.map(function(g){
           const was = visits.indexOf(g.slug) !== -1;
-          return '<a href="#/ghost/' + esc(g.slug) + '"><b>' + esc(g.name) + '</b><span>' + esc(g.years) + (was ? ' \u00b7 you were there' : '') + '</span></a>';
+          return '<a href="#/ghost/' + esc(g.slug) + '"><b>' + esc(g.name) + '</b><span>' + esc(g.years) + (was ? ' \u00b7 ' + (isMe ? 'you were' : 'was') + ' there' : '') + '</span></a>';
         }).join('') + '</div>'
-        + (been.length ? '<div class="egg-sub">Ghost stubs \u2014 rooms you were at</div><div class="ghost-stubs">' + been.map(gstub).join('') + '</div>' : '')
-      : '<p class="egg-none">None found yet. Try searching for an old room you miss.</p>')
+        + (been.length ? '<div class="egg-sub">Ghost stubs \u2014 rooms ' + (isMe ? 'you were' : who + ' was') + ' at</div><div class="ghost-stubs">' + been.map(gstub).join('') + '</div>' : '')
+      : '<p class="egg-none">' + (isMe ? 'None found yet. Try searching for an old room you miss.' : 'None found yet.') + '</p>')
     + '</div>';
   page.appendChild(sec);
 }
