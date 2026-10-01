@@ -564,6 +564,9 @@ body.flyer-mode .masthead-logo img{filter:grayscale(1) contrast(2)}
 
 
 .empty{text-align:center;padding:60px 20px;color:var(--cream)}
+.empty.past-empty{padding:14px 20px 4px;font-size:15px;opacity:.85}
+.empty.past-empty p{margin:0}
+.past-matches{margin-top:14px}
 .empty h2{font-family:'Alfa Slab One',serif;font-size:26px;margin-bottom:6px;text-shadow:0 1px 0 rgba(0,0,0,.12)}
 .empty p{opacity:.8}
 
@@ -2855,6 +2858,40 @@ function venueMatchChips(){
   return box;
 }
 
+// Past shows for a no-date search (Oct 1 2026, Nick): when nothing upcoming
+// matches, the last 90 days of the archive are searched the same way and
+// listed under a "Past shows" heading, newest first, 30 at most. A date in the
+// search already reaches the archive on its own (see filtered()). The empty
+// state shrinks to one line so the past shows sit near the search box.
+function mountPastMatches(wrap){
+  const q = (state.q || '').trim();
+  if(!q || /^@/.test(q)) return;
+  if(state.tonight || state.thisWeek || state.heating) return;
+  try{ if(parseDateQuery(q)) return; }catch(_){}
+  const want = q;
+  loadArchive().then(function(a){
+    if((state.q || '').trim() !== want || !wrap.isConnected) return;
+    const today = pacificTodayISO();
+    const d = new Date(today + 'T12:00:00'); d.setDate(d.getDate() - 90);
+    const from = d.toISOString().slice(0,10);
+    const kind = state.comedy ? 'comedy' : 'music';
+    let rows = ((a && a.shows) || []).filter(function(s){
+      return s.date && s.date >= from && s.date < today && (s.contentType || 'music') === kind;
+    });
+    rows = filterByQuery(rows, q, showSearchText)
+      .sort(function(x, y){ return y.date < x.date ? -1 : y.date > x.date ? 1 : 0; }).slice(0, 30);
+    if(!rows.length) return;
+    rows.forEach(function(x){ x._slug = x._slug || makeSlug(x); });
+    const em = wrap.querySelector('.empty');
+    if(em){ em.className = 'empty past-empty'; em.innerHTML = '<p>No upcoming shows match \u201c' + esc(q) + '\u201d.</p>'; }
+    const sec = document.createElement('section'); sec.className = 'past-matches';
+    sec.innerHTML = '<div class="dayhead">Past shows<span class="count">last 90 days \u00b7 ' + rows.length + '</span></div>';
+    sec.appendChild(listOf(rows, true));
+    wrap.appendChild(sec);
+    $('#resultCount').textContent = rows.length + ' past show' + (rows.length === 1 ? '' : 's');
+  });
+}
+
 function render(){
   syncFollowingPill();
   stopFeedPager();
@@ -2950,6 +2987,7 @@ function render(){
     // Venue with nothing upcoming still has a page (Sep 30 2026, Old Market Pub).
     if(!state.picks && !state.following && !state.myShows){
       const vc = venueMatchChips(); if(vc) wrap.insertBefore(vc, wrap.firstChild);
+      mountPastMatches(wrap);
     }
     return;
   }
