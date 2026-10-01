@@ -5,6 +5,13 @@ h1{font-family:'Oswald',Impact,sans-serif;letter-spacing:.06em;text-transform:up
 a{display:inline-block;background:#b5562b;color:#f3ead7;text-decoration:none;font-family:'Oswald',Impact,sans-serif;letter-spacing:.08em;text-transform:uppercase;padding:10px 18px;border-radius:6px}</style></head>
 <body><div><h1>That page isn&rsquo;t here</h1><p>The show may have passed, or the link is off by a letter.</p><a href="/">Tonight&rsquo;s shows</a></div>
 <script>
+  // A Liner Notes story whose share page the nightly build hasn't written yet
+  // (posted after this morning's run). Open the story in the app instead of
+  // dead-ending here.
+  (function(){ var m = location.pathname.match(/^\/og\/story\/([a-z0-9-]{1,90})\/?$/);
+    if(m) location.replace('/' + location.search + '#/story/' + m[1]); })();
+</script>
+<script>
   // A dropped show page is the common case. Send it into the app so a
   // search for the venue or act is one tap away.
   if(/\/show\//.test(location.pathname)){ document.querySelector('a').href = '/#/venues'; document.querySelector('a').textContent = 'Browse venues'; }
