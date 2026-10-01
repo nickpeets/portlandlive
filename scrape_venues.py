@@ -3233,7 +3233,7 @@ def parse_cascades(html, today):
     """
     idxs = [m.start() for m in re.finditer(r'\\"start_date_local\\"', html)]
     if not idxs:
-        raise RuntimeError("Cascades: no event data (start_date_local) found in page HTML")
+        return []   # off-season page lists nothing (Sep 30 2026)
     bounds = idxs + [len(html)]
     # Robust, JSON-parsed image collection keyed by discovery_id (image wrapper 'id').
     flight = _cascades_flight(html)
@@ -6188,7 +6188,7 @@ SOURCES = [
     {"name": "The Firkin Tavern (firkintavern.com)", "parser": parse_firkin, "may_be_empty": True,
      "urls": ["https://firkintavern.com/wp-json/tribe/events/v1/events?per_page=50"]},
     # Batch four (Sep 23 2026)
-    {"name": "Vancouver Elks Lodge (elks823.org)", "parser": parse_elks823,
+    {"name": "Vancouver Elks Lodge (elks823.org)", "parser": parse_elks823, "tls": True,
      "urls": ["https://elks823.org/wp-json/tribe/events/v1/events?per_page=50"]},
     {"name": "Hoku Events (hoku-events.com)", "parser": parse_hoku,
      "urls": ["https://www.hoku-events.com/upcoming-events?format=json"]},
@@ -6247,15 +6247,17 @@ SOURCES = [
     {"name": "Mississippi Pizza (mississippipizza.com)", "parser": parse_mississippipizza, "urls": ["https://mississippipizza.com/calendar/"]},
     {"name": "Alberta Street Pub (albertastreetpub.com)", "parser": parse_albertastreetpub, "urls": ["https://www.albertastreetpub.com/music?format=json"]},
     {"name": "Tomorrow's Verse (youenjoymybeer.com)", "parser": parse_tomorrowsverse, "urls": ["https://www.youenjoymybeer.com/events"]},
-    {"name": "Cascades Amphitheater (livenation.com)", "parser": parse_cascades, "urls": [_CASCADES_URL]},
+    # Outdoor shed, dark from October to spring (last 2026 show Sep 29): an empty
+    # Live Nation page is the off-season, not a breakage (Sep 30 2026).
+    {"name": "Cascades Amphitheater (livenation.com)", "parser": parse_cascades, "may_be_empty": True, "urls": [_CASCADES_URL]},
     # Columbia Gorge (Sep 2026)
     {"name": "Trout Lake Hall (troutlakehall.com)", "parser": parse_troutlakehall, "urls": [_TLH_HOME]},
     {"name": "The Ruins (theruins.org)", "parser": parse_theruins, "urls": [_RUINS_PAGE]},
     # Southern Oregon (Sep 29 2026)
     {"name": "Ashland Armory (liveatthearmory.com)", "parser": parse_armory, "urls": [_ARMORY_BASE + "?format=json"]},
-    {"name": "Talent Club (talentclublive.com)", "parser": parse_talentclub, "urls": [_TALENT_PAGE]},
+    {"name": "Talent Club (talentclublive.com)", "parser": parse_talentclub, "tls": True, "urls": [_TALENT_PAGE]},
     # Open-air, June to September: empty the rest of the year is normal.
-    {"name": "Britt Pavilion (britt.org)", "parser": parse_britt, "may_be_empty": True, "urls": [_BRITT_PAGE]},
+    {"name": "Britt Pavilion (britt.org)", "parser": parse_britt, "may_be_empty": True, "tls": True, "urls": [_BRITT_PAGE]},
     {"name": "Laurelthirst (laurelthirst.com)", "parser": parse_laurelthirst, "urls": ["https://laurelthirst.com/music-calendar/"]},
     {"name": "Showdown Saloon", "parser": parse_showdown, "urls": ["https://showdownpdx.com/"]},
     {"name": "The Get Down", "parser": parse_getdown, "urls": ["https://thegetdownpdx.com/"]},
