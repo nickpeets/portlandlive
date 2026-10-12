@@ -24,6 +24,7 @@ drop past dates, depend on it. Every fixture below was captured on
 """
 import datetime
 import importlib.util
+import re
 import os
 import sys
 
@@ -253,6 +254,36 @@ def main():
     else:
         fails += 1
         print(f"  FAIL laurelthirst-sept2026.html   rows {len(rows)} != 28 or imageUrl {imgs} != 22 or ages {ages} or prices {prices} != 28 or adv/door {door}")
+    print()
+    # Singacoustic (Oct 11 2026): EventPrime. The REST list is ids + titles;
+    # the reader fetches each show's own page and the venue's Eventbrite
+    # organizer page itself, so both are stubbed with the captured copies.
+    # Run as of the capture day -- its dates are a month past the suite's.
+    _pages = dict(re.findall(r"<!-- singacoustic event (\d+) -->\n(.*?)\n(?=<!-- singacoustic event |\Z)", load("singacoustic-events.html"), re.S))
+    sv._SING_PAUSE_S = 0
+    sv._singacoustic_page = lambda eid: _pages[str(eid)]
+    sv._singacoustic_eventbrite = lambda: load("singacoustic-eventbrite.html")
+    rows = sv.parse_singacoustic(load("singacoustic-rest.json"), datetime.date(2026, 10, 11))
+    by = {r["title"]: r for r in rows}
+    want = {"Nathan Stanley: A Tribute to Dr. Ralph Stanley": ("2026-10-27", "7:30 PM", "$33.85"),          # page says 07:30 AM
+            "Rooster Blackspur: Folk, Roots & Americana": ("2026-10-14", "7:30 PM", "$25 adv / $30 door"),
+            "Christmas on Six Strings: Terry Robb & Adam Scramstad": ("2026-12-12", "7:30 PM", "$25 adv / $30 door"),
+            "A Conversation in Keys & Strings: Ernie Votto & Bill Mitchell": ("2026-10-15", "7:30 PM", "Free"),
+            "The Art of the Protest Song": ("2026-10-22", "7:00 PM", "$10 donation"),
+            "Phoenix: Songs of Renewal & Americana": ("2026-11-14", "7:30 PM", "By donation"),
+            "Singacoustic Open Mic": ("2026-10-13", "7:00 PM", "Free")}                                       # Eventbrite only
+    bad = [t for t, w in want.items() if (by.get(t, {}).get("date"), by.get(t, {}).get("time"), by.get(t, {}).get("price")) != w]
+    n = lambda f: sum(1 for r in rows if (r.get(f) or "").strip())
+    ages = {r["title"][:12]: r["age"] for r in rows if r.get("age")}
+    sv._singacoustic_eventbrite = lambda: ""
+    alone = sv.parse_singacoustic(load("singacoustic-rest.json"), datetime.date(2026, 10, 11))
+    blank = [r["time"] for r in alone if r["title"].startswith("Nathan Stanley")]
+    if (len(rows) == 12 and not bad and n("time") == 12 and n("imageUrl") == 12 and n("price") == 12 and n("ticketUrl") == 9
+            and ages == {"Bryan Bowers": "all-ages"} and len(alone) == 11 and blank == [""] and sum(1 for r in alone if r["time"]) == 10):
+        print(f"  ok   singacoustic-events.html     {len(rows):3d} rows  -- EventPrime show pages + Eventbrite extras via stubs; 07:30 AM typo takes Eventbrite's time, blank without it; prices from the page's own words")
+    else:
+        fails += 1
+        print(f"  FAIL singacoustic-events.html     rows {len(rows)} (want 12), wrong {bad}, time {n('time')}, imageUrl {n('imageUrl')}, price {n('price')}, ticketUrl {n('ticketUrl')}, ages {ages}, alone {len(alone)}, Nathan without Eventbrite {blank}")
     print()
     # McMenamins: the parser drives its own session (postback per venue, then
     # the getScrollEvents.aspx fragment for the full list). Stub those three

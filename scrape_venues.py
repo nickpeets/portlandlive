@@ -94,6 +94,7 @@ VENUE_INFO = {
     "Helium Comedy Club": ("Central Eastside", "1510 SE 9th Ave, Portland, OR 97214"),
     "LaVerne's": ("Woodlawn", "700 NE Dekum St, Portland, OR 97211"),
     "The Blue Diamond": ("Kerns", "2016 NE Sandy Blvd, Portland, OR 97232"),
+    "Singacoustic": ("Kerns", "2600 NE Sandy Blvd, Portland, OR 97232"),
     "McMenamins Hotel Oregon": ("McMinnville", "310 NE Evans St, McMinnville, OR 97128"),
     "McMenamins Wilsonville Old Church & Pub": ("Wilsonville", "30340 SW Boones Ferry Rd, Wilsonville, OR 97070"),
     "Funhouse Lounge": ("Hosford-Abernethy", "2432 SE 11th Ave, Portland, OR 97214"),
@@ -5539,6 +5540,197 @@ def parse_wolves(html, today):
     return out
 
 
+# ---- Singacoustic (2600 NE Sandy, Kerns): 52-seat listening room, added at
+# the owner's request (Oct 11 2026). WordPress + EventPrime. The plugin's REST
+# list (/wp-json/eventprime/v1/events) is ids and titles only, so each show's
+# own page (/all-events/?event=<id>) is read for the rest: the date and time
+# from its "Outlook 365" calendar link (startdt=2026-10-27T19:30 -- the page
+# text has no year), the poster, the Eventbrite button, and price and age from
+# the description ("$25 Advanced. $30 at the door", "This is a free show",
+# "This is an All Ages Event"). The venue's Eventbrite organizer page is read
+# too, for extras only: shows it lists that the site doesn't (the weekly open
+# mic), a ticket link or price the page leaves out, sold-out, and the time
+# when the page's is not believable -- Nathan Stanley's page said 07:30 AM
+# while Eventbrite sold it for 7:30 PM. If Eventbrite is unreachable the
+# site's rows stand and that time is left blank rather than guessed.
+_SING_PAGE = "https://singacoustic.com/all-events/?event=%d"
+_SING_EB = "https://www.eventbrite.com/o/singacoustic-llc-121263999364"
+_SING_PAUSE_S = 0.3
+_SING_SKIP = re.compile(r"\b(workshops?|master\s?class|private (?:event|party)|closed)\b", re.I)
+_SING_START = re.compile(r"startdt=(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2})")
+_SING_GCAL = re.compile(r"dates=(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})")
+_SING_USD = r"\$\s?(\d{1,3}(?:\.\d{2})?)(?![\d,])"
+_SING_ADV = (re.compile(_SING_USD + r"\s*adv(?:anced?)?\b", re.I),
+             re.compile(r"\b(?:online|advanced?)\s+tickets?\s*:?\s*" + _SING_USD, re.I))
+_SING_DOOR = (re.compile(_SING_USD + r"\s*(?:at\s+the\s+)?door", re.I),
+              re.compile(r"\bdoor\s*:?\s*" + _SING_USD, re.I))
+_SING_DONATION = re.compile(_SING_USD + r"\s*(?:suggested\s+)?donation", re.I)
+_SING_BY_DONATION = re.compile(r"\bdonation[\s-]+only\b|\bby\s+donation\b", re.I)
+_SING_FREE = re.compile(r"\bfree\s+(?:show|event|admission|entry|concert)\b|\badmission\s+is\s+free\b|\bno\s+cover\b", re.I)
+_SING_TICKET = re.compile(r"\btickets?\s*(?:are|is|:)?\s*" + _SING_USD, re.I)
+
+
+def _singacoustic_page(eid):
+    return fetch(_SING_PAGE % eid)
+
+
+def _singacoustic_eventbrite():
+    """The venue's Eventbrite organizer page, or "" -- extras only, so a
+    failure here never costs the venue its rows. Plain fetches get
+    Eventbrite's "listing failed" page; the Chrome handshake gets the list."""
+    try:
+        return fetch_tls(_SING_EB)
+    except Exception as e:
+        print(f"  note: Singacoustic: Eventbrite page not read ({type(e).__name__}); the venue's own pages only")
+        return ""
+
+
+def _eventbrite_upcoming(html):
+    """The "upcomingEvents" array an Eventbrite organizer page embeds, or []."""
+    m = re.search(r'"upcomingEvents":\s*\[', html or "")
+    if not m:
+        return []
+    i, depth = m.end() - 1, 0
+    for j in range(i, len(html)):
+        if html[j] == "[":
+            depth += 1
+        elif html[j] == "]":
+            depth -= 1
+            if depth == 0:
+                try:
+                    return [e for e in json.loads(html[i:j + 1]) if isinstance(e, dict)]
+                except Exception:
+                    return []
+    return []
+
+
+def _singacoustic_price(text):
+    """Price as the show's own page words it, or "". Only phrasings that are
+    plainly about the ticket -- bios mention money and "free" too."""
+    t = clean(text or "")
+    adv = next((m for m in (rx.search(t) for rx in _SING_ADV) if m), None)
+    door = next((m for m in (rx.search(t) for rx in _SING_DOOR) if m), None)
+    if adv and door:
+        return f"${_fmt_money(adv.group(1))} adv / ${_fmt_money(door.group(1))} door"
+    m = _SING_DONATION.search(t)
+    if m:
+        return f"${_fmt_money(m.group(1))} donation"
+    if _SING_BY_DONATION.search(t):
+        return "By donation"
+    if _SING_FREE.search(t):
+        return "Free"
+    m = adv or door or _SING_TICKET.search(t)
+    return f"${_fmt_money(m.group(1))}" if m else ""
+
+
+def _eventbrite_price(e):
+    ta = e.get("ticket_availability") or {}
+    if ta.get("is_free"):
+        return "Free"
+    lo = str((ta.get("minimum_ticket_price") or {}).get("major_value") or "")
+    hi = str((ta.get("maximum_ticket_price") or {}).get("major_value") or "")
+    try:
+        if float(lo) <= 0:
+            return ""            # $0.00 but not free: a donation ticket
+    except Exception:
+        return ""
+    return f"${_fmt_money(lo)}" + (f"\u2013{_fmt_money(hi)}" if hi and hi != lo else "")
+
+
+def _hhmm(hh, mm):
+    return "" if (hh, mm) == (0, 0) else "%d:%02d %s" % (hh % 12 or 12, mm, "AM" if hh < 12 else "PM")
+
+
+def parse_singacoustic(text, today):
+    import html as _html
+    try:
+        listing = [e for e in json.loads(text) if isinstance(e, dict) and e.get("value")]
+    except Exception:
+        return []
+    words = lambda s: set(re.findall(r"[a-z0-9]+", (s or "").lower()))
+    eb, used = [], set()
+    for e in _eventbrite_upcoming(_singacoustic_eventbrite()):
+        d = (e.get("start_date") or "")[:10]
+        st = (e.get("start_time") or "")[:5]
+        name = clean(_html.unescape(e.get("name") or ""))
+        if e.get("is_cancelled") or not name or not re.match(r"^\d{4}-\d{2}-\d{2}$", d):
+            continue
+        eb.append({"id": str(e.get("id") or ""), "date": d, "name": name, "url": (e.get("url") or "").split("?")[0],
+                   "time": _hhmm(int(st[:2]), int(st[3:])) if re.match(r"^\d{2}:\d{2}$", st) else "",
+                   "img": ((e.get("image") or {}).get("url") or "").strip(), "price": _eventbrite_price(e),
+                   "sold": bool((e.get("ticket_availability") or {}).get("is_sold_out"))})
+    if len(listing) > 60:
+        print(f"  note: Singacoustic: {len(listing)} events listed; reading the first 60")
+    out, seen = [], set()
+    for item in listing[:60]:
+        try:
+            eid = int(item["value"])
+            page = _singacoustic_page(eid)
+        except Exception as ex:
+            print(f"  note: Singacoustic: event {item.get('value')} not read ({type(ex).__name__})")
+            continue
+        i = page.find('id="ep_single_event_detail_page_content"')
+        chunk = page[page.rfind("<", 0, i):] if i >= 0 else page
+        m = _SING_START.search(chunk)
+        if m:
+            date, hh, mm = m.group(1), int(m.group(2)), int(m.group(3))
+        else:
+            g = _SING_GCAL.search(chunk)
+            if not g:
+                print(f"  note: Singacoustic: event {eid} carries no date; skipped")
+                continue
+            date, hh, mm = f"{g.group(1)}-{g.group(2)}-{g.group(3)}", int(g.group(4)), int(g.group(5))
+        soup = BeautifulSoup(chunk, "html.parser")
+        box = soup.select_one("#ep_single_event_detail_page_content") or soup
+        el = box.select_one("#ep_single_event_title")
+        title = clean(el.get_text(" ")) if el else ""
+        title = title or clean(_html.unescape(str(item.get("label") or "")))
+        if not title or _SING_SKIP.search(title) or (date, title.lower()) in seen:
+            continue
+        seen.add((date, title.lower()))
+        el = box.select_one("#ep_single_event_image img[src]")
+        img = el["src"].strip() if el else ""
+        el = box.select_one("#ep_single_event_description")
+        desc = clean(el.get_text(" ")) if el else ""
+        el = box.select_one("#ep_single_event_ticket_now_wrapper a[href]")
+        tix = el["href"].split("?")[0] if el and el["href"].startswith("http") else ""
+        # The same show on Eventbrite: by the ticket link's id, else same
+        # night and mostly the same words in the title.
+        tid = re.search(r"-(\d{9,})$", tix.rstrip("/"))
+        match = next((e for e in eb if tid and e["id"] == tid.group(1)), None)
+        if not match:
+            tw = words(title)
+            match = next((e for e in eb if e["date"] == date and e["id"] not in used
+                          and len(tw & words(e["name"])) >= 0.6 * min(len(tw), len(words(e["name"])) or 1)), None)
+        tm = _hhmm(hh, mm)
+        if match:
+            used.add(match["id"])
+        if tm and hh < 9:          # a listening room does not start before breakfast
+            fix = match["time"] if match else ""
+            print(f"  note: Singacoustic: {title[:40]!r} is listed at {tm}; " + (f"using Eventbrite's {fix}" if fix else "time left blank"))
+            tm = fix
+        elif match and match["time"] and tm and match["time"] != tm:
+            print(f"  note: Singacoustic: {title[:40]!r} is {tm} on the venue's page, {match['time']} on Eventbrite; keeping the venue's page")
+        row = _batch_row("Singacoustic", date, tm, title, _SING_PAGE % eid, img, _age_in_text(desc),
+                         price=_singacoustic_price(desc) or (match["price"] if match else ""))
+        row["ticketUrl"] = tix or (match["url"] if match else "")
+        if match and match["sold"]:
+            row["soldOut"] = True
+        out.append(row)
+        time.sleep(_SING_PAUSE_S)
+    for e in eb:                    # on Eventbrite only: the open mic
+        if e["id"] in used or (e["date"], e["name"].lower()) in seen:
+            continue
+        if _BARREL_SKIP.search(e["name"]) or _SING_SKIP.search(e["name"]):
+            continue
+        seen.add((e["date"], e["name"].lower()))
+        row = _batch_row("Singacoustic", e["date"], e["time"], e["name"], e["url"] or _SING_EB, e["img"], price=e["price"])
+        if e["sold"]:
+            row["soldOut"] = True
+        out.append(row)
+    return out
+
+
 # ---- HiFi Wine Bar (422 NE 3rd, McMinnville): live DJs and the odd band;
 # Squarespace events collection at /upcoming-events. Sep 21 2026.
 def parse_hifi(text, today):
@@ -6177,6 +6369,8 @@ SOURCES = [
      "urls": ["https://calendar.google.com/calendar/ical/1d9rstj8str8khfubp6ckohvik%40group.calendar.google.com/public/basic.ics"]},
     {"name": "Wolves & People Bar (Eventbrite)", "parser": parse_wolves, "tls": True,   # plain fetches get Eventbrite's "listing failed" page (Sep 21 2026)
      "urls": ["https://www.eventbrite.com/o/wolves-people-bar-and-music-hall-121529882609"]},
+    {"name": "Singacoustic (singacoustic.com)", "parser": parse_singacoustic,
+     "urls": ["https://singacoustic.com/wp-json/eventprime/v1/events"]},
     {"name": "HiFi Wine Bar (hifiwinebar.com)", "parser": parse_hifi, "may_be_empty": True,
      "urls": ["https://www.hifiwinebar.com/upcoming-events?format=json"]},
     {"name": "Swan Dive (swandivepdx.com)", "parser": parse_swandive,
