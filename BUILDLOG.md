@@ -4,6 +4,10 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### f7331b6a — Heating Up widens its window instead of vanishing
+
+Oct 13 2026: when fewer than 5 shows qualify on the last 7 days of hearts and going marks, Heating Up widens to 14, then 30 days, and the banner says which. New RPC `show_heat_windows` (supabase/schema-heating-up-windows.sql); falls back to `show_heat` if it is not installed.
+
 ### c70a8280 — Britt and Cuthbert marked seasonal
 
 Oct 13 2026: both outdoor sheds are off-season, so Feed health stops listing them as dark. Added to SEASONAL_VENUES in scrape_venues.py.
