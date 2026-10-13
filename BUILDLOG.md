@@ -4,6 +4,10 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### c70a8280 — Britt and Cuthbert marked seasonal
+
+Oct 13 2026: both outdoor sheds are off-season, so Feed health stops listing them as dark. Added to SEASONAL_VENUES in scrape_venues.py.
+
 ### (this commit) — Handoff count hidden from profiles
 
 Nick, Sep 21 2026: take "0 handoffs" off profiles until we know what handoffs are for and how to present them. The profile header now reads followers · following only. Nothing else changed: the `handoff_count` RPC and the Stage 5 reputation badge code stay in place, and the line is left commented out in `renderProfileRoute()` in `index.html`. Open question before restoring it: a handoff is a completed free ticket pass through Miracles, so the count only means something once people know the exchange exists; restore it with a short explanation (or show it only when it is above zero).
