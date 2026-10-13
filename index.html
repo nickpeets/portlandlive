@@ -1728,8 +1728,17 @@ function tallyBump(kind, id, delta){
 // hottest show on the site and sat just outside a 30-day window. Nick kept 90
 // on the condition that something tells him when to revisit it -- see
 // heatReviewFlag below.
+// Widening window (Oct 13 2026, Nick: Heating Up kept vanishing "under the
+// current rules" -- a slow week dropped it under 5 shows and the whole
+// feature disappeared). show_heat_windows returns each show's counts for the
+// last 7, 14 and 30 days; the page uses the SHORTEST window in which 5+ shows
+// qualify, and the banner names it. Busy weeks stay at 7 days on their own.
+// If that RPC isn't there yet, the old 7-day show_heat is used as before.
 const HEAT_MIN_SCORE = 3, HEAT_MIN_SHOWS = 5, HEAT_DAYS = 90;
-let HEAT = { h: {}, g: {} }, HEAT_SET = new Set();
+const HEAT_WINDOWS = [7, 14, 30];
+const HEAT_WINDOW_WORDS = { 7: 'the past week', 14: 'the past 2 weeks', 30: 'the past month' };
+let HEAT = { h: {}, g: {} }, HEAT_SET = new Set(), HEAT_WIN = 7;
+function heatWindowWords(){ return HEAT_WINDOW_WORDS[HEAT_WIN] || 'the past week'; }
 function heatScore(s){ return 2 * ((s._slug && HEAT.g[s._slug]) || 0) + (HEAT.h[favKey(s)] || 0); }
 function heatLive(){ return HEAT_SET.size >= HEAT_MIN_SHOWS; }
 function heatRebuild(){
@@ -1744,13 +1753,35 @@ function loadHeat(tries){
   const sb = window.__plAuth;
   if(!sb){ if((tries || 0) < 25) setTimeout(function(){ loadHeat((tries || 0) + 1); }, 200); return; }
   const keys = state.shows.map(favKey), slugs = state.shows.map(function(s){ return s._slug; }).filter(Boolean);
-  Promise.resolve(sb.rpc('show_heat', { p_keys: keys, p_slugs: slugs })).then(function(r){
-    if(!r || r.error){ if(r && r.error) console.warn('[heat]', r.error.message || r.error); return; }
-    const t = { h: {}, g: {} };
-    (r.data || []).forEach(function(x){ if(t[x.kind]) t[x.kind][x.id] = x.n; });
-    HEAT = t; heatRebuild(); heatReviewFlag();
+  const done = function(){
+    heatReviewFlag();
     if(isFeedRoute(parseRoute().type) && (heatLive() || state.heating)) reRenderCurrentView();
-  }).catch(function(){});
+  };
+  const legacy = function(){
+    Promise.resolve(sb.rpc('show_heat', { p_keys: keys, p_slugs: slugs })).then(function(r){
+      if(!r || r.error){ if(r && r.error) console.warn('[heat]', r.error.message || r.error); return; }
+      const t = { h: {}, g: {} };
+      (r.data || []).forEach(function(x){ if(t[x.kind]) t[x.kind][x.id] = x.n; });
+      HEAT = t; HEAT_WIN = 7; heatRebuild(); done();
+    }).catch(function(){});
+  };
+  Promise.resolve(sb.rpc('show_heat_windows', { p_keys: keys, p_slugs: slugs })).then(function(r){
+    if(!r || r.error){ legacy(); return; }
+    const by = {};
+    HEAT_WINDOWS.forEach(function(w){ by[w] = { h: {}, g: {} }; });
+    (r.data || []).forEach(function(x){
+      HEAT_WINDOWS.forEach(function(w){
+        const n = x['n' + w] || 0;
+        if(n && by[w][x.kind]) by[w][x.kind][x.id] = n;
+      });
+    });
+    // Shortest window with 5+ hot shows; the widest one if none gets there.
+    for(let i = 0; i < HEAT_WINDOWS.length; i++){
+      HEAT_WIN = HEAT_WINDOWS[i]; HEAT = by[HEAT_WIN]; heatRebuild();
+      if(heatLive()) break;
+    }
+    done();
+  }).catch(function(){ legacy(); });
 }
 // Revisit flag (Sep 25 2026, Nick: "keep 90, but build a flag to revisit").
 // Once Heating Up has 10+ shows, if more than half of its top 10 are a month
@@ -2977,7 +3008,7 @@ function render(){
   if(plainHome) mountPymk(wrap);
 
   if(state.heating){
-    wrap.insertAdjacentHTML('beforeend', '<div class="heat-bar"><span>\ud83d\udd25 <b>Heating Up</b> \u00b7 <span class="hb-long">shows people hearted or said they\u2019re going to in the past week</span><span class="hb-short">hottest in the past week</span></span>'
+    wrap.insertAdjacentHTML('beforeend', '<div class="heat-bar"><span>\ud83d\udd25 <b>Heating Up</b> \u00b7 <span class="hb-long">shows people hearted or said they\u2019re going to in ' + heatWindowWords() + '</span><span class="hb-short">hottest in ' + heatWindowWords() + '</span></span>'
       + '<button type="button" class="heat-x" data-heat-off aria-label="Back to all shows">&times;</button></div>');
   }
   if(!list.length){
@@ -3025,7 +3056,7 @@ function render(){
     // "Heating Up 🔥6" on the right of the FIRST day header (Nick's layout),
     // music feed only, once 5+ shows qualify.
     let _heatBtn = (heatLive() && !state.comedy)
-      ? `<button type="button" class="heat-btn" data-heat-on title="Shows people are hearting and going to this week"><span class="heat-w">Heating Up </span><span class="heat-n">\ud83d\udd25${HEAT_SET.size}</span></button>` : '';
+      ? `<button type="button" class="heat-btn" data-heat-on title="Shows people are hearting and going to in ${heatWindowWords()}"><span class="heat-w">Heating Up </span><span class="heat-n">\ud83d\udd25${HEAT_SET.size}</span></button>` : '';
     drawDaysInPieces(wrap, days, function(date, shows){
       const g = document.createElement('div'); g.className='daygroup';
       g.innerHTML = `<div class="dayhead">${_heatBtn}${ordinalDate(date)}<span class="count">${shows.length} shows</span></div>`;
@@ -3450,7 +3481,7 @@ function listOf(items, showDate){
       // Heating Up chip: tap it and the feed switches to the hot list.
       ;
     // 🔥 sits right after the title (Sep 24 2026, Nick's card format).
-    const heatBit = (heatLive() && HEAT_SET.has(s._slug) && !state.heating) ? ` <button type="button" class="s-heat" data-heat-on title="Heating up \u2014 see what's hot this week">\ud83d\udd25</button>` : '';
+    const heatBit = (heatLive() && HEAT_SET.has(s._slug) && !state.heating) ? ` <button type="button" class="s-heat" data-heat-on title="Heating up \u2014 see what's hot in ${heatWindowWords()}">\ud83d\udd25</button>` : '';
 
     if(eff === 'b'){
       // VERTICAL: the big image on top; below it, the same row the main list
