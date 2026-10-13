@@ -4,6 +4,10 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### a807436a — Portland's Folk Festival 2027
+
+Oct 13 2026: festival `portlands-folk-festival-2027` (Crystal Ballroom, Jan 29–30 2027, all ages), one row per day, first-wave bill, from McMenamins' own event pages. `festival_apply` folds a venue row named for the festival (same venue + date) into the set so the night is never listed twice; the set keeps its slug.
+
 ### f7331b6a — Heating Up widens its window instead of vanishing
 
 Oct 13 2026: when fewer than 5 shows qualify on the last 7 days of hearts and going marks, Heating Up widens to 14, then 30 days, and the banner says which. New RPC `show_heat_windows` (supabase/schema-heating-up-windows.sql); falls back to `show_heat` if it is not installed.
