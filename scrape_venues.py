@@ -6689,6 +6689,8 @@ SEASONAL_VENUES = {
     "Cascades Amphitheater",     # outdoor, summer only
     "Pioneer Courthouse Square", # summer series
     "The Ruins",                 # Columbia Gorge, seasonal
+    "Britt Pavilion",            # Jacksonville outdoor shed, season ends late Sep (Oct 13 2026)
+    "Cuthbert Amphitheater",     # Eugene outdoor shed, last 2026 show Oct 3 (Oct 13 2026)
 }
 
 
