@@ -381,6 +381,21 @@ def main():
     else:
         fails += 1
         print(f"  FAIL festivals.json               {len(frows)} rows, {len(bad)} malformed, summaries {fsum}")
+    # Fold: Crystal lists the Friday as "Portland's Folk Festival"; the feed
+    # must carry ONE row that night -- the set -- with Crystal's ticket link.
+    _pf = [r for r in frows if r.get("festival") == "portlands-folk-festival-2027" and r["date"] == "2027-01-29"]
+    _feed = [{"title": "Portland's Folk Festival", "venue": "Crystal Ballroom", "date": "2027-01-29",
+              "time": "6:00 PM", "ticketUrl": "https://www.etix.com/x"},
+             {"title": "Mike D", "venue": "Crystal Ballroom", "date": "2027-01-29"}]
+    bs.festival_apply(_feed)
+    _night = [r for r in _feed if r["venue"] == "Crystal Ballroom" and r["date"] == "2027-01-29"]
+    _set = [r for r in _night if r.get("festival") == "portlands-folk-festival-2027"]
+    if _pf and len(_night) == 2 and len(_set) == 1 and _set[0].get("ticketUrl") == "https://www.etix.com/x" \
+            and _set[0]["title"] == _pf[0]["title"] and any(r["title"] == "Mike D" for r in _night):
+        print("  ok   festival fold                  venue row named for the festival folds into the set (slug kept, ticket link borrowed); other shows that night untouched")
+    else:
+        fails += 1
+        print(f"  FAIL festival fold                  {_night}")
     print()
     # PAM watcher: nothing on a real capture (their calendar is films and
     # lectures), but a concert must still be caught. Both halves are the

@@ -1043,6 +1043,57 @@
      "address": "1111 SW Broadway, Portland, OR 97205"
     }
    ]
+  },
+  {
+   "slug": "portlands-folk-festival-2027",
+   "name": "Portland's Folk Festival",
+   "edition": "",
+   "start": "2027-01-29",
+   "end": "2027-01-30",
+   "neighborhood": "Downtown",
+   "url": "https://portlandsfolkfestival.com/",
+   "imageUrl": "https://cdn.mcmenamins.com/system/uploads/MadborgAssets/FolkFest27.jpg",
+   "blurb": "Two days of folk at the Crystal Ballroom, with the PFF Songwriting Contest winners on Saturday. Friday 5pm doors, 6pm show; Saturday 2pm doors, 3pm show. All ages. Early-bird and 2-day passes; more acts to be announced.",
+   "free": false,
+   "bill": [
+    "Shook Twins",
+    "Federale",
+    "Steve Poltz",
+    "Family Mystic",
+    "Christie Lenée",
+    "Calvin Arsenia",
+    "Cassandra Lewis",
+    "R.O. Shapiro",
+    "Fox and Bones",
+    "Justin Farren",
+    "Mama Sam & the Jam",
+    "Ian George & The Knee Pockets",
+    "MBRASCATU",
+    "Ned & Wendy the Band",
+    "PFF Songwriting Contest Winners"
+   ],
+   "lineup": [
+    {
+     "venue": "Crystal Ballroom",
+     "neighborhood": "Downtown",
+     "address": "1332 W Burnside St, Portland, OR 97209",
+     "age": "all-ages",
+     "date": "2027-01-29",
+     "time": "6:00 PM",
+     "artist": "Federale, Steve Poltz, Christie Lenée, Calvin Arsenia, R.O. Shapiro, Mama Sam & the Jam",
+     "url": "https://www.mcmenamins.com/events/276751-portlands-folk-festival"
+    },
+    {
+     "venue": "Crystal Ballroom",
+     "neighborhood": "Downtown",
+     "address": "1332 W Burnside St, Portland, OR 97209",
+     "age": "all-ages",
+     "date": "2027-01-30",
+     "time": "3:00 PM",
+     "artist": "Shook Twins, Family Mystic, Cassandra Lewis, Fox and Bones, Justin Farren, Ian George & The Knee Pockets, MBRASCATU, Ned & Wendy the Band",
+     "url": "https://www.mcmenamins.com/events/276749-portlands-folk-festival"
+    }
+   ]
   }
  ]
 }

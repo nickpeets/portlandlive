@@ -1810,7 +1810,7 @@ def festival_apply(shows):
     by = {}
     for r in shows:
         by.setdefault((r.get("date"), r.get("venue")), []).append(r)
-    tagged = added = 0
+    tagged = added = folded = 0
     for f in load_festivals():
         for l in f.get("lineup") or []:
             if not (l.get("date") and l.get("artist") and l.get("venue")):
@@ -1834,11 +1834,30 @@ def festival_apply(shows):
                 tagged += 1
             else:
                 row = _festival_row(f, l)
+                # A venue that lists the whole festival night as one row
+                # titled with the festival's name (McMenamins: "Portland's
+                # Folk Festival" at Crystal) is the same night as this set.
+                # The SET stays -- it has been in the feed since the lineup
+                # went in, so its slug carries the hearts and going marks --
+                # and the venue's row is folded into it: dropped, after
+                # lending its ticket link and price (Oct 13 2026).
+                fw = _tm_words(f["name"])
+                for r in list(by.get((l["date"], l["venue"]), [])):
+                    if r.get("festival") or r.get("_hand") or not fw or not fw <= _tm_words(r.get("title")):
+                        continue
+                    for k in ("ticketUrl", "resaleUrl", "resaleFrom", "price", "affiliateUrl"):
+                        if r.get(k) and not row.get(k):
+                            row[k] = r[k]
+                    shows.remove(r)
+                    by[(l["date"], l["venue"])].remove(r)
+                    folded += 1
+                    break
                 shows.append(row)
                 by.setdefault((row["date"], row["venue"]), []).append(row)
                 added += 1
     if tagged or added:
-        print(f"  Festivals: {tagged} feed row(s) tagged, {added} set(s) added from festivals.json")
+        print(f"  Festivals: {tagged} feed row(s) tagged, {added} set(s) added from festivals.json"
+              + (f", {folded} venue row(s) folded into their set" if folded else ""))
 
 
 def festival_summaries(shows):
