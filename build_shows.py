@@ -788,10 +788,10 @@ def _tm_words(title):
 
 def _tm_headliner(title):
     """The act, as a word set: the title up to the first support/suffix
-    marker (":" / "w/" / "with" / "(" / " - "). "Beck: Ride Lonesome Tour"
+    marker (":" / "w/" / "with" / "(" / " - " / " – " / " — "). "Beck: Ride Lonesome Tour"
     and "Beck" agree; "Oregon Symphony presents Holst" and "Gregory Alan
     Isakov with the Oregon Symphony" do not."""
-    head = re.split(r"\s*[:(]|\s+(?:w/|with|feat\.?|featuring)\s+|\s+-\s+", title or "", maxsplit=1)[0]
+    head = re.split(r"\s*[:(]|\s+(?:w/|with|feat\.?|featuring)\s+|\s+[-\u2013\u2014]\s+", title or "", maxsplit=1)[0]
     return frozenset(_tm_words(head))
 
 

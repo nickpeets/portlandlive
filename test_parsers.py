@@ -523,8 +523,11 @@ def tm_same_act_check():
     tw, _c = bs.dedupe_shows([dict(title="Norman Sylvester Band", venue="Wilfs", date="2026-12-19", time="7:00 PM"),
                               dict(title="Norman Sylvester Band w/ Lenanne Miller", venue="Wilfs", date="2026-12-19", time="7:00 PM"),
                               dict(title="ALOK (Early Show)", venue="Revolution Hall", date="2026-09-26", time="7:00 PM"),
-                              dict(title="ALOK (Late Show)", venue="Revolution Hall", date="2026-09-26", time="10:00 PM")])
-    if len(tw) != 3:
+                              dict(title="ALOK (Late Show)", venue="Revolution Hall", date="2026-09-26", time="10:00 PM"),
+                              # Oct 14 2026: an en dash is a separator too.
+                              dict(title="GLAIVE \u2013 GOD SAVE THE THREE TOUR", venue="Wonder Ballroom", date="2026-10-14", time="8:00 PM"),
+                              dict(title="glaive w/ Tiffany Day", venue="Wonder Ballroom", date="2026-10-14", time="8:00 PM")])
+    if len(tw) != 4:
         print(f"  FAIL tm same act                  final dedupe gave {[r['title'] for r in tw]}")
         print("GATE FAILURE")
         sys.exit(1)
@@ -532,7 +535,7 @@ def tm_same_act_check():
         print(f"  FAIL tm same act                  rows={[r['title'] for r in shows]} matched={matched} added={added} late_added={a2}")
         print("GATE FAILURE")
         sys.exit(1)
-    print("  ok   tm same act                   Everything Everything + TM's w/ Psymon Spine -> one row; Wilfs twins -> one; early/late pairs kept")
+    print("  ok   tm same act                   Everything Everything + TM's w/ Psymon Spine -> one row; Wilfs twins -> one; glaive en-dash twins -> one; early/late pairs kept")
 
 
 def tm_guard_check():
