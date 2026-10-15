@@ -2017,6 +2017,67 @@ def parse_jacklondonrevue(html, today):
     return list(bykey.values())
 
 
+# Oct 15 2026: the calendar page stopped carrying the events. It now ships an
+# empty FullCalendar ("Loading...") that POSTs admin-ajax.php
+# action=get_events_for_calendar per month and pastes response.popupdata --
+# the same tw-* markup parse_jacklondonrevue reads -- into the page. A
+# rendered browser copy only shows the current month (31 of 42 rows), so we
+# ask the same endpoint ourselves for each month to the horizon, with the
+# nonce and params the page prints. A page that still carries the markup
+# (the old fixture) is read directly.
+JLR_CAL = "https://jacklondonrevue.com/calendar/"
+JLR_AJAX = "https://www.jacklondonrevue.com/wp-admin/admin-ajax.php"
+
+
+def _jlr_args(html):
+    """(nonce, params, monthview) printed in the calendar page's script."""
+    n = re.search(r"action:\s*'get_events_for_calendar',\s*nonce:\s*'([^']+)'", html or "")
+    p = re.search(r"params:\s*'(\{.*?\})',\s*monthview:\s*'([^']*)'", html or "", re.S)
+    if not (n and p):
+        return None
+    return n.group(1), p.group(1), p.group(2)
+
+
+def _jlr_post(start, end, nonce, params, monthview):
+    """One month's popup + mobile-list HTML, or '' on any failure."""
+    body = {"action": "get_events_for_calendar", "nonce": nonce, "start": start, "end": end,
+            "params": params, "monthview": monthview, "calcount": "1", "statefilter": "",
+            "cityfilter": "", "locationfilter": "", "showmobilelist": "true"}
+    try:
+        r = requests.post(JLR_AJAX, data=body, timeout=30,
+                          headers={"User-Agent": _BROWSER_UA, "X-Requested-With": "XMLHttpRequest",
+                                   "Referer": JLR_CAL, "Origin": "https://www.jacklondonrevue.com"})
+        r.raise_for_status()
+        data = r.json()
+    except Exception as e:
+        print(f"  WARN: Jack London month {start[:7]} failed: {type(e).__name__}: {str(e)[:120]}")
+        return ""
+    if not isinstance(data, dict) or data.get("error"):
+        print(f"  WARN: Jack London month {start[:7]} said: {str(data)[:160] if not isinstance(data, dict) else data.get('err_message')}")
+        return ""
+    return "\n".join(str(data.get(k) or "").replace("\\", "") for k in ("popupdata", "mobilelistdata"))
+
+
+def parse_jlr(html, today):
+    if "tw-event-date-complete" in (html or ""):
+        return parse_jacklondonrevue(html, today)
+    args = _jlr_args(html)
+    if not args:
+        print("  WARN: Jack London calendar page has no nonce/params -- page shape changed again")
+        return []
+    nonce, params, monthview = args
+    parts = []
+    first = today.replace(day=1)
+    horizon = today + datetime.timedelta(days=HORIZON_DAYS)
+    while first <= horizon:
+        nxt = (first + datetime.timedelta(days=32)).replace(day=1)
+        start = max(first, today)
+        parts.append(_jlr_post(f"{start.year}-{start.month}-{start.day} 00:00:00",
+                               f"{nxt.year}-{nxt.month}-{nxt.day} 23:59:59", nonce, params, monthview))
+        first = nxt
+    return parse_jacklondonrevue("<div>" + "".join(parts) + "</div>", today)
+
+
 
 # ---- The Get Down (thegetdownpdx.com) -- single venue, Webflow CMS (same family
 # as Rose Quarter). Each .day-card-2 has .b-show-2 (show name) / .title and a
@@ -4692,6 +4753,34 @@ def _sqs_json_rows(text, today, venue, base, keep=None, skip=None, strip=None,
     return out
 
 
+# ---- The Den (thedenpdx.com, 116 SE Yamhill, Central Eastside). Oct 15 2026:
+# Ticketmaster stopped listing the room, so its own Squarespace events
+# collection is the source. Titles end in a genre tag -- "KYLE WATSON (HOUSE)",
+# "ALIX PEREZ (BASS / DNB)" -- dropped from the title. Tickets are Eventim
+# links in sourceUrl; the 21+ line sits in the body, not the excerpt.
+_DEN_GENRE = re.compile(r"\s*\((?=[^)]*[A-Z])[A-Z /&+-]+\)\s*$")
+
+
+def parse_den(text, today):
+    rows = _sqs_json_rows(text, today, "The Den", "https://www.thedenpdx.com", strip=_DEN_GENRE)
+    try:
+        evs = json.loads(text).get("upcoming") or []
+    except Exception:
+        evs = []
+    by_url = {}
+    for e in evs:
+        if isinstance(e, dict) and e.get("fullUrl"):
+            by_url["https://www.thedenpdx.com" + e["fullUrl"]] = e
+    for r in rows:
+        e = by_url.get(r["venueUrl"]) or {}
+        src = e.get("sourceUrl") or ""
+        if "eventim" in src:
+            r["ticketUrl"] = src
+        if not r.get("age"):
+            r["age"] = _age_in_text(_unhtml(e.get("body")))
+    return rows
+
+
 # ---- Wilfs Restaurant & Jazz Bar (Union Station, 800 NW 6th). Jazz nightly;
 # every event on their calendar is a set; only the "Closed for ..." holiday rows are skipped.
 def parse_wilfs(text, today):
@@ -6458,7 +6547,9 @@ SOURCES = [
     {"name": "Laurelthirst (laurelthirst.com)", "parser": parse_laurelthirst, "urls": ["https://laurelthirst.com/music-calendar/"]},
     {"name": "Showdown Saloon", "parser": parse_showdown, "urls": ["https://showdownpdx.com/"]},
     {"name": "The Get Down", "parser": parse_getdown, "urls": ["https://thegetdownpdx.com/"]},
-    {"name": "Jack London Revue", "parser": parse_jacklondonrevue, "urls": ["https://jacklondonrevue.com/calendar/"]},
+    {"name": "Jack London Revue", "parser": parse_jlr, "urls": ["https://jacklondonrevue.com/calendar/"]},
+    {"name": "The Den (thedenpdx.com)", "parser": parse_den, "tls": True,
+     "urls": ["https://www.thedenpdx.com/events?format=json"]},
     {"name": "Star Theater", "parser": parse_startheater, "urls": ["https://startheaterportland.com/"]},
     {"name": "Alberta Rose Theatre", "parser": parse_albertarose, "urls": ["https://albertarosetheatre.com/events/"]},
     {"name": "Portland5 (Keller/Schnitzer/Newmark/etc)", "parser": parse_portland5, "urls": ["https://www.portland5.com/events"]},

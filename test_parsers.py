@@ -70,6 +70,7 @@ CASES = [
     ("hawthorne-events.html",  sv.parse_mammoth,        61, {"time": 61, "age": 61, "imageUrl": 61},  "RHP; Hawthorne Lounge label; titles must not double"),
     ("dantes.html",            sv.parse_dantes,         48, {"time": 48, "ticketUrl": 48, "imageUrl": 48}, "TicketWeb; time and poster one level above .tw-name"),
     ("jlr.html",               sv.parse_jacklondonrevue, 56, {"age": 32, "ticketUrl": 56},  "two-fragment merge; age in .tw-description"),
+    ("den-events.json",        sv.parse_den,            20, {"time": 20, "imageUrl": 20, "ticketUrl": 15, "age": 18}, "Squarespace events JSON; genre tag dropped; Eventim tickets; 21+ from the body"),
     ("star-theater.html",      sv.parse_startheater,    50, {"time": 50, "ticketUrl": 50},  "TicketWeb .tw-section"),
     ("rose-quarter.html",      sv.parse_rosequarter,    25, {"time": 23, "imageUrl": 25},   "time from .card-date-time, skipping w-condition-invisible; poster is the card img"),
     ("portland5.html",         sv.parse_portland5,      10, {"time": 7},                    "time from .teaser__body next to the date"),
@@ -254,6 +255,26 @@ def main():
     else:
         fails += 1
         print(f"  FAIL laurelthirst-sept2026.html   rows {len(rows)} != 28 or imageUrl {imgs} != 22 or ages {ages} or prices {prices} != 28 or adv/door {door}")
+    print()
+    # Jack London (Oct 15 2026): the calendar page is an empty shell that
+    # POSTs admin-ajax per month. Check the nonce/params come out of the real
+    # shell, and that the month walk feeds the TicketWeb reader (stubbed with
+    # the old full page for the first month).
+    shell = load("jlr-calendar-shell.html")
+    args = sv._jlr_args(shell)
+    calls = []
+    def _stub(start, end, nonce, params, mv):
+        calls.append(start)
+        return load("jlr.html") if len(calls) == 1 else ""
+    sv._jlr_post = _stub
+    rows = sv.parse_jlr(shell, TODAY)
+    ok = (args and args[0] and '"type":"calendar2"' in args[1] and len(calls) == 4
+          and calls[0] == "2026-9-14 00:00:00" and len(rows) == 56)
+    if ok:
+        print(f"  ok   jlr-calendar-shell.html      {len(rows):3d} rows  -- nonce + params from the shell; 4 month POSTs to the horizon; TicketWeb reader on the response")
+    else:
+        fails += 1
+        print(f"  FAIL jlr-calendar-shell.html     args {bool(args)} calls {calls} rows {len(rows)}")
     print()
     # Singacoustic (Oct 11 2026): EventPrime. The REST list is ids + titles;
     # the reader fetches each show's own page and the venue's Eventbrite
