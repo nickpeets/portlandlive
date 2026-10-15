@@ -1,0 +1,34 @@
+
+### https://www.thedenpdx.com  (Squarespace; 220386 bytes)
+   /events                              SQS {"type": "events-stacked", "upcoming": 23, "past": 30} | embeds: Eventim | dates=180
+   /communitycurrents                   SQS {"type": "page", "items": 0} | dates=4
+   crawled 9 pages; 2 with something
+
+### https://www.tocportland.org  (custom; 159967 bytes)
+   crawled 60 pages: no events, calendars, embeds or dated text found
+== 1. Jack London Revue ==
+  plain: 153,665 bytes | Calendar - Jack London Revue | tw-date 0 | Loading 2 | parser rows 0
+  chrome: 153,665 bytes | Calendar - Jack London Revue | tw-date 0 | Loading 2 | parser rows 0
+  browser: 333,203 bytes | Calendar - Jack London Revue | tw-date 32 | Loading 2 | parser rows 31
+== 2. The Goodfoot (takes a minute or two) ==
+  note: Goodfoot attempt 1 failed (HeadlessChallengeError)
+  note: Goodfoot attempt 1 came back empty; retrying
+  note: Goodfoot attempt 2 failed (HeadlessChallengeError)
+  note: Goodfoot attempt 2 came back empty; retrying
+  note: Goodfoot attempt 3 failed (HeadlessChallengeError)
+  note: Goodfoot attempt 3 came back empty; retrying
+  note: Goodfoot attempt 4 failed (HeadlessChallengeError)
+  note: Goodfoot attempt 4 came back empty; retrying
+  note: Goodfoot attempt 5 failed (HeadlessChallengeError)
+  rows: 0 | tiers: attempt 1: HeadlessChallengeError · attempt 2: HeadlessChallengeError · attempt 3: HeadlessChallengeError · attempt 4: HeadlessChallengeError · attempt 5: HeadlessChallengeError
+== 3. The Den ==
+  / chrome: 220,386 bytes | The Den PDX | humanitix 0 | discotech 0 | tixr 0 | dice 0 | ra.co 0
+  / browser: 224,420 bytes | The Den PDX | humanitix 0 | discotech 0 | tixr 0 | dice 0 | ra.co 0
+  /events chrome: 722,867 bytes | Upcoming Events &mdash; The Den PDX | humanitix 1 | discotech 0 | tixr 0 | dice 0 | ra.co 0
+  /events browser: 727,166 bytes | Upcoming Events — The Den PDX | humanitix 1 | discotech 0 | tixr 0 | dice 0 | ra.co 0
+  calendar chrome: FAILED HTTPError: HTTP Error 404: 
+  /calendar browser: 164,540 bytes | The Den PDX | humanitix 0 | discotech 0 | tixr 0 | dice 0 | ra.co 0
+  shows chrome: FAILED HTTPError: HTTP Error 404: 
+  /shows browser: 164,540 bytes | The Den PDX | humanitix 0 | discotech 0 | tixr 0 | dice 0 | ra.co 0
+== 4. Probes (Den + Old Church) ==
+CAPTURE DONE
