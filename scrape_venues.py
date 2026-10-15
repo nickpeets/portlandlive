@@ -6406,7 +6406,10 @@ SOURCES = [
      "urls": ["https://winonagrange271.org/events.ics"]},
     {"name": "McDonald Theatre (cascadetickets.com)", "parser": parse_mcdonald,
      "urls": ["https://cascadetickets.com/mcdonald-theatre/"]},
-    {"name": "Cuthbert Amphitheater (cascadetickets.com)", "parser": parse_cuthbert,
+    # may_be_empty (Oct 15 2026): outdoor shed, season over; the page says
+    # "There are no upcoming events at this time." McDonald and Lola's Room
+    # parse fine on the same reader, so an empty page here is not a break.
+    {"name": "Cuthbert Amphitheater (cascadetickets.com)", "parser": parse_cuthbert, "may_be_empty": True,
      "urls": ["https://cascadetickets.com/cuthbert-amphitheater/"]},
     {"name": "Lola's Room (cascadetickets.com)", "parser": parse_lolasroom,
      "urls": ["https://cascadetickets.com/mcmenamins-lolas-room/"]},
