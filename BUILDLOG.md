@@ -4,6 +4,10 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### 1ac40a42 — Bernese Mountain Series, reserve by email
+
+Oct 17 2026: Bernese Mountain Series added to VENUE_INFO (Lake Oswego; address is the city, since shows may be at a home). New VENUE_RESERVE_EMAIL in build_shows.py: rows at that venue with no link get `reserveEmail`; the show page shows a More info button that reveals "By reservation — email …" with a Copy button. No mailto, on Nick's call. Shows come in through the Submit form.
+
 ### a807436a — Portland's Folk Festival 2027
 
 Oct 13 2026: festival `portlands-folk-festival-2027` (Crystal Ballroom, Jan 29–30 2027, all ages), one row per day, first-wave bill, from McMenamins' own event pages. `festival_apply` folds a venue row named for the festival (same venue + date) into the set so the night is never listed twice; the set keeps its slug.
