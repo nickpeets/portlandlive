@@ -4,6 +4,10 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### abb046e5 — Bernese Mountain Series shows
+
+Oct 17 2026: 8 hand-added rows in manual_shows.json from Kerstan's list (Poor Man's Whiskey Oct 23 through Shelby Means Mar 11 2027). No times given. Each shows More info with her email; open to everyone, on her request.
+
 ### 1ac40a42 — Bernese Mountain Series, reserve by email
 
 Oct 17 2026: Bernese Mountain Series added to VENUE_INFO (Lake Oswego; address is the city, since shows may be at a home). New VENUE_RESERVE_EMAIL in build_shows.py: rows at that venue with no link get `reserveEmail`; the show page shows a More info button that reveals "By reservation — email …" with a Copy button. No mailto, on Nick's call. Shows come in through the Submit form.
