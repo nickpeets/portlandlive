@@ -1331,6 +1331,26 @@ def ticketer_of(row):
     return VENUE_TICKETER.get(row.get("venue") or "")
 
 
+# ===== RESERVE BY EMAIL (Oct 17 2026) ======================================
+# Series with no ticket page -- you reserve by emailing the host. The show
+# page shows a More info button that reveals the address with a Copy button
+# (no mailto: Nick doesn't want it opening someone's Outlook). Only rows with
+# no link of their own; a real event page sent in later still wins.
+VENUE_RESERVE_EMAIL = {
+    "Bernese Mountain Series": "kerstanruffer@hotmail.com",
+}
+
+
+def apply_reserve_emails(shows):
+    n = 0
+    for r in shows:
+        addr = VENUE_RESERVE_EMAIL.get(r.get("venue") or "")
+        if addr and not (r.get("venueUrl") or "").startswith("http"):
+            r["reserveEmail"] = addr
+            n += 1
+    return n
+
+
 def apply_ticketers(shows):
     """Set ticketer (or null) on every row; add affiliateUrl where a template
     exists. Returns (ticketed_count, affiliate_count)."""
@@ -2273,6 +2293,7 @@ def main():
     link_audit(shows)
     _fixed = tm_resale_links(shows)
     print(f"  Out of town: {mark_out_of_town(shows)} show(s) at {len(OUT_OF_TOWN_VENUES)} far rooms")
+    print(f"  Reserve by email: {apply_reserve_emails(shows)} show(s)")
     _tk, _af = apply_ticketers(shows)
     print(f"  Ticketers: {_tk} of {len(shows)} shows sell through a known agent; {_af} affiliate link(s)")
     affiliate_audit(shows)

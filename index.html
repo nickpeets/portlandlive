@@ -341,6 +341,11 @@ body{
   color:#fff;background:var(--rust);padding:6px 12px;border-radius:6px;text-decoration:none;transition:background .15s;
 }
 .tix:hover{background:var(--rust-deep)}
+button.tix{border:0;cursor:pointer}
+.reserve-line{margin-top:10px;font-size:14px;line-height:1.5}
+.reserve-line[hidden]{display:none}
+.reserve-addr{font-weight:600;user-select:all;word-break:break-all}
+.reserve-copy{margin-left:6px;font:inherit;font-size:12px;padding:2px 10px;border-radius:6px;border:1px solid var(--rust);background:transparent;color:var(--rust);cursor:pointer}
 
 /* ===========================================================
    SINGLE-COLUMN SUBSTANTIAL CARDS (one dominant list view)
@@ -5650,9 +5655,12 @@ function renderShowDetail(wrap, show, kind){
       + ((show.affiliateUrl || show.venueUrl) ? '<a class="tix" href="'+esc(show.affiliateUrl || show.venueUrl)+'" target="_blank" rel="' + (show.affiliateUrl ? 'noopener sponsored' : 'noopener') + '">'
           + (/(^|\.)facebook\.com$/i.test((function(){ try{ return new URL(show.venueUrl).hostname; }catch(_){ return ''; } })()) ? 'More info' : (show.soldOut ? 'Sold out \u00b7 venue page' : 'Tickets'))
           + '</a>' : '')
+      // Reserve by email (Bernese Mountain Series, Oct 17 2026).
+      + ((!show.affiliateUrl && !show.venueUrl && show.reserveEmail) ? '<button type="button" class="tix tix-reserve">More info</button>' : '')
       + heartBtn(show)
       + planBtn(show)
       + '</div>'
+      + ((!show.affiliateUrl && !show.venueUrl && show.reserveEmail) ? '<div class="reserve-line" hidden>By reservation \u2014 email <span class="reserve-addr">' + esc(show.reserveEmail) + '</span> <button type="button" class="reserve-copy">Copy</button></div>' : '')
       + resaleLine(show);
   } else {
     const claimed = claimedStubIds().has(stubIdOf(show));
@@ -5663,6 +5671,19 @@ function renderShowDetail(wrap, show, kind){
       + '</div>';
   }
   card.innerHTML = media + '<div class="s-body">' + actions + '</div>';
+  (function(){
+    var b = card.querySelector('.tix-reserve'), line = card.querySelector('.reserve-line');
+    if(!b || !line) return;
+    b.addEventListener('click', function(e){ e.stopPropagation(); line.hidden = !line.hidden; });
+    var c = line.querySelector('.reserve-copy'), a = line.querySelector('.reserve-addr');
+    c.addEventListener('click', function(e){
+      e.stopPropagation();
+      var t = a.textContent;
+      var done = function(){ c.textContent = 'Copied'; setTimeout(function(){ c.textContent = 'Copy'; }, 1600); };
+      try { navigator.clipboard.writeText(t).then(done, function(){ selectAddr(); }); } catch(_) { selectAddr(); }
+      function selectAddr(){ var r = document.createRange(); r.selectNodeContents(a); var s = getSelection(); s.removeAllRanges(); s.addRange(r); }
+    });
+  })();
 
   const listWrap = document.createElement('div');
   listWrap.className = 'list list--b';
