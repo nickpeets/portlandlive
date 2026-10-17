@@ -1261,6 +1261,11 @@ body.flyer-mode .masthead-logo img{filter:grayscale(1) contrast(2)}
             <div class="inbox-state">Loading…</div>
           </div>
         </div>
+        <!-- Oct 17 2026 (Anita): an always-visible Sign up / Sign in button for
+             signed-out visitors; the only door used to be inside the bookmark
+             menu. Shown/hidden by mirroring #authSignInBtn (auth.js owns that
+             flag), and a click just presses that button, so auth.js is untouched. -->
+        <button type="button" class="mast-join" id="mastJoinBtn" hidden><span class="mj-long">Sign up / Sign in</span><span class="mj-short">Sign up / in</span></button>
         <div class="quick-menu" id="quickMenu">
           <button class="auth-pill quick-menu-btn" id="quickMenuBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Menu">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
@@ -10402,7 +10407,9 @@ $('#browseSelect').addEventListener('change', e => {
   const signInBtn = document.getElementById('authSignInBtn');
   const logoutBtn = document.getElementById('authLogoutBtn');
   if(!signInBtn || !logoutBtn) return;
-  const sync = () => { logoutBtn.hidden = !signInBtn.hidden; };
+  const joinBtn = document.getElementById('mastJoinBtn');
+  if(joinBtn) joinBtn.addEventListener('click', e => { e.stopPropagation(); signInBtn.click(); });
+  const sync = () => { logoutBtn.hidden = !signInBtn.hidden; if(joinBtn) joinBtn.hidden = signInBtn.hidden; };
   sync();
   new MutationObserver(sync).observe(signInBtn, { attributes: true, attributeFilter: ['hidden'] });
 })();
@@ -11612,6 +11619,12 @@ a.fest-artist:hover{text-decoration:underline}
 .auth-pill:hover{background:rgba(255,255,255,.28)}
 .auth-pill-user{position:relative;background:rgba(255,255,255,.22)}
 .auth-pill[hidden]{display:none}
+.mast-join{display:inline-flex;align-items:center;min-height:36px;padding:0 16px;border-radius:999px;border:0;background:var(--cream);color:#2f4f43;font-family:'Oswald',sans-serif;font-weight:700;font-size:13px;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;cursor:pointer;box-shadow:0 1px 0 rgba(0,0,0,.25);transition:background .15s}
+.mast-join:hover{background:#fff}
+.mast-join[hidden]{display:none}
+.mast-join .mj-short{display:none}
+@media(max-width:600px){.mast-join{min-height:34px;padding:0 11px;font-size:12px}.mast-join .mj-long{display:none}.mast-join .mj-short{display:inline}}
+@media(max-width:380px){.mast-join{padding:0 9px;font-size:11px;letter-spacing:.04em}}
 .feed-more{height:1px}
 /* Phone masthead (Sep 17 2026): wordmark + mail + bell + menu were ~460px of
    content on a ~390px screen, so the menu button ran off the right edge (Nick's
