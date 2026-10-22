@@ -88,6 +88,7 @@ VENUE_INFO = {
     "Old Market Pub": ("Multnomah Village", "6959 SW Multnomah Blvd, Portland, OR 97223"),
     "The Headliners Club": ("Lake Oswego", "17880 SW McEwan Rd, Lake Oswego, OR 97035"),
     "Bernese Mountain Series": ("Lake Oswego", "Lake Oswego, OR"),
+    "B-Side Records & Vintage": ("Milwaukie", "10801 SE Main St, Milwaukie, OR 97222"),
     "Portland Art Museum": ("Downtown", "1219 SW Park Ave, Portland, OR 97205"),
     "The Haven": ("Kerns", "2505 NE Pacific St, Portland, OR 97232"),
     "The Reser": ("Beaverton", "12625 SW Crescent St, Beaverton, OR 97005"),
