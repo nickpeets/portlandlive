@@ -1646,6 +1646,62 @@ function rebuildPickSet(){
 // when you heart a show) -- it was 3+ combined at first.
 const TALLY_MIN = 1;
 let TALLIES = { h: {}, g: {}, f: {} };
+// Miracles on the feed (Oct 21 2026, Nick: "we need to highlight miracles
+// more effectively"). Free tickets still unclaimed, per upcoming show:
+// a gold chip on the card, a gold bar at the top of the home feed, and a
+// gold line on the show page that jumps to the Miracles section.
+let MIRACLES = {};
+function miracleWord(n){ return n + ' free ticket' + (n === 1 ? '' : 's'); }
+function loadMiracles(tries){
+  const sb = window.__plAuth;
+  if(!sb){ if((tries || 0) < 25) setTimeout(function(){ loadMiracles((tries || 0) + 1); }, 200); return; }
+  const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Los_Angeles' }).format(new Date());
+  const live = {};
+  state.shows.forEach(function(x){ if(x._slug && (x.date || '') >= today) live[x._slug] = 1; });
+  Promise.resolve(sb.from('ticket_posts').select('id,show_slug,quantity')).then(async function(r){
+    if(!r || r.error){ if(r && r.error) console.warn('[miracles]', r.error.message || r.error); return; }
+    const posts = (r.data || []).filter(function(p){ return live[p.show_slug]; });
+    const done = {};
+    if(posts.length){
+      const h = await sb.rpc('handoff_counts_for_posts', { post_ids: posts.map(function(p){ return p.id; }) });
+      if(h && !h.error) (h.data || []).forEach(function(x){ done[x.ticket_post_id] = x.handed_off; });
+    }
+    const m = {};
+    posts.forEach(function(p){
+      const left = Math.max(0, (parseInt(p.quantity, 10) || 0) - (done[p.id] || 0));
+      if(left) m[p.show_slug] = (m[p.show_slug] || 0) + left;
+    });
+    const changed = JSON.stringify(m) !== JSON.stringify(MIRACLES);
+    MIRACLES = m;
+    if(changed && isFeedRoute(parseRoute().type)) reRenderCurrentView();
+  }).catch(function(){});
+}
+// Any [data-go-miracles] link lands on the show page scrolled to Miracles.
+document.addEventListener('click', function(e){
+  const a = e.target.closest && e.target.closest('[data-go-miracles]');
+  if(a) window.__goMiracles = a.getAttribute('data-go-miracles');
+}, true);
+function mountMiracleBanner(wrap){
+  const shows = Object.keys(MIRACLES)
+    .map(function(sl){ return state.shows.find(function(x){ return x._slug === sl; }); })
+    .filter(Boolean)
+    .sort(function(a, b){ return String(a.date).localeCompare(String(b.date)); });
+  if(!shows.length) return;
+  const first = shows[0];
+  const total = shows.reduce(function(t, x){ return t + MIRACLES[x._slug]; }, 0);
+  const a = document.createElement('a');
+  a.className = 'gw-banner mir-banner';
+  a.href = '#/show/' + encodeURIComponent(first._slug);
+  a.setAttribute('data-go-miracles', first._slug);
+  a.innerHTML = '<span class="gw-ticket">\u261d\ufe0f</span><span class="gw-text">'
+    + (shows.length === 1
+        ? '<b>Miracle: ' + esc(miracleWord(total)) + ' to ' + esc(soldStrip(first.title || '')) + '</b>'
+          + '<span class="gw-sub"> \u00b7 ' + esc(first.venue || '') + ', ' + esc(shortDate(first.date)) + (first.time ? ' ' + esc(first.time) : '') + '</span>'
+        : '<b>Miracles: ' + esc(miracleWord(total)) + ' to ' + shows.length + ' shows</b>'
+          + '<span class="gw-sub"> \u00b7 next: ' + esc(soldStrip(first.title || '')) + ', ' + esc(shortDate(first.date)) + '</span>')
+    + '</span><span class="gw-go">Claim &rarr;</span>';
+  wrap.insertBefore(a, wrap.firstChild);
+}
 function loadTallies(tries){
   const sb = window.__plAuth;
   if(!sb){ if((tries || 0) < 25) setTimeout(function(){ loadTallies((tries || 0) + 1); }, 200); return; }
@@ -2406,6 +2462,7 @@ async function load(){
     loadPicksData();         // Picks: moderator pins + heart counts
     applyShowKinds();        // Music / Comedy / Not music, set on show pages
     loadTallies();           // hearts / going / people you follow, per card
+    loadMiracles();          // free tickets still up for grabs, per show
     loadHeat();              // Heating Up: this week's hearts + going
     // Names + faces of people you follow who are going, for the tally line.
     followFeedLoad().then(function(){ if(Object.keys(FOLLOW_GOING.bySlug).length && isFeedRoute(parseRoute().type)) reRenderCurrentView(); });
@@ -3011,6 +3068,7 @@ function render(){
     && !state.festivals && !state.allAges && !state.following && !state.byHood && !state.comedy && !state.outOfTown && !state.selectedVenue && state.view === 'shows';
   if(plainHome) mountPhotoStrip(wrap);
   if(plainHome) mountGiveawayBanner(wrap);
+  if(plainHome) mountMiracleBanner(wrap);
   // Liner Notes announce themselves with a dot on the button now, not a strip
   // in the feed (Sep 23 2026, Nick) -- see linerNotesDot().
   // People you may know (Sep 22 2026, Nick): a folding panel right under
@@ -3480,7 +3538,8 @@ function listOf(items, showDate){
     // know", never "all ages". Deliberately display-only: there's no age
     // filter yet, because filtering on data this sparse would hide almost the
     // whole feed while implying the coverage is complete.
-    const ageBit = (s.soldOut ? `<span class="s-age s-sold">Sold out</span>` : '')
+    const ageBit = (MIRACLES[s._slug] ? `<a class="s-age s-miracle" href="#/show/${encodeURIComponent(s._slug)}" data-go-miracles="${esc(s._slug)}" title="Free tickets, given away \u2014 claim one on the show page">\u261d\ufe0f ${esc(miracleWord(MIRACLES[s._slug]))}</a>` : '')
+      + (s.soldOut ? `<span class="s-age s-sold">Sold out</span>` : '')
       + (s.age
       ? `<span class="s-age s-age-${s.age === 'all-ages' ? 'all' : 'over'}">${esc(s.age === 'all-ages' ? 'All Ages' : s.age)}</span>`
       : '')
@@ -5732,6 +5791,25 @@ function renderShowDetail(wrap, show, kind){
   side.className = 'show-side';
   grid.appendChild(side);
   if(kind === 'upcoming' && showIsTicketed(show)) mountExchange(side, _slug);
+  (function(){
+    const n = kind === 'upcoming' ? (MIRACLES[_slug] || 0) : 0;
+    const tx = side.querySelector('.tx');
+    const go = window.__goMiracles === _slug; window.__goMiracles = null;
+    if(!tx) return;
+    const jump = function(){ tx.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+    if(n){
+      tx.classList.add('tx-live');
+      const hdr = grid.querySelector('.venue-header');
+      if(hdr && !hdr.querySelector('.mir-chip')){
+        const b = document.createElement('button');
+        b.type = 'button'; b.className = 'mir-chip';
+        b.textContent = '\u261d\ufe0f ' + miracleWord(n) + ' up for grabs \u2014 claim below';
+        b.addEventListener('click', jump);
+        hdr.appendChild(b);
+      }
+    }
+    if(go) setTimeout(jump, 450);
+  })();
   // Attendance is a forward-looking commitment, same scope as the ticket
   // exchange -- so, like Miracles, this only shows on upcoming shows. A past
   // show gets comments (recaps) but no Who's Going.
@@ -11307,6 +11385,11 @@ a.inbox-thread-who:hover{text-decoration:underline}
 
 .gw-banner{display:flex;align-items:center;gap:10px;margin:0 0 16px;padding:11px 14px;border-radius:10px;background:var(--rust);color:var(--cream);text-decoration:none;box-shadow:0 6px 14px rgba(20,40,30,.18)}
 .gw-banner[hidden]{display:none}
+.gw-banner.mir-banner{background:#e3b23c;color:#3a2a10}
+.gw-banner.mir-banner .gw-sub{opacity:.85}
+.scard .s-age.s-miracle{background:#e3b23c;color:#3a2a10;text-decoration:none}
+.mir-chip{display:inline-block;margin-top:10px;padding:6px 12px;border:0;border-radius:20px;background:#e3b23c;color:#3a2a10;font-family:'Oswald',sans-serif;font-size:13px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;cursor:pointer}
+.show-side .tx.tx-live{box-shadow:0 0 0 3px #e3b23c;border-radius:12px;padding:10px 12px}
 .gw-banner .gw-ticket{font-size:20px;flex:0 0 auto}
 .gw-banner .gw-text{flex:1 1 auto;min-width:0;font-family:'Bitter',Georgia,serif;font-size:14.5px;line-height:1.3}
 .gw-banner .gw-go{flex:0 0 auto;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
