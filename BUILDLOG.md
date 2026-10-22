@@ -4,6 +4,10 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### 9417fd6e — Miracles stand out
+
+Oct 21 2026 (first real miracle: 2 free tickets, NICE AS F*#K at Wonder Ballroom, Oct 22). loadMiracles() reads ticket_posts and handoff_counts_for_posts once per feed load (MIRACLES[slug] = tickets left). Gold chip on cards, gold Claim bar at the top of the plain home feed, gold line on the show page header, Miracles section outlined; chip/bar clicks scroll to the section ([data-go-miracles]).
+
 ### 9c8af7dd — Nathan Earle at B-Side Records
 
 Oct 21 2026: new venue B-Side Records & Vintage (10801 SE Main St, Milwaukie) in VENUE_INFO. One hand row from a Facebook post: Nathan Earle w/ Ned and Wendy The Band at The Riff, Fri Oct 23, 7-9 PM, $10.
