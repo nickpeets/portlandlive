@@ -4,6 +4,10 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### 9c8af7dd — Nathan Earle at B-Side Records
+
+Oct 21 2026: new venue B-Side Records & Vintage (10801 SE Main St, Milwaukie) in VENUE_INFO. One hand row from a Facebook post: Nathan Earle w/ Ned and Wendy The Band at The Riff, Fri Oct 23, 7-9 PM, $10.
+
 ### abb046e5 — Bernese Mountain Series shows
 
 Oct 17 2026: 8 hand-added rows in manual_shows.json from Kerstan's list (Poor Man's Whiskey Oct 23 through Shelby Means Mar 11 2027). No times given. Each shows More info with her email; open to everyone, on her request.
