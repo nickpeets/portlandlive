@@ -1,7 +1,23 @@
 {
  "items": [
   {
-   "text": "Welcome Josh, kent, Laurie, AmericanaPDX, Evan Boller and Martha King to Rain Or Shows.",
+   "text": "New venue: B-Side Records & Vintage — 1 show on the calendar.",
+   "auto": true,
+   "key": "venues:2026-10-21:2026-10-22T02:11:56+00:00",
+   "from": "2026-10-21",
+   "until": "2026-10-28",
+   "at": "2026-10-22T02:11:56+00:00"
+  },
+  {
+   "text": "Miracle: 2 free tickets for NICE AS F*#K – BACK AS F*#K NICE AS EVER at Wonder Ballroom.",
+   "auto": true,
+   "key": "miracle:2026-10-22-wonder-ballroom-nice-as-f-k-back-as-f-k-nice-as-ever",
+   "from": "2026-10-21",
+   "until": "2026-10-22",
+   "url": "#/show/2026-10-22-wonder-ballroom-nice-as-f-k-back-as-f-k-nice-as-ever"
+  },
+  {
+   "text": "Welcome Lily Merz, Steve Keller, Josh, kent, Laurie, AmericanaPDX and 2 more to Rain Or Shows.",
    "auto": true,
    "key": "members:rolling",
    "from": "2026-10-21",
@@ -27,14 +43,6 @@
    "key": "hand:4d8205a8-f87b-430f-b89c-16cacb2f9112",
    "from": "2026-10-21",
    "until": "2026-10-26"
-  },
-  {
-   "text": "New venue: Bernese Mountain Series — 8 shows on the calendar.",
-   "auto": true,
-   "key": "venues:2026-10-17:2026-10-17T23:57:16+00:00",
-   "from": "2026-10-17",
-   "until": "2026-10-24",
-   "at": "2026-10-17T23:57:16+00:00"
   }
  ],
  "announced": [
@@ -60,6 +68,7 @@
   "member:2026-09-18:auprah",
   "members:rolling",
   "miracle:2026-09-18-mississippi-pizza-lucky-beaucoup",
+  "miracle:2026-10-22-wonder-ballroom-nice-as-f-k-back-as-f-k-nice-as-ever",
   "venue:45 East",
   "venue:Al's Den",
   "venue:Aladdin Theater",
@@ -70,6 +79,7 @@
   "venue:Arlene Schnitzer Concert Hall",
   "venue:Artichoke Music",
   "venue:Ashland Armory",
+  "venue:B-Side Records & Vintage",
   "venue:Barrel Room",
   "venue:Beach Hut Deli Tigard",
   "venue:Bernese Mountain Series",
@@ -192,6 +202,7 @@
   "venues:2026-09-23:2026-09-23T18:45:23+00:00",
   "venues:2026-10-08:2026-10-08T19:51:35+00:00",
   "venues:2026-10-12:2026-10-12T22:10:00+00:00",
-  "venues:2026-10-17:2026-10-17T23:57:16+00:00"
+  "venues:2026-10-17:2026-10-17T23:57:16+00:00",
+  "venues:2026-10-21:2026-10-22T02:11:56+00:00"
  ]
 }
