@@ -4,6 +4,10 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### e6740f1a — Squarespace show links fixed
+
+Oct 27 2026. A reader (Steve Keller, Oct 21) found Tickets buttons going to error pages. _sqs_json_rows added Squarespace's site-root fullUrl to a base that already held the events path, so links at Hoku Events, Swan Dive, HiFi Wine Bar, Vino Veritas and The Lyons Den pointed at /events/events/<slug> and 404ed (69 upcoming, 65 archived). Now joined to the site origin; archive.json links repaired once (link fields only).
+
 ### 9417fd6e — Miracles stand out
 
 Oct 21 2026 (first real miracle: 2 free tickets, NICE AS F*#K at Wonder Ballroom, Oct 22). loadMiracles() reads ticket_posts and handoff_counts_for_posts once per feed load (MIRACLES[slug] = tickets left). Gold chip on cards, gold Claim bar at the top of the plain home feed, gold line on the show page header, Miracles section outlined; chip/bar clicks scroll to the section ([data-go-miracles]).
