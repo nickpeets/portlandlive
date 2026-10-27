@@ -4748,7 +4748,11 @@ def _sqs_json_rows(text, today, venue, base, keep=None, skip=None, strip=None,
             continue
         seen.add(key)
         fu = e.get("fullUrl") or ""
-        url = (base + fu) if fu.startswith("/") else (fu or base)
+        # fullUrl is site-root-relative ("/events/slug"); join it to the
+        # origin, not to base -- base may carry the events path, which
+        # doubled it (/upcoming-events/upcoming-events/...) and 404ed.
+        _o = re.match(r"https?://[^/]+", base)
+        url = ((_o.group(0) if _o else base) + fu) if fu.startswith("/") else (fu or base)
         age = _age_in_text(_unhtml(e.get("excerpt"))) or default_age
         out.append(_batch_row(venue, date, _pt_clock(dt), title, url, e.get("assetUrl") or "",
                               age, is_comedy))
