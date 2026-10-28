@@ -626,15 +626,22 @@ def _venue_key(v):
 # its real name every time it comes back.
 TITLE_RENAMES = {
     ("Starday Tavern", "James T & Friends"): "James T's Treasure Chest",   # monthly, 3rd Tuesday; James T's own name for it
+    # Oct 28 2026: one night only, so keyed by date too (a third item). The
+    # venue calendar says just "Ezra Meredith"; the band's poster bills it this way.
+    ("Switchback Saloon", "Ezra Meredith", "2026-11-07"):
+        "Ezra Meredith & The Deer Lodge All Stars with Morgan Geer (Drunken Prayer)",
 }
 
 
 def apply_title_renames(shows):
     """Rename rows listed in TITLE_RENAMES. Returns how many changed."""
-    want = {(_venue_key(v), _norm_key(t)): new for (v, t), new in TITLE_RENAMES.items()}
+    # A key is (venue, title) for a recurring name, or (venue, title, date)
+    # for one show; the dated key wins.
+    want = {(_venue_key(k[0]), _norm_key(k[1])) + tuple(k[2:]): new for k, new in TITLE_RENAMES.items()}
     n = 0
     for r in shows:
-        new = want.get((_venue_key(r.get("venue")), _norm_key(r.get("title"))))
+        base = (_venue_key(r.get("venue")), _norm_key(r.get("title")))
+        new = want.get(base + (r.get("date"),)) or want.get(base)
         if new and r.get("title") != new:
             r["title"] = new
             n += 1
