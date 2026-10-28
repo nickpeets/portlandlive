@@ -4,6 +4,10 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### f2732c5a — Hand-added Switchback pop-up, Nov 7
+
+Oct 28 2026. Pop-up show not on Switchback's calendar (Nick): Nov 7 10 PM, Ezra Meredith & The Deer Lodge All Stars with Morgan Geer (Drunken Prayer), Free. _hand row in manual_shows.json, kept forever.
+
 ### b73eb595 — Dated title rename: Switchback Nov 7
 
 Oct 28 2026. TITLE_RENAMES keys can now be (venue, title, date) for one show; the dated key wins over a plain (venue, title). First entry, from The Deer Lodge's poster (Nick): Switchback Saloon, Nov 7 10 PM, "Ezra Meredith" -> "Ezra Meredith & The Deer Lodge All Stars with Morgan Geer (Drunken Prayer)". Other Ezra nights unchanged.
