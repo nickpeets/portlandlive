@@ -4,6 +4,10 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### 30c7bd9a — Kelly's Olympian rebuilt-site reader
+
+Oct 28 2026. Nick hit a 404 from a Kelly's show on ROS (The Neon Prairie Dogs, Oct 27). Kelly's reopened Oct 27 on a rebuilt site: the WordPress/Tribe feed and every /show/<slug>/ page are gone, so the scraper had been zero since Oct 23 and the safety net was holding 9 rows whose links all 404ed. parse_kellys_olympian now reads the server-rendered /shows page (one <article> per show; no year, inferred; Postponed/Cancelled badge skipped; Eventbrite link as ticketUrl; venueUrl is /shows; '$10 advance, $15 day of show' kept as adv/day-of; with/Featuring lineup on the title; comedy tagged). Live run from the Codespace: chrome handshake cleared, 26 rows. Fixture kellys-shows.html (captured Oct 28, 20 rows on the Sep 14 test clock) replaces kellys-tribe.json.
+
 ### e6740f1a — Squarespace show links fixed
 
 Oct 27 2026. A reader (Steve Keller, Oct 21) found Tickets buttons going to error pages. _sqs_json_rows added Squarespace's site-root fullUrl to a base that already held the events path, so links at Hoku Events, Swan Dive, HiFi Wine Bar, Vino Veritas and The Lyons Den pointed at /events/events/<slug> and 404ed (69 upcoming, 65 archived). Now joined to the site origin; archive.json links repaired once (link fields only).
