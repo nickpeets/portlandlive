@@ -3,6 +3,11 @@ name: Refresh listings
   schedule:
     - cron: '0 14 * * *'
   workflow_dispatch:
+# One refresh at a time: a second run queues behind the first instead of
+# racing it to push (run #292 lost a rebase on the generated files, Oct 28).
+concurrency:
+  group: refresh-listings
+  cancel-in-progress: false
 jobs:
   refresh:
     runs-on: ubuntu-latest
@@ -39,7 +44,10 @@ jobs:
           git commit -m "Refresh listings $(date -u +%F)"
           pushed=0
           for i in 1 2 3; do
-            if git pull --rebase origin main && git push; then pushed=1; break; fi
+            # -X theirs: on a clash in a generated file this build's copy wins
+            # (the commit only touches generated files, never code).
+            if git pull --rebase -X theirs origin main && git push; then pushed=1; break; fi
+            git rebase --abort 2>/dev/null || true
             echo "push attempt $i failed, retrying"; sleep 5
           done
           if [ "$pushed" -ne 1 ]; then
