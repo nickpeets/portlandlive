@@ -629,7 +629,7 @@ TITLE_RENAMES = {
     # Oct 28 2026: one night only, so keyed by date too (a third item). The
     # venue calendar says just "Ezra Meredith"; the band's poster bills it this way.
     ("Switchback Saloon", "Ezra Meredith", "2026-11-07"):
-        "Ezra Meredith & The Deer Lodge All Stars with Morgan Geer (Drunken Prayer)",
+        "Ezra Meredith w/ Morgan Geer (Drunken Prayer)",
 }
 
 
