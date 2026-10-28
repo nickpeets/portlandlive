@@ -4088,91 +4088,93 @@ TLS_RETRY_PAUSE_S = 30
 
 
 def parse_kellys_olympian(html_text, today):
-    # Kelly's Olympian (kellysolympian.com), Downtown - WordPress + The Events Calendar.
-    # Events live in JSON-LD <script type="application/ld+json"> Event objects (Pacific offset dates).
-    import html as _html
+    # Kelly's Olympian (kellysolympian.com), Downtown. Oct 27 2026: the bar
+    # reopened on a rebuilt site; the WordPress events feed (and every
+    # /show/<slug>/ page it linked) is gone. The new /shows page is
+    # server-rendered: one <article> per show -- poster <img>, "OCT 27" (no
+    # year), "Tuesday · 7:30 PM", <h3> title, a red badge for Postponed or
+    # Cancelled, an italic lineup line, a blurb, the price and an Eventbrite
+    # Tickets link (or a disabled RSVP button). There are no per-show pages,
+    # so venueUrl is the calendar and the Eventbrite link is ticketUrl.
+    from urllib.parse import urljoin
+    base = "https://kellysolympian.com/shows"
     out, seen = [], set()
     horizon = today + datetime.timedelta(days=HORIZON_DAYS)
-    lower = today
     nb, addr = VENUE_INFO.get("Kelly's Olympian", ("Downtown", ""))
-    # The Events Calendar's REST API (/wp-json/tribe/events/v1/events):
-    # one page of structured events -- start_date, title, url, image. The
-    # site's firewall blocked it for plain requests; fetch_tls gets in.
-    # If what we were handed is HTML instead, fall through to the JSON-LD
-    # reader below, which is what the headless path returned.
-    if html_text and html_text.lstrip().startswith("{"):
-        try:
-            data = json.loads(html_text)
-        except Exception:
-            data = {}
-        for e in data.get("events", []) or []:
-            title = clean(_html.unescape(e.get("title") or ""))
-            title = re.sub(r"\s+", " ", title).strip()
-            sd = (e.get("start_date") or "")[:16]
-            if not title or len(sd) < 16:
-                continue
-            try:
-                dt = datetime.datetime.strptime(sd, "%Y-%m-%d %H:%M")
-            except Exception:
-                continue
-            d = dt.date()
-            if not (lower <= d <= horizon):
-                continue
-            tm = "" if e.get("all_day") else "%d:%02d %s" % (dt.hour % 12 or 12, dt.minute, "AM" if dt.hour < 12 else "PM")
-            img = e.get("image") or ""
-            if isinstance(img, dict):
-                img = img.get("url", "") or ""
-            key = (d.isoformat(), title.lower())
-            if key in seen:
-                continue
-            seen.add(key)
-            out.append({"title": title, "venue": "Kelly's Olympian", "neighborhood": nb,
-                        "address": addr, "date": d.isoformat(), "time": tm,
-                        "venueUrl": e.get("url") or "https://kellysolympian.com/events/",
-                        "imageUrl": img if str(img).startswith("http") else "",
-                        "age": _age_in_text(_html.unescape(e.get("description") or ""))})
-        return out
-    blocks = _LD_JSON.findall(html_text)
-    for b in blocks:
-        try:
-            data = json.loads(b)
-        except Exception:
+    soup = BeautifulSoup(html_text or "", "html.parser")
+    for art in soup.find_all("article"):
+        h3 = art.find("h3")
+        title = re.sub(r"\s+", " ", clean(h3.get_text(" ", strip=True))).strip() if h3 else ""
+        if not title:
             continue
-        for e in (data if isinstance(data, list) else [data]):
-            if not isinstance(e, dict) or e.get("@type") != "Event":
-                continue
-            sd = e.get("startDate")
-            if not sd:
-                continue
-            try:
-                dt = datetime.datetime.fromisoformat(sd.replace("Z", "+00:00"))
-            except Exception:
-                continue
-            if dt.tzinfo:
-                dt = dt.astimezone(_ASP_PDT)
-            d = dt.date()
-            if not (lower <= d <= horizon):
-                continue
-            title = clean(_html.unescape(e.get("name") or ""))
-            title = re.sub(r"\s+", " ", title).strip()
-            if not title:
-                continue
-            date = d.isoformat()
-            tm = "%d:%02d %s" % (dt.hour % 12 or 12, dt.minute, "AM" if dt.hour < 12 else "PM")
-            url = e.get("url") or "https://kellysolympian.com/events/"
-            img = e.get("image") or ""
-            if isinstance(img, dict):
-                img = img.get("url", "")
-            key = (date, title.lower())
-            if key in seen:
-                continue
-            seen.add(key)
-            out.append({"title": title, "venue": "Kelly's Olympian", "neighborhood": nb,
-                        "address": addr, "date": date, "time": tm,
-                        "venueUrl": url, "imageUrl": img})
+        badge = " ".join(s.get_text(" ", strip=True) for s in h3.parent.find_all("span"))
+        if re.search(r"postpon|cancel|resched", badge, re.I):
+            continue
+        m = None
+        for div in art.find_all("div"):
+            m = re.match(r"([A-Za-z]{3})\s+(\d{1,2})$", div.get_text(" ", strip=True))
+            if m and m.group(1).title() in MONTHS:
+                break
+            m = None
+        if not m:
+            continue
+        mon, day = MONTHS[m.group(1).title()], int(m.group(2))
+        try:
+            d = datetime.date(infer_year(mon, today), mon, day)
+        except ValueError:
+            continue
+        if not (today <= d <= horizon):
+            continue
+        # "Tuesday · 7:30 PM": the time is the part after the dot.
+        tm = ""
+        for div in art.find_all("div"):
+            t = div.get_text(" ", strip=True)
+            if "\u00b7" in t and len(t) < 40:
+                tm = start_time(t.split("\u00b7", 1)[1]) or ""
+                break
+        # Educated guess (Oct 21 2026 rule): nothing here starts before
+        # noon, so a stray "8:00 AM" is the evening.
+        mt = re.match(r"(\d{1,2}):(\d{2}) AM$", tm)
+        if mt and 1 <= int(mt.group(1)) <= 10:
+            tm = "%d:%s PM" % (int(mt.group(1)), mt.group(2))
+        paras = [p.get_text(" ", strip=True) for p in art.find_all("p")]
+        lineup = paras[0] if paras else ""
+        blurb = " ".join(paras[1:])
+        # "with SIG HENRY, LUCAS GUNN..." / "Featuring Kemi Badu, ..." names
+        # the bill, so it rides on the title for artist search; a guest
+        # host line ("GUEST HOST MELANIE NO") does not.
+        if re.match(r"(?:with|w/|featuring|feat\.?|ft\.?)\s", lineup, re.I):
+            title = f"{title} {lineup}"
+        img = art.find("img")
+        img = urljoin(base, img.get("src") or "") if img and img.get("src") else ""
+        tix = ""
+        for a in art.find_all("a", href=True):
+            if "eventbrite." in a["href"]:
+                tix = a["href"]
+                break
+        price_txt = ""
+        right = art.find_all("div", recursive=False)
+        if right:
+            sp = right[-1].find("span")
+            price_txt = sp.get_text(" ", strip=True) if sp else ""
+        pm = re.search(r"\$\s?(\d{1,3})\s*advance\b.{0,6}\$\s?(\d{1,3})\s*day of", price_txt, re.I)
+        price = f"${pm.group(1)} adv / ${pm.group(2)} day of" if pm else _price_in_text(price_txt)
+        key = (d.isoformat(), title.lower())
+        if key in seen:
+            continue
+        seen.add(key)
+        row = {"title": title, "venue": "Kelly's Olympian", "neighborhood": nb,
+               "address": addr, "date": d.isoformat(), "time": tm,
+               "venueUrl": base, "imageUrl": img,
+               "age": _age_in_text(blurb)}
+        if tix:
+            row["ticketUrl"] = tix
+        if price:
+            row["price"] = price
+        if re.search(r"\bcomedy\b|\bstand[- ]?up\b|\bcomic", title, re.I):
+            row["contentType"] = "comedy"
+        out.append(row)
     return out
-
-
 _BARREL_SKIP = re.compile(r"\b(email list|mailing list|newsletter|gift card|merch|donate|donation|rental|private event)\b", re.I)
 
 
@@ -6520,11 +6522,10 @@ SOURCES = [
      "urls": ["https://thereser.org/wp-json/tribe/events/v1/events?per_page=100"]},
     {"name": "The Headliners Club (Lake Oswego)", "parser": parse_headliners,
      "urls": ["https://theheadlinersclub.com/wp-json/tribe/events/v1/events?per_page=50"]},
-    # Intermittent bot challenge (6 of 10 runs zero by Sep 2026, then fully
-    # zero). Plain requests with a browser UA doesn't reliably pass; Chromium
-    # does. Parser unchanged -- it just gets its HTML through the headless tier.
+    # Oct 27 2026: site rebuilt; the WordPress feed is gone. /shows is plain
+    # server-rendered HTML. Kept on the TLS tier (Cloudflare history).
     {"name": "Kelly's Olympian (kellysolympian.com)", "parser": parse_kellys_olympian, "tls": True,
-     "urls": ["https://kellysolympian.com/wp-json/tribe/events/v1/events?per_page=100"]},
+     "urls": ["https://kellysolympian.com/shows"]},
         {"name": "Barrel Room (Eventbrite)", "parser": parse_barrelroom, "urls": ["https://www.eventbrite.com/o/barrel-room-80388668013"]},
     {"name": "Arbor Beer Lodge (arborbeerlodge.com)", "parser": parse_arbor, "urls": ["https://www.arborbeerlodge.com/events?format=json"]},
     {"name": "Artichoke Music (artichokemusic.org)", "parser": parse_artichoke, "urls": ["https://www.eventbrite.com/cc/live-music-artichoke-4657563"]},
