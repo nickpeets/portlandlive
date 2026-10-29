@@ -34,7 +34,7 @@ SOURCES = [
     ("Revolution Hall (+ Show Bar)", "https://revolutionhall.com/", 101),
     ("Aladdin Theater",              "https://www.aladdin-theater.com/", 66),
     ("Holocene",                     "https://www.holocene.org/events/", 59),
-    ("Jack London Revue",            "https://jacklondonrevue.com/calendar/", 51),
+    ("Jack London Revue",            "https://www.jacklondonrevue.com/calendar/", 51),
     ("Star Theater",                 "https://startheaterportland.com/", 50),
     ("Dante's",                      "https://www.danteslive.com/", 49),
     ("Wonder Ballroom",              "https://wonderballroom.com/events/", 49),

@@ -697,6 +697,57 @@ def safety_net_check():
         print("GATE FAILURE")
         sys.exit(1)
     print("  ok   sold out                      Roseland 4, Hawthorne 2, Holocene 3 (RHP buttons), Mississippi Studios 3 (Etix links); title markers yes, band names and bios no")
+    # Holocene rebuilt (Oct 28 2026): article.crow cards, date in the link,
+    # poster = base64 of the Etix 1200w URL, "At the door" = no ticket link.
+    import base64 as _b64
+    _poster = "https://cdn.etix.com/etix/performance-image/performance_image_1200w/4bf3d12e554e897c0d7761be5112b576.jpg"
+    _enc = _b64.urlsafe_b64encode(_poster.encode()).decode().rstrip("=")
+    _crow = '''<div class="crows">
+    <article class="crow" data-id="63240311">
+      <div class="crow-date">Tonight<b>OCT 29</b></div>
+      <div class="crow-thumb"><img src="/img/150/%s" alt="" loading="eager"></div>
+      <div class="crow-main"><h3 class="crow-title"><a href="/events/2026-10-29-harryween-harry-styles-halloween-dance-ni" data-event-link="">HARRYWEEN</a></h3>
+      <span class="crow-more" aria-hidden="true">More info \u2192</span></div>
+      <div class="crow-side"><div class="crow-meta"><span class="crow-when">9PM \u00b7 21+</span><b>$25.82</b></div>
+      <a class="spec-buy" href="https://www.etix.com/ticket/p/63240311/harryween-harry-styles-halloween-dance-ni-21-portland-holocene?partner_id=100" target="_blank">Tickets \u2197</a></div>
+    </article>
+    <article class="crow" data-id="1">
+      <div class="crow-date">SAT<b>OCT 31</b></div>
+      <div class="crow-thumb"><img src="/img/150/%s" alt=""></div>
+      <div class="crow-main"><h3 class="crow-title"><a href="/events/2026-10-31-betty-a-queer-dance-party">BETTY: A Queer Dance Party (HALLOWEEN EDITION)</a></h3></div>
+      <div class="crow-side"><div class="crow-meta"><span class="crow-when">9PM \u00b7 21+</span></div><span class="spec-buy at-door">At the door</span></div>
+    </article>
+    <article class="crow" data-id="2">
+      <div class="crow-date">FRI<b>NOV 06</b></div>
+      <div class="crow-thumb"><img src="/img/150/%s" alt=""></div>
+      <div class="crow-main"><h3 class="crow-title"><a href="/events/2026-11-06-shanghai-quitian">Shanghai Quitian</a></h3></div>
+      <div class="crow-side"><div class="crow-meta"><span class="crow-when">5PM \u00b7 All Ages</span></div>
+      <a class="spec-buy" href="https://www.etix.com/ticket/p/9/sold-out-shanghai">Sold out</a></div>
+    </article></div>''' % (_enc, _enc, _enc)
+    hr = sv.parse_holocene(_crow, datetime.date(2026, 10, 29))
+    want = [("2026-10-29", "HARRYWEEN", "9:00 PM", "21+", True, False), ("2026-10-31", "BETTY: A Queer Dance Party (HALLOWEEN EDITION)", "9:00 PM", "21+", False, False),
+            ("2026-11-06", "Shanghai Quitian", "5:00 PM", "All Ages", True, True)]
+    gotc = [(r["date"], r["title"], r["time"], r["age"], bool(r["ticketUrl"]), bool(r.get("soldOut"))) for r in hr]
+    if gotc != want or any(r["imageUrl"] != _poster for r in hr) or hr[1]["venueUrl"] != "https://www.holocene.org/events/2026-10-31-betty-a-queer-dance-party":
+        print(f"  FAIL holocene crow                {hr}")
+        print("GATE FAILURE")
+        sys.exit(1)
+    print("  ok   holocene crow                 rebuilt calendar: date from link, time + age, Etix tickets, decoded 1200w poster, sold out, at-the-door")
+    # Failure captures (Oct 29 2026): an empty source leaves the runner's page + an index.
+    import tempfile as _tf
+    _old = sv.CAPTURE_DIR
+    sv.CAPTURE_DIR = _tf.mkdtemp()
+    sv._reset_captures(); sv._save_capture("Holocene", "<html>x</html>", "0 events"); sv._save_capture("The Goodfoot", None, "HeadlessChallengeError")
+    _idx = json.load(open(os.path.join(sv.CAPTURE_DIR, "index.json")))
+    _ok = (sorted(os.listdir(sv.CAPTURE_DIR)) == ["holocene.html", "index.json"] and len(_idx["sources"]) == 2
+           and _idx["sources"][1]["file"] == "")
+    sv._reset_captures(); _ok = _ok and os.listdir(sv.CAPTURE_DIR) == []
+    sv.CAPTURE_DIR = _old
+    if not _ok:
+        print(f"  FAIL failure captures             {_idx}")
+        print("GATE FAILURE")
+        sys.exit(1)
+    print("  ok   failure captures              empty source -> og/health/<slug>.html + index.json; cleared each run")
     # Turn! Turn! Turn! on Opendate (Sep 24 2026): the capture is the real
     # page, saved from the Codespace (the venue moved its calendar there).
     _od = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fixtures", "turn-opendate.html")

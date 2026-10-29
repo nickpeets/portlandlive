@@ -963,8 +963,63 @@ def parse_wonder(html, today):
 # optional presenter line. Same etix-slug approach as Mississippi/Polaris.
 HOLO_DATE = re.compile(r'\b(Mon|Tue|Wed|Thu|Fri|Sat|Sun),\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{1,2})\b')
 
+# Oct 28 2026: Holocene rebuilt the site. /events/ now redirects to /calendar,
+# one <article class="crow"> per show: the date is in the event link
+# (/events/2026-10-29-slug), "9PM \u00b7 21+" in .crow-when, an Etix "Tickets"
+# link (or "At the door"), and a poster served as /img/150/<base64 of the Etix
+# 1200w image URL> -- decoded so the feed gets the full-size poster.
+def _holo_poster(src):
+    import base64
+    b = (src or "").split("/img/150/")[-1].split("?")[0] if "/img/150/" in (src or "") else ""
+    if not b:
+        return ""
+    try:
+        u = base64.urlsafe_b64decode(b + "=" * (-len(b) % 4)).decode("utf-8", "ignore")
+    except Exception:
+        u = ""
+    return u if u.startswith("http") else "https://www.holocene.org" + src.split("?")[0]
+
+
+def parse_holocene_crow(soup, today):
+    out, seen = [], set()
+    for art in soup.select("article.crow"):
+        a = art.select_one(".crow-title a[href]")
+        if not a:
+            continue
+        href = a["href"].split("?")[0]
+        m = re.search(r"/events/(\d{4})-(\d{2})-(\d{2})-", href)
+        title = clean(a.get_text(" "))
+        if not m or not title:
+            continue
+        try:
+            d = datetime.date(int(m.group(1)), int(m.group(2)), int(m.group(3)))
+        except ValueError:
+            continue
+        page = href if href.startswith("http") else "https://www.holocene.org" + href
+        if (d, page) in seen:
+            continue
+        seen.add((d, page))
+        when = clean((art.select_one(".crow-when") or a).get_text(" "))
+        am = re.search(r"\b(all ages|\d{2}\+)", when, re.I)
+        tix = next((x["href"] for x in art.select("a[href]") if "etix.com" in x["href"]), "")
+        im = art.select_one("img[src]")
+        buy = clean(" ".join(x.get_text(" ") for x in art.select(".spec-buy")))
+        row = {"title": title, "venue": "Holocene",
+               "neighborhood": "Central Eastside", "address": "1001 SE Morrison St",
+               "date": d.isoformat(), "time": to_time(when),
+               "venueUrl": page, "ticketUrl": tix,
+               "imageUrl": _holo_poster(im["src"]) if im else "",
+               "age": ("All Ages" if am and am.group(1).lower() == "all ages" else (am.group(1) if am else ""))}
+        if re.search(r"sold\s*out", buy, re.I) or any("sold-out" in (x.get("class") or []) for x in art.select(".spec-buy")):
+            row["soldOut"] = True
+        out.append(row)
+    return out
+
+
 def parse_holocene(html, today):
     soup = BeautifulSoup(html, "html.parser")
+    if soup.select_one("article.crow"):
+        return parse_holocene_crow(soup, today)
     img_by_url = _img_map_by_event_url(soup)  # 60/60 on the captured page
     text = clean(soup.get_text(" "))
     events = {}
@@ -1948,7 +2003,7 @@ def parse_jacklondonrevue(html, today):
         te = cont.select_one(".tw-event-time-complete")
         showtime = to_time(clean(te.get_text(" "))) if te else ""
         a = cont.find("a", href=True)
-        url = a["href"] if a else "https://jacklondonrevue.com/calendar/"
+        url = a["href"] if a else "https://www.jacklondonrevue.com/calendar/"
         slug = url.rsplit("/tm-event/", 1)[-1].strip("/") if "/tm-event/" in url else ""
         norm_title = re.sub(r"\s+", " ", re.sub(r"[\u2010-\u2015]", "-", title)).strip().lower()
         key = (venue, date, slug or norm_title)
@@ -2027,7 +2082,9 @@ def parse_jacklondonrevue(html, today):
 # ask the same endpoint ourselves for each month to the horizon, with the
 # nonce and params the page prints. A page that still carries the markup
 # (the old fixture) is read directly.
-JLR_CAL = "https://jacklondonrevue.com/calendar/"
+# Oct 29 2026: the bare jacklondonrevue.com stopped serving TLS (browsers get
+# ERR_SSL_VERSION_OR_CIPHER_MISMATCH too); www. is fine.
+JLR_CAL = "https://www.jacklondonrevue.com/calendar/"
 JLR_AJAX = "https://www.jacklondonrevue.com/wp-admin/admin-ajax.php"
 
 
@@ -6434,7 +6491,9 @@ SOURCES = [
               % datetime.datetime.now(_ASP_PDT).date().isoformat()]},
     {"name": "Tigardville Station (SpotHopper)", "parser": parse_tigardville,
      "urls": ["https://www.spothopperapp.com/api/spots/72272/events"]},
-    {"name": "Chehalem Valley Brewing (SpotHopper)", "parser": parse_chehalemvalley,
+    # Oct 28 2026: the brewery's own schedule page says "We are updating our
+    # events" -- nothing booked, so an empty feed is quiet, not broken.
+    {"name": "Chehalem Valley Brewing (SpotHopper)", "parser": parse_chehalemvalley, "may_be_empty": True,
      "urls": ["https://www.spothopperapp.com/api/spots/617826/events"]},
     {"name": "Curious Comedy Theater (Crowdwork)", "parser": parse_curious,
      "urls": ["https://crowdwork.com/api/v2/curiouscomedyproductions/shows"]},
@@ -6485,7 +6544,9 @@ SOURCES = [
      "urls": ["https://www.hoku-events.com/upcoming-events?format=json"]},
     {"name": "The Cazadero (thecazadero.com)", "parser": parse_cazadero,
      "urls": ["https://www.thecazadero.com/events"]},
-    {"name": "Hopworks Brewery (hopworksbeer.com)", "parser": parse_hopworks,
+    # Oct 28 2026: plain fetches from the runner get a 403 challenge (a real
+    # browser loads it fine) -- TLS tier: Chrome/Safari handshake, then window.
+    {"name": "Hopworks Brewery (hopworksbeer.com)", "parser": parse_hopworks, "tls": True,
      "urls": ["https://www.hopworksbeer.com/live-music"]},
     {"name": "Threshold Brewing (threshold.beer)", "parser": parse_threshold,
      "urls": ["https://docs.google.com/document/d/e/2PACX-1vQTocN7yUyIeRnduOEGyrgh-06fyF6yzDQkPn_D15im6Eee5fHq8Wht24MBHBiOvUEYdS9rVV67ehf6/pub"]},
@@ -6497,7 +6558,9 @@ SOURCES = [
      "urls": ["https://www.lyonsdenevents.com/events?format=json"]},
     {"name": "Birch Street Uptown Lounge (lineup page)", "parser": parse_birchstreet,
      "urls": ["https://www.birchstreetuptownlounge.com/music-at-birch-street"]},
-    {"name": "Montavilla Station (homepage lineup)", "parser": parse_montavilla,
+    # Oct 28 2026: the homepage lineup still stops at 9/19 -- the bar hasn't
+    # posted October/November yet. Quiet until it does.
+    {"name": "Montavilla Station (homepage lineup)", "parser": parse_montavilla, "may_be_empty": True,
      "urls": ["https://montavillastation.com/"]},
     {"name": "Winona Grange (events.ics)", "parser": parse_winona,
      "urls": ["https://winonagrange271.org/events.ics"]},
@@ -6554,7 +6617,7 @@ SOURCES = [
     {"name": "Laurelthirst (laurelthirst.com)", "parser": parse_laurelthirst, "urls": ["https://laurelthirst.com/music-calendar/"]},
     {"name": "Showdown Saloon", "parser": parse_showdown, "urls": ["https://showdownpdx.com/"]},
     {"name": "The Get Down", "parser": parse_getdown, "urls": ["https://thegetdownpdx.com/"]},
-    {"name": "Jack London Revue", "parser": parse_jlr, "urls": ["https://jacklondonrevue.com/calendar/"]},
+    {"name": "Jack London Revue", "parser": parse_jlr, "urls": ["https://www.jacklondonrevue.com/calendar/"]},
     {"name": "The Den (thedenpdx.com)", "parser": parse_den, "tls": True,
      "urls": ["https://www.thedenpdx.com/events?format=json"]},
     {"name": "Star Theater", "parser": parse_startheater, "urls": ["https://startheaterportland.com/"]},
@@ -6652,6 +6715,47 @@ def mark_sold_out(rows, html=None):
     return n
 
 
+# ---- Failure captures (Oct 29 2026, Nick: "make the venue health check part
+# of the daily scraper and fix it without me prompting"). When a source comes
+# back empty, the page the RUNNER saw is saved to og/health/ (a folder the
+# workflow already commits), with a JSON index. The daily auto-repair task
+# reads these instead of re-fetching -- it can't reach venue sites itself,
+# and the runner's view (challenge page, new layout) is the one that matters.
+CAPTURE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "og", "health")
+_CAPTURES = {}
+
+
+def _cap_slug(name):
+    return re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")[:60] or "source"
+
+
+def _reset_captures():
+    _CAPTURES.clear()
+    try:
+        for f in os.listdir(CAPTURE_DIR):
+            os.remove(os.path.join(CAPTURE_DIR, f))
+    except FileNotFoundError:
+        pass
+
+
+def _save_capture(name, page, note=""):
+    try:
+        os.makedirs(CAPTURE_DIR, exist_ok=True)
+        entry = {"source": name, "note": note[:300], "file": ""}
+        if isinstance(page, str) and page:
+            fn = _cap_slug(name) + ".html"
+            with open(os.path.join(CAPTURE_DIR, fn), "w", encoding="utf-8") as fh:
+                fh.write(page[:800000])
+            entry["file"] = fn
+            entry["bytes"] = len(page)
+        _CAPTURES[name] = entry
+        with open(os.path.join(CAPTURE_DIR, "index.json"), "w") as fh:
+            json.dump({"captured": datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%MZ"),
+                       "sources": list(_CAPTURES.values())}, fh, indent=1)
+    except Exception as e:
+        print(f"  note: capture for {name} failed: {type(e).__name__}: {e}")
+
+
 def scrape():
     pacific = datetime.timezone(datetime.timedelta(hours=-8))
     today = datetime.datetime.now(pacific).date()
@@ -6674,10 +6778,12 @@ def scrape():
     # run rather than the fourth. Sources that legitimately sit empty opt out
     # with {"may_be_empty": True} so the signal stays worth reading.
     zero_reports = []
+    _reset_captures()
     for src in SOURCES:
         got = []
         fetched_ok = False
         raw_count = 0
+        last_page = None
         for url in src["urls"]:
             # Per-venue isolation: a single source throwing (exception, timeout,
             # bot-challenge, shape change) must NOT abort the scrape or lose the
@@ -6706,6 +6812,7 @@ def scrape():
                     mark_sold_out(rows, page if isinstance(page, str) else None)
                 else:
                     page = fetch(url)
+                    last_page = page
                     rows = src["parser"](page, today)
                     mark_sold_out(rows, page if isinstance(page, str) else None)
                 # Reaching here means the fetch returned real content and the
@@ -6730,6 +6837,8 @@ def scrape():
         raw = list(got)
         got = [s for s in got if lower <= s["date"] <= horizon]
         print(f"  {src['name']}: {len(got)} shows")
+        if not got and not src.get("may_be_empty"):
+            _save_capture(src["name"], last_page, FETCH_NOTES.get(src["name"], ""))
         if not got and fetched_ok and not src.get("may_be_empty"):
             if raw_count and all(s["date"] < lower for s in raw):
                 # Every listing is in the past: the venue hasn't posted the
