@@ -4,6 +4,10 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### 188b0f5 — Holocene/JLR/Hopworks fixes; failure captures for auto-repair
+
+Oct 29 2026. Holocene relaunched its calendar (article.crow cards): date from the event link, time/age, Etix tickets, sold out, decoded 1200w Etix posters. Jack London Revue -> www. (bare domain's TLS broke). Hopworks moved to the TLS tier (runner 403). Chehalem Valley and Montavilla Station marked may_be_empty. Empty sources now leave the runner's page in og/health/ (+ index.json) for the daily auto-repair task (Nick: fix feed health without prompting).
+
 ### 5c3008b3 — Switchback Nov 7 retitled
 
 Oct 28 2026. Nick's billing: "Ezra Meredith w/ Morgan Geer (Drunken Prayer)" (hand-added row + dated rename).
