@@ -1,6 +1,12 @@
 {
- "captured": "2026-10-30T14:19Z",
+ "captured": "2026-10-30T16:42Z",
  "sources": [
+  {
+   "source": "Showdown Saloon",
+   "note": "stopped after 2 page(s), 20 rows: page 3 failed twice (HTTPError: 504 Server Error: Gateway Timeout for url: https://www.showdownpdx.com/page/3/)",
+   "file": "showdown-saloon.html",
+   "bytes": 295805
+  },
   {
    "source": "The Goodfoot",
    "note": "attempt 1: HeadlessChallengeError \u00b7 attempt 2: HeadlessChallengeError \u00b7 attempt 3: HeadlessChallengeError \u00b7 attempt 4: HeadlessChallengeError \u00b7 attempt 5: HeadlessChallengeError",
