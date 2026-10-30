@@ -759,28 +759,37 @@ def safety_net_check():
     sv.fetch = _sd_fail; sv.FETCH_NOTES.pop("Showdown Saloon", None); sv.EARLY_STOP_PAGES.clear()
     r1 = sv.parse_showdown(_sd, TODAY)
     n1 = sv.FETCH_NOTES.get("Showdown Saloon", "")
-    _ok = (len(r1) == 10 and len(_calls) == 2 and "page 2 failed twice" in n1 and "504" in n1
-           and sv.EARLY_STOP_PAGES.get("Showdown Saloon") == _sd)
+    # pager says 7 pages: 2 and 3 each tried three times, both dead -> the
+    # site is down, walk stops (no 18 slow tries); noted
+    _ok = (len(r1) == 10 and len(_calls) == 6 and _calls[0].endswith("/page/2/") and _calls[-1].endswith("/page/3/")
+           and "1 of 7 pages" in n1 and "stopped at 3" in n1 and "504" in n1 and sv.EARLY_STOP_PAGES.get("Showdown Saloon") == _sd)
     _calls.clear()
+    _p2 = _sd.replace("<", "<", 1)
+    import re as _re
+    _alt = _re.sub(r'(class="tw-event-date[^"]*"[^>]*>)\s*([A-Z][a-z]{2})\s+(\d{1,2})', lambda m: m.group(1) + "Dec " + m.group(3), _sd)
     def _sd_flaky(url, *a, **k):
         _calls.append(url)
-        if len(_calls) == 1:
+        if url.endswith("/page/3/"):
+            raise RuntimeError("504 Gateway Timeout")
+        if url.endswith("/page/2/") and _calls.count(url) == 1:
             raise RuntimeError("timeout")
-        return _sd.replace("Show:", "Show:").replace('class="next page-numbers"', 'class="page-numbers"')
+        return _alt if url.endswith("/page/2/") else _sd
     sv.fetch = _sd_flaky; sv.FETCH_NOTES.pop("Showdown Saloon", None); sv.EARLY_STOP_PAGES.clear()
     r2 = sv.parse_showdown(_sd, TODAY)
-    # page 2 here is page one again (same rows, deduped -> 0 new): the retry
-    # reached it, and "nothing new on page 2" is reported, not swallowed.
-    _ok = _ok and len(_calls) == 2 and "page 2 parsed 0 rows" in sv.FETCH_NOTES.get("Showdown Saloon", "")
+    n2 = sv.FETCH_NOTES.get("Showdown Saloon", "")
+    # page 2 recovers on its retry (adds the Dec copies), page 3 fails 3x
+    # and is SKIPPED, pages 4..7 still fetched.
+    _ok = _ok and len(r2) == 20 and _calls.count(_calls[0]) == 2 and any(c.endswith("/page/7/") for c in _calls) \
+        and "6 of 7 pages" in n2 and "failed 3x: 3 (" in n2
     _h = sv.net_health({"partial": {"Showdown Saloon": (10, 52, 41, 1)}}, {"Showdown Saloon": "2026-10-29"}, [],
-                       datetime.date(2026, 10, 30), (), {"Showdown Saloon": "stopped after 1 page(s), 10 rows: x"})
-    _ok = _ok and _h["items"][0].get("why", "").startswith("stopped after 1 page")
+                       datetime.date(2026, 10, 30), (), {"Showdown Saloon": "10 rows, 1 of 7 pages; x"})
+    _ok = _ok and _h["items"][0].get("why", "").startswith("10 rows, 1 of 7")
     sv.fetch = _no_network; sv.FETCH_NOTES.pop("Showdown Saloon", None); sv.EARLY_STOP_PAGES.clear()
     if not _ok:
-        print(f"  FAIL showdown paging              calls={_calls} note={n1!r} health={_h}")
+        print(f"  FAIL showdown paging              calls={len(_calls)} n1={n1!r} n2={sv.FETCH_NOTES.get('Showdown Saloon')!r} r2={len(r2)} health={_h}")
         print("GATE FAILURE")
         sys.exit(1)
-    print("  ok   showdown paging               failed page retried once; early stop -> health 'why' + page-one capture")
+    print("  ok   showdown paging               pages 2..last from the pager, 3 tries each, a dead page skipped not fatal; 'why' + page-one capture")
     # Turn! Turn! Turn! on Opendate (Sep 24 2026): the capture is the real
     # page, saved from the Codespace (the venue moved its calendar there).
     _od = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fixtures", "turn-opendate.html")

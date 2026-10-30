@@ -2276,36 +2276,66 @@ def parse_showdown(html, today):
     # retry after a short pause, and when the walk stops early the reason
     # goes into FETCH_NOTES (feed health 'why') and page one is saved to
     # og/health/ so the next repair run can see the runner's view.
+    # Second pass the same day: the dispatched build reached page 2 and then
+    # page 3 504'd twice (showdownpdx.com's server, not a block). Pages are
+    # plain /page/N/ URLs and page one's pager names the last one, so walk
+    # 2..last directly, three tries a page with a growing pause, and SKIP a
+    # page that still fails instead of ending the walk -- one slow page no
+    # longer costs every page after it. No pager numbers -> old rel=next walk.
     shows, seen = [], set()
     soup = BeautifulSoup(html, "html.parser")
     _showdown_page(soup, today, shows, seen)
-    pages, stop = 1, ""
-    for _ in range(9):
-        nxt = soup.select_one("a[rel=next], a.next")
-        href = nxt.get("href") if nxt else None
-        if not href or "/page/" not in href:
-            stop = "no next link" if pages == 1 else ""
-            break
-        body, err = None, ""
-        for attempt in range(2):
-            try:
-                body = fetch(href)
+    nums, base = [], ""
+    for a in soup.select("a.page-numbers[href], a[rel=next][href]"):
+        m = re.match(r"(.*/page/)(\d+)/?$", a["href"])
+        if m:
+            base = base or m.group(1)
+            nums.append(int(m.group(2)))
+    failed, stop, pages = [], "", 1
+    if base and nums:
+        last = min(max(nums), 10)
+        for n in range(2, last + 1):
+            body, err = None, ""
+            for attempt in range(3):
+                try:
+                    body = fetch(f"{base}{n}/")
+                    break
+                except Exception as e:
+                    err = f"{type(e).__name__}: {str(e)[:90]}"
+                    if attempt < 2:
+                        time.sleep(SD_RETRY_PAUSE_S * (attempt + 1))
+            if body is None:
+                failed.append(f"{n} ({err})")
+                if len(failed) >= 2 and failed[-2].startswith(f"{n - 1} ("):
+                    # two dead pages in a row: the site is down, not one
+                    # slow page -- stop rather than burn the build's time.
+                    failed.append(f"stopped at {n}")
+                    break
+                continue
+            _showdown_page(BeautifulSoup(body, "html.parser"), today, shows, seen)
+            pages += 1
+            time.sleep(0.5)
+        if failed:
+            stop = f"{pages} of {last} pages; failed 3x: " + "; ".join(failed)
+    else:
+        # Old path: follow rel=next; a failed page ends the walk.
+        for _ in range(9):
+            nxt = soup.select_one("a[rel=next], a.next")
+            href = nxt.get("href") if nxt else None
+            if not href or "/page/" not in href:
+                stop = "no pager on page one" if pages == 1 else ""
                 break
+            try:
+                soup = BeautifulSoup(fetch(href), "html.parser")
             except Exception as e:
-                err = f"{type(e).__name__}: {str(e)[:100]}"
-                if attempt == 0:
-                    time.sleep(SD_RETRY_PAUSE_S)
-        if body is None:
-            stop = f"page {pages + 1} failed twice ({err})"
-            break
-        soup = BeautifulSoup(body, "html.parser")
-        if _showdown_page(soup, today, shows, seen) == 0:
-            stop = f"page {pages + 1} parsed 0 rows" if pages == 1 else ""
-            break
-        pages += 1
-        time.sleep(0.5)
+                stop = f"page {pages + 1} failed ({type(e).__name__}: {str(e)[:90]})"
+                break
+            if _showdown_page(soup, today, shows, seen) == 0:
+                break
+            pages += 1
+            time.sleep(0.5)
     if stop:
-        note = f"stopped after {pages} page(s), {len(shows)} rows: {stop}"
+        note = f"{len(shows)} rows, {stop}"
         print(f"  note: Showdown Saloon {note}")
         FETCH_NOTES["Showdown Saloon"] = note
         EARLY_STOP_PAGES["Showdown Saloon"] = html
