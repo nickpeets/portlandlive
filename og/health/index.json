@@ -1,9 +1,9 @@
 {
- "captured": "2026-10-30T16:42Z",
+ "captured": "2026-10-30T16:57Z",
  "sources": [
   {
    "source": "Showdown Saloon",
-   "note": "stopped after 2 page(s), 20 rows: page 3 failed twice (HTTPError: 504 Server Error: Gateway Timeout for url: https://www.showdownpdx.com/page/3/)",
+   "note": "43 rows, 5 of 6 pages; failed 3x: 2 (HTTPError: 504 Server Error: Gateway Timeout for url: https://www.showdownpdx.com/page/2/)",
    "file": "showdown-saloon.html",
    "bytes": 295805
   },
