@@ -2745,6 +2745,12 @@ def write_clean_urls(shows, venues):
         shutil.rmtree(d, ignore_errors=True)
         os.makedirs(d, exist_ok=True)
     cards = build_og_cards(shows)
+    # Real pages a search engine can read (Oct 30 2026) -- see seo_pages.py.
+    # The old _shell() redirected everyone, Google included, to /#/..., so
+    # every show and venue page folded into the homepage.
+    import seo_pages
+    pages = seo_pages.Pages(SHOW_PAGES, VENUE_PAGES, make_slug, _venue_slug, clean_title)
+    pages.write_css()
     n_show = 0
     seen = set()
     for s in rows:
@@ -2752,13 +2758,10 @@ def write_clean_urls(shows, venues):
         if not slug or slug in seen:
             continue
         seen.add(slug)
-        title = f"{s.get('title','')} at {s.get('venue','')} \u2014 Rain Or Shows"
         img = cards.get(slug) or (s.get("imageUrl") or "").strip()
         if not img.startswith("http"):
             img = DEFAULT_OG_IMAGE
-        os.makedirs(os.path.join(SHOW_PAGES, slug), exist_ok=True)
-        with open(os.path.join(SHOW_PAGES, slug, "index.html"), "w", encoding="utf-8") as f:
-            f.write(_shell(title, _show_desc(s), img, f"{SITE}/show/{slug}/", f"#/show/{slug}"))
+        pages.show_page(s, img)
         n_show += 1
     n_venue = 0
     # Venue photos set by a moderator (Sep 24 2026) are the venue's share
@@ -2780,10 +2783,14 @@ def write_clean_urls(shows, venues):
         if v.get("address"):
             desc += f" \u00b7 {v['address']}"
         img = vphotos.get(name) or next((s.get("imageUrl") for s in upcoming if (s.get("imageUrl") or "").startswith("http")), DEFAULT_OG_IMAGE)
-        os.makedirs(os.path.join(VENUE_PAGES, vs), exist_ok=True)
-        with open(os.path.join(VENUE_PAGES, vs, "index.html"), "w", encoding="utf-8") as f:
-            f.write(_shell(f"{name} \u2014 Rain Or Shows", desc, img, f"{SITE}/venue/{vs}/", f"#/venue/{vs}"))
+        pages.venue_page(v, sorted(upcoming, key=seo_pages.sort_key), img)
         n_venue += 1
+    counts = {}
+    for s in shows:
+        counts[s.get("venue")] = counts.get(s.get("venue"), 0) + 1
+    pages.venue_index(venues, counts)
+    n_tonight, n_week, n_weekend = pages.hubs(shows)
+    print(f"Search pages: tonight {n_tonight}, this week {n_week}, this weekend {n_weekend} shows; venue index {len(venues)} rooms")
     n_fest = 0
     fest_dir = os.path.join(HERE, "festival")
     shutil.rmtree(fest_dir, ignore_errors=True)
@@ -2804,14 +2811,18 @@ def write_clean_urls(shows, venues):
     # sitemap.xml: every page that exists, so search engines index the show
     # and venue pages. Upcoming shows only -- past pages exist for links
     # already shared, not for discovery.
-    urls = [f"{SITE}/"]
+    urls = [f"{SITE}/", f"{SITE}/show/tonight/", f"{SITE}/show/this-week/",
+            f"{SITE}/show/this-weekend/", f"{SITE}/venue/"]
     urls += [f"{SITE}/venue/{_venue_slug(v.get('name') or '')}/" for v in venues if _venue_slug(v.get("name") or "")]
     urls += [f"{SITE}/festival/{f['slug']}/" for f in load_festivals()]
     urls += [f"{SITE}/show/{make_slug(s)}/" for s in shows if make_slug(s)]
     with open(os.path.join(HERE, "sitemap.xml"), "w", encoding="utf-8") as f:
         f.write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n')
-        for u in urls:
-            f.write(f"  <url><loc>{_esc(u)}</loc></url>\n")
+        today = seo_pages.today_pt().isoformat()
+        for i, u in enumerate(urls):
+            # lastmod on the pages that change daily, so Google re-crawls them.
+            lm = f"<lastmod>{today}</lastmod>" if i < 5 else ""
+            f.write(f"  <url><loc>{_esc(u)}</loc>{lm}</url>\n")
         f.write("</urlset>\n")
     print(f"Wrote sitemap.xml ({len(urls)} urls)")
 
