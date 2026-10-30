@@ -4,6 +4,10 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### daa71094f — Showdown walks every page, skips a dead one
+
+Oct 30 2026 (auto-repair, second attempt). The verify build after dc67747 named the cause: showdownpdx.com 504s on deeper pages (page 3 failed twice; 20 of ~52). The reader now walks /page/2/../page/<last>/ from page one's pager, three tries a page, skipping a page that still fails rather than ending the walk; two dead pages in a row stops. Old rel=next walk kept as fallback.
+
 ### dc67747f3 — Showdown paging retries and reports early stops
 
 Oct 30 2026 (daily feed-health auto-repair). Showdown Saloon scraped 10 vs usual ~52: page one parsed, the page walk stopped silently (a failed page fetch was swallowed); safety net held 41 rows. Failed pages now retry once; an early stop writes its reason to feed health ('why', now on partial items too) and saves page one to og/health/. The Goodfoot (Cloudflare headless challenge, known flapper) and Brunish/The Old Church (dark, quiet rooms) left alone.
