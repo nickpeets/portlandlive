@@ -4,6 +4,10 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### dc67747f3 — Showdown paging retries and reports early stops
+
+Oct 30 2026 (daily feed-health auto-repair). Showdown Saloon scraped 10 vs usual ~52: page one parsed, the page walk stopped silently (a failed page fetch was swallowed); safety net held 41 rows. Failed pages now retry once; an early stop writes its reason to feed health ('why', now on partial items too) and saves page one to og/health/. The Goodfoot (Cloudflare headless challenge, known flapper) and Brunish/The Old Church (dark, quiet rooms) left alone.
+
 ### 188b0f5 — Holocene/JLR/Hopworks fixes; failure captures for auto-repair
 
 Oct 29 2026. Holocene relaunched its calendar (article.crow cards): date from the event link, time/age, Etix tickets, sold out, decoded 1200w Etix posters. Jack London Revue -> www. (bare domain's TLS broke). Hopworks moved to the TLS tier (runner 403). Chehalem Valley and Montavilla Station marked may_be_empty. Empty sources now leave the runner's page in og/health/ (+ index.json) for the daily auto-repair task (Nick: fix feed health without prompting).
