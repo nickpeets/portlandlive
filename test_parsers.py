@@ -49,6 +49,7 @@ def _no_network(url, *a, **k):
 
 
 sv.fetch = _no_network
+sv.SD_RETRY_PAUSE_S = 0
 if hasattr(sv, "fetch_headless"):
     sv.fetch_headless = _no_network
 
@@ -748,6 +749,38 @@ def safety_net_check():
         print("GATE FAILURE")
         sys.exit(1)
     print("  ok   failure captures              empty source -> og/health/<slug>.html + index.json; cleared each run")
+    # Showdown paging (Oct 30 2026 auto-repair): the runner got page one (10
+    # rows, usual ~52) and the walk stopped with no reason logged. A failed
+    # page now retries once, and an early stop leaves a note + page one.
+    _sd = load("showdown.html")
+    _calls = []
+    def _sd_fail(url, *a, **k):
+        _calls.append(url); raise RuntimeError("504 Gateway Timeout")
+    sv.fetch = _sd_fail; sv.FETCH_NOTES.pop("Showdown Saloon", None); sv.EARLY_STOP_PAGES.clear()
+    r1 = sv.parse_showdown(_sd, TODAY)
+    n1 = sv.FETCH_NOTES.get("Showdown Saloon", "")
+    _ok = (len(r1) == 10 and len(_calls) == 2 and "page 2 failed twice" in n1 and "504" in n1
+           and sv.EARLY_STOP_PAGES.get("Showdown Saloon") == _sd)
+    _calls.clear()
+    def _sd_flaky(url, *a, **k):
+        _calls.append(url)
+        if len(_calls) == 1:
+            raise RuntimeError("timeout")
+        return _sd.replace("Show:", "Show:").replace('class="next page-numbers"', 'class="page-numbers"')
+    sv.fetch = _sd_flaky; sv.FETCH_NOTES.pop("Showdown Saloon", None); sv.EARLY_STOP_PAGES.clear()
+    r2 = sv.parse_showdown(_sd, TODAY)
+    # page 2 here is page one again (same rows, deduped -> 0 new): the retry
+    # reached it, and "nothing new on page 2" is reported, not swallowed.
+    _ok = _ok and len(_calls) == 2 and "page 2 parsed 0 rows" in sv.FETCH_NOTES.get("Showdown Saloon", "")
+    _h = sv.net_health({"partial": {"Showdown Saloon": (10, 52, 41, 1)}}, {"Showdown Saloon": "2026-10-29"}, [],
+                       datetime.date(2026, 10, 30), (), {"Showdown Saloon": "stopped after 1 page(s), 10 rows: x"})
+    _ok = _ok and _h["items"][0].get("why", "").startswith("stopped after 1 page")
+    sv.fetch = _no_network; sv.FETCH_NOTES.pop("Showdown Saloon", None); sv.EARLY_STOP_PAGES.clear()
+    if not _ok:
+        print(f"  FAIL showdown paging              calls={_calls} note={n1!r} health={_h}")
+        print("GATE FAILURE")
+        sys.exit(1)
+    print("  ok   showdown paging               failed page retried once; early stop -> health 'why' + page-one capture")
     # Turn! Turn! Turn! on Opendate (Sep 24 2026): the capture is the real
     # page, saved from the Codespace (the venue moved its calendar there).
     _od = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fixtures", "turn-opendate.html")

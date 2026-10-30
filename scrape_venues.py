@@ -2259,26 +2259,56 @@ def _showdown_page(soup, today, shows, seen):
     return added
 
 
+SD_RETRY_PAUSE_S = 5
+# Source name -> page one's HTML, for paginating readers whose walk stopped
+# early; scrape() saves it to og/health/ next to the zero-source captures.
+EARLY_STOP_PAGES = {}
+
+
 def parse_showdown(html, today):
     """showdownpdx.com paginates ten to a page and runs seven pages deep;
     the parser read page one only, so the feed showed 10 shows ending eight
     days out. Follow rel=next until it runs out, capped at 10 pages, with
     the same tolerance as Portland'5: a failed page ends the walk."""
+    # Oct 30 2026 (daily auto-repair): page one came back with 10 rows and the
+    # walk stopped there -- usual ~52 -- with nothing in the log to say why,
+    # because a failed page fetch was swallowed. Now a failed page gets one
+    # retry after a short pause, and when the walk stops early the reason
+    # goes into FETCH_NOTES (feed health 'why') and page one is saved to
+    # og/health/ so the next repair run can see the runner's view.
     shows, seen = [], set()
     soup = BeautifulSoup(html, "html.parser")
     _showdown_page(soup, today, shows, seen)
+    pages, stop = 1, ""
     for _ in range(9):
         nxt = soup.select_one("a[rel=next], a.next")
         href = nxt.get("href") if nxt else None
         if not href or "/page/" not in href:
+            stop = "no next link" if pages == 1 else ""
             break
-        try:
-            soup = BeautifulSoup(fetch(href), "html.parser")
-        except Exception:
+        body, err = None, ""
+        for attempt in range(2):
+            try:
+                body = fetch(href)
+                break
+            except Exception as e:
+                err = f"{type(e).__name__}: {str(e)[:100]}"
+                if attempt == 0:
+                    time.sleep(SD_RETRY_PAUSE_S)
+        if body is None:
+            stop = f"page {pages + 1} failed twice ({err})"
             break
+        soup = BeautifulSoup(body, "html.parser")
         if _showdown_page(soup, today, shows, seen) == 0:
+            stop = f"page {pages + 1} parsed 0 rows" if pages == 1 else ""
             break
+        pages += 1
         time.sleep(0.5)
+    if stop:
+        note = f"stopped after {pages} page(s), {len(shows)} rows: {stop}"
+        print(f"  note: Showdown Saloon {note}")
+        FETCH_NOTES["Showdown Saloon"] = note
+        EARLY_STOP_PAGES["Showdown Saloon"] = html
     return shows
 
 
@@ -6837,6 +6867,8 @@ def scrape():
         raw = list(got)
         got = [s for s in got if lower <= s["date"] <= horizon]
         print(f"  {src['name']}: {len(got)} shows")
+        if src["name"] in EARLY_STOP_PAGES:
+            _save_capture(src["name"], EARLY_STOP_PAGES.pop(src["name"]), FETCH_NOTES.get(src["name"], ""))
         if not got and not src.get("may_be_empty"):
             _save_capture(src["name"], last_page, FETCH_NOTES.get(src["name"], ""))
         if not got and fetched_ok and not src.get("may_be_empty"):
@@ -7135,7 +7167,8 @@ def net_health(net, last_good, scraped, today, zero_reports=(), notes=None):
                       "why": note_for(v)})
     for v, (now, avg, extra, age) in sorted((net.get("partial") or {}).items()):
         items.append({"venue": v, "kind": "partial", "scraped": now, "usual": avg, "added": extra,
-                      "since": last_good.get(v, ""), "drops": drop(last_good.get(v)), "days": age})
+                      "since": last_good.get(v, ""), "drops": drop(last_good.get(v)), "days": age,
+                      "why": note_for(v)})
     reported = {i["venue"] for i in items}
     for v, since in sorted((last_good or {}).items()):
         if v in reported or counts.get(v) or v in SEASONAL_VENUES or not since:
