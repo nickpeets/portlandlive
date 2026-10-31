@@ -157,10 +157,26 @@ def dedupe_shows(shows):
             # non-empty, differing time they may be two real shows that day
             # -> flag instead of silently dropping.
             kept = seen[k]
-            if s.get("soldOut"):
-                kept["soldOut"] = True   # either copy saying sold out is enough
             t_new = (s.get("time") or "").strip()
             t_old = (kept.get("time") or "").strip()
+            # Sold out across copies: two sources describing the SAME set
+            # (doors vs show time) -> either saying so is enough. A second
+            # SET of the same bill (75+ min apart; Helium's 7:00 sold out,
+            # 9:30 open, Oct 31 2026) -> the night is sold out only when
+            # every set is, else the open set vanishes behind the badge.
+            _have_m = [_time_min(t) for t in (kept.get("_times") or [t_old])]
+            _tn = _time_min(t_new) if t_new else None
+            _other_set = bool(t_new and t_old and t_new != t_old and _tn is not None
+                              and all(m is not None and abs(_tn - m) >= 75 for m in _have_m))
+            if _other_set:
+                all_sold = kept.get("_sold_all", bool(kept.get("soldOut"))) and bool(s.get("soldOut"))
+                kept["_sold_all"] = all_sold
+                if all_sold:
+                    kept["soldOut"] = True
+                else:
+                    kept.pop("soldOut", None)
+            elif s.get("soldOut"):
+                kept["soldOut"] = True
             if t_new and t_old and t_new != t_old:
                 # Two shows the same night (Sep 22 2026: Helium's 7:00 and
                 # 9:30 were merged and every late show vanished). Times 75+

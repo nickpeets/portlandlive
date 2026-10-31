@@ -698,6 +698,26 @@ def safety_net_check():
         print("GATE FAILURE")
         sys.exit(1)
     print("  ok   sold out                      Roseland 4, Hawthorne 2, Holocene 3 (RHP buttons), Mississippi Studios 3 (Etix links); title markers yes, band names and bios no")
+    # Helium (Oct 31 2026): sold out lives only on the bill's /events/<id>
+    # page, per showtime. Listing fetch and event fetch are stubbed here.
+    _hh = open(os.path.join(_fx, "helium-event-sold.html"), encoding="utf-8").read()
+    _hl = '<div class="event-list-item"><h3 class="el-header"><a href="/events/140614">Special Event: Marlon Wayans</a></h3></div>'
+    _saved_fetch = sv.fetch
+    sv.fetch = lambda u, *a, **k: _hl if u.endswith("/events") else _hh
+    try:
+        hrows = [{"title": "Marlon Wayans", "date": "2026-10-31", "time": "7:00 PM"},
+                 {"title": "Marlon Wayans", "date": "2026-10-31", "time": "9:30 PM"},
+                 {"title": "Marlon Wayans", "date": "2026-12-06", "time": "6:30 PM"},
+                 {"title": "Someone Else", "date": "2026-12-06", "time": "6:30 PM"}]
+        sv._helium_sold_out(hrows, _d)
+    finally:
+        sv.fetch = _saved_fetch
+    hm = [bool(r.get("soldOut")) for r in hrows]
+    if sorted(sv.helium_sold_times(_hh)) != [("2026-10-31", "7:00 PM"), ("2026-12-06", "6:30 PM"), ("2026-12-06", "8:45 PM")] or hm != [True, False, True, False]:
+        print(f"  FAIL helium sold out              {sorted(sv.helium_sold_times(_hh))} {hm}")
+        print("GATE FAILURE")
+        sys.exit(1)
+    print("  ok   helium sold out               per-showtime from the bill's event page; open 9:30 and other bills untouched")
     # Holocene rebuilt (Oct 28 2026): article.crow cards, date in the link,
     # poster = base64 of the Etix 1200w URL, "At the door" = no ticket link.
     import base64 as _b64

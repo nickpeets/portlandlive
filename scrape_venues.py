@@ -5639,7 +5639,100 @@ def parse_helium(html, today):
         out.append(_batch_row("Helium Comedy Club", dt.date().isoformat(), _pt_clock(dt), title,
                               e.get("url") or "https://portland.heliumcomedy.com/", img,
                               _age_in_text(_unhtml(e.get("description"))), True, hp))
+    _helium_sold_out(out, today)
     return out
+
+
+# Sold out at Helium (Oct 31 2026, Nick: Taylor Tomlinson sold out, card said
+# nothing). The homepage JSON-LD and every listing page keep saying "Buy
+# Tickets"; only the bill's own /events/<id> page knows, per showtime: an open
+# set is <a class="event-btn-inline" href="/shows/<id>"> and a sold-out one is
+# a linkless span beside an empty <span class="event-btn-soldout">. So: one
+# fetch of /events for the bill -> page map (name as the JSON-LD has it), then
+# one fetch per bill that has a row inside the horizon, and the (date, time)
+# pairs marked sold out are stamped onto the matching rows. Any failure leaves
+# the rows as they were. Never raises.
+_HELIUM_EVDATE = re.compile(r"([A-Za-z]{3}),\s*([A-Za-z]{3})\s+(\d{1,2}),\s*(\d{4})")
+
+
+def helium_sold_times(html):
+    """(date, time) pairs the event page marks sold out, e.g. ('2026-12-06', '6:30 PM')."""
+    out = set()
+    if not html or "event-btn-soldout" not in html:
+        return out
+    soup = BeautifulSoup(html, "html.parser")
+    box = soup.select_one(".event-times-list") or soup
+    date = ""
+    for el in box.find_all(True):
+        if "event-date" in (el.get("class") or []):
+            m = _HELIUM_EVDATE.search(el.get_text(" ", strip=True))
+            date = ""
+            if m:
+                try:
+                    date = datetime.datetime.strptime(f"{m.group(2)} {m.group(3)} {m.group(4)}", "%b %d %Y").date().isoformat()
+                except ValueError:
+                    pass
+        elif el.name == "span" and "event-btns" in (el.get("class") or []) and el.select_one(".event-btn-soldout"):
+            t = el.select_one(".event-btn-inline")
+            tm = _norm_clock((t.get_text(" ", strip=True) if t else "").strip())
+            if date and tm:
+                out.add((date, tm))
+    return out
+
+
+def _norm_clock(s):
+    m = re.match(r"(\d{1,2})(?::(\d{2}))?\s*([AaPp])\.?[Mm]?\.?$", (s or "").strip())
+    if not m:
+        return ""
+    return "%d:%02d %s" % (int(m.group(1)), int(m.group(2) or 0), m.group(3).upper() + "M")
+
+
+def helium_event_pages(html):
+    """Bill name (as the JSON-LD names it) -> /events/<id> path, from /events."""
+    pages = {}
+    soup = BeautifulSoup(html or "", "html.parser")
+    for item in soup.select(".event-list-item"):
+        a = item.select_one(".el-header a[href*='/events/']")
+        if a:
+            pages[_unhtml(a.get_text()).lower()] = a.get("href") or ""
+    return pages
+
+
+def _helium_bill_key(title):
+    # rows carry the stripped title (+ " (Neon Room)"); listing names carry the prefix
+    return _HELIUM_NEON.sub("", _HELIUM_PREFIX.sub("", title or "")).replace("(Neon Room)", "").strip().lower()
+
+
+def _helium_sold_out(rows, today):
+    if not rows:
+        return
+    try:
+        pages = helium_event_pages(fetch("https://portland.heliumcomedy.com/events"))
+    except Exception as e:
+        print(f"  note: Helium sold-out pass skipped ({type(e).__name__})")
+        return
+    by_key = {}
+    for name, path in pages.items():
+        by_key.setdefault(_helium_bill_key(name), path)
+    wanted = {}
+    for r in rows:
+        k = _helium_bill_key(r.get("title"))
+        if k in by_key:
+            wanted.setdefault(by_key[k], []).append(r)
+    n_pages = n_sold = 0
+    for path, rs in wanted.items():
+        try:
+            sold = helium_sold_times(fetch("https://portland.heliumcomedy.com" + path if path.startswith("/") else path))
+        except Exception:
+            continue
+        n_pages += 1
+        for r in rs:
+            if (r.get("date"), _norm_clock(r.get("time"))) in sold:
+                r["soldOut"] = True
+                n_sold += 1
+        time.sleep(0.3)
+    if n_pages:
+        print(f"  Helium: {n_pages} event page(s) read, {n_sold} set(s) sold out")
 
 
 # ---- LaVerne's (700 NE Dekum, Woodlawn). A hand-typed Squarespace page:
