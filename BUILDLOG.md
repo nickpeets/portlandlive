@@ -4,6 +4,10 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### 2c16dca86 — Helium sold out per showtime
+
+Oct 31 2026. Taylor Tomlinson sold out, card showed nothing. Only the bill's /events/<id> page marks each set; parse_helium now reads it and stamps soldOut per (date, time). Two-set nights are sold out only when both are. Suite case + fixtures/helium-event-sold.html.
+
 ### 904605d2 — Search pages Google can read
 
 Oct 30 2026. Nick: "what's happening in portland tonight" doesn't find the site. Cause: every /show/ and /venue/ page script-redirected to /#/..., which Google follows, so all of them collapsed into the homepage (which has no listings in its HTML). seo_pages.py now writes real pages: show pages with schema.org Event markup, venue pages with every upcoming show, /venue/ index, and nightly hubs /show/tonight/, /show/this-week/, /show/this-weekend/. Facebook/Instagram/?ref= visitors still jump into the app. Sitemap: hubs + lastmod. Homepage: title, WebSite markup, footer links to the hubs.
