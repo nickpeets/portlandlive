@@ -4593,15 +4593,22 @@ def parse_arbor(html, today):
     except Exception:
         return out
     nb, addr = VENUE_INFO.get("Arbor Beer Lodge", ("Arbor Lodge", ""))
-    for e in data.get("upcoming", []):
-        if not isinstance(e, dict):
-            continue
+    # Nov 1 2026 (auto-repair): 0 upcoming, 30 past (latest Oct 31) -- the
+    # venue hadn't posted November yet. With nothing upcoming, return the
+    # recent past rows so the scrape loop reports "nothing upcoming posted
+    # yet" (quiet) rather than "page shape likely changed".
+    items = [e for e in (data.get("upcoming") or []) if isinstance(e, dict) and e.get("startDate")]
+    past_mode = not items
+    if past_mode:
+        items = [e for e in (data.get("past") or []) if isinstance(e, dict) and e.get("startDate")]
+    for e in items:
         sd = e.get("startDate")
-        if not sd:
-            continue
         dt = datetime.datetime.fromtimestamp(sd / 1000, tz=datetime.timezone.utc).astimezone(_ASP_PDT)
         d = dt.date()
-        if not (lower <= d <= horizon):
+        if past_mode:
+            if not (today - datetime.timedelta(days=60) <= d < today):
+                continue
+        elif not (lower <= d <= horizon):
             continue
         date = d.isoformat()
         tm = "%d:%02d %s" % (dt.hour % 12 or 12, dt.minute, "AM" if dt.hour < 12 else "PM")
@@ -4849,14 +4856,26 @@ def _sqs_json_rows(text, today, venue, base, keep=None, skip=None, strip=None,
     except Exception:
         return out
     horizon = today + datetime.timedelta(days=horizon_days)
-    for e in data.get("upcoming") or []:
+    # Nov 1 2026 (auto-repair): Lyons Den's collection had 0 upcoming and 30
+    # past (latest Oct 31) -- the venue hadn't posted November yet, but the
+    # health check called it a shape change. With nothing upcoming, hand
+    # back the recent past rows: the scrape loop drops them by date and
+    # reports "nothing upcoming posted yet" (quiet) instead of "empty".
+    upcoming = [e for e in (data.get("upcoming") or []) if isinstance(e, dict)]
+    items, past_mode = upcoming, False
+    if not any(e.get("startDate") for e in upcoming):
+        items, past_mode = [e for e in (data.get("past") or []) if isinstance(e, dict)], True
+    for e in items:
         if not isinstance(e, dict) or not e.get("startDate"):
             continue
         title = _unhtml(e.get("title"))
         if not title or (skip and skip.search(title)) or (keep and not keep.search(title)):
             continue
         dt = datetime.datetime.fromtimestamp(e["startDate"] / 1000, tz=datetime.timezone.utc).astimezone(_ASP_PDT)
-        if not (today <= dt.date() <= horizon):
+        if past_mode:
+            if not (today - datetime.timedelta(days=60) <= dt.date() < today):
+                continue
+        elif not (today <= dt.date() <= horizon):
             continue
         is_comedy = bool(comedy and comedy.search(title))
         if strip:
@@ -6265,7 +6284,7 @@ _BH_SKIP = re.compile(r"(?i)poker|trivia|bingo|karaoke")
 
 def parse_beachhut(html, today):
     lines = [l.strip() for l in BeautifulSoup(html, "html.parser").get_text("\n").split("\n") if l.strip()]
-    out, seen = [], set()
+    out, seen, past = [], set(), []
     horizon = today + datetime.timedelta(days=HORIZON_DAYS)
     for i in range(len(lines) - 3):
         mon = _b4_month(lines[i]) if re.fullmatch(r"[A-Za-z]{3}", lines[i]) else 0
@@ -6274,20 +6293,25 @@ def parse_beachhut(html, today):
         title, desc = lines[i + 2], lines[i + 3]
         if _BH_SKIP.search(title):
             continue
-        try:
-            d = datetime.date(infer_year(mon, today), mon, int(lines[i + 1]))
-        except ValueError:
+        # Nov 1 2026: _next_date, not infer_year -- on Nov 1 the page still
+        # listed only October, which infer_year pushed to Oct 2027.
+        d = _next_date(today, mon, int(lines[i + 1]))
+        if not d:
             continue
         tm = _BH_TIME.search(desc)
         t = f"{int(tm.group(1))}:{tm.group(2) or '00'} {tm.group(3).upper()}M" if tm else ""
         if not re.search(r"(?i)music|jam|band|live", title + " " + desc):
             continue
         key = (d, title.lower())
-        if key in seen or not (today <= d <= horizon):
+        if key in seen or d > horizon:
             continue
         seen.add(key)
-        out.append(_b4_row("Beach Hut Deli Tigard", title, d.isoformat(), t, "https://beachhutdeli.com/store/tigard/"))
-    return out
+        row = _b4_row("Beach Hut Deli Tigard", title, d.isoformat(), t, "https://beachhutdeli.com/store/tigard/")
+        (out if d >= today else past).append(row)
+    # Nothing upcoming (the page still shows last month): return the past
+    # rows so the scrape loop reports "nothing upcoming posted yet" (quiet)
+    # instead of "page shape likely changed".
+    return out or past
 
 
 # ---- Topaz Farm (Sauvie Island): a summer concert series on the farm

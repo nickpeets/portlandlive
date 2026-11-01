@@ -109,7 +109,7 @@ CASES = [
     ("corner14.html",           sv.parse_corner14,        6, {"time": 6, "imageUrl": 6},     "Wix Events warmup; trivia skipped"),
     ("bluediamond-tribe.json",  sv.parse_bluediamond,    28, {"time": 28, "imageUrl": 28, "age": 28}, "Tribe REST, per_page=100; weekly regulars dominate the listing, Fri/Sat one-offs posted nearer the date (captured 2026-09-20)"),
     ("swandive-sq.json",        sv.parse_swandive,       22, {"time": 22, "imageUrl": 22},          "Squarespace events at /events-2-1 (captured 2026-09-21)"),
-    ("vinoveritas-sq.json",     sv.parse_vinoveritas,     0, {},                                    "Squarespace events at /events; nothing upcoming at capture (2026-09-21)"),
+    ("vinoveritas-sq.json",     sv.parse_vinoveritas,     4, {},                                    "Squarespace events at /events; nothing upcoming at capture (2026-09-21) -- recent past rows come back so health reads quiet (Nov 1 2026)"),
     ("firkin-tribe.json",       sv.parse_firkin,          0, {},                                    "Tribe REST; empty at capture (2026-09-21)"),
     ("lyonsden-sq.json",        sv.parse_lyonsden,        2, {"time": 2},                         "Squarespace events (captured 2026-09-21)"),
     ("birchstreet.html",        sv.parse_birchstreet,     9, {"time": 9},                         "hand-typed lineup page (captured 2026-09-21)"),
@@ -826,6 +826,32 @@ def safety_net_check():
         print(f"  ok   turn-opendate.html          {n:3d} rows  -- Opendate embed; date from each event link; show time; poster before the link; age from the venue's day/night rule")
 
 
+def all_past_quiet_check():
+    """Nov 1 2026 auto-repair: Lyons Den, Arbor and Beach Hut came back
+    "empty -- page shape likely changed" when the venues simply hadn't
+    posted November (runner captures: 0 upcoming, latest Oct 31). With
+    nothing upcoming, each reader hands back recent past rows so the scrape
+    loop reports "nothing upcoming posted yet" (quiet)."""
+    import datetime as _dt
+    today = _dt.date(2026, 11, 1)
+    d = os.path.join(HERE, "fixtures")
+    bad = []
+    for fx, fn in (("lyonsden-allpast.json", sv.parse_lyonsden), ("arbor-allpast.json", sv.parse_arbor),
+                   ("beachhut-allpast.html", sv.parse_beachhut)):
+        r = fn(open(os.path.join(d, fx), encoding="utf-8").read(), today)
+        if not r:
+            bad.append(f"{fx}: no past rows returned")
+        elif any(x["date"] >= today.isoformat() for x in r):
+            bad.append(f"{fx}: a past listing read as upcoming")
+        elif max(x["date"] for x in r) != "2026-10-31":
+            bad.append(f"{fx}: latest {max(x['date'] for x in r)} != 2026-10-31")
+    if bad:
+        print("  FAIL all-past quiet               " + "; ".join(bad))
+        print("GATE FAILURE")
+        sys.exit(1)
+    print("  ok   all-past quiet                Lyons Den, Arbor, Beach Hut: nothing upcoming reads as quiet, not a shape change")
+
+
 if __name__ == "__main__":
     main()
     talk_page_check()
@@ -835,3 +861,4 @@ if __name__ == "__main__":
     tm_guard_check()
     batch_four_check()
     safety_net_check()
+    all_past_quiet_check()
