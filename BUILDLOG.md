@@ -4,6 +4,10 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### ef7f3b4e9 — All-past venue pages read as quiet
+
+Nov 1 2026 (daily feed-health auto-repair). Lyons Den, Arbor Beer Lodge and Beach Hut Tigard flagged "empty -- page shape likely changed"; the runner captures showed working pages with nothing posted past Oct 31. Those readers now hand back recent past rows when nothing is upcoming, so health reads "nothing upcoming posted yet" (quiet). Beach Hut dates use _next_date (infer_year sent October to 2027). Realm (Cloudflare on the runner, held till Nov 8), Spare Room (nov2026.htm 404, not posted yet) and the dark rooms left alone.
+
 ### 2c16dca86 — Helium sold out per showtime
 
 Oct 31 2026. Taylor Tomlinson sold out, card showed nothing. Only the bill's /events/<id> page marks each set; parse_helium now reads it and stamps soldOut per (date, time). Two-set nights are sold out only when both are. Suite case + fixtures/helium-event-sold.html.
