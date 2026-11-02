@@ -875,11 +875,25 @@ def spare_room_links_check():
         bad.append(f"links {links}")
     if len(rows) != 15 or any(not r["date"].startswith("2026-11-") for r in rows):
         bad.append(f"{len(rows)} rows (want 15 in November)")
+    # The real events.htm from the Nov 2 2026 runner capture: November not
+    # linked yet, only oct2026.htm and sept2026.htm. October is followed and
+    # comes back all-past, so the loop reports quiet, not a shape change.
+    real = load("spare-room-events-nov2026.html")
+    if sv._spare_room_linked_months(real, today) != ["https://www.spareroomrestaurantandlounge.com/oct2026.htm"]:
+        bad.append(f"capture links {sv._spare_room_linked_months(real, today)} (want oct2026.htm)")
+    octp = load("spare-room-sept2026.html").replace("September at", "October at")
+    sv.fetch = lambda u: octp if u.endswith("oct2026.htm") else _no_network(u)
+    try:
+        past = sv.parse_spareroom(real, today)
+    finally:
+        sv.fetch = old
+    if not past or any(r["date"] >= today.isoformat() for r in past):
+        bad.append(f"capture: {len(past)} rows, want all-past October rows")
     if bad:
         print("  FAIL spare room month links       " + "; ".join(bad))
         print("GATE FAILURE")
         sys.exit(1)
-    print("  ok   spare room month links        events.htm -> november2026.htm followed; old months, other hosts, known names skipped")
+    print("  ok   spare room month links        events.htm -> november2026.htm followed; old months, other hosts, known names skipped; Nov 2 capture (no November yet) reads all-past -> quiet")
 
 
 if __name__ == "__main__":

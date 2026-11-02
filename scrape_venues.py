@@ -1826,7 +1826,7 @@ def _spare_room_linked_months(html, today):
     month or later, minus the ones the source already fetches by name."""
     from urllib.parse import urljoin
     known = {u.lower() for u in _spare_room_urls()}
-    out = []
+    out, past = [], []
     for m in _SR_MONTH_LINK.finditer(html or ""):
         url = urljoin(_SR_BASE, m.group(1))
         if "spareroomrestaurantandlounge.com" not in url.lower():
@@ -1836,10 +1836,17 @@ def _spare_room_linked_months(html, today):
         mon = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep",
                "oct", "nov", "dec"].index(m.group(2).lower()[:3]) + 1
         if (y, mon) < (today.year, today.month):
+            past.append(((y, mon), url))
             continue
         if url.lower() in known or url in out:
             continue
         out.append(url)
+    if not out and past:
+        # Nothing for this month linked yet (Nov 2 2026 runner capture:
+        # events.htm still links only oct2026/sept2026). Follow the newest
+        # past month so the scrape loop sees all-past rows and reports
+        # "nothing upcoming posted yet" (quiet), not a shape change.
+        return [max(past)[1]]
     return out[:3]
 
 
