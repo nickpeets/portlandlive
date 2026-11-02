@@ -4,6 +4,10 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### da1576741 — Spare Room: no November page yet reads as quiet
+
+Nov 2 2026 (auto-repair, second attempt). The verify build after 948f846 captured events.htm: it still links only oct2026.htm and sept2026.htm, so the venue hasn't posted November (not a renamed file). With nothing linked for this month or later, the reader follows the newest past month, so feed health says "nothing upcoming posted yet" (quiet) instead of "page shape likely changed". November rows will appear on the first build after they post a month page, under either the guessed name or whatever events.htm links. The Headliners Club (one-off 500 from its Tribe API, held till Nov 10) left alone.
+
 ### 948f846cc — Spare Room follows month links from events.htm
 
 Nov 2 2026 (daily feed-health auto-repair). Spare Room was at 0: nov2026.htm 404s two days into November (October's page was up by Sep 29) and the 404 left it off feed health entirely. The source now also fetches events.htm last and follows any month-page link on it for this month or later that the guessed filenames miss; if it still comes back empty, events.htm is saved to og/health/ for the next run. The Goodfoot (Cloudflare headless challenge, held till Nov 9), Brunish and Chehalem Valley (dark, quiet) and the three quiet rooms from yesterday left alone.
