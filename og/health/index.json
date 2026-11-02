@@ -1,17 +1,22 @@
 {
- "captured": "2026-11-02T14:19Z",
+ "captured": "2026-11-02T18:06Z",
  "sources": [
   {
    "source": "Beach Hut Deli Tigard (beachhutdeli.com)",
    "note": "",
    "file": "beach-hut-deli-tigard-beachhutdeli-com.html",
-   "bytes": 84067
+   "bytes": 84066
   },
   {
    "source": "The Lyons Den (lyonsdenevents.com)",
    "note": "",
    "file": "the-lyons-den-lyonsdenevents-com.html",
    "bytes": 374469
+  },
+  {
+   "source": "The Headliners Club (Lake Oswego)",
+   "note": "HTTPError: 500 Server Error: Internal Server Error for url: https://theheadlinersclub.com/wp-json/tribe/events/v1/events?per_page=5",
+   "file": ""
   },
   {
    "source": "Arbor Beer Lodge (arborbeerlodge.com)",
@@ -22,7 +27,8 @@
   {
    "source": "Spare Room (spareroomrestaurantandlounge.com)",
    "note": "HTTPError: 404 Client Error: Not Found for url: https://www.spareroomrestaurantandlounge.com/nov2026.htm",
-   "file": ""
+   "file": "spare-room-spareroomrestaurantandlounge-com.html",
+   "bytes": 1477
   },
   {
    "source": "The Goodfoot",
