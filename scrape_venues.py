@@ -1811,11 +1811,51 @@ def _spare_room_urls():
     return out
 
 
+_SR_BASE = "https://www.spareroomrestaurantandlounge.com/"
+_SR_EVENTS = _SR_BASE + "events.htm"
+# A month-page link anywhere on the site: "nov2026.htm", "november2026.html",
+# "nov26.htm". Nov 2 2026: nov2026.htm 404ed two days into November (October's
+# page was up by Sep 29), so the guessed filename may have changed. events.htm
+# is now fetched last and any month page it links to is followed.
+_SR_MONTH_LINK = re.compile(
+    r"""href=["']?([^"'\s>]*?\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?[-_ ]?(\d{2}|\d{4})\.html?)""", re.I)
+
+
+def _spare_room_linked_months(html, today):
+    """Month pages linked from events.htm (or any Spare Room page) for this
+    month or later, minus the ones the source already fetches by name."""
+    from urllib.parse import urljoin
+    known = {u.lower() for u in _spare_room_urls()}
+    out = []
+    for m in _SR_MONTH_LINK.finditer(html or ""):
+        url = urljoin(_SR_BASE, m.group(1))
+        if "spareroomrestaurantandlounge.com" not in url.lower():
+            continue
+        y = int(m.group(3))
+        y = y + 2000 if y < 100 else y
+        mon = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep",
+               "oct", "nov", "dec"].index(m.group(2).lower()[:3]) + 1
+        if (y, mon) < (today.year, today.month):
+            continue
+        if url.lower() in known or url in out:
+            continue
+        out.append(url)
+    return out[:3]
+
+
 def parse_spareroom(html, today):
     soup = BeautifulSoup(html, "html.parser")
     mm = _SR_MONTH.search(soup.get_text(" "))
     if not mm:
-        return []
+        # events.htm (or a page with no month heading): follow its links to
+        # month pages the guessed filenames missed.
+        rows = []
+        for url in _spare_room_linked_months(html, today):
+            try:
+                rows.extend(parse_spareroom(fetch(url), today))
+            except Exception as e:
+                print(f"  note: Spare Room linked page failed: {type(e).__name__}: {str(e)[:80]} ({url})")
+        return rows
     mon = _ST_MON.get(mm.group(1).capitalize(), 0)
     if not mon:
         return []
@@ -6822,7 +6862,9 @@ SOURCES = [
     {"name": "Kenton Club (kentonclub.com)", "parser": parse_kentonclub,
      "urls": ["https://www.kentonclub.com/"]},
     {"name": "Spare Room (spareroomrestaurantandlounge.com)", "parser": parse_spareroom,
-     "urls": _spare_room_urls(),
+     # events.htm last: its month links catch a renamed month page, and it is
+     # the page saved to og/health/ when the source comes back empty.
+     "urls": _spare_room_urls() + [_SR_EVENTS],
      # next month's page is expected to 404 until they post it
      "optional_urls": _spare_room_urls()[1:]},
     {"name": "Switchback Saloon (switchbacksaloon.com)", "parser": parse_switchback,

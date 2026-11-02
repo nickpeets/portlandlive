@@ -852,6 +852,36 @@ def all_past_quiet_check():
     print("  ok   all-past quiet                Lyons Den, Arbor, Beach Hut: nothing upcoming reads as quiet, not a shape change")
 
 
+def spare_room_links_check():
+    """Nov 2 2026 auto-repair: nov2026.htm 404ed two days into November and
+    Spare Room went to 0. events.htm (synthetic page here; the real one is
+    unseen) is fetched last and its month links are followed: this month or
+    later, Spare Room's own host only, never a page already fetched by name."""
+    import datetime as _dt
+    today = _dt.date(2026, 11, 2)
+    page = ('<ul><li><a href="events.htm">Events</a></li><li><a href="oct2026.htm">October</a></li>'
+            '<li><a href="november2026.htm">November</a></li><li><a href="https://elsewhere.com/dec2026.htm">x</a></li>'
+            '<li><a href="https://www.spareroomrestaurantandlounge.com/nov2026.htm">n</a></li></ul>')
+    links = sv._spare_room_linked_months(page, today)
+    month = load("spare-room-sept2026.html").replace("September at", "November at")
+    old = sv.fetch
+    sv.fetch = lambda u: month if u.endswith("november2026.htm") else _no_network(u)
+    try:
+        rows = sv.parse_spareroom(page, today)
+    finally:
+        sv.fetch = old
+    bad = []
+    if links != ["https://www.spareroomrestaurantandlounge.com/november2026.htm"]:
+        bad.append(f"links {links}")
+    if len(rows) != 15 or any(not r["date"].startswith("2026-11-") for r in rows):
+        bad.append(f"{len(rows)} rows (want 15 in November)")
+    if bad:
+        print("  FAIL spare room month links       " + "; ".join(bad))
+        print("GATE FAILURE")
+        sys.exit(1)
+    print("  ok   spare room month links        events.htm -> november2026.htm followed; old months, other hosts, known names skipped")
+
+
 if __name__ == "__main__":
     main()
     talk_page_check()
@@ -862,3 +892,4 @@ if __name__ == "__main__":
     batch_four_check()
     safety_net_check()
     all_past_quiet_check()
+    spare_room_links_check()
