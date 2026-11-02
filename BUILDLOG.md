@@ -4,6 +4,10 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### 948f846cc — Spare Room follows month links from events.htm
+
+Nov 2 2026 (daily feed-health auto-repair). Spare Room was at 0: nov2026.htm 404s two days into November (October's page was up by Sep 29) and the 404 left it off feed health entirely. The source now also fetches events.htm last and follows any month-page link on it for this month or later that the guessed filenames miss; if it still comes back empty, events.htm is saved to og/health/ for the next run. The Goodfoot (Cloudflare headless challenge, held till Nov 9), Brunish and Chehalem Valley (dark, quiet) and the three quiet rooms from yesterday left alone.
+
 ### ef7f3b4e9 — All-past venue pages read as quiet
 
 Nov 1 2026 (daily feed-health auto-repair). Lyons Den, Arbor Beer Lodge and Beach Hut Tigard flagged "empty -- page shape likely changed"; the runner captures showed working pages with nothing posted past Oct 31. Those readers now hand back recent past rows when nothing is upcoming, so health reads "nothing upcoming posted yet" (quiet). Beach Hut dates use _next_date (infer_year sent October to 2027). Realm (Cloudflare on the runner, held till Nov 8), Spare Room (nov2026.htm 404, not posted yet) and the dark rooms left alone.
