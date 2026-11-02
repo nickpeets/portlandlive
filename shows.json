@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-02T18:07:18+00:00",
+  "generated": "2026-11-02T18:17:27+00:00",
   "source": "Scraped from venue calendars + hand-added listings",
   "shows": [
     {
@@ -239,7 +239,7 @@
       "id": 17
     },
     {
-      "title": "Open Mic with Lucas Benoit",
+      "title": "Open Mic with Scott Allen",
       "venue": "Starday Tavern",
       "neighborhood": "Brentwood-Darlington",
       "address": "6517 SE Foster Rd, Portland, OR 97206",
@@ -812,7 +812,7 @@
       "id": 58
     },
     {
-      "title": "Icon For Hire: Scripted 15 Year Anniversary Tour (w/ Elijah, Lauren Babic)",
+      "title": "Icon For Hire: Scripted 15 Year Anniversary Tour (w/ Lauren Babic)",
       "venue": "Hawthorne Theatre",
       "neighborhood": "Mt Tabor/Hawthorne",
       "address": "1507 SE 39th Ave",
@@ -826,7 +826,7 @@
       "resaleFrom": "63.00",
       "id": 59,
       "pickable": true,
-      "buzz": 42488
+      "buzz": 42489
     },
     {
       "title": "Bluegrass Wednesday: John Malloy + Friends",
@@ -1004,7 +1004,7 @@
       "resaleFrom": "15.00",
       "id": 71,
       "pickable": true,
-      "buzz": 2328
+      "buzz": 2329
     },
     {
       "title": "Madam Cooper's Country Cabaret",
@@ -2276,7 +2276,7 @@
       "resaleFrom": "36.00",
       "id": 160,
       "pickable": true,
-      "buzz": 1770
+      "buzz": 1771
     },
     {
       "title": "The Meadowlark String Band",
@@ -3836,7 +3836,7 @@
       "resaleFrom": "45.00",
       "id": 269,
       "pickable": true,
-      "buzz": 8490
+      "buzz": 8491
     },
     {
       "title": "Open Mic Comedy Night",
@@ -4762,7 +4762,7 @@
       "age": "",
       "id": 335,
       "pickable": true,
-      "buzz": 431452
+      "buzz": 431454
     },
     {
       "title": "High Glow In-Store Performance & Signing",
@@ -5273,7 +5273,7 @@
       "id": 371
     },
     {
-      "title": "Open Mic with Lucas Benoit",
+      "title": "Open Mic with Snow Bootz The Tiger",
       "venue": "Starday Tavern",
       "neighborhood": "Brentwood-Darlington",
       "address": "6517 SE Foster Rd, Portland, OR 97206",
@@ -5851,7 +5851,7 @@
       "age": "",
       "id": 412,
       "pickable": true,
-      "buzz": 139547
+      "buzz": 139548
     },
     {
       "title": "Wednesday Wubs",
@@ -7723,7 +7723,7 @@
       "neighborhood": "Brentwood-Darlington",
       "address": "6517 SE Foster Rd, Portland, OR 97206",
       "date": "2026-11-13",
-      "time": "5:30 PM",
+      "time": "6:00 PM",
       "venueUrl": "https://www.stardaytavern.com/",
       "imageUrl": "",
       "ticketer": null,
@@ -9488,7 +9488,7 @@
       "neighborhood": "Hosford-Abernethy",
       "address": "2432 SE 11th Ave, Portland, OR 97214",
       "date": "2026-11-15",
-      "time": "2:00 PM",
+      "time": "7:00 PM",
       "venueUrl": "https://www.funhouselounge.com/calendar/",
       "imageUrl": "",
       "ticketer": null,
@@ -10403,7 +10403,7 @@
       "id": 730
     },
     {
-      "title": "Open Mic with Lucas Benoit",
+      "title": "Open Mic with Scott Allen",
       "venue": "Starday Tavern",
       "neighborhood": "Brentwood-Darlington",
       "address": "6517 SE Foster Rd, Portland, OR 97206",
@@ -13962,7 +13962,7 @@
       "neighborhood": "Hosford-Abernethy",
       "address": "2432 SE 11th Ave, Portland, OR 97214",
       "date": "2026-11-22",
-      "time": "2:00 PM",
+      "time": "7:00 PM",
       "venueUrl": "https://www.funhouselounge.com/calendar/",
       "imageUrl": "",
       "ticketer": null,
@@ -17002,7 +17002,7 @@
       "neighborhood": "Hosford-Abernethy",
       "address": "2432 SE 11th Ave, Portland, OR 97214",
       "date": "2026-11-29",
-      "time": "2:00 PM",
+      "time": "7:00 PM",
       "venueUrl": "https://www.funhouselounge.com/calendar/",
       "imageUrl": "",
       "ticketer": null,
@@ -19742,7 +19742,7 @@
       "neighborhood": "Hosford-Abernethy",
       "address": "2432 SE 11th Ave, Portland, OR 97214",
       "date": "2026-12-06",
-      "time": "2:00 PM",
+      "time": "6:45 PM",
       "venueUrl": "https://www.funhouselounge.com/calendar/",
       "imageUrl": "",
       "ticketer": null,
@@ -30855,24 +30855,14 @@
     "checked": "2026-11-02",
     "items": [
       {
-        "venue": "The Goodfoot",
+        "venue": "Realm",
         "kind": "zero",
         "scraped": 0,
-        "shown": 27,
-        "since": "2026-11-01",
-        "drops": "2026-11-09",
-        "days": 1,
-        "why": "attempt 1: HeadlessChallengeError · attempt 2: HeadlessChallengeError · attempt 3: HeadlessChallengeError · attempt 4: HeadlessChallengeError · attempt 5: HeadlessChallengeError"
-      },
-      {
-        "venue": "The Headliners Club",
-        "kind": "zero",
-        "scraped": 0,
-        "shown": 35,
+        "shown": 22,
         "since": "2026-11-02",
         "drops": "2026-11-10",
         "days": 0,
-        "why": "HTTPError: 500 Server Error: Internal Server Error for url: https://theheadlinersclub.com/wp-json/tribe/events/v1/events?per_page=5"
+        "why": "chrome: ChallengeError · safari: ChallengeError · browser: 0 rows · chrome retry: ChallengeError · safari retry: ChallengeError"
       },
       {
         "venue": "Brunish Theatre",
@@ -30903,8 +30893,8 @@
       },
       {
         "venue": "Spare Room (spareroomrestaurantandlounge.com)",
-        "kind": "empty",
-        "why": "fetched OK but the parser found no events -- the page shape likely changed"
+        "kind": "quiet",
+        "why": "nothing upcoming posted yet (latest listing 2026-10-31)"
       }
     ]
   },
