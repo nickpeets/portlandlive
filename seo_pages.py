@@ -183,14 +183,18 @@ class Pages:
         if app_hash:
             # Social visitors go straight into the app, as before. Search
             # visitors and crawlers stay on this page (same show, same facts).
+            # Nov 4 2026 (later): so does anyone who has used the app before
+            # (the app sets ros_app), since the app's own addresses are now
+            # clean /show/<slug>/ ones and a refresh lands here.
             # Nov 4 2026: an address that still carries the app's #/ route
             # (a refresh, Back, a bookmark or a copied link from inside the
             # app -- syncSharePath puts /show/<slug>/ in the bar and keeps the
             # hash) goes back into the app too, instead of stranding the
             # visitor on this bare page.
             h.append("<script>(function(){var q=location.search,r=document.referrer||'';"
-                     "if(/^#\\//.test(location.hash)||/[?&]ref=/.test(q)||/^https?:\\/\\/([^\\/]*\\.)?(facebook|fb|instagram|messenger|threads|twitter|x|t|reddit|bsky|linkedin)\\.(com|co|net|me|app)(\\/|$)/i.test(r))"
-                     f"location.replace({json.dumps(SITE + '/')}+q+{json.dumps(app_hash)});}})();</script>")
+                     "var a=0;try{a=localStorage.getItem('ros_app')}catch(e){}"
+                     "if(a||/^#\\//.test(location.hash)||/[?&]ref=/.test(q)||/^https?:\\/\\/([^\\/]*\\.)?(facebook|fb|instagram|messenger|threads|twitter|x|t|reddit|bsky|linkedin)\\.(com|co|net|me|app)(\\/|$)/i.test(r))"
+                     f"location.replace({json.dumps(SITE + '/')}+q+(/^#\\//.test(location.hash)?location.hash:{json.dumps(app_hash)}));}})();</script>")
         if jsonld:
             h.append("<script type=\"application/ld+json\">"
                      + json.dumps(jsonld, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")

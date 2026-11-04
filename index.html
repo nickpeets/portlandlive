@@ -2854,7 +2854,7 @@ function syncTogglePills(){
   });
 }
 function viewPath(){
-  const h = location.hash || '';
+  const h = appHash();
   if(/^#\/(show|venue|festival|u|submit|review|about|privacy)\//.test(h) || /^#\/(submit|about|privacy|venues|festivals)\/?$/.test(h)) return '/' + h;
   if(state.view === 'venues') return state.selectedVenue ? '/#/venue/' + venueSlug(state.selectedVenue) : '/#/venues';
   if(state.festivals) return '/#/festivals';
@@ -3005,7 +3005,11 @@ function render(){
   try{ if(typeof trackView === 'function') trackView(viewPath()); }catch(_){}
   // A permanent show page owns #results while the URL points at one; route away
   // instead of racing it (e.g. a filter-pill click while viewing a show page).
-  if(parseRoute().type === 'show'){ if(location.hash){ location.hash = ''; } return; }
+  if(parseRoute().type === 'show'){
+    if(location.hash){ location.hash = ''; }
+    else { try{ history.pushState(null, '', '/'); }catch(_){} router(); }
+    return;
+  }
   // If state says feed but the URL still says venue (a time pill was clicked
   // while on a venue page), quietly drop the stale hash so the address bar
   // doesn't advertise a page that isn't showing. replaceState, not a hash
@@ -3205,7 +3209,7 @@ async function loadFestivalsFull(){
   return _festivalsFull;
 }
 async function renderFestivalRoute(slug){
-  try{ if(typeof trackView === 'function') trackView('/' + (location.hash||'')); }catch(_){}
+  try{ if(typeof trackView === 'function') trackView('/' + appHash()); }catch(_){}
   const wrap = $('#results');
   wrap.innerHTML = '';
   $('#resultCount').textContent = 'Festival';
@@ -3631,8 +3635,23 @@ function loadArchive(){
   return _archivePromise;
 }
 
+// Clean addresses (Nov 4 2026, Nick: "i'm not into the really long urls").
+// The app still routes on #/..., but once a show, venue, story or giveaway
+// is open the address bar shows only its real page -- /show/<slug>/ -- with
+// no hash. appHash() gives the route either way: a URL that has a # means
+// what it says (an empty one is the feed, which is how the logo goes home);
+// a URL with none is read from its path.
+function appHash(){
+  if(location.href.indexOf('#') >= 0) return location.hash || '';
+  var p = location.pathname, m;
+  if((m = /^\/show\/([^\/]+)\/?$/.exec(p))) return '#/show/' + m[1];
+  if((m = /^\/venue\/([^\/]+)\/?$/.exec(p))) return '#/venue/' + m[1];
+  if((m = /^\/og\/story\/([^\/]+)\/?$/.exec(p))) return '#/story/' + m[1];
+  if(/^\/giveaway\/?$/.test(p)) return '#/giveaway';
+  return '';
+}
 function parseRoute(){
-  var h = location.hash || '';
+  var h = appHash();
   var m = /^#\/show\/([^?#]+)/.exec(h);
   if(m) return {type:'show', slug: decodeURIComponent(m[1])};
   // Venue pages and the directory are addressable too (Sep 2026): a venue's
@@ -3732,7 +3751,16 @@ function syncSharePath(route){
     else if(route.type === 'venue' && route.slug) want = '/venue/' + encodeURIComponent(route.slug) + '/';
     else if(route.type === 'giveaway') want = '/giveaway/';
     else if(route.type === 'story' && route.key) want = '/og/story/' + encodeURIComponent(route.key) + '/';
-    if(location.pathname !== want) history.replaceState(history.state, '', want + location.search + location.hash);
+    if(want !== '/'){
+      // The page has its own address: show only that, no #/... tail.
+      if(location.pathname !== want || location.href.indexOf('#') >= 0) history.replaceState(history.state, '', want + location.search);
+    } else if(location.pathname !== '/'){
+      history.replaceState(history.state, '', '/' + location.search + location.hash);
+    }
+    // Marks this browser as one that uses the app, so a refresh of a clean
+    // /show/<slug>/ address (which the server answers with the static page)
+    // comes straight back in here. Crawlers never carry it.
+    try{ localStorage.setItem('ros_app', '1'); }catch(_){}
   }catch(_){}
 }
 // ===== Back to where you were (Sep 24 2026, Nick) =====
@@ -3771,7 +3799,7 @@ document.addEventListener('click', function(){
 }, true);
 function navNote(){
   // Returns the entry we just came BACK to, or null for a new page.
-  const h = location.hash || '';
+  const h = appHash();
   const fresh = NAV_FRESH; NAV_FRESH = false;
   const top = NAV[NAV.length - 1];
   if(top && top.hash === h) return null;                       // same page, redrawn
@@ -3863,11 +3891,11 @@ async function router(){
     return;
   }
   render();
-  if(location.hash) setTimeout(wiDeepLink, 60);
+  if(appHash()) setTimeout(wiDeepLink, 60);
 }
 
 async function renderShowRoute(slug){
-  try{ if(typeof trackView === 'function') trackView('/' + (location.hash||'')); }catch(_){}
+  try{ if(typeof trackView === 'function') trackView('/' + appHash()); }catch(_){}
   var wrap = $('#results');
   wrap.innerHTML = '';
   $('#resultCount').textContent = '';
@@ -3932,7 +3960,7 @@ const STATIC_PAGES = {
   + '<p class="sub-lead" style="margin-top:18px">Last updated September 2026.</p>'}
 };
 function renderStaticPage(key){
-  try{ if(typeof trackView === 'function') trackView('/' + (location.hash||'')); }catch(_){}
+  try{ if(typeof trackView === 'function') trackView('/' + appHash()); }catch(_){}
   const pg = STATIC_PAGES[key]; if(!pg) return;
   const wrap = $('#results'); wrap.innerHTML = '';
   $('#resultCount').textContent = pg.title;
@@ -5273,7 +5301,7 @@ function blockMenu(anchor, person, onBlocked){
 }
 
 async function renderProfileRoute(handle){
-  try{ if(typeof trackView === 'function') trackView('/' + (location.hash||'')); }catch(_){}
+  try{ if(typeof trackView === 'function') trackView('/' + appHash()); }catch(_){}
   var wrap = $('#results');
   wrap.innerHTML = '';
   $('#resultCount').textContent = 'Profile';
@@ -10062,7 +10090,7 @@ $('#byHoodToggle').addEventListener('click',()=>{const on=!state.byHood;leaveSec
           // Directory is addressable (#/venues); turning it off returns to the
           // bare feed URL. Either way hashchange -> router() sets the state.
           const target = on ? '#/venues' : '';
-          if((location.hash||'') === target){ state.view=on?'venues':'shows'; state.selectedVenue=null; render(); }
+          if(appHash() === target){ state.view=on?'venues':'shows'; state.selectedVenue=null; render(); }
           else if(on){ location.hash = target; }
           else { state.view='shows'; state.selectedVenue=null; history.replaceState(null,'','/'); render(); }
         });
@@ -10081,7 +10109,7 @@ $('#byHoodToggle').addEventListener('click',()=>{const on=!state.byHood;leaveSec
             const h = Array.isArray(d) ? ((d[0] || {}).handle || '') : (d && d.handle) || '';
             if(h){
               var target = '#/u/' + encodeURIComponent(h);
-              if(location.hash === target){ router(); } else { location.hash = target; }
+              if(appHash() === target){ router(); } else { location.hash = target; }
               return;
             }
           }catch(_){}
@@ -10107,7 +10135,7 @@ $('#byHoodToggle').addEventListener('click',()=>{const on=!state.byHood;leaveSec
         // take the identical path. If the hash is already right (re-clicking
         // the venue you're on) hashchange won't fire, so route directly.
         var target = '#/venue/' + encodeURIComponent(venueSlug(name));
-        if(location.hash === target){ router(); }
+        if(appHash() === target){ router(); }
         else { location.hash = target; }
         document.querySelector('.controls').scrollIntoView({block:'start',behavior:'instant'}); }
       // The Listen button carries data-venue (the resolver uses it to strip
@@ -10293,7 +10321,7 @@ $('#followingToggle').addEventListener('click',()=>{
     // leave any profile or show page for the feed.
     state.q=''; $('#searchInput').value='';
     if(typeof window.quickMenuClose === 'function') window.quickMenuClose();
-    if(location.hash){ history.replaceState(null, '', '/'); }
+    if(appHash() || location.pathname !== '/'){ history.replaceState(null, '', '/'); }
   }
   $('#followingToggle').classList.toggle('on',state.following);
   render();
@@ -10679,7 +10707,8 @@ window.addEventListener("popstate", routeIfChanged);
    still do their own partial resets inline; they are deliberately not
    rewired to call this yet. */
 function goHome(){
-  if(location.hash && location.hash !== '#') NAV_FRESH = true;   // the feed it lands on is new, not a Back
+  if(appHash() && appHash() !== '#') NAV_FRESH = true;   // the feed it lands on is new, not a Back
+  if(location.pathname !== '/'){ try{ history.pushState(null, '', '/'); }catch(_){} }
   location.hash = '';
   state.view='shows'; state.selectedVenue=null;
   state.tonight=false; state.thisWeek=false; state.picks=false; state.byHood=false;
@@ -10697,6 +10726,7 @@ function goHome(){
   // html{scroll-behavior:smooth} makes a plain scrollTo(0,0) a no-op here,
   // so the jump to top is forced instant.
   window.scrollTo({top:0,behavior:'instant'});
+  _routedHref = location.href;
 }
 $('.masthead-brand').addEventListener('click', goHome);
 // ===== Easter eggs (Sep 23 2026, Nick) =====
