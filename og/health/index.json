@@ -1,34 +1,23 @@
 {
- "captured": "2026-11-04T14:18Z",
+ "captured": "2026-11-04T17:39Z",
  "sources": [
   {
    "source": "Beach Hut Deli Tigard (beachhutdeli.com)",
    "note": "",
    "file": "beach-hut-deli-tigard-beachhutdeli-com.html",
-   "bytes": 84067
+   "bytes": 84066
   },
   {
    "source": "Arbor Beer Lodge (arborbeerlodge.com)",
    "note": "",
    "file": "arbor-beer-lodge-arborbeerlodge-com.html",
-   "bytes": 148435
-  },
-  {
-   "source": "The Get Down",
-   "note": "",
-   "file": "the-get-down.html",
-   "bytes": 151675
+   "bytes": 148476
   },
   {
    "source": "Spare Room (spareroomrestaurantandlounge.com)",
    "note": "HTTPError: 404 Client Error: Not Found for url: https://www.spareroomrestaurantandlounge.com/nov2026.htm",
    "file": "spare-room-spareroomrestaurantandlounge-com.html",
    "bytes": 1477
-  },
-  {
-   "source": "The Goodfoot",
-   "note": "attempt 1: HeadlessChallengeError \u00b7 attempt 2: HeadlessChallengeError \u00b7 attempt 3: HeadlessChallengeError \u00b7 attempt 4: HeadlessChallengeError \u00b7 attempt 5: HeadlessChallengeError",
-   "file": ""
   }
  ]
 }
