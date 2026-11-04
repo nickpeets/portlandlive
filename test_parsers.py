@@ -896,6 +896,56 @@ def spare_room_links_check():
     print("  ok   spare room month links        events.htm -> november2026.htm followed; old months, other hosts, known names skipped; Nov 2 capture (no November yet) reads all-past -> quiet")
 
 
+def getdown_relaunch_check():
+    """Nov 4 2026: thegetdownpdx.com moved to Next.js; the card grid is filled
+    client-side from /api/collections?slug=events. The runner's capture
+    (fixtures/getdown-nov2026.html) still carries one Event JSON-LD per show."""
+    import datetime as _dt, json
+    today = _dt.date(2026, 11, 4)
+    bad = []
+    rows = sv.parse_getdown(load("getdown-nov2026.html"), today)  # API offline -> JSON-LD
+    if len(rows) != 25:
+        bad.append(f"{len(rows)} JSON-LD rows (want 25)")
+    if sum(1 for r in rows if r["imageUrl"]) != 25 or sum(1 for r in rows if r["time"]) != 25:
+        bad.append("posters/times missing")
+    by = {(r["date"], r["title"]): r for r in rows}
+    r = by.get(("2026-11-11", "The 4 x 20s Comedy Show (seated show)"))
+    if not r or r["time"] != "7:30 PM" or "tixr.com" not in r["venueUrl"]:
+        bad.append(f"UTC->Portland date/time wrong: {r}")
+    r = by.get(("2026-11-14", "Members Only [SOLD OUT]"))
+    if not r or not r.get("soldOut"):
+        bad.append("Members Only not sold out")
+    if by.get(("2026-12-09", "Ripe"), {}).get("price") != "$27.50":
+        bad.append("Ripe price")
+    # The API shape the site's own script reads (gdNormalizeEvent field names).
+    api = json.dumps({"items": [
+        {"eventTitle": "Test Band", "startDate": "2026-11-06T04:00:00.000Z", "flyerImage": "https://x/p.jpg",
+         "ticketLink": "https://www.tixr.com/groups/thegetdownpdx/events/test-1", "ticketStatus": "", "price": "20"},
+        {"eventTitle": "Gone", "startDate": "2026-11-07T04:00:00.000Z", "ticketStatus": "Cancelled"},
+        {"eventTitle": "Free Jam", "startDate": "2026-11-08T03:00:00Z", "isFree": True, "ticketStatus": "Sold Out"},
+        {"eventTitle": "Brunch", "startDate": "2026-11-08T17:00:00Z"}]})
+    a = sv.parse_getdown(api, today)
+    if [(x["date"], x["time"]) for x in a] != [("2026-11-05", "8:00 PM"), ("2026-11-07", "7:00 PM"), ("2026-11-08", "")]:
+        bad.append(f"api rows {[(x['date'], x['time']) for x in a]}")
+    elif a[0].get("price") != "$20" or a[1].get("price") != "Free" or not a[1].get("soldOut") or not a[0]["imageUrl"]:
+        bad.append(f"api fields {a[:2]}")
+    old = sv.fetch
+    sv.fetch = lambda u: api if "api/collections" in u else _no_network(u)
+    try:
+        both = sv.parse_getdown(load("getdown-nov2026.html"), today)
+    finally:
+        sv.fetch = old
+    if len(both) != 28:
+        bad.append(f"API+JSON-LD union {len(both)} (want 28)")
+    if len(sv.parse_getdown(load("getdown.html"), today)) == 0:
+        bad.append("old Webflow card path broke")
+    if bad:
+        print("  FAIL get down relaunch             " + "; ".join(bad))
+        print("GATE FAILURE")
+        sys.exit(1)
+    print("  ok   get down relaunch             Next.js capture -> 25 JSON-LD rows (posters, times, price, sold out); API shape read; union with API; old card path intact")
+
+
 if __name__ == "__main__":
     main()
     talk_page_check()
@@ -907,3 +957,4 @@ if __name__ == "__main__":
     safety_net_check()
     all_past_quiet_check()
     spare_room_links_check()
+    getdown_relaunch_check()

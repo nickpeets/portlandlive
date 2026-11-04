@@ -2203,8 +2203,143 @@ def _gd_date(txt, today):
     return f"{infer_year(mon, today)}-{mon:02d}-{int(m.group(2)):02d}"
 
 
+# Nov 4 2026: thegetdownpdx.com relaunched on a Next.js build (gd-* classes).
+# The homepage ships an EMPTY .gd-cards grid that the browser fills from
+# /api/collections?slug=events (TIXR collection: eventTitle, startDate ISO,
+# flyerImage, ticketLink, ticketStatus, price, isFree, headline). The server
+# HTML also carries one schema.org Event JSON-LD block per show (name,
+# startDate UTC, image, offers.url/price/availability) -- the fallback when the
+# API won't answer. The Webflow .day-card-2 path below stays as the last resort.
+GD_API = "https://thegetdownpdx.com/api/collections?slug=events"
+
+
+def _gd_when(iso):
+    """ISO start (UTC 'Z' or offset) -> (Portland date, time). A start between
+    2 and 11 AM local is not a real show time here -- keep the date, blank the
+    time rather than print a 6 AM show."""
+    iso = str(iso or "").strip()
+    m = re.match(r"(\d{4})-(\d{2})-(\d{2})", iso)
+    if not m:
+        return "", ""
+    if "T" not in iso:
+        return m.group(0), ""
+    try:
+        from zoneinfo import ZoneInfo
+        dt = datetime.datetime.fromisoformat(iso.replace("Z", "+00:00"))
+        if dt.tzinfo is not None:
+            dt = dt.astimezone(ZoneInfo("America/Los_Angeles"))
+    except Exception:
+        return m.group(0), ""
+    if 2 <= dt.hour < 11:
+        return dt.date().isoformat(), ""
+    h12 = dt.hour % 12 or 12
+    return dt.date().isoformat(), f"{h12}:{dt.minute:02d} {'PM' if dt.hour >= 12 else 'AM'}"
+
+
+def _gd_row(title, iso, img, url, price, sold, today):
+    venue = "The Get Down"
+    title = clean(title or "")
+    title = re.sub(r"^(SOLD OUT|CANCELLED|POSTPONED)[:\s-]*", "", title, flags=re.I).strip()
+    date, tm = _gd_when(iso)
+    if not (title and date):
+        return None
+    nb, addr = VENUE_INFO.get(venue, ("Central Eastside", ""))
+    row = {"title": title, "venue": venue, "neighborhood": nb, "address": addr,
+           "date": date, "time": tm, "venueUrl": url or "https://thegetdownpdx.com/",
+           "imageUrl": img or ""}
+    pr = str(price if price is not None else "").strip().lstrip("$")
+    if re.fullmatch(r"\d+(\.\d{1,2})?", pr) and float(pr) > 0:
+        row["price"] = "$" + _fmt_money(pr)
+    if sold or re.search(r"\bsold\s*out\b", title, re.I):
+        row["soldOut"] = True
+    if re.search(r"\b21\s*\+|\b21 and (?:up|over)\b", title, re.I):
+        row["age"] = "21+"
+    elif re.search(r"\ball ages\b", title, re.I):
+        row["age"] = "all-ages"
+    return row
+
+
+def _gd_api_rows(text, today):
+    d = json.loads(text)
+    items = d.get("items", d) if isinstance(d, dict) else d
+    out = []
+    for e in items or []:
+        if not isinstance(e, dict):
+            continue
+        st = str(e.get("eventStatus") or e.get("ticketStatus") or "").lower()
+        if "cancel" in st or "postpon" in st:
+            continue
+        free = e.get("isFree") in (True, "true")
+        row = _gd_row(e.get("eventTitle") or e.get("eventName"),
+                      e.get("startDate") or e.get("sortDate"),
+                      e.get("flyerImage") or e.get("mobileImage"),
+                      e.get("ticketLink") or e.get("ticketUrl"),
+                      None if free else e.get("price"), "sold" in st, today)
+        if row:
+            if free:
+                row["price"] = "Free"
+            out.append(row)
+    return out
+
+
+def _gd_jsonld_rows(html, today):
+    out = []
+    for blob in re.findall(r'<script[^>]*type="application/ld\+json"[^>]*>(.*?)</script>', html, re.S):
+        try:
+            d = json.loads(blob)
+        except Exception:
+            continue
+        for e in (d if isinstance(d, list) else [d]):
+            if not isinstance(e, dict) or e.get("@type") != "Event":
+                continue
+            st = str(e.get("eventStatus") or "")
+            if "Cancelled" in st or "Postponed" in st:
+                continue
+            off = e.get("offers") or {}
+            if isinstance(off, list):
+                off = off[0] if off else {}
+            im = e.get("image") or ""
+            if isinstance(im, list):
+                im = im[0] if im else ""
+            if isinstance(im, dict):
+                im = im.get("url", "")
+            row = _gd_row(e.get("name"), e.get("startDate"), im, off.get("url"),
+                          off.get("price"), "SoldOut" in str(off.get("availability") or ""), today)
+            if row:
+                out.append(row)
+    return out
+
+
 def parse_getdown(html, today):
+    if isinstance(html, str) and html.lstrip()[:1] in "{[":
+        return _gd_api_rows(html, today)
     soup = BeautifulSoup(html, "html.parser")
+    if soup.select_one(".gd-cards") is not None or not soup.select(".day-card-2"):
+        rows = []
+        try:
+            rows = _gd_api_rows(fetch(GD_API), today)
+        except Exception as e:
+            print(f"  note: The Get Down API: {type(e).__name__}: {str(e)[:100]} -- reading JSON-LD")
+        ld = _gd_jsonld_rows(html, today)
+        # Union: the API is the full list; JSON-LD fills anything it lacks.
+        have = {(r["date"], r["title"].lower()) for r in rows}
+        rows += [r for r in ld if (r["date"], r["title"].lower()) not in have]
+        if rows:
+            return _dedupe_gd(rows)
+    return _getdown_cards(soup, today)
+
+
+def _dedupe_gd(rows):
+    seen, out = set(), []
+    for r in rows:
+        k = (r["date"], r["title"].lower())
+        if k not in seen:
+            seen.add(k)
+            out.append(r)
+    return out
+
+
+def _getdown_cards(soup, today):
     shows = []
     seen = set()
     venue = "The Get Down"
