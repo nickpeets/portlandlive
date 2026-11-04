@@ -183,8 +183,13 @@ class Pages:
         if app_hash:
             # Social visitors go straight into the app, as before. Search
             # visitors and crawlers stay on this page (same show, same facts).
+            # Nov 4 2026: an address that still carries the app's #/ route
+            # (a refresh, Back, a bookmark or a copied link from inside the
+            # app -- syncSharePath puts /show/<slug>/ in the bar and keeps the
+            # hash) goes back into the app too, instead of stranding the
+            # visitor on this bare page.
             h.append("<script>(function(){var q=location.search,r=document.referrer||'';"
-                     "if(/[?&]ref=/.test(q)||/^https?:\\/\\/([^\\/]*\\.)?(facebook|fb|instagram|messenger|threads|twitter|x|t|reddit|bsky|linkedin)\\.(com|co|net|me|app)(\\/|$)/i.test(r))"
+                     "if(/^#\\//.test(location.hash)||/[?&]ref=/.test(q)||/^https?:\\/\\/([^\\/]*\\.)?(facebook|fb|instagram|messenger|threads|twitter|x|t|reddit|bsky|linkedin)\\.(com|co|net|me|app)(\\/|$)/i.test(r))"
                      f"location.replace({json.dumps(SITE + '/')}+q+{json.dumps(app_hash)});}})();</script>")
         if jsonld:
             h.append("<script type=\"application/ld+json\">"
