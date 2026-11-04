@@ -4,6 +4,10 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### ca0178d49 — The Get Down reads its relaunched site
+
+Nov 4 2026 (daily feed-health auto-repair). The Get Down scraped 0 since Nov 3 (safety net holding 24 rows till Nov 11): the runner's capture showed thegetdownpdx.com relaunched on Next.js, with an empty card grid that the browser fills from /api/collections?slug=events. parse_getdown now reads that API, unions it with the homepage's schema.org Event JSON-LD (25 shows in the capture, all with posters, Tixr links, prices, show times converted from UTC; Members Only marked sold out), and keeps the old Webflow card reader as a fallback. The Goodfoot (Cloudflare headless challenge, held till Nov 10) left alone as the known flapper; Brunish, Chehalem Valley and Theater of the Clouds (dark) and the three quiet rooms left alone.
+
 ### da1576741 — Spare Room: no November page yet reads as quiet
 
 Nov 2 2026 (auto-repair, second attempt). The verify build after 948f846 captured events.htm: it still links only oct2026.htm and sept2026.htm, so the venue hasn't posted November (not a renamed file). With nothing linked for this month or later, the reader follows the newest past month, so feed health says "nothing upcoming posted yet" (quiet) instead of "page shape likely changed". November rows will appear on the first build after they post a month page, under either the guessed name or whatever events.htm links. The Headliners Club (one-off 500 from its Tribe API, held till Nov 10) left alone.
