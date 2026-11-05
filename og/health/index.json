@@ -1,12 +1,6 @@
 {
- "captured": "2026-11-05T14:16Z",
+ "captured": "2026-11-05T22:03Z",
  "sources": [
-  {
-   "source": "Beach Hut Deli Tigard (beachhutdeli.com)",
-   "note": "",
-   "file": "beach-hut-deli-tigard-beachhutdeli-com.html",
-   "bytes": 84066
-  },
   {
    "source": "Arbor Beer Lodge (arborbeerlodge.com)",
    "note": "",
@@ -14,16 +8,15 @@
    "bytes": 148476
   },
   {
-   "source": "Showdown Saloon",
-   "note": "37 rows, 4 of 5 pages; failed 3x: 4 (HTTPError: 504 Server Error: Gateway Timeout for url: https://www.showdownpdx.com/page/4/)",
-   "file": "showdown-saloon.html",
-   "bytes": 296062
-  },
-  {
    "source": "Spare Room (spareroomrestaurantandlounge.com)",
    "note": "HTTPError: 404 Client Error: Not Found for url: https://www.spareroomrestaurantandlounge.com/nov2026.htm",
    "file": "spare-room-spareroomrestaurantandlounge-com.html",
    "bytes": 1477
+  },
+  {
+   "source": "The Goodfoot",
+   "note": "attempt 1: HeadlessChallengeError \u00b7 attempt 2: HeadlessChallengeError \u00b7 attempt 3: HeadlessChallengeError \u00b7 attempt 4: HeadlessChallengeError \u00b7 attempt 5: HeadlessChallengeError",
+   "file": ""
   }
  ]
 }
