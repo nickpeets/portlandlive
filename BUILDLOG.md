@@ -4,6 +4,10 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### 1e8432d5d — Ezra Meredith at Switchback moves to 8 PM
+
+Nov 5 2026. Nick: the Nov 7 Ezra Meredith w/ Morgan Geer (Drunken Prayer) show is now at 8 PM in place of Taylor Kingman's. Hand row time 10:00 PM -> 8:00 PM; slug unchanged.
+
 ### ca0178d49 — The Get Down reads its relaunched site
 
 Nov 4 2026 (daily feed-health auto-repair). The Get Down scraped 0 since Nov 3 (safety net holding 24 rows till Nov 11): the runner's capture showed thegetdownpdx.com relaunched on Next.js, with an empty card grid that the browser fills from /api/collections?slug=events. parse_getdown now reads that API, unions it with the homepage's schema.org Event JSON-LD (25 shows in the capture, all with posters, Tixr links, prices, show times converted from UTC; Members Only marked sold out), and keeps the old Webflow card reader as a fallback. The Goodfoot (Cloudflare headless challenge, held till Nov 10) left alone as the known flapper; Brunish, Chehalem Valley and Theater of the Clouds (dark) and the three quiet rooms left alone.
