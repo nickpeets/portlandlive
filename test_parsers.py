@@ -896,6 +896,56 @@ def spare_room_links_check():
     print("  ok   spare room month links        events.htm -> november2026.htm followed; old months, other hosts, known names skipped; Nov 2 capture (no November yet) reads all-past -> quiet")
 
 
+def spare_room_runon_check():
+    """Nov 7 2026: the November page ran several dated entries into one <li>
+    (unclosed tags / <br>s); the parser made the whole month ONE show whose
+    slug was too long to be a filename, and seo_pages crashed the build.
+    Synthetic page in the markup the crash text implies; both shapes."""
+    import datetime as _dt
+    import seo_pages
+    today = _dt.date(2026, 11, 7)
+    li = ('<h2>November at the Spare Room</h2><ul>'
+          '<li>Nov. 7th Norman Sylvester Band <span>no cover</span>'
+          '<li>Nov 9-11th Karaoke w/ CJ from Blackbird Entertainment'
+          '<li>Nov. 12th Karaoke w/ a live band featuring Karaoke from Hell'
+          '<li>Nov. 25th DJ Wicked Wicked Wednesday 29th Anniversary Party 9pm'
+          '<li>Nov. 28th Naomi &amp; the Noise 9pm no cover</ul>')
+    br = li.replace("<li>", "<br>").replace("<ul><br>", "<ul><li>", 1)
+    want = [("2026-11-07", "Norman Sylvester Band"),
+            ("2026-11-12", "Karaoke w/ a live band featuring Karaoke from Hell"),
+            ("2026-11-25", "DJ Wicked Wicked Wednesday 29th Anniversary Party"),
+            ("2026-11-28", "Naomi & the Noise")]
+    bad = []
+    for name, page in (("unclosed li", li), ("br", br)):
+        got = [(r["date"], r["title"]) for r in sv.parse_spareroom(page, today)]
+        if got != want:
+            bad.append(f"{name}: {got}")
+    import tempfile
+    d = tempfile.mkdtemp()
+    try:
+        obj = object.__new__(type("X", (), {"write": seo_pages_write()}))
+        obj.show_dir = obj.venue_dir = d
+        obj.write("show/" + "a" * 600, "x")
+        obj.write("show/ok-slug", "x")
+        if not os.path.exists(os.path.join(d, "ok-slug", "index.html")):
+            bad.append("seo write skipped a normal page")
+    except OSError as e:
+        bad.append(f"seo write raised {e.__class__.__name__}")
+    if bad:
+        print("  FAIL spare room run-on <li>        " + "; ".join(bad))
+        print("GATE FAILURE")
+        sys.exit(1)
+    print("  ok   spare room run-on <li>         one <li> per month split at each date; 'no cover' stripped; over-long page name skipped, not fatal")
+
+
+def seo_pages_write():
+    import seo_pages, inspect
+    for obj in vars(seo_pages).values():
+        if inspect.isclass(obj) and "write" in vars(obj) and "write_css" in vars(obj):
+            return vars(obj)["write"]
+    raise RuntimeError("seo_pages writer class not found")
+
+
 def getdown_relaunch_check():
     """Nov 4 2026: thegetdownpdx.com moved to Next.js; the card grid is filled
     client-side from /api/collections?slug=events. The runner's capture
@@ -957,4 +1007,5 @@ if __name__ == "__main__":
     safety_net_check()
     all_past_quiet_check()
     spare_room_links_check()
+    spare_room_runon_check()
     getdown_relaunch_check()

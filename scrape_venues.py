@@ -1792,7 +1792,12 @@ _SR_LI = re.compile(r"^\s*[A-Z][a-z]{2,4}\.?\s+(\d{1,2})(?:st|nd|rd|th)?(\s*-\s*
 # other karaoke line is still dropped.
 _SR_SKIP = re.compile(r"\b(karaoke|bingo)\b", re.I)
 _SR_KFH = re.compile(r"karaoke from hell", re.I)
-_SR_COVER = re.compile(r"\s*\$\d+\s*cover\.?", re.I)
+_SR_COVER = re.compile(r"\s*(?:\$\d+|no)\s*cover\.?", re.I)
+# Nov 7 2026: the November page ran several dated entries into ONE <li>
+# (unclosed tags or <br>s), so the whole month became one 1,000-character
+# show whose slug was too long to be a filename and crashed the build.
+# Each <li>'s text is split at every "Nov. 9th" / "Nov 16-18" style start.
+_SR_SPLIT = re.compile(r"(?=\b(?:Jan|Feb|Mar|Apr|May|June?|July?|Aug|Sept?|Oct|Nov|Dec)[a-z]*\.?\s+\d{1,2}(?:st|nd|rd|th)?(?:\s*-\s*\d{1,2}(?:st|nd|rd|th)?)?\b)")
 
 
 def _spare_room_urls():
@@ -1875,32 +1880,41 @@ def parse_spareroom(html, today):
     for li in soup.select("li"):
         for sp in li.select("span"):
             sp.decompose()  # the red "$10 cover" span
-        txt = clean(li.get_text(" "))
-        m = _SR_LI.match(txt)
-        if not m:
-            continue
-        day, rng, rest = int(m.group(1)), m.group(2), clean(m.group(3))
-        if rng:
-            continue  # "Sept. 1 - 2": the karaoke block, not a show
-        title = _SR_COVER.sub("", rest).strip(" .")
-        # Link text joins leave "Party Witch , Tai" and "Luchini : a dance".
-        title = re.sub(r"\s+([,.:;!?])", r"\1", title)
-        if not title or (_SR_SKIP.search(title) and not _SR_KFH.search(title)):
-            continue
-        date = f"{year}-{mon:02d}-{day:02d}"
-        key = (date, title.lower())
-        if key in seen:
-            continue
-        seen.add(key)
-        tm = re.search(r"\b(\d{1,2}(?::\d{2})?\s*[ap]m)\b", title, re.I)
-        showtime = to_time(tm.group(1)) if tm else ""
-        if tm:
-            title = clean(title[:tm.start()] + title[tm.end():]).strip(" .-")
-        shows.append({"title": title, "venue": venue, "neighborhood": nb,
-                      "address": addr, "date": date, "time": showtime,
-                      "venueUrl": "https://www.spareroomrestaurantandlounge.com/events.htm",
-                      "imageUrl": ""})
+        for txt in _SR_SPLIT.split(clean(li.get_text(" "))):
+            row = _spare_room_row(txt, year, mon, seen)
+            if row:
+                row.update({"venue": venue, "neighborhood": nb, "address": addr})
+                shows.append(row)
     return shows
+
+
+def _spare_room_row(txt, year, mon, seen):
+    m = _SR_LI.match(clean(txt))
+    if not m:
+        return None
+    day, rng, rest = int(m.group(1)), m.group(2), clean(m.group(3))
+    if rng:
+        return None  # "Sept. 1 - 2": the karaoke block, not a show
+    rest = re.sub(r"^(?:st|nd|rd|th)\b\s*", "", rest)
+    title = _SR_COVER.sub("", rest).strip(" .")
+    # Link text joins leave "Party Witch , Tai" and "Luchini : a dance".
+    title = re.sub(r"\s+([,.:;!?])", r"\1", title)
+    if not title or (_SR_SKIP.search(title) and not _SR_KFH.search(title)):
+        return None
+    if not 1 <= day <= 31:
+        return None
+    date = f"{year}-{mon:02d}-{day:02d}"
+    key = (date, title.lower())
+    if key in seen:
+        return None
+    seen.add(key)
+    tm = re.search(r"\b(\d{1,2}(?::\d{2})?\s*[ap]m)\b", title, re.I)
+    showtime = to_time(tm.group(1)) if tm else ""
+    if tm:
+        title = clean(title[:tm.start()] + title[tm.end():]).strip(" .-")
+    return {"title": title, "date": date, "time": showtime,
+            "venueUrl": "https://www.spareroomrestaurantandlounge.com/events.htm",
+            "imageUrl": ""}
 
 
 # ---- Switchback Saloon (switchbacksaloon.com) -- the former Landmark

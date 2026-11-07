@@ -252,6 +252,12 @@ class Pages:
                 + (f"<span class=\"v\">{v}</span>" if v else "") + "</li>")
 
     def write(self, rel, html):
+        # Nov 7 2026: a Spare Room parse slip produced a 1,000-char slug and
+        # makedirs raised "File name too long", killing the whole build.
+        # One unwritable page is skipped with a note, never fatal.
+        if any(len(part.encode("utf-8")) > 200 for part in rel.split("/")):
+            print(f"  SEO page skipped (name too long): {rel[:80]}...")
+            return
         path = os.path.join(self.show_dir if rel.startswith("show/") else self.venue_dir,
                             *rel.split("/")[1:], "index.html")
         os.makedirs(os.path.dirname(path), exist_ok=True)
