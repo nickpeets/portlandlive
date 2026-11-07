@@ -1993,7 +1993,7 @@ function applyShowEdits(tries){
     state.shows.forEach(function(s){ const e = SHOW_EDITS[s._slug]; if(e && seApply(s, e, s._slug)) n++; });
     const rt = parseRoute();
     if(n && isFeedRoute(rt.type)) render();
-    else if(rt.type === 'show' && SHOW_EDITS[rt.slug]) render();
+    else if(rt.type === 'show' && SHOW_EDITS[rt.slug]) router();   // render() on a show page routes home
   }).catch(function(){});
 }
 async function mountShowEditor(card, show, slug){
@@ -2018,7 +2018,7 @@ async function mountShowEditor(card, show, slug){
     const any = e && Object.keys(e).some(function(k){ return e[k]; });
     if(any){ SHOW_EDITS[slug] = e; everyCopy(function(s){ seApply(s, e, slug); }); }
     else { delete SHOW_EDITS[slug]; everyCopy(seRestore); }
-    render();
+    router();   // redraw this show page (render() would send you home)
     return true;
   }
   box.addEventListener('click', async function(ev){
