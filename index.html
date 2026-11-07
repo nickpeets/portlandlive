@@ -5943,14 +5943,26 @@ function renderShowDetail(wrap, show, kind){
     const tx = side.querySelector('.tx');
     const go = window.__goMiracles === _slug; window.__goMiracles = null;
     if(!tx) return;
-    const jump = function(){ tx.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+    // Desktop (Nov 6 2026, Nick): Miracles sits in the right column, already
+    // on screen beside the chip, so scrolling it to the top just yanked the
+    // page down. If it's in view, pulse it; only scroll when it's off screen
+    // (phones, where it's further down the page).
+    const jump = function(){
+      const r = tx.getBoundingClientRect();
+      if(r.top >= 60 && r.top < window.innerHeight * 0.6){
+        tx.classList.remove('tx-pulse'); void tx.offsetWidth; tx.classList.add('tx-pulse');
+        setTimeout(function(){ tx.classList.remove('tx-pulse'); }, 1700);
+        return;
+      }
+      tx.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
     if(n){
       tx.classList.add('tx-live');
       const hdr = grid.querySelector('.venue-header');
       if(hdr && !hdr.querySelector('.mir-chip')){
         const b = document.createElement('button');
         b.type = 'button'; b.className = 'mir-chip';
-        b.textContent = '\u261d\ufe0f ' + miracleWord(n) + ' up for grabs \u2014 claim below';
+        b.innerHTML = '\u261d\ufe0f ' + esc(miracleWord(n)) + ' up for grabs \u2014 claim <span class="mir-below">below</span><span class="mir-right">at right \u2192</span>';
         b.addEventListener('click', jump);
         hdr.appendChild(b);
       }
@@ -11539,6 +11551,10 @@ a.inbox-thread-who:hover{text-decoration:underline}
 .scard .s-age.s-miracle{background:#e3b23c;color:#3a2a10;text-decoration:none}
 .mir-chip{display:inline-block;margin-top:10px;padding:6px 12px;border:0;border-radius:20px;background:#e3b23c;color:#3a2a10;font-family:'Oswald',sans-serif;font-size:13px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;cursor:pointer}
 .show-side .tx.tx-live{box-shadow:0 0 0 3px #e3b23c;border-radius:12px;padding:10px 12px}
+.show-side .tx.tx-pulse{animation:txPulse 1.6s ease-out}
+@keyframes txPulse{0%{box-shadow:0 0 0 3px #e3b23c}30%{box-shadow:0 0 0 10px rgba(227,178,60,.55)}100%{box-shadow:0 0 0 3px #e3b23c}}
+.mir-chip .mir-right{display:none}
+@media (min-width:900px){.mir-chip .mir-below{display:none}.mir-chip .mir-right{display:inline}}
 .gw-banner .gw-ticket{font-size:20px;flex:0 0 auto}
 .gw-banner .gw-text{flex:1 1 auto;min-width:0;font-family:'Bitter',Georgia,serif;font-size:14.5px;line-height:1.3}
 .gw-banner .gw-go{flex:0 0 auto;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
