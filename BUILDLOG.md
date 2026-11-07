@@ -4,6 +4,10 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### 333694396 — Arbor Beer Lodge WordPress cards; Spare Room titles
+
+Nov 7 2026 (daily auto-repair). Arbor's site moved to WordPress and the Squarespace JSON URL now serves HTML, so the reader found nothing (health: empty). New _arbor_cards reads poster, act (out of "Live Music with X at Arbor Beer Lodge!"), date, time, cover and age from each card; trivia/putting/happy hour skipped; JSON path kept. Fixture arbor-wp-events.html, test arbor_wp_check. Spare Room titles lose a trailing " -" and get their mangled en dash back.
+
 ### d8944030a — Spare Room run-on entries crashed the build
 
 Nov 7 2026 (daily auto-repair). The 14:07 UTC Refresh listings run failed: Spare Room's November page runs several dated entries into one <li>, so the parser made the whole month one show; its slug was too long for a filename and seo_pages.write raised OSError (File name too long), so no feed was committed. parse_spareroom now splits each <li> at every month-day start and strips "no cover"; seo_pages.write skips any page name over 200 bytes with a note instead of crashing. Test spare_room_runon_check. Markup is synthetic (the crash text's shape) — the venue host is unreachable from the sandbox.
