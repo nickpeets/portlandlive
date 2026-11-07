@@ -1899,6 +1899,10 @@ def _spare_room_row(txt, year, mon, seen):
     title = _SR_COVER.sub("", rest).strip(" .")
     # Link text joins leave "Party Witch , Tai" and "Luchini : a dance".
     title = re.sub(r"\s+([,.:;!?])", r"\1", title)
+    # The page is UTF-8 read as Latin-1: an en dash arrives as "\u00e2" plus
+    # C1 controls ("Lumbertwink PDX \u00e2 Dance Party"). Put the dash back.
+    title = re.sub(r"\s*\u00e2[\u0080-\u009f]*\s*", " \u2013 ", title)
+    title = title.strip(" .-\u2013")
     if not title or (_SR_SKIP.search(title) and not _SR_KFH.search(title)):
         return None
     if not 1 <= day <= 31:
@@ -4784,6 +4788,8 @@ def parse_arbor(html, today):
     out, seen = [], set()
     horizon = today + datetime.timedelta(days=HORIZON_DAYS)
     lower = today
+    if (html or "").lstrip()[:1] == "<":
+        return _arbor_cards(html, today)
     try:
         data = json.loads(html)
     except Exception:
@@ -4823,6 +4829,65 @@ def parse_arbor(html, today):
                     "address": addr, "date": date, "time": tm,
                     "venueUrl": url, "imageUrl": img})
     return out
+
+
+# Nov 7 2026 (auto-repair): arborbeerlodge.com moved off Squarespace to a
+# WordPress theme; /events?format=json now serves the HTML events page
+# (runner capture og/health). "Upcoming Events" is a row of Bootstrap cards:
+# poster as a background-image, a category line ("Live Music", "Open Mic",
+# "Trivia Night"), an <h3> title, "Saturday, November 7, 2026<br>8:00 PM
+# [– 10:00 PM]", then the blurb (cover, "All ages welcome").
+_ARBOR_SKIP = re.compile(r"\b(trivia|putting|disc golf|happy hour|bingo|market)\b", re.I)
+
+
+def _arbor_cards(html, today):
+    soup = BeautifulSoup(html, "html.parser")
+    nb, addr = VENUE_INFO.get("Arbor Beer Lodge", ("Arbor Lodge", ""))
+    horizon = today + datetime.timedelta(days=HORIZON_DAYS)
+    rows, past, seen = [], [], set()
+    for card in soup.select("div.card"):
+        h = card.find(["h3", "h2"])
+        when = card.select_one("p.text-muted")
+        if not h or not when:
+            continue
+        title = clean(h.get_text(" "))
+        # "Live Music with The Grande at Arbor Beer Lodge!" -> "The Grande"
+        title = re.sub(r"^live music\s*(?:with|:|-)\s*", "", title, flags=re.I)
+        title = re.sub(r"\s+(?:at|@)\s+(?:the\s+)?arbor beer lodge\s*!*$", "", title, flags=re.I).strip()
+        cat_el = card.select_one(".text-primary")
+        cat = clean(cat_el.get_text(" ")) if cat_el else ""
+        if not title or _ARBOR_SKIP.search(title + " " + cat):
+            continue
+        wt = clean(when.get_text(" "))
+        dm = re.search(r"([A-Z][a-z]+)\s+(\d{1,2}),\s*(\d{4})", wt)
+        if not dm:
+            continue
+        try:
+            d = datetime.datetime.strptime(f"{dm.group(1)} {dm.group(2)} {dm.group(3)}", "%B %d %Y").date()
+        except ValueError:
+            continue
+        tm = re.search(r"\b(\d{1,2}:\d{2}\s*[AP]M)\b", wt, re.I)
+        showtime = to_time(tm.group(1)) if tm else ""
+        bg = card.find(style=re.compile(r"background-image", re.I))
+        im = re.search(r"url\(['\"]?([^'\")]+)", bg.get("style", "")) if bg else None
+        img = im.group(1) if im else ""
+        body = card.select_one(".card-body > div.mb-0")
+        btext = clean(body.get_text(" ")) if body else ""
+        row = {"title": title, "venue": "Arbor Beer Lodge", "neighborhood": nb,
+               "address": addr, "date": d.isoformat(), "time": showtime,
+               "venueUrl": "https://arborbeerlodge.com/events/", "imageUrl": img,
+               "price": _price_in_text(btext), "age": _age_in_text(btext)}
+        key = (row["date"], title.lower())
+        if key in seen:
+            continue
+        seen.add(key)
+        if d < today:
+            if d >= today - datetime.timedelta(days=60):
+                past.append(row)
+        elif d <= horizon:
+            rows.append(row)
+    # Nothing upcoming: hand back recent past rows so the loop reads quiet.
+    return rows or past
 
 
 def parse_artichoke(html_text, today):

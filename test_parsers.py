@@ -946,6 +946,23 @@ def seo_pages_write():
     raise RuntimeError("seo_pages writer class not found")
 
 
+def arbor_wp_check():
+    """Nov 7 2026 auto-repair: arborbeerlodge.com moved to WordPress; the
+    old ?format=json URL serves the HTML events page (runner capture ->
+    fixtures/arbor-wp-events.html). Cards: poster, title, date+time, cover,
+    age; trivia skipped; act name pulled out of 'Live Music with X at ...'."""
+    import datetime as _dt
+    rows = sv.parse_arbor(load("arbor-wp-events.html"), _dt.date(2026, 11, 7))
+    got = [(r["date"], r["time"], r["title"], bool(r["imageUrl"]), r["price"], r["age"]) for r in rows]
+    want = [("2026-11-07", "8:00 PM", "The Grande", True, "$5\u201310", ""),
+            ("2026-11-07", "7:00 PM", "Writer\u2019s Round PDX & Open Mic", True, "Free", "all-ages")]
+    if got != want:
+        print(f"  FAIL arbor wordpress cards        {got}")
+        print("GATE FAILURE")
+        sys.exit(1)
+    print("  ok   arbor wordpress cards         2 rows (trivia skipped); posters, times, cover, all-ages; JSON path kept")
+
+
 def getdown_relaunch_check():
     """Nov 4 2026: thegetdownpdx.com moved to Next.js; the card grid is filled
     client-side from /api/collections?slug=events. The runner's capture
@@ -1008,4 +1025,5 @@ if __name__ == "__main__":
     all_past_quiet_check()
     spare_room_links_check()
     spare_room_runon_check()
+    arbor_wp_check()
     getdown_relaunch_check()
