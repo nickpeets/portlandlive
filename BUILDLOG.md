@@ -4,6 +4,10 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### 49472f695 — Sign in with Google / Apple
+
+Nov 6 2026. Continue with Google / Continue with Apple on the sign-in sheet; buttons appear per provider as it's switched on in Supabase (GET /auth/v1/settings). Return trip lands on / (already allowlisted); the page you left is kept in sessionStorage (ros_oauth_back, 15 min) and reopened; first-timers with an auto handle get the header menu opened. SQL schema-oauth-names.sql: handle_new_user names accounts from display_name -> full_name -> name -> email (not Apple relay) -> 'New user'.
+
 ### 4648097f3 — Miracles chip no longer scrolls on desktop
 
 Nov 6 2026 (Nick: clicking the gold bar on desktop sent him to the bottom of the page). Show-page jump pulses the Miracles box (.tx-pulse) when it's already in view; scrolls only when off screen. Chip text: 'claim at right →' at 900px+, 'claim below' under.
