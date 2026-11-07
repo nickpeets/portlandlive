@@ -4,6 +4,10 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### 4648097f3 — Miracles chip no longer scrolls on desktop
+
+Nov 6 2026 (Nick: clicking the gold bar on desktop sent him to the bottom of the page). Show-page jump pulses the Miracles box (.tx-pulse) when it's already in view; scrolls only when off screen. Chip text: 'claim at right →' at 900px+, 'claim below' under.
+
 ### 657501c9e — Show edits: inline on show pages
 
 Nov 6 2026 (built Oct 28; that block never landed). Moderators get Edit details on a show page: title, time, price, age, link (Tickets button), about line. Table show_edits + RPCs show_edits_all / set_show_edit (supabase/schema-show-edits.sql). Applied live and by the build after dedupe; the row keeps its address via slugPin and the venue values in seOrig (Reset).
