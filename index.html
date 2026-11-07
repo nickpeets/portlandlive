@@ -1523,6 +1523,14 @@ body.flyer-mode .masthead-logo img{filter:grayscale(1) contrast(2)}
           <button type="button" class="auth-tab" id="authTabSignUp">Sign Up</button>
         </div>
         <h3 class="auth-title" id="authTitle">Sign In</h3>
+        <!-- Google / Apple (Nov 6 2026). Each button stays hidden until that
+             provider is switched on in Supabase, so turning one on in the
+             dashboard is all it takes to show it. -->
+        <div class="auth-oauth" id="authOAuth" hidden>
+          <button type="button" class="auth-oauth-btn auth-oauth-google" data-oauth="google" hidden>Continue with Google</button>
+          <button type="button" class="auth-oauth-btn auth-oauth-apple" data-oauth="apple" hidden>Continue with Apple</button>
+          <div class="auth-or"><span>or use email</span></div>
+        </div>
         <form id="authForm">
           <div class="auth-field" id="authDisplayNameField" hidden>
             <label class="auth-label" for="authDisplayNameInput">Display name</label>
@@ -11936,6 +11944,14 @@ a.fest-artist:hover{text-decoration:underline}
 .auth-tab{flex:1;padding:10px;border-radius:10px;border:1px solid rgba(74,53,38,.16);background:#fff;font-family:'Oswald',sans-serif;font-weight:600;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);cursor:pointer;opacity:.55}
 .auth-tab.active{background:var(--forest);border-color:var(--forest);color:#fff;opacity:1}
 .auth-title{font-family:'Alfa Slab One',serif;color:var(--ink);font-size:22px;margin:0 0 14px}
+.auth-oauth{display:flex;flex-direction:column;gap:10px;margin:0 0 6px}
+.auth-oauth[hidden],.auth-oauth-btn[hidden]{display:none}
+.auth-oauth-btn{width:100%;padding:13px;border-radius:11px;font-family:'Oswald',sans-serif;font-weight:600;font-size:15px;letter-spacing:.02em;cursor:pointer}
+.auth-oauth-google{background:#fff;color:#1f1f1f;border:1px solid #c9c2b2}
+.auth-oauth-apple{background:#000;color:#fff;border:1px solid #000}
+.auth-oauth-btn:disabled{opacity:.6;cursor:default}
+.auth-or{display:flex;align-items:center;gap:10px;margin:6px 0 8px;font-size:12.5px;color:var(--forest);opacity:.8}
+.auth-or::before,.auth-or::after{content:'';flex:1;height:1px;background:currentColor;opacity:.35}
 .auth-field{margin-bottom:14px}
 .auth-label{display:block;font-family:'Oswald',sans-serif;font-weight:600;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(74,53,38,.62);margin:0 0 6px}
 .auth-hint{font-family:'Bitter',Georgia,serif;font-size:11.5px;line-height:1.4;color:#7c6a55;margin-top:6px}
@@ -12010,7 +12026,7 @@ a.fest-artist:hover{text-decoration:underline}
 })();
 </script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-    <script src="auth.js?v=20260925b" defer></script>
+    <script src="auth.js?v=20261106a" defer></script>
 <script>
 // ===== DID YOU MAKE IT? from your going marks (Sep 18 2026) =====
 // The shows you marked "I'm going" whose date has passed and that have no

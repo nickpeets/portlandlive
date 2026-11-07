@@ -70,6 +70,7 @@
   };
 
   let mode = "signin"; // "signin" | "signup"
+  let oauthOn = false; // true once Supabase says Google or Apple is enabled
 
   // Modes: signin, signup, and (Sep 24 2026, forgot password) "reset" --
   // email only, sends a reset link -- and "newpass" -- password only, shown
@@ -85,6 +86,8 @@
     el.displayNameInput.required = isSignUp;
     if (el.handleField) el.handleField.hidden = !isSignUp;
     if (el.handleInput) el.handleInput.required = isSignUp;
+    const oauthBox = document.getElementById("authOAuth");
+    if (oauthBox) oauthBox.hidden = !oauthOn || isReset || isNewPass;
     const emailField = el.emailInput.closest(".auth-field");
     const passField = el.passwordInput.closest(".auth-field");
     if (emailField) emailField.hidden = isNewPass;
@@ -825,7 +828,72 @@
     refreshAuthUI();
     // Arrived from a password-reset email: ask for the new password.
     if (_event === "PASSWORD_RECOVERY") setTimeout(() => openSheet("newpass"), 300);
+    if (_event === "SIGNED_IN" || _event === "INITIAL_SESSION") oauthLanded(_session);
   });
+  // ---- Google / Apple sign-in (Nov 6 2026) ----
+  // Ask Supabase which providers are switched on and show only those
+  // buttons. If the lookup fails, the sheet is just email, as before.
+  const OAUTH_BACK = "ros_oauth_back";
+  const oauthBtns = Array.prototype.slice.call(document.querySelectorAll("[data-oauth]"));
+  fetch(SUPABASE_URL + "/auth/v1/settings", { headers: { apikey: SUPABASE_ANON_KEY } })
+    .then((r) => (r.ok ? r.json() : null))
+    .then((s) => {
+      const ext = (s && s.external) || {};
+      oauthBtns.forEach((b) => { b.hidden = !ext[b.getAttribute("data-oauth")]; });
+      oauthOn = oauthBtns.some((b) => !b.hidden);
+      const box = document.getElementById("authOAuth");
+      if (box) box.hidden = !oauthOn || mode === "reset" || mode === "newpass";
+    })
+    .catch(() => {});
+  oauthBtns.forEach((b) => b.addEventListener("click", async () => {
+    // Come back to the page you were on. The return trip lands on "/" (the
+    // address Supabase already allows) with the sign-in in the #, which the
+    // router would read as the home feed -- so the page is remembered here
+    // and reopened once the sign-in lands.
+    try {
+      const back = typeof window.appHash === "function" ? window.appHash() : location.hash;
+      sessionStorage.setItem(OAUTH_BACK, JSON.stringify({ to: back || "#/", at: Date.now() }));
+    } catch (_) {}
+    oauthBtns.forEach((x) => { x.disabled = true; });
+    setMsg("Opening " + (b.getAttribute("data-oauth") === "apple" ? "Apple" : "Google") + "\u2026");
+    const { error } = await sb.auth.signInWithOAuth({
+      provider: b.getAttribute("data-oauth"),
+      options: { redirectTo: location.origin + "/" }
+    });
+    if (error) {
+      oauthBtns.forEach((x) => { x.disabled = false; });
+      setMsg("Couldn\u2019t start that sign-in. Try again, or use email.", true);
+      console.warn("[auth] oauth:", error.message);
+    }
+  }));
+  function oauthLanded(session) {
+    // Only acts with a session in hand, so an early signed-out event can't
+    // use up the note; a note older than 15 minutes (sign-in abandoned) is
+    // dropped.
+    if (!session) return;
+    let back = null;
+    try {
+      const raw = sessionStorage.getItem(OAUTH_BACK);
+      if (raw !== null) {
+        sessionStorage.removeItem(OAUTH_BACK);
+        const note = JSON.parse(raw);
+        if (note && Date.now() - note.at < 15 * 60 * 1000) back = String(note.to || "");
+      }
+    } catch (_) {}
+    if (back === null) return;
+    closeSheet();
+    if (back && back !== "#/" && back !== "#") location.hash = back;
+    // First time through, the name and @handle came from Google/Apple: open
+    // the account menu so they can fix the name and pick a handle (the
+    // one-time rename is offered there).
+    setTimeout(async () => {
+      const info = await fetchMyHandle();
+      const qlist = document.getElementById("quickMenuList");
+      const qbtn = document.getElementById("quickMenuBtn");
+      if (info && info.rename_available && qlist && qlist.hidden && qbtn) qbtn.click();
+    }, 900);
+  }
+
   const forgotBtn = document.getElementById("authForgot");
   if (forgotBtn) forgotBtn.addEventListener("click", () => {
     const email = el.emailInput.value;
