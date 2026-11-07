@@ -4,6 +4,10 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### d8944030a — Spare Room run-on entries crashed the build
+
+Nov 7 2026 (daily auto-repair). The 14:07 UTC Refresh listings run failed: Spare Room's November page runs several dated entries into one <li>, so the parser made the whole month one show; its slug was too long for a filename and seo_pages.write raised OSError (File name too long), so no feed was committed. parse_spareroom now splits each <li> at every month-day start and strips "no cover"; seo_pages.write skips any page name over 200 bytes with a note instead of crashing. Test spare_room_runon_check. Markup is synthetic (the crash text's shape) — the venue host is unreachable from the sandbox.
+
 ### 49472f695 — Sign in with Google / Apple
 
 Nov 6 2026. Continue with Google / Continue with Apple on the sign-in sheet; buttons appear per provider as it's switched on in Supabase (GET /auth/v1/settings). Return trip lands on / (already allowlisted); the page you left is kept in sessionStorage (ros_oauth_back, 15 min) and reopened; first-timers with an auto handle get the header menu opened. SQL schema-oauth-names.sql: handle_new_user names accounts from display_name -> full_name -> name -> email (not Apple relay) -> 'New user'.
