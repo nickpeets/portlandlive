@@ -4,6 +4,10 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### 657501c9e — Show edits: inline on show pages
+
+Nov 6 2026 (built Oct 28; that block never landed). Moderators get Edit details on a show page: title, time, price, age, link (Tickets button), about line. Table show_edits + RPCs show_edits_all / set_show_edit (supabase/schema-show-edits.sql). Applied live and by the build after dedupe; the row keeps its address via slugPin and the venue values in seOrig (Reset).
+
 ### 1e8432d5d — Ezra Meredith at Switchback moves to 8 PM
 
 Nov 5 2026. Nick: the Nov 7 Ezra Meredith w/ Morgan Geer (Drunken Prayer) show is now at 8 PM in place of Taylor Kingman's. Hand row time 10:00 PM -> 8:00 PM; slug unchanged.
