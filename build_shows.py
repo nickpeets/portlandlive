@@ -267,6 +267,11 @@ def make_slug(show):
     is immune to markup/punctuation/whitespace variants, then joins the tokens
     with hyphens to form a URL-safe slug. Same show -> same slug on every run.
     """
+    # A show edited on its page keeps the address it had before the edit:
+    # apply_show_edits pins it here.
+    pin = (show.get("slugPin") or "").strip()
+    if pin:
+        return pin
     date = (show.get("date", "") or "").strip()
     venue = _norm_key(show.get("venue", ""))
     title = _norm_key(clean_title(show.get("title", "")))
@@ -280,6 +285,8 @@ def _snapshot(show, slug):
     rec = {f: show.get(f, "") for f in _ARCHIVE_FIELDS}
     rec["title"] = clean_title(show.get("title", ""))
     rec["slug"] = slug
+    if show.get("slugPin"):
+        rec["slugPin"] = slug     # edited on its page: the page finds it by this
     return rec
 
 
@@ -1970,6 +1977,59 @@ def fetch_show_overrides():
         return {}
 
 
+def fetch_show_edits():
+    """slug -> {title, show_time, price, age, link, about} set by a moderator
+    on the show page (show_edits_all RPC, readable by anyone). Never raises."""
+    url, key = _supabase_public_config()
+    if not url or not key:
+        return {}
+    try:
+        import urllib.request
+        req = urllib.request.Request(f"{url}/rest/v1/rpc/show_edits_all", data=b"{}",
+                                     headers={"apikey": key, "Authorization": "Bearer " + key,
+                                              "Content-Type": "application/json"})
+        with urllib.request.urlopen(req, timeout=20) as r:
+            rows = json.loads(r.read().decode("utf-8")) or []
+        return {x["slug"]: x for x in rows if x.get("slug")}
+    except Exception as e:
+        print(f"  note: show edits not fetched ({type(e).__name__})")
+        return {}
+
+
+# Column in show_edits -> field in the feed row.
+_SE_MAP = (("title", "title"), ("show_time", "time"), ("price", "price"),
+           ("age", "age"), ("link", "venueUrl"), ("about", "about"))
+
+
+def apply_show_edits(rows, edits):
+    """Moderator edits from the show page. Applied after every scraper,
+    Ticketmaster, affiliate and dedupe pass, so they win. The row keeps its
+    old address in slugPin (make_slug returns it) and the values it replaced
+    in seOrig, so the page can offer Reset. Returns the count."""
+    n = 0
+    for r in rows:
+        sl = make_slug(r)
+        e = edits.get(sl)
+        if not e:
+            continue
+        orig = {}
+        for col, field in _SE_MAP:
+            v = (e.get(col) or "").strip()
+            if not v:
+                continue
+            orig[field] = r.get(field, "")
+            r[field] = v
+            if field == "time" and r.get("times"):
+                orig["times"] = r.pop("times")
+            if field == "venueUrl" and r.get("affiliateUrl"):
+                orig["affiliateUrl"] = r.pop("affiliateUrl")
+        if orig:
+            r["slugPin"] = sl
+            r["seOrig"] = orig
+            n += 1
+    return n
+
+
 def fetch_show_kinds():
     """slug -> 'music' | 'comedy' | 'other' set by a moderator on the show
     page (show_kinds_all RPC, readable by anyone). Never raises."""
@@ -2365,7 +2425,8 @@ def main():
     # show, so a next-morning archive never saw them: Sep 17 archived 32 rows
     # of the day's ~35, and none of Helium's. Add-only and slug-deduped, so a
     # row archived today while still in the feed costs nothing.
-    _past = [s for s in shows if s.get("date", "") <= cutoff]
+    _pinned = [s for s in _prev_feed if s.get("slugPin") and s.get("date", "") <= cutoff]
+    _past = _pinned + [s for s in shows if s.get("date", "") <= cutoff]
     _seen_past = {(s.get("venue", ""), s.get("date", ""), s.get("title", "")) for s in _past}
     for s in _prev_feed:
         if s.get("date", "") > cutoff:
@@ -2403,6 +2464,9 @@ def main():
 
     apply_title_renames(shows)
     deduped, time_collisions = dedupe_shows(shows)
+    _se = fetch_show_edits()
+    if _se:
+        print(f"  Show edits: {apply_show_edits(deduped, _se)} moderator edit(s) applied")
     # Sold out (Sep 25 2026): venue pages flagged theirs while scraping; this
     # catches the rest -- Ticketmaster rows, Monqui's Etix links, and titles
     # that say it.
