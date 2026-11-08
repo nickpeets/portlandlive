@@ -79,6 +79,7 @@ CASES = [
     ("spare-room-sept2026.html", sv.parse_spareroom,    15, {"time": 0},                    "monthly <li> list; karaoke/bingo skipped except Karaoke From Hell (live band; Nick's call)"),
     ("switchback-events.ics",  sv.parse_switchback,     30, {"time": 30},                   "iCal; 'Live Music:' filter; UTC -> Pacific"),
     ("switchback-music.ics",   sv.parse_switchback,      5, {"time": 5},                    "iCal; 🎵 marker; World Cup excluded"),
+    ("switchback-music-nov2026.ics", sv.parse_switchback, 50, {"time": 46, "imageUrl": 13, "age": 24, "price": 24, "about": 21}, "Music Calendar, plain act names (Nov 2026); World Cup / Co Op / open mic out; Drive poster thumbnails; blurb"),
     ("alberta-rose.html",      sv.parse_albertarose,    51, {"imageUrl": 51},              "RHP; poster via URL map"),
     ("holocene.html",          sv.parse_holocene,       60, {"imageUrl": 60},              "RHP (Elementor); poster via URL map"),
     ("mississippi-studios.html", sv.parse_msstudios,    30, {"imageUrl": 30},              "etix; poster is cdn.etix.com img in .event__inner, two above the h2"),

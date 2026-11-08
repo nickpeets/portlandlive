@@ -1928,6 +1928,18 @@ def _spare_room_row(txt, year, mon, seen):
 # schedule is in "Special Events", where music is prefixed "Live Music:".
 # Everything else there (Trivia, Birthday Party, Halloween Party) is not a
 # listing. Both feeds are fetched; the title filter does the sorting.
+#
+# Nov 8 2026 (feed-health auto-repair): Switchback scraped 0 for two days.
+# The runner's capture showed the "Music Calendar" is now the live schedule
+# again, with plain act names ("Wavicle & Electric Prophet", "Salt Slug") and
+# no "Live Music:" / note prefix, so the filter dropped every show. In the
+# Music Calendar every one-off event is a listing (skipping World Cup /
+# trivia-type lines and the weekly Country Co Op / La Playa open mic, which
+# are RRULEs or RECURRENCE-ID overrides of them); the prefix filter stays for
+# the Special Events calendar. Rows now carry the description as `about`,
+# age/price from it, and the Drive poster attachment as a thumbnail URL.
+_SB_SKIP = re.compile(r"world cup|trivia|bingo|karaoke|watch party|birthday|"
+                      r"halloween party|happy hour|closed|private event", re.I)
 _SB_KEEP = re.compile(r"^\s*(?:live\s*music|dj|\U0001F3B5)\s*:?|concert|record release", re.I)
 _SB_STRIP = re.compile(r"^\s*(?:live\s*music|\U0001F3B5)\s*:?\s*", re.I)
 
@@ -1944,6 +1956,37 @@ def _ics_events(text):
         yield ds.group(1).strip(), clean(sm.group(1)), ("RRULE:" in blk)
 
 
+def _ics_unescape(v):
+    return (v or "").replace("\\n", "\n").replace("\\,", ",").replace("\\;", ";")
+
+
+def _sb_extras(text):
+    """(dtstart, summary) -> {about, imageUrl, recurrence} for each VEVENT."""
+    text = re.sub(r"\r?\n[ \t]", "", text or "")
+    out = {}
+    for blk in re.findall(r"BEGIN:VEVENT(.*?)END:VEVENT", text, re.S):
+        ds = re.search(r"^DTSTART(?:;[^:\n]*)?:(\S+)", blk, re.M)
+        sm = re.search(r"^SUMMARY:(.*)$", blk, re.M)
+        if not (ds and sm):
+            continue
+        de = re.search(r"^DESCRIPTION:(.*)$", blk, re.M)
+        desc = _ics_unescape(de.group(1)) if de else ""
+        desc = re.sub(r"<br\s*/?>", "\n", desc, flags=re.I)
+        import html as _h
+        desc = _h.unescape(re.sub(r"<[^>]+>", "", desc))
+        if desc.strip().lower() == "event reminder":
+            desc = ""
+        img = ""
+        for at in re.findall(r"^ATTACH[^:\n]*FMTTYPE=image/[^:\n]*:(\S+)$", blk, re.M):
+            m = re.search(r"[?&]id=([\w-]+)", at) or re.search(r"/d/([\w-]+)", at)
+            if m:
+                img = f"https://drive.google.com/thumbnail?id={m.group(1)}&sz=w1000"
+                break
+        out[(ds.group(1).strip(), clean(sm.group(1)))] = {
+            "desc": desc, "imageUrl": img, "recurrence": "RECURRENCE-ID" in blk}
+    return out
+
+
 def parse_switchback(html, today):
     from zoneinfo import ZoneInfo
     import datetime as _dt
@@ -1951,12 +1994,18 @@ def parse_switchback(html, today):
     nb, addr = VENUE_INFO.get(venue, ("Richmond", "4847 SE Division St"))
     pt = ZoneInfo("America/Los_Angeles")
     shows, seen = [], set()
+    music_cal = bool(re.search(r"X-WR-CALNAME:[^\n]*music", html or "", re.I))
+    extras = _sb_extras(html)
     for dstart, summary, recurs in _ics_events(html or ""):
-        if recurs:
-            continue  # Trivia / Country Co Op: weekly recurrences, not shows
-        if not _SB_KEEP.search(summary):
+        ex = extras.get((dstart, summary), {})
+        if recurs or ex.get("recurrence"):
+            continue  # Trivia / Country Co Op / open mic: weekly recurrences
+        if music_cal and _SB_SKIP.search(summary):
+            continue
+        if not (music_cal or _SB_KEEP.search(summary)):
             continue
         title = _SB_STRIP.sub("", summary).strip(" -:")
+        title = re.sub(r"\s*\((?:time\s*)?tbd\)\s*$", "", title, flags=re.I).strip()
         if not title:
             continue
         # 20260919T010000Z (UTC) or 20260922 (all-day)
@@ -1974,10 +2023,20 @@ def parse_switchback(html, today):
         if key in seen:
             continue
         seen.add(key)
-        shows.append({"title": title, "venue": venue, "neighborhood": nb,
-                      "address": addr, "date": date, "time": showtime,
-                      "venueUrl": "https://switchbacksaloon.com/schedule.html",
-                      "imageUrl": ""})
+        desc = ex.get("desc", "")
+        row = {"title": title, "venue": venue, "neighborhood": nb,
+               "address": addr, "date": date, "time": showtime,
+               "venueUrl": "https://switchbacksaloon.com/schedule.html",
+               "imageUrl": ex.get("imageUrl", "")}
+        if desc:
+            row["age"] = _age_in_text(desc) or ("21+" if re.search(r"\b21\s*\+", desc) else "")
+            row["price"] = _price_in_text(desc.replace("\n", " "))
+            about = " ".join(l.strip() for l in desc.splitlines()
+                             if l.strip() and not re.match(r"(?i)(ig:|https?://|free admission)", l.strip())
+                             and not re.fullmatch(r"(?i)[\d:\s]+(?:am|pm)?(?:\s*-\s*[\d:]+\s*(?:am|pm)?)?", l.strip()))
+            if about and about.lower() != title.lower():
+                row["about"] = about[:400]
+        shows.append(row)
     return shows
 
 
