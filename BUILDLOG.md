@@ -4,6 +4,10 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### 2369faa38 — Switchback reads its Music Calendar's plain act names
+
+Nov 8 2026 (daily feed-health auto-repair). Switchback Saloon scraped 0 since Nov 6 (safety net holding 2 rows till Nov 14): the runner's capture showed the Music Calendar iCal is the live schedule again, with plain act names ("Wavicle & Electric Prophet", "Salt Slug") and no "Live Music:" prefix, so the filter dropped everything. Every one-off event in the Music Calendar is now a listing (World Cup / trivia-type lines and the weekly Country Co Op and La Playa open mic skipped, including RECURRENCE-ID overrides); the prefix filter stays for Special Events. Rows now carry the description as about, age/price from it ("Free admission 21+"), and the Drive poster attachment as a drive.google.com/thumbnail URL (not verifiable from the sandbox; cards fall back if it doesn't load). Fixture switchback-music-nov2026.ics, 50 rows. Winona Grange (DNS failure on the runner, first day, held till Nov 15) left to self-heal; The Goodfoot (Cloudflare headless challenge, known flapper), Brunish/Chehalem Valley/Theater of the Clouds (dark) and The Lyons Den (quiet) left alone.
+
 ### 333694396 — Arbor Beer Lodge WordPress cards; Spare Room titles
 
 Nov 7 2026 (daily auto-repair). Arbor's site moved to WordPress and the Squarespace JSON URL now serves HTML, so the reader found nothing (health: empty). New _arbor_cards reads poster, act (out of "Live Music with X at Arbor Beer Lodge!"), date, time, cover and age from each card; trivia/putting/happy hour skipped; JSON path kept. Fixture arbor-wp-events.html, test arbor_wp_check. Spare Room titles lose a trailing " -" and get their mangled en dash back.
