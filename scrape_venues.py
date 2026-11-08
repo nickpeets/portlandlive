@@ -1962,7 +1962,8 @@ def _ics_unescape(v):
 
 def _sb_extras(text):
     """(dtstart, summary) -> {about, imageUrl, recurrence} for each VEVENT."""
-    text = re.sub(r"\r?\n[ \t]", "", text or "")
+    # iCal is CRLF on the wire; a bare "$" never matches before "\r".
+    text = re.sub(r"\r?\n[ \t]", "", (text or "").replace("\r\n", "\n"))
     out = {}
     for blk in re.findall(r"BEGIN:VEVENT(.*?)END:VEVENT", text, re.S):
         ds = re.search(r"^DTSTART(?:;[^:\n]*)?:(\S+)", blk, re.M)

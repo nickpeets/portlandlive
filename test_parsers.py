@@ -947,6 +947,23 @@ def seo_pages_write():
     raise RuntimeError("seo_pages writer class not found")
 
 
+def switchback_crlf_check():
+    """Nov 8 2026 auto-repair: the live feed is CRLF, and the test loader's
+    text mode hides that -- the first fix found posters on the fixture and
+    none on the runner. Read the fixture raw and require the same posters."""
+    import datetime as _dt
+    with open(os.path.join(FIX, "switchback-music-nov2026.ics"), encoding="utf-8", newline="") as f:
+        raw = f.read()
+    rows = sv.parse_switchback(raw, _dt.date(2026, 11, 8))
+    n_img = sum(1 for r in rows if r["imageUrl"])
+    n_about = sum(1 for r in rows if r.get("about"))
+    if "\r\n" not in raw or len(rows) != 50 or n_img != 13 or n_about != 21:
+        print(f"  FAIL switchback crlf            rows {len(rows)} posters {n_img} about {n_about}")
+        print("GATE FAILURE")
+        sys.exit(1)
+    print("  ok   switchback crlf            raw CRLF iCal -> 50 rows, 13 Drive posters, 21 blurbs")
+
+
 def arbor_wp_check():
     """Nov 7 2026 auto-repair: arborbeerlodge.com moved to WordPress; the
     old ?format=json URL serves the HTML events page (runner capture ->
@@ -1026,5 +1043,6 @@ if __name__ == "__main__":
     all_past_quiet_check()
     spare_room_links_check()
     spare_room_runon_check()
+    switchback_crlf_check()
     arbor_wp_check()
     getdown_relaunch_check()
