@@ -4,6 +4,10 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### 1fa31be34 — Switchback posters: read the iCal as CRLF
+
+Nov 8 2026 (auto-repair, second attempt). The verify build after 2369faa38 brought Switchback back from 2 to 13 shows with blurbs, ages and Free, but 0 posters: the live Google iCal is CRLF and the ATTACH regex's "$" never matched before "\r"; the fixture test missed it because the loader reads in text mode. _sb_extras normalises CRLF; switchback_crlf_check reads the fixture raw and requires 13 posters.
+
 ### 2369faa38 — Switchback reads its Music Calendar's plain act names
 
 Nov 8 2026 (daily feed-health auto-repair). Switchback Saloon scraped 0 since Nov 6 (safety net holding 2 rows till Nov 14): the runner's capture showed the Music Calendar iCal is the live schedule again, with plain act names ("Wavicle & Electric Prophet", "Salt Slug") and no "Live Music:" prefix, so the filter dropped everything. Every one-off event in the Music Calendar is now a listing (World Cup / trivia-type lines and the weekly Country Co Op and La Playa open mic skipped, including RECURRENCE-ID overrides); the prefix filter stays for Special Events. Rows now carry the description as about, age/price from it ("Free admission 21+"), and the Drive poster attachment as a drive.google.com/thumbnail URL (not verifiable from the sandbox; cards fall back if it doesn't load). Fixture switchback-music-nov2026.ics, 50 rows. Winona Grange (DNS failure on the runner, first day, held till Nov 15) left to self-heal; The Goodfoot (Cloudflare headless challenge, known flapper), Brunish/Chehalem Valley/Theater of the Clouds (dark) and The Lyons Den (quiet) left alone.
