@@ -4,6 +4,10 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### 2dda44ac3 — The Goodfoot rotates doors through Cloudflare
+
+Nov 10 2026 (feed-health auto-repair, Nick: "fix it"). The Goodfoot scraped 0 since Nov 6 (safety net holding 36 rows till Nov 14): all five windowed-browser attempts hit the Cloudflare challenge on the runner every day, while the site, its events list and the Tribe REST API all answered normally from outside. Attempts now rotate: the browser's native user agent first (the fixed Chrome/128 UA contradicts the newer Chromium's sec-ch-ua hints), thegoodfoot.com and www., 40 s wait. Entry page is /events/list/; if it clears but the API is walled, the list's Event JSON-LD is read. Rows now carry price and about; a midnight start falls back to the title's "(9pm Doors)". A challenge page the runner ends on is saved to og/health/ and its title goes in the health note. Test goodfoot_doors_check.
+
 ### 1fa31be34 — Switchback posters: read the iCal as CRLF
 
 Nov 8 2026 (auto-repair, second attempt). The verify build after 2369faa38 brought Switchback back from 2 to 13 shows with blurbs, ages and Free, but 0 posters: the live Google iCal is CRLF and the ATTACH regex's "$" never matched before "\r"; the fixture test missed it because the loader reads in text mode. _sb_extras normalises CRLF; switchback_crlf_check reads the fixture raw and requires 13 posters.
