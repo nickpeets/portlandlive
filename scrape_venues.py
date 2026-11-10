@@ -3740,7 +3740,7 @@ GOODFOOT_API = ("https://www.thegoodfoot.com/wp-json/tribe/events/v1/events"
 # formats. Comedy is deliberately NOT filtered: "Laugh Basement" is a real
 # recurring stand-up night and belongs in the Comedy section, not the trash.
 _GOODFOOT_NONMUSIC = re.compile(
-    r"triviology|trivia|pub\s*quiz|upstairs\s*pub|bingo|karaoke", re.I)
+    r"triviology|trivia|pub\s*quiz|upstairs\s*pub|bingo|karaoke|^closed\b|closed for", re.I)
 
 # Nov 10 2026: the runner was challenged on all 5 attempts every day from
 # Nov 6 while the site answered normally elsewhere. Attempts now rotate the
@@ -3890,10 +3890,61 @@ def parse_goodfoot(html, today):
         if attempt < len(_GOODFOOT_PLAN) - 1:
             import time as _t
             _t.sleep(15)
+    if not events:
+        snap, fetched = goodfoot_snapshot_events(today)
+        if snap:
+            events = snap
+            age = (today - datetime.date.fromisoformat(fetched)).days
+            tried.append(f"walled; {len(snap)} events from the web-reader snapshot of {fetched}")
+            SNAPSHOT_NOTES["The Goodfoot"] = (
+                f"Cloudflare walls the runner; listings come from the daily web-reader snapshot "
+                f"(goodfoot_snapshot.json, fetched {fetched}, {age} day(s) old, goes stale after "
+                f"{SNAPSHOT_MAX_AGE_DAYS}).")
     FETCH_NOTES["The Goodfoot"] = " \u00b7 ".join(tried)
     if not events and last_challenge:
         EARLY_STOP_PAGES["The Goodfoot"] = last_challenge
     return goodfoot_rows(events, today)
+
+
+# ---- Web-reader snapshot (Nov 10 2026, Nick: "this is an ok fix for now") --
+# Cloudflare's managed check walls GitHub's runner from The Goodfoot while the
+# same calendar answers a normal web reader. The daily feed-health task reads
+# the site's own .ics export with its web reader and writes the events here
+# (goodfoot_snapshot.py does the conversion). It is used only when every live
+# attempt is walled, only if it is at most SNAPSHOT_MAX_AGE_DAYS old, and only
+# rows that look like the site's own data (thegoodfoot.com event URLs and
+# uploads, real dates) get through. Past that age the venue scrapes 0 and the
+# ordinary 7-day safety net takes over.
+GOODFOOT_SNAPSHOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "goodfoot_snapshot.json")
+SNAPSHOT_MAX_AGE_DAYS = 3
+SNAPSHOT_NOTES = {}
+_GF_EVENT_URL = re.compile(r"^https://(www\.)?thegoodfoot\.com/events/[a-z0-9-]+/?$")
+_GF_IMG_URL = re.compile(r"^https://(www\.)?thegoodfoot\.com/wp-content/uploads/\S+\.(jpe?g|png|webp|gif)$", re.I)
+
+
+def goodfoot_snapshot_events(today, path=None):
+    try:
+        data = json.load(open(path or GOODFOOT_SNAPSHOT))
+        fetched = datetime.date.fromisoformat(data.get("fetched", ""))
+    except Exception:
+        return [], ""
+    if not (0 <= (today - fetched).days <= SNAPSHOT_MAX_AGE_DAYS):
+        return [], ""
+    out = []
+    for ev in data.get("events") or []:
+        start = str(ev.get("start_date") or "")
+        if not re.fullmatch(r"\d{4}-\d\d-\d\d \d\d:\d\d:\d\d", start) or start[:10] < today.isoformat():
+            continue
+        try:
+            datetime.datetime.strptime(start, "%Y-%m-%d %H:%M:%S")
+        except ValueError:
+            continue
+        if not _GF_EVENT_URL.match(ev.get("url") or "") or not (ev.get("title") or "").strip():
+            continue
+        img = (ev.get("image") or {}).get("url", "") if isinstance(ev.get("image"), dict) else ""
+        ev = dict(ev, image={"url": img} if _GF_IMG_URL.match(img) else False)
+        out.append(ev)
+    return out, fetched.isoformat()
 
 
 # ---- Music Millennium (musicmillennium.com/InStore) -- WALLED, headless -----
@@ -7734,6 +7785,10 @@ def net_health(net, last_good, scraped, today, zero_reports=(), notes=None):
         age = (today - datetime.date.fromisoformat(since)).days
         if RETAIN_DAYS < age <= DARK_REPORT_DAYS:
             items.append({"venue": v, "kind": "dark", "since": since, "days": age})
+            reported.add(v)
+    for v, text in sorted(SNAPSHOT_NOTES.items()):
+        if v not in reported:
+            items.append({"venue": v, "kind": "note", "text": text})
             reported.add(v)
     for name, why in zero_reports or ():
         # "Realm (realmpdx.com)" is the same room as the held "Realm" --

@@ -1058,8 +1058,9 @@ def goodfoot_doors_check():
         html_out.append(listpage)
         raise fh.HeadlessChallengeError("challenge did not clear within 40s (title='Just a moment...')")
 
-    old, old_sleep = fh.fetch_headless_json, _time.sleep
+    old, old_sleep, old_snap = fh.fetch_headless_json, _time.sleep, sv.GOODFOOT_SNAPSHOT
     fh.fetch_headless_json, _time.sleep = fake, (lambda s: None)
+    sv.GOODFOOT_SNAPSHOT = "/nonexistent/goodfoot_snapshot.json"   # live doors only here
     try:
         sv.EARLY_STOP_PAGES.pop("The Goodfoot", None)
         rows = sv.parse_goodfoot(None, today)
@@ -1093,12 +1094,63 @@ def goodfoot_doors_check():
                 or a[0]["venueUrl"] != "https://thegoodfoot.com/events/jujuba/" or a[0].get("price") != "$20":
             bad.append(f"api rows {a}")
     finally:
-        fh.fetch_headless_json, _time.sleep = old, old_sleep
+        fh.fetch_headless_json, _time.sleep, sv.GOODFOOT_SNAPSHOT = old, old_sleep, old_snap
     if bad:
         print("  FAIL goodfoot doors                " + "; ".join(bad))
         print("GATE FAILURE")
         sys.exit(1)
     print("  ok   goodfoot doors                native UA + both hosts; list-page JSON-LD when the API is walled (poster, time, price, about); challenge page captured")
+
+
+def goodfoot_snapshot_check():
+    """Nov 10 2026: when every live door is walled, The Goodfoot reads the
+    web-reader snapshot of its .ics (goodfoot_snapshot.json) -- only if fresh,
+    only rows that look like the site's own data -- and says so on feed health."""
+    import datetime as _dt, json, tempfile, time as _time
+    import fetch_headless as fh
+    today = _dt.date(2026, 11, 10)
+    bad = []
+    snap = {"fetched": "2026-11-09", "events": [
+        {"start_date": "2026-11-12 20:00:00", "title": "THE SWEET LILLIES (8pm Doors)",
+         "url": "https://thegoodfoot.com/events/the-sweet-lillies-8pm-doors/",
+         "image": {"url": "https://thegoodfoot.com/wp-content/uploads/2026/08/SL.jpg"}, "cost": "$15"},
+        {"start_date": "2026-11-26 17:00:00", "title": "CLOSED FOR THANKSGIVING- See You Tomorrow",
+         "url": "https://thegoodfoot.com/events/closed-for-thanksgiving-see-you-tomorrow/", "image": False, "cost": ""},
+        {"start_date": "2026-11-09 20:00:00", "title": "Yesterday", "url": "https://thegoodfoot.com/events/y/", "image": False},
+        {"start_date": "2026-11-20 21:00:00", "title": "Off-site link", "url": "https://evil.example/events/x/", "image": False},
+        {"start_date": "2026-11-21 20:00:00", "title": "PDF poster", "url": "https://thegoodfoot.com/events/pdf/",
+         "image": {"url": "https://thegoodfoot.com/wp-content/uploads/2026/01/p.pdf"}, "cost": "$12 Pre-sale/$15 Day of show"},
+        {"start_date": "2026-13-01 20:00:00", "title": "Bad date", "url": "https://thegoodfoot.com/events/b/", "image": False}]}
+    path = tempfile.mktemp(suffix=".json")
+    json.dump(snap, open(path, "w"))
+    def walled(entry, api, **k):
+        e = fh.HeadlessChallengeError("x (title='Just a moment...')"); e.page_html = "<html>cf</html>"; raise e
+    old, old_sleep, old_path = fh.fetch_headless_json, _time.sleep, sv.GOODFOOT_SNAPSHOT
+    fh.fetch_headless_json, _time.sleep, sv.GOODFOOT_SNAPSHOT = walled, (lambda s: None), path
+    try:
+        sv.SNAPSHOT_NOTES.clear()
+        rows = sv.parse_goodfoot(None, today)
+        got = [(r["date"], r["title"], r["time"], r.get("price"), bool(r["imageUrl"])) for r in rows]
+        if got != [("2026-11-12", "THE SWEET LILLIES (8pm Doors)", "8:00 PM", "$15", True),
+                   ("2026-11-21", "PDF poster", "8:00 PM", "$12 Pre-sale/$15 Day of show", False)]:
+            bad.append(f"rows {got}")
+        if "snapshot of 2026-11-09" not in sv.FETCH_NOTES.get("The Goodfoot", ""):
+            bad.append("fetch note")
+        h = sv.net_health({}, {}, rows, today)
+        if not any(i["kind"] == "note" and i["venue"] == "The Goodfoot" and "1 day(s) old" in i["text"] for i in h["items"]):
+            bad.append(f"health note {h['items']}")
+        # Stale snapshot: not used, venue scrapes 0 and the safety net takes over.
+        snap["fetched"] = "2026-11-06"; json.dump(snap, open(path, "w")); sv.SNAPSHOT_NOTES.clear()
+        if sv.parse_goodfoot(None, today) or sv.SNAPSHOT_NOTES:
+            bad.append("stale snapshot used")
+    finally:
+        fh.fetch_headless_json, _time.sleep, sv.GOODFOOT_SNAPSHOT = old, old_sleep, old_path
+        sv.SNAPSHOT_NOTES.clear(); sv.EARLY_STOP_PAGES.pop("The Goodfoot", None)
+    if bad:
+        print("  FAIL goodfoot snapshot             " + "; ".join(bad))
+        print("GATE FAILURE")
+        sys.exit(1)
+    print("  ok   goodfoot snapshot             walled -> fresh web-reader snapshot (validated rows, no closures, no PDF posters); health note; stale one ignored")
 
 
 if __name__ == "__main__":
@@ -1117,3 +1169,4 @@ if __name__ == "__main__":
     arbor_wp_check()
     getdown_relaunch_check()
     goodfoot_doors_check()
+    goodfoot_snapshot_check()
