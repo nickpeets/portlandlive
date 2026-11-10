@@ -4,6 +4,10 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### 3840260de — The Goodfoot reads a daily web-reader snapshot
+
+Nov 10 2026. 2dda44ac3's verified build still hit Cloudflare's managed check ("Performing security verification") on all five doors, so GitHub's runner can't reach thegoodfoot.com at all, while the site's .ics export (/tec-events-overview/list/?ical=1, plus &tribe-bar-date= for the next window) answers a normal web reader. Stopgap Nick okayed: the daily feed-health task reads the .ics with its web reader, pipes the VEVENTs into goodfoot_snapshot.py, and commits goodfoot_snapshot.json. parse_goodfoot uses it only when every live attempt is walled and only if it is at most 3 days old, with each row validated (thegoodfoot.com event URL, uploads-folder poster, real date); held titles/posters from the API are kept for matching rows. Feed health shows a note while it's in use; a stale snapshot means 0 and the 7-day safety net. Closure notices are no longer listed. First snapshot: 40 listings Nov 10 - Jan 4, all 35 real held shows matched, 5 new (Farnell Newton Dec 22, NYE Yak Attack, Brett's House Party Jan 2, Off the Felt Dec 13, Laugh Basement Jan 4). Tests goodfoot_snapshot_check, goodfoot_doors_check.
+
 ### 2dda44ac3 — The Goodfoot rotates doors through Cloudflare
 
 Nov 10 2026 (feed-health auto-repair, Nick: "fix it"). The Goodfoot scraped 0 since Nov 6 (safety net holding 36 rows till Nov 14): all five windowed-browser attempts hit the Cloudflare challenge on the runner every day, while the site, its events list and the Tribe REST API all answered normally from outside. Attempts now rotate: the browser's native user agent first (the fixed Chrome/128 UA contradicts the newer Chromium's sec-ch-ua hints), thegoodfoot.com and www., 40 s wait. Entry page is /events/list/; if it clears but the API is walled, the list's Event JSON-LD is read. Rows now carry price and about; a midnight start falls back to the title's "(9pm Doors)". A challenge page the runner ends on is saved to og/health/ and its title goes in the health note. Test goodfoot_doors_check.
