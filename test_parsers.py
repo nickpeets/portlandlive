@@ -1031,6 +1031,76 @@ def getdown_relaunch_check():
     print("  ok   get down relaunch             Next.js capture -> 25 JSON-LD rows (posters, times, price, sold out); API shape read; union with API; old card path intact")
 
 
+def goodfoot_doors_check():
+    """Nov 10 2026: the runner was challenged on every Goodfoot attempt for
+    4 days. Attempts rotate host + user agent (native first); a cleared events
+    list feeds JSON-LD when the API is walled; a challenge page is captured."""
+    import datetime as _dt, json, time as _time
+    import fetch_headless as fh
+    today = _dt.date(2026, 11, 10)
+    bad, calls = [], []
+    ld = json.dumps([
+        {"@type": "Event", "name": "GREATERKIND (8pm Doors)", "startDate": "2026-11-10T20:00:00-08:00",
+         "url": "https://thegoodfoot.com/events/greaterkind-8pm-doors-4/",
+         "image": "https://thegoodfoot.com/wp-content/uploads/2026/10/IMG_0305-scaled.jpeg",
+         "offers": {"@type": "Offer", "price": "8"}, "description": "<p>Funk and soul from Portland's own Greaterkind, two sets.</p>"},
+        {"@type": "Event", "name": "SOUL STEW with DJ AQUAMAN &amp; FRIENDS (9pm Doors)", "startDate": "2026-11-13T00:00:00-08:00",
+         "url": "https://thegoodfoot.com/events/soul-stew/", "image": {"url": "https://thegoodfoot.com/wp-content/uploads/s.jpg"}},
+        {"@type": "Event", "name": "Triviology Upstairs", "startDate": "2026-11-11T19:00:00-08:00"}])
+    listpage = f'<html><head><script type="application/ld+json">{ld}</script></head><body>list</body></html>'
+
+    def fake(entry, api, wait_s=25, headed=False, ua=None, html_out=None):
+        calls.append((entry.split("/")[2], ua))
+        if len(calls) == 1:
+            e = fh.HeadlessChallengeError("challenge did not clear within 40s (title='Just a moment...')")
+            e.page_html = "<html><title>Just a moment...</title></html>"
+            raise e
+        html_out.append(listpage)
+        raise fh.HeadlessChallengeError("challenge did not clear within 40s (title='Just a moment...')")
+
+    old, old_sleep = fh.fetch_headless_json, _time.sleep
+    fh.fetch_headless_json, _time.sleep = fake, (lambda s: None)
+    try:
+        sv.EARLY_STOP_PAGES.pop("The Goodfoot", None)
+        rows = sv.parse_goodfoot(None, today)
+        note = sv.FETCH_NOTES.get("The Goodfoot", "")
+        if calls != [("thegoodfoot.com", None), ("www.thegoodfoot.com", None)]:
+            bad.append(f"door order {calls}")
+        if "Just a moment" not in note or "3 events from the list page" not in note:
+            bad.append(f"note {note!r}")
+        by = {r["title"]: r for r in rows}
+        g = by.get("GREATERKIND (8pm Doors)")
+        if len(rows) != 2 or not g or g["time"] != "8:00 PM" or g.get("price") != "$8" or not g["imageUrl"] \
+                or "Greaterkind" not in g.get("about", ""):
+            bad.append(f"list rows {rows}")
+        s2 = by.get("SOUL STEW with DJ AQUAMAN & FRIENDS (9pm Doors)")
+        if not s2 or s2["time"] != "9:00 PM" or s2["date"] != "2026-11-13" or not s2["imageUrl"]:
+            bad.append(f"midnight start -> doors guess {s2}")
+        # All five doors challenged: nothing returned, challenge page kept for og/health.
+        calls.clear()
+        def walled(entry, api, **k):
+            calls.append(1)
+            e = fh.HeadlessChallengeError("x (title='Just a moment...')"); e.page_html = "<html>cf</html>"; raise e
+        fh.fetch_headless_json = walled
+        if sv.parse_goodfoot(None, today) or len(calls) != 5 or sv.EARLY_STOP_PAGES.pop("The Goodfoot", "") != "<html>cf</html>":
+            bad.append("all-walled path")
+        # API shape still read as before.
+        fh.fetch_headless_json = lambda *a, **k: {"events": [
+            {"title": "JUJUBA (8pm Doors) &#038; friends", "start_date": "2026-11-21 20:00:00",
+             "url": "https://thegoodfoot.com/events/jujuba/?x=1", "image": {"url": "https://x/j.jpg"}, "cost": "$20"}]}
+        a = sv.parse_goodfoot(None, today)
+        if not a or a[0]["title"] != "JUJUBA (8pm Doors) & friends" or a[0]["time"] != "8:00 PM" \
+                or a[0]["venueUrl"] != "https://thegoodfoot.com/events/jujuba/" or a[0].get("price") != "$20":
+            bad.append(f"api rows {a}")
+    finally:
+        fh.fetch_headless_json, _time.sleep = old, old_sleep
+    if bad:
+        print("  FAIL goodfoot doors                " + "; ".join(bad))
+        print("GATE FAILURE")
+        sys.exit(1)
+    print("  ok   goodfoot doors                native UA + both hosts; list-page JSON-LD when the API is walled (poster, time, price, about); challenge page captured")
+
+
 if __name__ == "__main__":
     main()
     talk_page_check()
@@ -1046,3 +1116,4 @@ if __name__ == "__main__":
     switchback_crlf_check()
     arbor_wp_check()
     getdown_relaunch_check()
+    goodfoot_doors_check()

@@ -37,7 +37,9 @@ class HeadlessUnavailable(Exception):
 
 
 class HeadlessChallengeError(Exception):
-    """The browser never got past the challenge within the time budget."""
+    """The browser never got past the challenge within the time budget.
+    .page_html carries what the browser was looking at (for og/health)."""
+    page_html = ""
 
 
 _UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
@@ -119,9 +121,14 @@ def _launch(p):
     )
 
 
-def _new_context(browser):
+def _new_context(browser, ua=_UA):
+    # ua=None keeps the browser's own user agent (Nov 10 2026). The fixed
+    # _UA says Chrome/128 while the runner installs the newest Chromium, so
+    # its client hints (sec-ch-ua) name a different version -- a mismatch
+    # Cloudflare can score as a bot. The native UA is always consistent.
+    kw = {"user_agent": ua} if ua else {}
     return browser.new_context(
-        user_agent=_UA,
+        **kw,
         viewport={"width": 1366, "height": 900},
         locale="en-US",
         timezone_id="America/Los_Angeles",
@@ -157,11 +164,16 @@ def _wait_out_challenge(page, budget_s):
         if not _looks_challenged(page):
             return
         time.sleep(1.0)
-    raise HeadlessChallengeError(
+    err = HeadlessChallengeError(
         f"challenge did not clear within {budget_s}s (title={page.title()!r})")
+    try:
+        err.page_html = page.content()
+    except Exception:
+        pass
+    raise err
 
 
-def fetch_headless(url, wait_s=25, settle_s=2, headed=False):
+def fetch_headless(url, wait_s=25, settle_s=2, headed=False, ua=_UA):
     """Rendered HTML of `url` after the bot challenge clears. headed=True asks
     for a windowed browser (Sep 29 2026: Realm's fallback ran headless)."""
     try:
@@ -175,7 +187,7 @@ def fetch_headless(url, wait_s=25, settle_s=2, headed=False):
             print("  note: no display for a windowed browser (Xvfb missing); trying headless")
         browser = _launch_headed(p) if use_window else _launch(p)
         try:
-            ctx = _new_context(browser)
+            ctx = _new_context(browser, ua)
             page = ctx.new_page()
             page.goto(url, wait_until="domcontentloaded", timeout=45_000)
             _wait_out_challenge(page, wait_s)
@@ -185,7 +197,8 @@ def fetch_headless(url, wait_s=25, settle_s=2, headed=False):
             browser.close()
 
 
-def fetch_headless_json(entry_url, json_url, wait_s=25, headed=False):
+def fetch_headless_json(entry_url, json_url, wait_s=25, headed=False, ua=_UA,
+                        html_out=None):
     """Clear the challenge on `entry_url`, then read `json_url` in the same
     session and return the parsed JSON. This is the preferred path: the
     walled venue's own API, reached with the clearance cookie the browser
@@ -201,10 +214,17 @@ def fetch_headless_json(entry_url, json_url, wait_s=25, headed=False):
             print("  note: no display for a windowed browser (Xvfb missing); trying headless")
         browser = _launch_headed(p) if use_window else _launch(p)
         try:
-            ctx = _new_context(browser)
+            ctx = _new_context(browser, ua)
             page = ctx.new_page()
             page.goto(entry_url, wait_until="domcontentloaded", timeout=45_000)
             _wait_out_challenge(page, wait_s)
+            # The cleared entry page itself, for callers with an HTML fallback
+            # (Goodfoot's events list carries JSON-LD) if the API is walled.
+            if isinstance(html_out, list):
+                try:
+                    html_out.append(page.content())
+                except Exception:
+                    pass
             # Same context, so cf_clearance rides along. The JSON endpoint
             # returns raw JSON text in the body; if it's ALSO challenged the
             # title check catches it.

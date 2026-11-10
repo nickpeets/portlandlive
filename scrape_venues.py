@@ -3742,37 +3742,69 @@ GOODFOOT_API = ("https://www.thegoodfoot.com/wp-json/tribe/events/v1/events"
 _GOODFOOT_NONMUSIC = re.compile(
     r"triviology|trivia|pub\s*quiz|upstairs\s*pub|bingo|karaoke", re.I)
 
-def parse_goodfoot(html, today):
-    from fetch_headless import fetch_headless_json
-    import html as _html
-    # Windowed browser (Sep 24 2026): Cloudflare stopped clearing for any
-    # headless browser here; a Chromium with a window on a fake screen
-    # clears in a second and the API answers with all 50 events.
-    # Cloudflare clears most runs but not every one (Sep 24 2026: the 10:45 PM
-    # build came back empty, the 2:57 PM one full). Try up to three times,
-    # each in a fresh browser, before the safety net has to hold the rows.
-    events = []
-    tried = []   # per attempt, for the feed-health line (Sep 25 2026)
-    for attempt in range(5):   # 5 tries, 15s apart (Sep 26 2026: 3 was not enough)
+# Nov 10 2026: the runner was challenged on all 5 attempts every day from
+# Nov 6 while the site answered normally elsewhere. Attempts now rotate the
+# door: the browser's own user agent (the fixed Chrome/128 one disagrees with
+# the newer Chromium's client hints) and both hosts (thegoodfoot.com is the
+# canonical one; www. redirects to it), with a longer wait. The entry page is
+# the events list, so if the API is walled but the list cleared, its
+# schema.org Event JSON-LD is read instead. A challenge page the runner
+# ends on is saved to og/health/ with its title.
+GOODFOOT_HOSTS = ("https://thegoodfoot.com", "https://www.thegoodfoot.com")
+GOODFOOT_API_PATH = "/wp-json/tribe/events/v1/events?per_page=50&start_date=now"
+GOODFOOT_LIST_PATH = "/events/list/"
+# (host index, user agent: None = the browser's own, "fixed" = fetch_headless._UA)
+_GOODFOOT_PLAN = ((0, None), (1, None), (0, "fixed"), (1, "fixed"), (0, None))
+
+
+def _goodfoot_jsonld_events(page):
+    """schema.org Events from The Events Calendar's list view, in the REST
+    API's shape (title / start_date / url / image / cost / description)."""
+    out = []
+    for m in re.finditer(r'<script[^>]+application/ld\+json[^>]*>(.*?)</script>', page or "", re.S | re.I):
         try:
-            data = fetch_headless_json(GOODFOOT_HOME, GOODFOOT_API, headed=True)
-        except Exception as e:
-            data = None
-            print(f"  note: Goodfoot attempt {attempt + 1} failed ({type(e).__name__})")
-            tried.append(f"attempt {attempt + 1}: {type(e).__name__}")
-        events = data.get("events", []) if isinstance(data, dict) else []
-        if events:
-            if attempt:
-                print(f"  note: Goodfoot cleared on attempt {attempt + 1}")
-            tried.append(f"attempt {attempt + 1}: {len(events)} events")
-            break
-        if data is not None:
-            tried.append(f"attempt {attempt + 1}: " + ("empty" if isinstance(data, dict) else "not JSON"))
-        if attempt < 4:
-            print(f"  note: Goodfoot attempt {attempt + 1} came back empty; retrying")
-            import time as _t
-            _t.sleep(15)
-    FETCH_NOTES["The Goodfoot"] = " \u00b7 ".join(tried)
+            data = json.loads(m.group(1).strip())
+        except ValueError:
+            continue
+        items = data if isinstance(data, list) else data.get("@graph", [data]) if isinstance(data, dict) else []
+        for it in items:
+            if not isinstance(it, dict) or "Event" not in str(it.get("@type", "")):
+                continue
+            start = str(it.get("startDate") or "")
+            if len(start) < 10:
+                continue
+            img = it.get("image")
+            if isinstance(img, list):
+                img = img[0] if img else ""
+            if isinstance(img, dict):
+                img = img.get("url") or ""
+            offers = it.get("offers")
+            if isinstance(offers, list):
+                offers = offers[0] if offers else {}
+            price = offers.get("price") if isinstance(offers, dict) else ""
+            out.append({"title": it.get("name") or "",
+                        # local wall-clock time as listed; the offset is dropped
+                        "start_date": start[:10] + " " + (start[11:19] if len(start) >= 19 else ""),
+                        "url": it.get("url") or "",
+                        "image": {"url": img} if isinstance(img, str) and img else False,
+                        "cost": f"${price}" if price not in (None, "", 0, "0") and str(price)[0].isdigit() else "",
+                        "description": it.get("description") or ""})
+    return out
+
+
+def _goodfoot_price(cost):
+    cost = clean(str(cost or ""))
+    if not cost:
+        return ""
+    if re.fullmatch(r"\d+(\.\d\d)?", cost):
+        cost = "$" + cost
+    if re.search(r"^free$|^\$?0(\.00)?$", cost, re.I):
+        return "Free"
+    return cost if len(cost) <= 40 else ""
+
+
+def goodfoot_rows(events, today):
+    import html as _html
     nb, addr = VENUE_INFO.get("The Goodfoot", ("Buckman", "2845 SE Stark St"))
     out, seen = [], set()
     for ev in events:
@@ -3788,9 +3820,15 @@ def parse_goodfoot(html, today):
         tm = ""
         try:
             hh, mm = int(start[11:13]), int(start[14:16])
-            ampm = "AM" if hh < 12 else "PM"
-            h12 = hh % 12 or 12
-            tm = f"{h12}:{mm:02d} {ampm}"
+            # Educated guess: a "(9pm Doors)" title beats a midnight/morning
+            # start (an all-day or unset time in the calendar).
+            dm = re.search(r"\((\d{1,2})(?::(\d\d))?\s*(am|pm)\s*doors\)", title, re.I)
+            if dm and hh < 11:
+                hh = int(dm.group(1)) % 12 + (12 if dm.group(3).lower() == "pm" else 0)
+                mm = int(dm.group(2) or 0)
+            if hh >= 11 or dm:
+                ampm = "AM" if hh < 12 else "PM"
+                tm = f"{hh % 12 or 12}:{mm:02d} {ampm}"
         except (ValueError, IndexError):
             pass
         url = (ev.get("url") or GOODFOOT_HOME).split("?")[0]
@@ -3802,10 +3840,60 @@ def parse_goodfoot(html, today):
         if key in seen:
             continue
         seen.add(key)
-        out.append({"title": title, "venue": "The Goodfoot", "neighborhood": nb,
-                    "address": addr, "date": date, "time": tm,
-                    "venueUrl": url, "imageUrl": img})
+        row = {"title": title, "venue": "The Goodfoot", "neighborhood": nb,
+               "address": addr, "date": date, "time": tm,
+               "venueUrl": url, "imageUrl": img}
+        price = _goodfoot_price(ev.get("cost"))
+        if price:
+            row["price"] = price
+        about = clean(_html.unescape(re.sub(r"<[^>]+>", " ", ev.get("description") or "")))
+        if len(about) >= 20:
+            row["about"] = about[:400]
+        out.append(row)
     return out
+
+
+def parse_goodfoot(html, today):
+    from fetch_headless import fetch_headless_json, _UA as _FIXED_UA
+    events = []
+    tried = []   # per attempt, for the feed-health line (Sep 25 2026)
+    last_challenge = ""
+    for attempt, (hi, ua) in enumerate(_GOODFOOT_PLAN):
+        host = GOODFOOT_HOSTS[hi]
+        label = f"attempt {attempt + 1} ({host.split('//')[1]}, {'fixed' if ua else 'native'} UA)"
+        pages = []
+        data = None
+        try:
+            data = fetch_headless_json(host + GOODFOOT_LIST_PATH, host + GOODFOOT_API_PATH,
+                                       wait_s=40, headed=True,
+                                       ua=_FIXED_UA if ua else None, html_out=pages)
+        except Exception as e:
+            print(f"  note: Goodfoot {label} failed ({type(e).__name__})")
+            title = re.search(r"title='([^']*)'", str(e))
+            tried.append(f"{label}: {type(e).__name__}" + (f" [{title.group(1)[:40]}]" if title else ""))
+            if getattr(e, "page_html", ""):
+                last_challenge = e.page_html
+        events = data.get("events", []) if isinstance(data, dict) else []
+        if not events and pages:
+            # The list page cleared but the API didn't answer with events.
+            events = _goodfoot_jsonld_events(pages[0])
+            if events:
+                tried.append(f"{label}: {len(events)} events from the list page")
+                break
+        if events:
+            if attempt:
+                print(f"  note: Goodfoot cleared on attempt {attempt + 1}")
+            tried.append(f"{label}: {len(events)} events")
+            break
+        if data is not None:
+            tried.append(f"{label}: " + ("empty" if isinstance(data, dict) else "not JSON"))
+        if attempt < len(_GOODFOOT_PLAN) - 1:
+            import time as _t
+            _t.sleep(15)
+    FETCH_NOTES["The Goodfoot"] = " \u00b7 ".join(tried)
+    if not events and last_challenge:
+        EARLY_STOP_PAGES["The Goodfoot"] = last_challenge
+    return goodfoot_rows(events, today)
 
 
 # ---- Music Millennium (musicmillennium.com/InStore) -- WALLED, headless -----
@@ -7339,7 +7427,7 @@ def scrape():
         print(f"  {src['name']}: {len(got)} shows")
         if src["name"] in EARLY_STOP_PAGES:
             _save_capture(src["name"], EARLY_STOP_PAGES.pop(src["name"]), FETCH_NOTES.get(src["name"], ""))
-        if not got and not src.get("may_be_empty"):
+        if not got and not src.get("may_be_empty") and src["name"] not in _CAPTURES:
             _save_capture(src["name"], last_page, FETCH_NOTES.get(src["name"], ""))
         if not got and fetched_ok and not src.get("may_be_empty"):
             if raw_count and all(s["date"] < lower for s in raw):
