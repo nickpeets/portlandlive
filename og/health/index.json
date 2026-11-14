@@ -1,0 +1,16 @@
+{
+ "captured": "2026-11-14T14:17Z",
+ "sources": [
+  {
+   "source": "Realm (realmpdx.com)",
+   "note": "chrome: ChallengeError \u00b7 safari: ChallengeError \u00b7 browser: 0 rows \u00b7 chrome retry: ChallengeError \u00b7 safari retry: ChallengeError",
+   "file": ""
+  },
+  {
+   "source": "The Goodfoot",
+   "note": "attempt 1 (thegoodfoot.com, native UA): HeadlessChallengeError [Just a moment...] \u00b7 attempt 2 (www.thegoodfoot.com, native UA): HeadlessChallengeError [Just a moment...] \u00b7 attempt 3 (thegoodfoot.com, fixed UA): HeadlessChallengeError [Just a moment...] \u00b7 attempt 4 (www.thegoodfoot.com, fixed UA): He",
+   "file": "the-goodfoot.html",
+   "bytes": 44775
+  }
+ ]
+}
