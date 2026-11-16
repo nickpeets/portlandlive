@@ -1,6 +1,14 @@
 {
  "items": [
   {
+   "text": "New venue: WonderLove — 7 shows on the calendar.",
+   "auto": true,
+   "key": "venues:2026-11-16:2026-11-16T21:06:56+00:00",
+   "from": "2026-11-16",
+   "until": "2026-11-23",
+   "at": "2026-11-16T21:06:56+00:00"
+  },
+  {
    "text": "Welcome Jilly to Rain Or Shows.",
    "auto": true,
    "key": "members:rolling",
@@ -166,6 +174,7 @@
   "venue:Winona Grange",
   "venue:Wolves & People Bar",
   "venue:Wonder Ballroom",
+  "venue:WonderLove",
   "venue:ilani",
   "venues:2026-09-16",
   "venues:2026-09-17",
@@ -177,6 +186,7 @@
   "venues:2026-10-08:2026-10-08T19:51:35+00:00",
   "venues:2026-10-12:2026-10-12T22:10:00+00:00",
   "venues:2026-10-17:2026-10-17T23:57:16+00:00",
-  "venues:2026-10-21:2026-10-22T02:11:56+00:00"
+  "venues:2026-10-21:2026-10-22T02:11:56+00:00",
+  "venues:2026-11-16:2026-11-16T21:06:56+00:00"
  ]
 }
