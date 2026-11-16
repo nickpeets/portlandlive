@@ -128,6 +128,7 @@ VENUE_INFO = {
     "Tomorrow Theater": ("Richmond", "3530 SE Division St, Portland, OR 97202"),
     "Realm": ("Central Eastside", "615 SE Alder St, Portland, OR 97214"),
     "The Den": ("Central Eastside", "116 SE Yamhill St, Portland, OR 97214"),
+    "WonderLove": ("Central Eastside", "262 SE Main St, Portland, OR 97214"),
     "Wilfs": ("Old Town", "800 NW 6th Ave, Portland, OR 97209"),
     "Stoller Wine Bar Newberg": ("Newberg", "106 S Center St, Newberg, OR 97132"),
     "Alberta Abbey": ("King", "126 NE Alberta St, Portland, OR 97211"),
@@ -6288,6 +6289,92 @@ def parse_lavernes(html, today):
     return out
 
 
+# ---- WonderLove (wonderlovepdx.com, 262 SE Main, Central Eastside). Nov 16
+# 2026, Nick: "Get this venue for ROS". Bar + food cart pod + event venue with
+# a Lounge, the Factory and an outdoor stage. The calendar is hand-typed into
+# a Divi code module on /event-venue/: one div.card-event per date --
+# h5.date "Thursday, November 19th", h3 title, a description whose info line
+# reads "TICKETED || 21+ || 7:00PM-9:00PM || LOUNGE || 11/19", a poster img
+# and an optional a.btn (Linktree tr.ee ticket link or a Facebook RSVP).
+# Most cards are bar programming, not shows: football watch nights, themed
+# karaoke, vendor markets, mixers and closure notices are skipped (Spare Room
+# rule: karaoke is out unless it has a live band). Kept: open mic, comedy
+# (tagged), DJ/dance parties, NYE. No year on the cards except NYE; inferred.
+_WL_SKIP = re.compile(r"(?i)\b(football|karaoke|market|closed|mixer|singles\w*|watch party|trivia|bingo)\b")
+_WL_DATE = re.compile(r"(?i)\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+(\d{1,2})(?:st|nd|rd|th)?\b(?:[^0-9]{0,12}(20\d\d))?")
+_WL_24H = re.compile(r"(?i)\btime\s*:\s*(\d{1,2}):(\d{2})\b")
+
+
+def parse_wonderlove(html, today):
+    from bs4 import BeautifulSoup
+    soup = BeautifulSoup(html or "", "html.parser")
+    horizon = today + datetime.timedelta(days=HORIZON_DAYS)
+    page = "https://wonderlovepdx.com/event-venue/"
+    out, seen = [], set()
+    for card in soup.select(".card-event"):
+        h3, h5 = card.find("h3"), card.select_one(".date") or card.find("h5")
+        if not h3 or not h5:
+            continue
+        title = clean(h3.get_text(" ", strip=True))
+        desc = card.select_one(".description")
+        paras = [clean(p.get_text(" ", strip=True)) for p in (desc.find_all("p") if desc else [])]
+        body = " ".join(paras)
+        if not title or _WL_SKIP.search(title) or re.search(r"(?i)\bclosed\b", body):
+            continue
+        m = _WL_DATE.search(h5.get_text(" ", strip=True))
+        if not m:
+            continue
+        mon = MONTHS.get(m.group(1)[:3].title())
+        if not mon:
+            continue
+        yr = int(m.group(3)) if m.group(3) else infer_year(mon, today)
+        try:
+            d = datetime.date(yr, mon, int(m.group(2)))
+        except ValueError:
+            continue
+        if d > horizon or (title.lower(), d) in seen:
+            continue
+        seen.add((title.lower(), d))
+        info = next((p for p in paras if "||" in p), "")
+        time_s = start_time(info or body)
+        if not time_s:
+            t24 = _WL_24H.search(body)            # NYE card: "Time: 21:00 - 02:00"
+            if t24:
+                h = int(t24.group(1))
+                time_s = "%d:%s %s" % ((h - 1) % 12 + 1, t24.group(2), "PM" if h >= 12 else "AM")
+        # educated guess (Oct 21 2026 rule): nothing here starts before 9 AM;
+        # an early time is a typo, so leave it blank rather than publish it
+        if time_s and time_s.endswith("AM") and int(time_s.split(":")[0]) % 12 < 9:
+            time_s = ""
+        age = ""
+        if re.search(r"(?i)\ball\s*ages\b", info):
+            age = "all-ages"
+        elif re.search(r"\b21\s*\+", info or body):
+            age = "21+"
+        elif re.search(r"\b18\s*\+", info or body):
+            age = "18+"
+        price = "Free" if re.match(r"(?i)\s*free\b", info) else _price_in_text(body)
+        url = page
+        for a in card.select("a.btn[href], a[href]"):
+            href = a["href"].strip()
+            if href.startswith("http") and "wonderlovepdx.com" not in href:
+                url = href
+                break
+        img = ""
+        im = card.find("img")
+        if im:
+            img = im.get("data-src") or im.get("src") or ""
+        row = _batch_row("WonderLove", d.isoformat(), time_s, title, url, img, age,
+                         comedy=bool(re.search(r"(?i)\bcomedy|comedian|stand-?up\b", title + " " + body)),
+                         price=price)
+        about = " ".join(p for p in paras if "||" not in p and not re.search(r"[-=]{6}", p)
+                         and not re.match(r"(?i)(book (a table|your party)|time\s*:|date\s*:)", p))
+        if len(about) >= 20 and about.lower() != title.lower():
+            row["about"] = about[:400]
+        out.append(row)
+    return out
+
+
 # ---- The Blue Diamond (2016 NE Sandy, Kerns): blues bar, live music most
 # nights. WordPress + The Events Calendar, read through its REST API like
 # Wilfs and the Headliners. The listing is sorted by date and dominated by
@@ -7156,6 +7243,8 @@ SOURCES = [
      "urls": ["https://portland.heliumcomedy.com/"]},
     {"name": "LaVerne's (lavernespdx.com)", "parser": parse_lavernes,
      "urls": ["https://lavernespdx.com/events"]},
+    {"name": "WonderLove (wonderlovepdx.com)", "parser": parse_wonderlove,
+     "urls": ["https://wonderlovepdx.com/event-venue/"]},
     {"name": "The Blue Diamond (bluediamondpdx.net)", "parser": parse_bluediamond, "tls": True,
      "urls": ["https://bluediamondpdx.net/wp-json/tribe/events/v1/events?per_page=100"]},
     {"name": "Funhouse Lounge (Google Calendar)", "parser": parse_funhouse,

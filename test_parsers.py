@@ -1153,6 +1153,37 @@ def goodfoot_snapshot_check():
     print("  ok   goodfoot snapshot             walled -> fresh web-reader snapshot (validated rows, no closures, no PDF posters); health note; stale one ignored")
 
 
+def wonderlove_check():
+    """Nov 16 2026: WonderLove (262 SE Main) hand-types its calendar as Divi
+    cards. Bar programming (football, karaoke, markets, mixers, closures) is
+    skipped; open mic, comedy, dance parties and NYE stay. Fixture captured
+    from the Codespace Nov 16 2026; clock pinned to that day."""
+    import datetime as _dt
+    if not os.path.exists(os.path.join(FIX, "wonderlove-events.html")):
+        print("  MISSING wonderlove-events.html")
+        sys.exit(1)
+    rows = sv.parse_wonderlove(load("wonderlove-events.html"), _dt.date(2026, 11, 16))
+    bad = []
+    titles = " / ".join(r["title"] for r in rows)
+    if len(rows) < 5:
+        bad.append(f"only {len(rows)} rows: {titles}")
+    if any(re.search(r"(?i)football|karaoke|market|closed|mixer", r["title"]) for r in rows):
+        bad.append(f"bar programming leaked: {titles}")
+    if not any(r.get("contentType") == "comedy" and "Comedy" in r["title"].title() for r in rows):
+        bad.append("Friendsgiving Comedy Night not tagged comedy")
+    if sum(1 for r in rows if r["time"]) != len(rows):
+        bad.append("rows without a time: " + ", ".join(r["title"] for r in rows if not r["time"]))
+    if sum(1 for r in rows if r["imageUrl"]) < len(rows) - 1:
+        bad.append("posters missing")
+    nye = [r for r in rows if r["date"] == "2026-12-31"]
+    if not nye or nye[0]["time"] != "9:00 PM" or nye[0]["age"] != "21+":
+        bad.append(f"NYE row {nye[:1]}")
+    if bad:
+        print("  FAIL wonderlove                    " + "; ".join(bad))
+        sys.exit(1)
+    print(f"  ok   wonderlove                    {len(rows)} rows -- {titles}")
+
+
 if __name__ == "__main__":
     main()
     talk_page_check()
@@ -1170,3 +1201,4 @@ if __name__ == "__main__":
     getdown_relaunch_check()
     goodfoot_doors_check()
     goodfoot_snapshot_check()
+    wonderlove_check()
