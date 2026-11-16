@@ -4,6 +4,10 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### d7814160d — WonderLove (262 SE Main)
+
+Nov 16 2026. Bar, food cart pod and event venue in the Central Eastside, added at Nick's ask. The calendar is hand-typed Divi cards on wonderlovepdx.com/event-venue/ (date, title, a 'TICKETED || 21+ || 7:00PM-9:00PM || LOUNGE' line, poster, Linktree or Facebook button). Most cards are bar programming: football nights, themed karaoke, vendor markets, mixers and closures are skipped; open mic, comedy (to the Comedy bin), dance parties and NYE are kept. NYE's 24-hour time is read; pre-9 AM times are blanked. Test wonderlove_check.
+
 ### 3840260de — The Goodfoot reads a daily web-reader snapshot
 
 Nov 10 2026. 2dda44ac3's verified build still hit Cloudflare's managed check ("Performing security verification") on all five doors, so GitHub's runner can't reach thegoodfoot.com at all, while the site's .ics export (/tec-events-overview/list/?ical=1, plus &tribe-bar-date= for the next window) answers a normal web reader. Stopgap Nick okayed: the daily feed-health task reads the .ics with its web reader, pipes the VEVENTs into goodfoot_snapshot.py, and commits goodfoot_snapshot.json. parse_goodfoot uses it only when every live attempt is walled and only if it is at most 3 days old, with each row validated (thegoodfoot.com event URL, uploads-folder poster, real date); held titles/posters from the API are kept for matching rows. Feed health shows a note while it's in use; a stale snapshot means 0 and the 7-day safety net. Closure notices are no longer listed. First snapshot: 40 listings Nov 10 - Jan 4, all 35 real held shows matched, 5 new (Farnell Newton Dec 22, NYE Yak Attack, Brett's House Party Jan 2, Off the Felt Dec 13, Laugh Basement Jan 4). Tests goodfoot_snapshot_check, goodfoot_doors_check.
