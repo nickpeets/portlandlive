@@ -1,11 +1,21 @@
 {
- "captured": "2026-11-16T21:02Z",
+ "captured": "2026-11-17T14:20Z",
  "sources": [
   {
-   "source": "The Lyons Den (lyonsdenevents.com)",
-   "note": "",
-   "file": "the-lyons-den-lyonsdenevents-com.html",
-   "bytes": 382610
+   "source": "Vancouver Elks Lodge (elks823.org)",
+   "note": "chrome: ChallengeError \u00b7 safari: ChallengeError \u00b7 browser: JSONDecodeError \u00b7 chrome retry: ChallengeError \u00b7 safari retry: ChallengeError",
+   "file": ""
+  },
+  {
+   "source": "Talent Club (talentclublive.com)",
+   "note": "chrome: ChallengeError \u00b7 safari: ChallengeError \u00b7 browser: Error \u00b7 chrome retry: ChallengeError \u00b7 safari retry: ChallengeError",
+   "file": ""
+  },
+  {
+   "source": "The Goodfoot",
+   "note": "attempt 1 (thegoodfoot.com, native UA): HeadlessChallengeError [Just a moment...] \u00b7 attempt 2 (www.thegoodfoot.com, native UA): HeadlessChallengeError [Just a moment...] \u00b7 attempt 3 (thegoodfoot.com, fixed UA): HeadlessChallengeError [Just a moment...] \u00b7 attempt 4 (www.thegoodfoot.com, fixed UA): He",
+   "file": "the-goodfoot.html",
+   "bytes": 44775
   }
  ]
 }
