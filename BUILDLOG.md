@@ -4,6 +4,10 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### 95ff36f3c — Bunk Bar reads its relaunched site's SquadUp payload
+
+Nov 19 2026 (daily feed-health auto-repair). Bunk Bar scraped 0 since Nov 18 (safety net holding 7 rows till Nov 26): the runner's capture showed shows.bunksandwiches.com relaunched with hashed CSS-module names (_1UBMmW_eventCard), so the EventCard_ selector found nothing, while the page still lists 9 shows through April. parse_bunkbar now reads the Next.js flight payload's SquadUp events first (local start_at, SquadUp ticket link, poster, description resolved from its $-reference chunk, age, price, about, sold out — Veaux); show time beats doors in both word orders. The card reader is the fallback, matches both class styles, and converts UTC with America/Los_Angeles instead of a fixed UTC-7, which had held rows an hour off (Seth-Fest 7 PM doors/8 PM show was right only by luck; BASIC showed 9 PM for an 8 PM show). Fixture bunkbar-nov2026.html, test bunkbar_relaunch_check. Chehalem Valley Brewing and Theater of the Clouds (dark) and Ashland Armory (quiet) left alone; the sandbox's web reader couldn't reach their pages this run.
+
 ### d7814160d — WonderLove (262 SE Main)
 
 Nov 16 2026. Bar, food cart pod and event venue in the Central Eastside, added at Nick's ask. The calendar is hand-typed Divi cards on wonderlovepdx.com/event-venue/ (date, title, a 'TICKETED || 21+ || 7:00PM-9:00PM || LOUNGE' line, poster, Linktree or Facebook button). Most cards are bar programming: football nights, themed karaoke, vendor markets, mixers and closures are skipped; open mic, comedy (to the Comedy bin), dance parties and NYE are kept. NYE's 24-hour time is read; pre-9 AM times are blanked. Test wonderlove_check.
