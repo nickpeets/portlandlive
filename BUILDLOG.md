@@ -4,6 +4,10 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### 8c4c3ca9 — Alberta Rose reads multi-night runs
+
+Nov 19 2026 (Nick: The Next Waltz missing). Alberta Rose run cards carry no .singleEventDate — just a range ("Fri, Nov 20 - sun, Nov 29") and one .rhp-event-series-dates line per night — so parse_albertarose skipped every run whole: The Next Waltz (Nov 20, 21, 28, 29), White Album Xmas (10 nights), Live Wire, Nitemare B4 Xmas and others. Each night is now its own row with its own show time (Next Waltz Sun Nov 29 is 5 PM); two shows on one night keep the first. Run cards link a /calendar/category/series/ page that the /event/ poster map never keys, so their poster comes from the card's own image. Captured fixture 51 → 80 rows, 80/80 posters; new fixture alberta-rose-series.html.
+
 ### 95ff36f3c — Bunk Bar reads its relaunched site's SquadUp payload
 
 Nov 19 2026 (daily feed-health auto-repair). Bunk Bar scraped 0 since Nov 18 (safety net holding 7 rows till Nov 26): the runner's capture showed shows.bunksandwiches.com relaunched with hashed CSS-module names (_1UBMmW_eventCard), so the EventCard_ selector found nothing, while the page still lists 9 shows through April. parse_bunkbar now reads the Next.js flight payload's SquadUp events first (local start_at, SquadUp ticket link, poster, description resolved from its $-reference chunk, age, price, about, sold out — Veaux); show time beats doors in both word orders. The card reader is the fallback, matches both class styles, and converts UTC with America/Los_Angeles instead of a fixed UTC-7, which had held rows an hour off (Seth-Fest 7 PM doors/8 PM show was right only by luck; BASIC showed 9 PM for an 8 PM show). Fixture bunkbar-nov2026.html, test bunkbar_relaunch_check. Chehalem Valley Brewing and Theater of the Clouds (dark) and Ashland Armory (quiet) left alone; the sandbox's web reader couldn't reach their pages this run.
