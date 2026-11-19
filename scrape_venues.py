@@ -2922,17 +2922,117 @@ def parse_mississippipizza(html, today):
     return shows
 
 
-def parse_bunkbar(html, today):
-    # Bunk Bar (shows.bunksandwiches.com) - Next.js App Router. Events are
-    # server-rendered into EventCard_* CSS-module divs. Date + start time are
-    # emitted in UTC; convert to Pacific (PDT, UTC-7) for the correct local
-    # date and time (a late-evening show rolls back one calendar day).
+def _bunkbar_payload_rows(html, today):
+    """Nov 19 2026: the relaunched shows.bunksandwiches.com (hashed CSS-module
+    names like _1UBMmW_eventCard) streams its SquadUp event list in the
+    Next.js flight payload (self.__next_f.push). Each event carries the local
+    start_at with its offset, the SquadUp ticket URL, the poster's default_url,
+    a description (age, doors/show, price) and sold_out -- read that first."""
     import datetime as _dt
+    import json as _json
+    chunks = []
+    for m in re.finditer(r'self\.__next_f\.push\(\[1,"((?:[^"\\]|\\.)*)"\]\)', html):
+        try:
+            chunks.append(_json.loads('"' + m.group(1) + '"'))
+        except Exception:
+            continue
+    blob = "".join(chunks)
+    i = blob.find('"events":[')
+    if i < 0:
+        return []
+    try:
+        events, _ = _json.JSONDecoder().raw_decode(blob[i + 9:])
+    except Exception:
+        return []
+    # Long strings are streamed as separate text chunks ("18:T8bb,<html>")
+    # and the event's field holds only the reference "$18" -- resolve it, by
+    # the chunk's byte length, or a description would read as a "$18" price.
+    raw = blob.encode("utf-8")
+
+    def _deref(v):
+        m = re.fullmatch(r"\$([0-9a-f]+)", v or "")
+        if not m:
+            return v or ""
+        t = re.search(rb"(?:^|\n)" + m.group(1).encode() + rb":T([0-9a-f]+),", raw)
+        if not t:
+            return ""
+        return raw[t.end():t.end() + int(t.group(1), 16)].decode("utf-8", "ignore")
+    nb, addr = VENUE_INFO["Bunk Bar"]
+    out = []
+    for e in events:
+        if not isinstance(e, dict):
+            continue
+        title = clean(e.get("name") or "")
+        try:
+            st = _dt.datetime.fromisoformat((e.get("start_at") or "").replace("Z", "+00:00"))
+        except Exception:
+            continue
+        if not title:
+            continue
+        if st.tzinfo is not None:
+            st = st.astimezone(_ASP_PDT)
+        if st.date() < today:
+            continue
+        desc = clean(BeautifulSoup(_deref(e.get("description")), "html.parser").get_text(" "))
+        tm = st.strftime("%I:%M %p").lstrip("0")
+        # Educated guess: the description's "Show 8pm" beats a doors-ish
+        # start; a pre-noon start is never a Bunk Bar show time.
+        tm = show_time(desc) or tm
+        sm = next((x for x in re.finditer(
+            r"\b(\d{1,2})(?::(\d\d))?\s*([ap])\.?m\.?\s*show(?:time)?\b(?![\s:]*\d)", desc, re.I)
+            if not re.search(r"doors?\W*$", desc[:x.start()], re.I)
+            or re.search(r"\d\s*[ap]\.?m\.?\s*doors?\W*$", desc[:x.start()], re.I)), None)
+        if sm:  # "7pm Doors 8pm Showtime" -- time-before-word form
+            hh = int(sm.group(1)) % 12 + (12 if sm.group(3).lower() == "p" else 0)
+            tm = _dt.time(hh, int(sm.group(2) or 0)).strftime("%I:%M %p").lstrip("0")
+        if re.match(r"(?:[1-9]|1[01]):\d\d AM$", tm):
+            tm = ""
+        img = ((e.get("image") or {}).get("default_url") or "").strip()
+        url = (e.get("url") or "").strip()
+        row = {"title": title, "venue": "Bunk Bar",
+               "neighborhood": nb, "address": addr,
+               "date": st.date().isoformat(), "time": tm,
+               "venueUrl": "https://shows.bunksandwiches.com/",
+               "ticketUrl": url if url.startswith("http") else "",
+               "imageUrl": img if img.startswith("http") else "",
+               "age": _age_in_text(desc)}
+        pr = _price_in_text(desc)
+        if pr:
+            row["price"] = pr
+        sub = clean(e.get("name_line_2") or "")
+        about = clean(" ".join(x for x in (sub, desc) if x))
+        if about and not re.fullmatch(r"[\w\s+$/.:-]{0,60}", about):
+            row["about"] = about[:400]
+        if e.get("sold_out"):
+            row["soldOut"] = True
+        out.append(row)
+    return out
+
+
+def _bunk_cls(*names):
+    # Matches both CSS-module styles: "EventCard_eventCard__x1y2" (Sep 2026)
+    # and "_1UBMmW_eventCard" (Nov 2026 relaunch).
+    def f(cls):
+        return bool(cls) and any(
+            re.search(r"(?:^|_)" + n + r"(?:__|$)", c) for c in cls.split() for n in names)
+    return f
+
+
+def parse_bunkbar(html, today):
+    # Bunk Bar (shows.bunksandwiches.com) - Next.js App Router. Primary: the
+    # flight payload's SquadUp events (_bunkbar_payload_rows). Fallback: the
+    # server-rendered cards. Card date + start time are emitted in UTC;
+    # convert to Pacific (America/Los_Angeles, DST-aware) for the local date
+    # and time (a late-evening show rolls back one calendar day).
+    import datetime as _dt
+    rows = _bunkbar_payload_rows(html, today)
+    if rows:
+        return rows
     soup = BeautifulSoup(html, "html.parser")
     nb, addr = VENUE_INFO["Bunk Bar"]
     shows = []
-    for c in soup.select('div[class*="EventCard_eventCard__"]'):
-        de = c.select_one('p[class*="EventCard_eventDate__"]')
+    for c in soup.find_all("div", class_=_bunk_cls("eventCard")):
+        de = c.find("p", class_=_bunk_cls("eventDate"))
         h2 = c.find("h2")
         ul = c.find("ul")
         if not de or not h2:
@@ -2953,7 +3053,8 @@ def parse_bunkbar(html, today):
         if tmatch:
             hh = int(tmatch.group(1)) % 12 + (12 if tmatch.group(3) == "PM" else 0)
             mn = int(tmatch.group(2))
-            dt_p = _dt.datetime(yr, mo, day, hh, mn) - _dt.timedelta(hours=7)
+            dt_p = (_dt.datetime(yr, mo, day, hh, mn, tzinfo=_dt.timezone.utc)
+                    .astimezone(_ASP_PDT).replace(tzinfo=None))
             date = dt_p.strftime("%Y-%m-%d")
             tm = dt_p.strftime("%I:%M %p").lstrip("0")
             # The structured start is the doors time; the card's own text

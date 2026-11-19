@@ -1153,6 +1153,53 @@ def goodfoot_snapshot_check():
     print("  ok   goodfoot snapshot             walled -> fresh web-reader snapshot (validated rows, no closures, no PDF posters); health note; stale one ignored")
 
 
+def bunkbar_relaunch_check():
+    """Nov 19 2026: shows.bunksandwiches.com relaunched with hashed CSS-module
+    names (_1UBMmW_eventCard), so the EventCard_ selector found nothing
+    (health: zero). Fixture = the runner's og/health capture. The flight
+    payload's SquadUp events are read first (local start_at, ticket URL,
+    poster, description by $-reference, sold_out); the cards are the
+    fallback and must still read both class styles."""
+    import datetime as _dt
+    if not os.path.exists(os.path.join(FIX, "bunkbar-nov2026.html")):
+        print("  MISSING bunkbar-nov2026.html")
+        sys.exit(1)
+    html = load("bunkbar-nov2026.html")
+    today = _dt.date(2026, 11, 19)
+    rows = sv.parse_bunkbar(html, today)
+    bad = []
+    by = {r["title"]: r for r in rows}
+    if len(rows) != 9:
+        bad.append(f"{len(rows)} rows, want 9")
+    if sum(1 for r in rows if r["imageUrl"].startswith("https://cdn.filepicker.io/")) != len(rows):
+        bad.append("posters missing")
+    if sum(1 for r in rows if r.get("ticketUrl", "").startswith("https://squadup.com/events/")) != len(rows):
+        bad.append("SquadUp ticket links missing")
+    wb = next((r for r in rows if r["title"].startswith("Wood Butcher")), {})
+    if (wb.get("date"), wb.get("time"), wb.get("age")) != ("2026-11-20", "8:00 PM", "21+"):
+        bad.append(f"Wood Butcher {wb.get('date')} {wb.get('time')} {wb.get('age')!r}")
+    sf = next((r for r in rows if r["title"].startswith("Seth-Fest")), {})
+    if (sf.get("date"), sf.get("time")) != ("2026-12-05", "8:00 PM"):
+        bad.append(f"Seth-Fest {sf.get('date')} {sf.get('time')} (show 8pm, doors 7pm)")
+    ba = by.get("BASIC, Abronia", {})
+    if ba.get("price") or "Douglas McCombs" not in ba.get("about", ""):
+        bad.append(f"BASIC description reference not resolved (price {ba.get('price')!r})")
+    if (by.get("Thomas Dollbaum", {}).get("date"), by.get("Thomas Dollbaum", {}).get("time")) != ("2027-03-31", "7:00 PM"):
+        bad.append("Thomas Dollbaum DST date/time")
+    if not by.get("Veaux", {}).get("soldOut"):
+        bad.append("Veaux not sold out")
+    cards = sv.parse_bunkbar(re.sub(r"self\.__next_f\.push", "x", html), today)
+    if len(cards) != 9 or not all(r["imageUrl"] and r["time"] for r in cards):
+        bad.append(f"card fallback read {len(cards)} rows")
+    old = sv.parse_bunkbar(re.sub(r"self\.__next_f\.push", "x", load("bunkbar.html")), TODAY)
+    if len(old) != 10:
+        bad.append(f"old EventCard_ markup fallback read {len(old)}")
+    if bad:
+        print("  FAIL bunkbar relaunch              " + "; ".join(bad))
+        sys.exit(1)
+    print(f"  ok   bunkbar relaunch              {len(rows)} rows from the flight payload; cards fallback reads both class styles")
+
+
 def wonderlove_check():
     """Nov 16 2026: WonderLove (262 SE Main) hand-types its calendar as Divi
     cards. Bar programming (football, karaoke, markets, mixers, closures) is
@@ -1202,3 +1249,4 @@ if __name__ == "__main__":
     goodfoot_doors_check()
     goodfoot_snapshot_check()
     wonderlove_check()
+    bunkbar_relaunch_check()
