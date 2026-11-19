@@ -1678,28 +1678,47 @@ def parse_albertarose(html, today):
         te = info.select_one(".rhp-event__title--list")
         title = clean(te.get_text(" ")) if te else clean(a.get_text(" "))
         title = re.sub(r"^(SOLD OUT|CANCELLED|POSTPONED)[:\s-]*", "", title, flags=re.I).strip()
-        de = row.select_one(".singleEventDate") if row else None
-        date = _ar_date(clean(de.get_text(" ")) if de else "", today)
-        if not (title and date):
-            continue
         url = a["href"]
         if not url.startswith("http"):
             url = "https://albertarosetheatre.com" + url
-        det = (row.select_one(".eventDateDetails") if row else None) or info.select_one(".eventDateDetails")
-        showtime = ""
-        if det:
-            sm = re.search(r"Show:?\s*([\d:]+\s*[ap]m)", clean(det.get_text(" ")), re.I)
+        # Nov 19 2026 (The Next Waltz): a multi-night run has no
+        # .singleEventDate -- the card shows a range ("Fri, Nov 20 - sun,
+        # Nov 29") and one .rhp-event-series-dates line per night ("Nov 20
+        # Doors: 6:30 pm Show: 7:30 pm"). Those runs were skipped whole.
+        # Now each night is its own row; two shows on one night keep the first.
+        slots = []
+        for sd in (row.select(".rhp-event-series-dates") if row else []):
+            st = clean(sd.get_text(" "))
+            dl = sd.select_one(".rhp-event-series-date")
+            slots.append((_ar_date(clean(dl.get_text(" ")) if dl else st, today), st))
+        if not slots:
+            de = row.select_one(".singleEventDate") if row else None
+            det = (row.select_one(".eventDateDetails") if row else None) or info.select_one(".eventDateDetails")
+            slots = [(_ar_date(clean(de.get_text(" ")) if de else "", today),
+                      clean(det.get_text(" ")) if det else "")]
+        venue = "Alberta Rose Theatre"
+        nb, addr = VENUE_INFO.get(venue, ("NE/Alberta", ""))
+        img = img_by_url.get((url or "").split("?")[0], "")
+        if not img and row is not None:
+            # Run cards link a /calendar/category/series/ page, which the
+            # /event/ URL map never keys; the poster is in the same card.
+            im = row.select_one(_RHP_IMG_SEL)
+            src = ((im.get("src") or im.get("data-src") or "").strip()) if im else ""
+            img = "" if src.startswith("data:") else src
+        for date, ttxt in slots:
+            if not (title and date):
+                continue
+            showtime = ""
+            sm = re.search(r"Show:?\s*([\d:]+\s*[ap]m)", ttxt or "", re.I)
             if sm:
                 showtime = to_time(sm.group(1))
-        venue = "Alberta Rose Theatre"
-        key = (venue, date, title.lower())
-        if key in seen:
-            continue
-        seen.add(key)
-        nb, addr = VENUE_INFO.get(venue, ("NE/Alberta", ""))
-        shows.append({"title": title, "venue": venue, "neighborhood": nb,
-                      "address": addr, "date": date, "time": showtime, "venueUrl": url,
-                      "imageUrl": img_by_url.get((url or "").split("?")[0], "")})
+            key = (venue, date, title.lower())
+            if key in seen:
+                continue
+            seen.add(key)
+            shows.append({"title": title, "venue": venue, "neighborhood": nb,
+                          "address": addr, "date": date, "time": showtime, "venueUrl": url,
+                          "imageUrl": img})
     _ar_enrich(shows, today)
     return shows
 
