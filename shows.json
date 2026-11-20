@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-20T14:18:35+00:00",
+  "generated": "2026-11-20T17:39:07+00:00",
   "source": "Scraped from venue calendars + hand-added listings",
   "shows": [
     {
@@ -28,8 +28,6 @@
       "ticketUrl": "https://www.etix.com/ticket/p/89590950/kevonstage-portland-aladdin-theater",
       "contentType": "comedy",
       "ticketer": "etix",
-      "resaleUrl": "https://vivid-seats.pxf.io/c/4969747/1017970/12730?prodsku=7287393&u=https%3A%2F%2Fwww.vividseats.com%2Fkevonstage-tickets-portland-aladdin-theater-11-20-2026--theater-comedy%2Fproduction%2F7287393%3Futm_term%3Dproduction-7287393&intsrc=CATF_7904",
-      "resaleFrom": "106.00",
       "id": 2
     },
     {
@@ -46,8 +44,6 @@
       "age": "",
       "contentType": "comedy",
       "ticketer": "venue",
-      "resaleUrl": "https://vivid-seats.pxf.io/c/4969747/1017970/12730?prodsku=7287393&u=https%3A%2F%2Fwww.vividseats.com%2Fkevonstage-tickets-portland-aladdin-theater-11-20-2026--theater-comedy%2Fproduction%2F7287393%3Futm_term%3Dproduction-7287393&intsrc=CATF_7904",
-      "resaleFrom": "106.00",
       "id": 3
     },
     {
@@ -638,7 +634,7 @@
       "date": "2026-11-20",
       "time": "",
       "venueUrl": "https://realmpdx.com/emancipator/",
-      "imageUrl": "",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/07/2026.11.20-EMANCIPATOR-square-768x768.jpg",
       "age": "21+",
       "ticketer": "venue",
       "resaleUrl": "https://vivid-seats.pxf.io/c/4969747/1017970/12730?prodsku=7359627&u=https%3A%2F%2Fwww.vividseats.com%2Femancipator-tickets-portland-realm-11-20-2026--concerts-dance-electronica%2Fproduction%2F7359627%3Futm_term%3Dproduction-7359627&intsrc=CATF_7904",
@@ -1845,11 +1841,9 @@
       "date": "2026-11-21",
       "time": "",
       "venueUrl": "https://realmpdx.com/tbh/",
-      "imageUrl": "",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/10/2026.11.21-TOBEHONEST-Square-768x768.jpg",
       "age": "21+",
       "ticketer": "venue",
-      "resaleUrl": "https://vivid-seats.pxf.io/c/4969747/1017970/12730?prodsku=7789747&u=https%3A%2F%2Fwww.vividseats.com%2Ftobehonest-tickets-portland-realm-11-21-2026%2Fproduction%2F7789747%3Futm_term%3Dproduction-7789747&intsrc=CATF_7904",
-      "resaleFrom": "26.00",
       "id": 134
     },
     {
@@ -2563,7 +2557,7 @@
       "age": "",
       "ticketer": "ticketweb",
       "resaleUrl": "https://vivid-seats.pxf.io/c/4969747/1017970/12730?prodsku=7649014&u=https%3A%2F%2Fwww.vividseats.com%2Fsinferno-cabaret-tickets-portland-dantes-11-22-2026%2Fproduction%2F7649014%3Futm_term%3Dproduction-7649014&intsrc=CATF_7904",
-      "resaleFrom": "36.00",
+      "resaleFrom": "129.00",
       "id": 186
     },
     {
@@ -2572,7 +2566,7 @@
       "neighborhood": "Hosford-Abernethy",
       "address": "2432 SE 11th Ave, Portland, OR 97214",
       "date": "2026-11-22",
-      "time": "7:00 PM",
+      "time": "2:00 PM",
       "venueUrl": "https://www.funhouselounge.com/calendar/",
       "imageUrl": "",
       "ticketer": null,
@@ -3505,7 +3499,7 @@
       "resaleFrom": "120.00",
       "id": 254,
       "pickable": true,
-      "buzz": 267419
+      "buzz": 267428
     },
     {
       "title": "Two-Step Tuesday with Best Intentions and Dance Lessons with Robbie",
@@ -3707,7 +3701,7 @@
       "time": "8:00 PM",
       "venueUrl": "https://www.jacklondonrevue.com/tm-event/infinity/",
       "ticketUrl": "https://www.ticketweb.com/event/infinity-jack-london-revue-tickets/14348204?pl=jacklondon&REFID=clientsitewp",
-      "imageUrl": "https://i.ticketweb.com/i/00/13/06/35/94_Original.jpg?v=10",
+      "imageUrl": "https://i.ticketweb.com/i/00/13/06/35/94_Original.jpg?v=11",
       "age": "21+",
       "price": "$31–237",
       "ticketer": "ticketweb",
@@ -3813,7 +3807,7 @@
       "date": "2026-11-25",
       "time": "",
       "venueUrl": "https://realmpdx.com/dennett/",
-      "imageUrl": "",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/08/2026.11.25-DENNETT-square-768x768.jpg",
       "age": "21+",
       "ticketer": "venue",
       "id": 277
@@ -4196,19 +4190,6 @@
       "id": 305
     },
     {
-      "title": "Josh Cole",
-      "venue": "Hopworks Brewery",
-      "neighborhood": "Creston-Kenilworth",
-      "address": "2944 SE Powell Blvd, Portland, OR 97202",
-      "date": "2026-11-26",
-      "time": "7:00 PM",
-      "venueUrl": "https://www.hopworksbeer.com/live-music",
-      "imageUrl": "",
-      "ticketer": null,
-      "age": "",
-      "id": 306
-    },
-    {
       "title": "Thanksgiving Buffet Restaurant Specials To Go",
       "venue": "Kennedy School",
       "neighborhood": "Concordia",
@@ -4219,7 +4200,7 @@
       "imageUrl": "https://cdn.mcmenamins.com/system/uploads/MadborgAssets/_v/ThanksgivingToGoPic.jpg/gallery_preview.jpg",
       "age": "all-ages",
       "ticketer": "venue",
-      "id": 307
+      "id": 306
     },
     {
       "title": "CLOSED for the HOLIDAY",
@@ -4232,7 +4213,7 @@
       "imageUrl": "",
       "ticketer": null,
       "age": "",
-      "id": 308
+      "id": 307
     },
     {
       "title": "Thanksgiving Buffet Restaurant Specials To Go",
@@ -4246,7 +4227,7 @@
       "age": "all-ages",
       "outOfTown": true,
       "ticketer": null,
-      "id": 309
+      "id": 308
     },
     {
       "title": "Thanksgiving Restaurant Specials To Go",
@@ -4259,7 +4240,7 @@
       "imageUrl": "https://cdn.mcmenamins.com/system/uploads/MadborgAssets/_v/ThanksgivingDinnerStofferFamily5726.jpg/gallery_preview.jpg",
       "age": "all-ages",
       "ticketer": null,
-      "id": 310
+      "id": 309
     },
     {
       "title": "Karaoke w/ a live band featuring Karaoke from Hell... tentative",
@@ -4272,7 +4253,7 @@
       "address": "4830 NE 42nd Ave",
       "ticketer": null,
       "age": "",
-      "id": 311
+      "id": 310
     },
     {
       "title": "CLOSED FOR THE HOLIDAY",
@@ -4285,7 +4266,7 @@
       "imageUrl": "https://assets-prod.turntabletickets.com/media/the1905/show-13236/thanksg.jpg",
       "age": "",
       "ticketer": "turntable",
-      "id": 312
+      "id": 311
     },
     {
       "title": "Thanksgiving Day",
@@ -4298,7 +4279,7 @@
       "imageUrl": "",
       "age": "",
       "ticketer": null,
-      "id": 313
+      "id": 312
     },
     {
       "title": "Thanks Give Sing",
@@ -4313,7 +4294,7 @@
       "price": "$20–50",
       "outOfTown": true,
       "ticketer": null,
-      "id": 314
+      "id": 313
     },
     {
       "title": "Roger Sanchez - Ages 21+",
@@ -4328,7 +4309,7 @@
       "price": "",
       "age": "21+",
       "ticketer": null,
-      "id": 315
+      "id": 314
     },
     {
       "title": "Busking for the Holidays with Ian Bailey",
@@ -4341,7 +4322,7 @@
       "imageUrl": "https://cdn.mcmenamins.com/system/uploads/MadborgAssets/_v/BuskingFortheHolidays26.jpg/gallery_preview.jpg",
       "age": "all-ages",
       "ticketer": null,
-      "id": 316
+      "id": 315
     },
     {
       "title": "Dickens Carolers",
@@ -4354,7 +4335,7 @@
       "imageUrl": "https://cdn.mcmenamins.com/system/uploads/MadborgAssets/_v/Dickens17.jpg/gallery_preview.jpg",
       "age": "all-ages",
       "ticketer": null,
-      "id": 317
+      "id": 316
     },
     {
       "title": "The Storm Large Holiday Ordeal (Night 1)",
@@ -4369,7 +4350,7 @@
       "ticketer": "etix",
       "resaleUrl": "https://vivid-seats.pxf.io/c/4969747/1017970/12730?prodsku=7855494&u=https%3A%2F%2Fwww.vividseats.com%2Fstorm-large-tickets-portland-aladdin-theater-11-27-2026%2Fproduction%2F7855494%3Futm_term%3Dproduction-7855494&intsrc=CATF_7904",
       "resaleFrom": "132.00",
-      "id": 318,
+      "id": 317,
       "pickable": true,
       "buzz": 0
     },
@@ -4384,7 +4365,7 @@
       "imageUrl": "https://images.squarespace-cdn.com/content/v1/5faf44b998d0ea21e2b0a786/1790708141969-HA9ZBCHK2Z1NN9X0JNWH/black-nativity-2026-1200x800.png",
       "age": "",
       "ticketer": "venue",
-      "id": 319
+      "id": 318
     },
     {
       "title": "Red Light Romeos’ Yachtsgiving – A Yacht Rock Extravaganza",
@@ -4397,7 +4378,7 @@
       "imageUrl": "https://albertarosetheatre.com/wp-content/uploads/2026/10/red-light-romeos-yachtsgiving-a-yacht-rock-extravaganza.jfif",
       "ticketer": "venue",
       "age": "",
-      "id": 320
+      "id": 319
     },
     {
       "title": "Kitschmas Crackers Black Friday",
@@ -4410,7 +4391,7 @@
       "imageUrl": "https://images.squarespace-cdn.com/content/v1/54109e68e4b06b163549a8dc/1793039554377-MYYRQJOW2G4FIM80UDG0/Black+Friday.jpg",
       "ticketer": null,
       "age": "",
-      "id": 321
+      "id": 320
     },
     {
       "title": "TITS UP",
@@ -4423,7 +4404,7 @@
       "imageUrl": "https://images.squarespace-cdn.com/content/v1/54109e68e4b06b163549a8dc/1706127624455-F6BFVC7NIKN94IY3650S/2.jpg",
       "ticketer": null,
       "age": "",
-      "id": 322
+      "id": 321
     },
     {
       "title": "Low Ticket Warning: Curtis Salgado",
@@ -4436,7 +4417,7 @@
       "imageUrl": "https://img.evbuc.com/https%3A%2F%2Fcdn.evbuc.com%2Fimages%2F1135873183%2F2897869732571%2F1%2Foriginal.20250926-003253?crop=focalpoint&fit=crop&h=198&w=436&auto=format%2Ccompress&q=75&sharp=10&fp-x=0.5&fp-y=0.5&s=3499632490df6d9a1f757513616706d7",
       "ticketer": "eventbrite",
       "age": "",
-      "id": 323
+      "id": 322
     },
     {
       "title": "No Music",
@@ -4449,7 +4430,7 @@
       "imageUrl": "",
       "ticketer": null,
       "age": "",
-      "id": 324
+      "id": 323
     },
     {
       "title": "Steve Hale",
@@ -4462,7 +4443,7 @@
       "imageUrl": "",
       "age": "",
       "ticketer": null,
-      "id": 325
+      "id": 324
     },
     {
       "title": "Haley Johnsen",
@@ -4475,7 +4456,7 @@
       "imageUrl": "https://images.squarespace-cdn.com/content/v1/6966d46936aacc1859899af1/e28d16fd-eb34-400f-b527-b8517ca3c5b7/26LaJoie_HaleyJohnsen_Web-Banner.jpg",
       "age": "",
       "ticketer": "venue",
-      "id": 326
+      "id": 325
     },
     {
       "title": "Curious Comedy Showdown",
@@ -4489,7 +4470,7 @@
       "age": "",
       "contentType": "comedy",
       "ticketer": "crowdwork",
-      "id": 327
+      "id": 326
     },
     {
       "title": "HOTWAX disco~glam~metal~punk~hiphop",
@@ -4504,7 +4485,7 @@
       "age": "21+",
       "price": "$2",
       "ticketer": "ticketweb",
-      "id": 328
+      "id": 327
     },
     {
       "title": "MISS EXOTIC OREGON 2027 FINALS",
@@ -4518,7 +4499,7 @@
       "imageUrl": "https://i.ticketweb.com/i/00/13/13/91/64_Original.jpg?v=10",
       "age": "",
       "ticketer": "ticketweb",
-      "id": 329
+      "id": 328
     },
     {
       "title": "Die Hard at Foster Theater",
@@ -4531,7 +4512,7 @@
       "imageUrl": "",
       "ticketer": null,
       "age": "",
-      "id": 330
+      "id": 329
     },
     {
       "title": "Midnight Mic (late night stand up open mic)",
@@ -4544,7 +4525,7 @@
       "imageUrl": "",
       "ticketer": null,
       "age": "",
-      "id": 331
+      "id": 330
     },
     {
       "title": "Murder Mystery Machine",
@@ -4557,7 +4538,7 @@
       "imageUrl": "",
       "ticketer": null,
       "age": "",
-      "id": 332
+      "id": 331
     },
     {
       "title": "Roast Battle Portland",
@@ -4570,7 +4551,7 @@
       "imageUrl": "",
       "ticketer": null,
       "age": "",
-      "id": 333
+      "id": 332
     },
     {
       "title": "Mathilda",
@@ -4583,7 +4564,7 @@
       "imageUrl": "https://images.squarespace-cdn.com/content/v1/64bad396e6ad2c1216a9ada5/1789404424920-W4DF3DFLD3X7U5K5BQZ6/DSC01418-scaled.png",
       "ticketer": null,
       "age": "",
-      "id": 334
+      "id": 333
     },
     {
       "title": "Bodysnatcher: Hell Is Here, Hell Is Home Tour (w/ Gideon, Psycho-Frame, Volatile Ways)",
@@ -4597,7 +4578,7 @@
       "age": "all-ages",
       "ticketUrl": "https://www.ticketmaster.com/event/Z7r9jZ1AAZb8S",
       "ticketer": "etix",
-      "id": 335
+      "id": 334
     },
     {
       "title": "DJ RAPHI",
@@ -4610,7 +4591,7 @@
       "imageUrl": "https://hawthornetheatre.com/wp-content/uploads/2026/08/dj-raphi.jpeg",
       "age": "all-ages",
       "ticketer": "etix",
-      "id": 336
+      "id": 335
     },
     {
       "title": "Everwalden",
@@ -4623,7 +4604,7 @@
       "imageUrl": "https://images.squarespace-cdn.com/content/v1/69b36b755dde9e535451a4aa/1795123386091-RQGUCXQHHQQNMPKO3P1M/meta_eyJzcmNCdWNrZXQiOiJiemdsZmlsZXMifQ%3D%3D.webp",
       "age": "21+",
       "ticketer": null,
-      "id": 337
+      "id": 336
     },
     {
       "title": "LizaBanks Campagna (Neon Room)",
@@ -4641,7 +4622,7 @@
         "7:30 PM",
         "9:45 PM"
       ],
-      "id": 338
+      "id": 337
     },
     {
       "title": "Rhys Darby",
@@ -4655,13 +4636,13 @@
       "age": "",
       "contentType": "comedy",
       "ticketer": "helium",
-      "resaleUrl": "https://vivid-seats.pxf.io/c/4969747/1017970/12730?prodsku=7073152&u=https%3A%2F%2Fwww.vividseats.com%2Frhys-darby-tickets-portland-helium-comedy-club---portland-11-27-2026--theater-comedy%2Fproduction%2F7073152%3Futm_term%3Dproduction-7073152&intsrc=CATF_7904",
+      "resaleUrl": "https://vivid-seats.pxf.io/c/4969747/1017970/12730?prodsku=7073154&u=https%3A%2F%2Fwww.vividseats.com%2Frhys-darby-tickets-portland-helium-comedy-club---portland-11-27-2026--theater-comedy%2Fproduction%2F7073154%3Futm_term%3Dproduction-7073154&intsrc=CATF_7904",
       "resaleFrom": "59.00",
       "times": [
         "7:00 PM",
         "9:15 PM"
       ],
-      "id": 339
+      "id": 338
     },
     {
       "title": "Oromo Ethiopian artist Abdi Nuressa",
@@ -4674,7 +4655,7 @@
       "imageUrl": "https://images.squarespace-cdn.com/content/v1/661d86bb6d76a662e8a3f6cc/1794102253603-Y2GKZSO80RJ2F0LS8VZO/abdi.jpg",
       "age": "",
       "ticketer": null,
-      "id": 340
+      "id": 339
     },
     {
       "title": "SNAP! '90s Dance Party!: '90s Thanksgiving Edition",
@@ -4688,7 +4669,7 @@
       "imageUrl": "https://cdn.etix.com/etix/performance-image/performance_image_1200w/94c4b4256a8d77740d305b533ff1b374.jpg",
       "age": "21+",
       "ticketer": "etix",
-      "id": 341
+      "id": 340
     },
     {
       "title": "Claes Almroth Trio",
@@ -4701,7 +4682,7 @@
       "imageUrl": "",
       "ticketer": null,
       "age": "",
-      "id": 342
+      "id": 341
     },
     {
       "title": "Black Friday with Police Cars",
@@ -4714,7 +4695,7 @@
       "imageUrl": "https://cdn.mcmenamins.com/system/uploads/MadborgAssets/_v/ThePoliceCars26.jpg/gallery_preview.jpg",
       "age": "all-ages",
       "ticketer": "venue",
-      "id": 343
+      "id": 342
     },
     {
       "title": "Madison True Band-Midnight Jade",
@@ -4727,7 +4708,7 @@
       "imageUrl": "",
       "ticketer": null,
       "age": "",
-      "id": 344
+      "id": 343
     },
     {
       "title": "Night Train: Late Nite Jazz at LaVerne’s",
@@ -4741,7 +4722,7 @@
       "age": "21+",
       "price": "Free",
       "ticketer": null,
-      "id": 345
+      "id": 344
     },
     {
       "title": "Michelle Alany & the Mystics",
@@ -4755,7 +4736,7 @@
       "price": "Free",
       "ticketer": null,
       "age": "",
-      "id": 346
+      "id": 345
     },
     {
       "title": "The Left Coast Roasters / Portland Country Underground",
@@ -4769,7 +4750,7 @@
       "price": "$10",
       "ticketer": null,
       "age": "",
-      "id": 347
+      "id": 346
     },
     {
       "title": "Brutal Bridges",
@@ -4783,7 +4764,7 @@
       "age": "all-ages",
       "outOfTown": true,
       "ticketer": null,
-      "id": 348
+      "id": 347
     },
     {
       "title": "Dickens Carolers",
@@ -4797,7 +4778,7 @@
       "age": "all-ages",
       "outOfTown": true,
       "ticketer": null,
-      "id": 349
+      "id": 348
     },
     {
       "title": "Black Friday Books and Brews",
@@ -4810,7 +4791,7 @@
       "imageUrl": "https://cdn.mcmenamins.com/system/uploads/MadborgAssets/_v/BookNookBlackFriday26.jpg/gallery_preview.jpg",
       "age": "all-ages",
       "ticketer": null,
-      "id": 350
+      "id": 349
     },
     {
       "title": "Holiday Music Bingo",
@@ -4823,7 +4804,7 @@
       "imageUrl": "https://cdn.mcmenamins.com/system/uploads/MadborgAssets/_v/BingoBeer.jpg/gallery_preview.jpg",
       "age": "all-ages",
       "ticketer": "venue",
-      "id": 351
+      "id": 350
     },
     {
       "title": "Forró Beleza",
@@ -4836,7 +4817,7 @@
       "imageUrl": "https://mississippipizza.com/wp-content/uploads/2026/11/etix-Forr_341941793965902.jfif",
       "age": "",
       "ticketer": null,
-      "id": 352
+      "id": 351
     },
     {
       "title": "Grand Royale – Beastie Boys Tribute",
@@ -4849,7 +4830,7 @@
       "imageUrl": "https://cdn.etix.com/etix/performance-image/performance_image_1200w/7695c5c49603343d2b2c845ad2de4797.jpg",
       "ticketer": "etix",
       "age": "",
-      "id": 353
+      "id": 352
     },
     {
       "title": "A Christmas Celebration: Portland Choir & Orchestra with Nathan Pacheco",
@@ -4862,7 +4843,7 @@
       "imageUrl": "https://www.portland5.com/sites/default/files/styles/facebook_share/public/2026-09/1080x1080.nm_.facebookpost.jpg?h=57024e64&itok=mB-ziWLa",
       "age": "all-ages",
       "ticketer": "evenue",
-      "id": 354
+      "id": 353
     },
     {
       "title": "Eternal Plastics • Limitations • Glass Curtains",
@@ -4875,7 +4856,7 @@
       "imageUrl": "https://images.squarespace-cdn.com/content/v1/65973d9d92af572923b87cfc/1793360671121-G5EXK3R2D6R0W0V3SOCG/eternalplasticsFB.jpg",
       "age": "21+",
       "ticketer": null,
-      "id": 355
+      "id": 354
     },
     {
       "title": "Thank Gawd it's Funky — Cee Blanco - Open to Close (Birthday Set)",
@@ -4888,7 +4869,7 @@
       "imageUrl": "",
       "age": "21+",
       "ticketer": "ra",
-      "id": 356
+      "id": 355
     },
     {
       "title": "GRAVAGERZ: BEDROOM TO THE WORLD",
@@ -4898,10 +4879,10 @@
       "date": "2026-11-27",
       "time": "",
       "venueUrl": "https://realmpdx.com/gravagerz/",
-      "imageUrl": "",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/09/DSC_3903-768x768.jpg",
       "age": "21+",
       "ticketer": "venue",
-      "id": 357
+      "id": 356
     },
     {
       "title": "Neurosis (w/ Rhododendron, Great Falls)",
@@ -4916,7 +4897,7 @@
       "ticketer": "etix",
       "resaleUrl": "https://vivid-seats.pxf.io/c/4969747/1017970/12730?prodsku=7536685&u=https%3A%2F%2Fwww.vividseats.com%2Fneurosis-tickets-portland-revolution-hall-portland-11-27-2026%2Fproduction%2F7536685%3Futm_term%3Dproduction-7536685&intsrc=CATF_7904",
       "resaleFrom": "51.00",
-      "id": 358,
+      "id": 357,
       "pickable": true,
       "buzz": 218
     },
@@ -4933,7 +4914,7 @@
       "age": "21+",
       "price": "$14",
       "ticketer": "ticketweb",
-      "id": 359
+      "id": 358
     },
     {
       "title": "Tevis Hodge Jr",
@@ -4946,7 +4927,7 @@
       "address": "4830 NE 42nd Ave",
       "ticketer": null,
       "age": "",
-      "id": 360
+      "id": 359
     },
     {
       "title": "Water & Power: a Night Carnival of climate apocalypse",
@@ -4962,7 +4943,7 @@
       "resaleUrl": "https://vivid-seats.pxf.io/c/4969747/1017970/12730?prodsku=7791522&u=https%3A%2F%2Fwww.vividseats.com%2Fwater-and-power---night-carnival-of-climate-apocalypse-tickets-portland-star-theater-portland-11-27-2026%2Fproduction%2F7791522%3Futm_term%3Dproduction-7791522&intsrc=CATF_7904",
       "resaleFrom": "64.00",
       "age": "",
-      "id": 361,
+      "id": 360,
       "pickable": true,
       "buzz": 0
     },
@@ -4977,7 +4958,7 @@
       "imageUrl": "",
       "ticketer": null,
       "age": "21+",
-      "id": 362
+      "id": 361
     },
     {
       "title": "Joseph Konty",
@@ -4990,7 +4971,7 @@
       "imageUrl": "",
       "ticketer": null,
       "age": "21+",
-      "id": 363
+      "id": 362
     },
     {
       "title": "Electric Ayes",
@@ -5003,7 +4984,7 @@
       "imageUrl": "https://www.stollerwinebar.com/wp-content/uploads/2026/07/electric-ayes.jpg",
       "age": "",
       "ticketer": null,
-      "id": 364
+      "id": 363
     },
     {
       "title": "Retro A GO GO VIDEO DANCE PARTY",
@@ -5016,7 +4997,7 @@
       "imageUrl": "https://images.squarespace-cdn.com/content/v1/68f2a66eb54bb61e843997cc/1779235058872-NPPEMNMHYJN9X82VD9D4/Screenshot_20240213_132141+%281%29.jpg",
       "age": "",
       "ticketer": null,
-      "id": 365
+      "id": 364
     },
     {
       "title": "The Brites (Rachel’s b-day party)",
@@ -5031,7 +5012,7 @@
       "price": "Free",
       "about": "The Brites! Celebrating Rachel's Birthday! 7pm!",
       "ticketer": null,
-      "id": 366
+      "id": 365
     },
     {
       "title": "CLOSED FOR THE HOLIDAY",
@@ -5044,7 +5025,7 @@
       "imageUrl": "https://assets-prod.turntabletickets.com/media/the1905/show-13237/thanksg.jpg",
       "age": "",
       "ticketer": "turntable",
-      "id": 367
+      "id": 366
     },
     {
       "title": "Allen Markel & Friends",
@@ -5058,7 +5039,7 @@
       "age": "21+",
       "price": "$12",
       "ticketer": null,
-      "id": 368
+      "id": 367
     },
     {
       "title": "Garcia Birthday Band (Night 1 - 11/27)",
@@ -5073,7 +5054,7 @@
       "ticketUrl": "https://www.ticketmaster.com/event/Z7r9jZ1AAe98_",
       "ticketer": "tixr",
       "age": "",
-      "id": 369
+      "id": 368
     },
     {
       "title": "SOUL STEW with DJ AQUAMAN & FRIENDS (9pm Doors)",
@@ -5087,7 +5068,7 @@
       "about": "@ Portland’s longest running DJ Dance Night, Soul Stew delivers deep & delicious cuts of funk, soul, disco & break beats on vinyl 45s. $10 Add to calendar Google Calendar iCalendar Outlook 365 Outlook Live",
       "ticketer": null,
       "age": "",
-      "id": 370
+      "id": 369
     },
     {
       "title": "Ramble On [Led Zeppelin tribute] • The Exquisite Taste of Plain Water",
@@ -5100,7 +5081,7 @@
       "imageUrl": "https://theheadlinersclub.com/wp-content/uploads/2026/09/26-1127-HEADLINERS-ramble-FB-Cover.avif",
       "age": "21+",
       "ticketer": "venue",
-      "id": 371
+      "id": 370
     },
     {
       "title": "Johnny Franco & His Real Brother Dom (Indie Pop/Cabaret from São Paulo, Brazil)",
@@ -5114,7 +5095,7 @@
       "age": "",
       "outOfTown": true,
       "ticketer": null,
-      "id": 372
+      "id": 371
     },
     {
       "title": "Let's Meet at The Off Beat",
@@ -5127,7 +5108,7 @@
       "imageUrl": "https://s3.amazonaws.com/opendate-aws-assets/confirms/website_event_images/000/749/620/compressed/Untitled_design.jpg?1793991430",
       "age": "all-ages",
       "ticketer": "venue",
-      "id": 373
+      "id": 372
     },
     {
       "title": "Southern Sons",
@@ -5140,7 +5121,7 @@
       "imageUrl": "",
       "age": "21+",
       "ticketer": null,
-      "id": 374
+      "id": 373
     },
     {
       "title": "Bon Ton Rulers",
@@ -5153,7 +5134,7 @@
       "imageUrl": "",
       "age": "",
       "ticketer": null,
-      "id": 375
+      "id": 374
     },
     {
       "title": "Black Friday Market",
@@ -5167,7 +5148,7 @@
       "outOfTown": true,
       "ticketer": "venue",
       "age": "",
-      "id": 376
+      "id": 375
     },
     {
       "title": "War Machine w/ Tecolote, Nomada",
@@ -5180,7 +5161,7 @@
       "imageUrl": "https://cloudinary-a.akamaihd.net/holdmyticket/image/upload/w_600/uploads/flyers2/43x8mbqdv5cxofizikdg",
       "ticketer": null,
       "age": "",
-      "id": 377
+      "id": 376
     },
     {
       "title": "Ramon Ayala: Historia De Un Final",
@@ -5193,9 +5174,9 @@
       "imageUrl": "https://cdn.prod.website-files.com/62aa5d3f408f1681bc0ddb81/69d3fea1895d9ae80c33bcd0_ramon%20ayala%20web.avif",
       "ticketer": "ticketmaster",
       "resaleUrl": "https://vivid-seats.pxf.io/c/4969747/1017970/12730?prodsku=6878366&u=https%3A%2F%2Fwww.vividseats.com%2Framon-ayala-tickets-portland-veterans-memorial-coliseum---portland-11-27-2026%2Fproduction%2F6878366%3Futm_term%3Dproduction-6878366&intsrc=CATF_7904",
-      "resaleFrom": "229.00",
+      "resaleFrom": "88.00",
       "age": "",
-      "id": 378,
+      "id": 377,
       "pickable": true,
       "buzz": 0
     },
@@ -5210,7 +5191,7 @@
       "imageUrl": "https://cdn.mcmenamins.com/system/uploads/MadborgAssets/_v/pants-on-fire-logo.jpg/gallery_preview.jpg",
       "age": "all-ages",
       "ticketer": "venue",
-      "id": 379
+      "id": 378
     },
     {
       "title": "The Annual Best Of Pants On Fire Party: Filthy/Freaky",
@@ -5223,7 +5204,7 @@
       "imageUrl": "https://cdn.mcmenamins.com/system/uploads/MadborgAssets/_v/pants-on-fire-logo.jpg/gallery_preview.jpg",
       "age": "21+",
       "ticketer": "venue",
-      "id": 380
+      "id": 379
     },
     {
       "title": "Tony Pacini Trio - Ed Bennett and Tim Rap Thanksgiving Weekend",
@@ -5237,7 +5218,7 @@
       "age": "",
       "price": "$10",
       "ticketer": null,
-      "id": 381
+      "id": 380
     },
     {
       "title": "Live Music: My Weight in Gold Stars",
@@ -5250,7 +5231,7 @@
       "imageUrl": "https://img.evbuc.com/https%3A%2F%2Fcdn.evbuc.com%2Fimages%2F1195822153%2F3007588040904%2F1%2Foriginal.20261014-215831?crop=focalpoint&fit=crop&h=230&w=460&auto=format%2Ccompress&q=75&sharp=10&fp-x=0.5&fp-y=0.5&s=32030396260d26b415764d966d71ff33",
       "age": "",
       "ticketer": "eventbrite",
-      "id": 382
+      "id": 381
     },
     {
       "title": "Grabbitz - Ages 21+",
@@ -5265,7 +5246,7 @@
       "price": "",
       "age": "21+",
       "ticketer": null,
-      "id": 383
+      "id": 382
     },
     {
       "title": "Busking for the Holidays with Waffle Taco",
@@ -5278,7 +5259,7 @@
       "imageUrl": "https://cdn.mcmenamins.com/system/uploads/MadborgAssets/_v/BuskingFortheHolidays26.jpg/gallery_preview.jpg",
       "age": "all-ages",
       "ticketer": null,
-      "id": 384
+      "id": 383
     },
     {
       "title": "Dickens Carolers",
@@ -5291,7 +5272,7 @@
       "imageUrl": "https://cdn.mcmenamins.com/system/uploads/MadborgAssets/_v/Dickens17.jpg/gallery_preview.jpg",
       "age": "all-ages",
       "ticketer": null,
-      "id": 385
+      "id": 384
     },
     {
       "title": "The Storm Large Holiday Ordeal (Night 2)",
@@ -5306,7 +5287,7 @@
       "ticketer": "etix",
       "resaleUrl": "https://vivid-seats.pxf.io/c/4969747/1017970/12730?prodsku=7855498&u=https%3A%2F%2Fwww.vividseats.com%2Fstorm-large-tickets-portland-aladdin-theater-11-28-2026%2Fproduction%2F7855498%3Futm_term%3Dproduction-7855498&intsrc=CATF_7904",
       "resaleFrom": "135.00",
-      "id": 386,
+      "id": 385,
       "pickable": true,
       "buzz": 0
     },
@@ -5321,7 +5302,7 @@
       "imageUrl": "https://images.squarespace-cdn.com/content/v1/5faf44b998d0ea21e2b0a786/1790708141969-HA9ZBCHK2Z1NN9X0JNWH/black-nativity-2026-1200x800.png",
       "age": "",
       "ticketer": "venue",
-      "id": 387
+      "id": 386
     },
     {
       "title": "The Next Waltz - 50th Anniversary Celebration",
@@ -5334,7 +5315,7 @@
       "imageUrl": "https://albertarosetheatre.com/wp-content/uploads/2026/11/the-next-waltz.jfif",
       "ticketer": "venue",
       "age": "",
-      "id": 388
+      "id": 387
     },
     {
       "title": "R.O.T.R. Presents Dreww Moon",
@@ -5347,7 +5328,7 @@
       "imageUrl": "https://images.squarespace-cdn.com/content/v1/54109e68e4b06b163549a8dc/1794736962010-DQ6H9BYZM70Q00ONMVJQ/Image-1.jpg",
       "ticketer": null,
       "age": "",
-      "id": 389
+      "id": 388
     },
     {
       "title": "Radio Giants",
@@ -5360,7 +5341,7 @@
       "imageUrl": "https://images.squarespace-cdn.com/content/v1/54109e68e4b06b163549a8dc/1793640477206-2VF48GQXDCCIN7LJONY4/ASP+Logo.jpg",
       "ticketer": null,
       "age": "",
-      "id": 390
+      "id": 389
     },
     {
       "title": "Music of Hans Zimmer",
@@ -5376,7 +5357,7 @@
       "resaleUrl": "https://vivid-seats.pxf.io/c/4969747/1017970/12730?prodsku=6677874&u=https%3A%2F%2Fwww.vividseats.com%2Foregon-symphony-tickets-portland-arlene-schnitzer-concert-hall-11-28-2026--concerts-classical%2Fproduction%2F6677874%3Futm_term%3Dproduction-6677874&intsrc=CATF_7904",
       "resaleFrom": "55.00",
       "age": "",
-      "id": 391,
+      "id": 390,
       "pickable": true,
       "buzz": 0
     },
@@ -5392,7 +5373,7 @@
       "soldOut": true,
       "ticketer": "eventbrite",
       "age": "",
-      "id": 392
+      "id": 391
     },
     {
       "title": "Timmy B and The Guilty Pleasure's",
@@ -5405,7 +5386,7 @@
       "imageUrl": "",
       "ticketer": null,
       "age": "",
-      "id": 393
+      "id": 392
     },
     {
       "title": "Lorna Baxter",
@@ -5418,7 +5399,7 @@
       "imageUrl": "",
       "age": "",
       "ticketer": null,
-      "id": 394
+      "id": 393
     },
     {
       "title": "Curious Comedy Showdown",
@@ -5432,7 +5413,7 @@
       "age": "",
       "contentType": "comedy",
       "ticketer": "crowdwork",
-      "id": 395
+      "id": 394
     },
     {
       "title": "HIDEOUS MONSTER 10 YEAR ANNIVERSARY with Sunset The Machine & High Five Danger",
@@ -5447,7 +5428,7 @@
       "age": "21+",
       "price": "$15",
       "ticketer": "ticketweb",
-      "id": 396
+      "id": 395
     },
     {
       "title": "SMASH disco~glam~metal~punk-hiphop",
@@ -5462,7 +5443,7 @@
       "age": "21+",
       "price": "$1",
       "ticketer": "ticketweb",
-      "id": 397
+      "id": 396
     },
     {
       "title": "Center of Attention",
@@ -5475,7 +5456,7 @@
       "imageUrl": "",
       "ticketer": null,
       "age": "",
-      "id": 398
+      "id": 397
     },
     {
       "title": "Die Hard at Foster Theater",
@@ -5488,7 +5469,7 @@
       "imageUrl": "",
       "ticketer": null,
       "age": "",
-      "id": 399
+      "id": 398
     },
     {
       "title": "Murder Mystery Machine",
@@ -5501,7 +5482,7 @@
       "imageUrl": "",
       "ticketer": null,
       "age": "",
-      "id": 400
+      "id": 399
     },
     {
       "title": "Andrea Walker",
@@ -5514,7 +5495,7 @@
       "imageUrl": "https://images.squarespace-cdn.com/content/v1/64bad396e6ad2c1216a9ada5/1794418226455-ZAJ9AOPNY5CAVRAP2TBH/591729102_10235578083305462_2785694384850589391_n.jpg",
       "ticketer": null,
       "age": "",
-      "id": 401
+      "id": 400
     },
     {
       "title": "Hooey Bee & the Gang",
@@ -5527,7 +5508,7 @@
       "imageUrl": "https://images.squarespace-cdn.com/content/v1/64bad396e6ad2c1216a9ada5/1730249110429-I96PYR6STLXFMI5XST7L/272619608_104766825449596_1574902692918047100_n.jpg",
       "ticketer": null,
       "age": "",
-      "id": 402
+      "id": 401
     },
     {
       "title": "The Night Shift: A Monthly Sound Gathering with St. Johns Yacht Club",
@@ -5540,7 +5521,7 @@
       "imageUrl": "https://images.squarespace-cdn.com/content/v1/64bad396e6ad2c1216a9ada5/1753291176204-FBF287DKHDCWCJGAR3Z4/SJYC-Havalina-8-1-2025-1080x1350-color.JPG",
       "ticketer": null,
       "age": "",
-      "id": 403
+      "id": 402
     },
     {
       "title": "Ladrones “Arriba La L” USA 2026 Tour (w/ Empty Shell Casing)",
@@ -5555,7 +5536,7 @@
       "ticketer": "etix",
       "resaleUrl": "https://vivid-seats.pxf.io/c/4969747/1017970/12730?prodsku=7561218&u=https%3A%2F%2Fwww.vividseats.com%2Fladrones-tickets-portland-hawthorne-theatre-11-28-2026--concerts-hard-rock%2Fproduction%2F7561218%3Futm_term%3Dproduction-7561218&intsrc=CATF_7904",
       "resaleFrom": "66.00",
-      "id": 404,
+      "id": 403,
       "pickable": true,
       "buzz": 0
     },
@@ -5570,7 +5551,7 @@
       "imageUrl": "https://images.squarespace-cdn.com/content/v1/69b36b755dde9e535451a4aa/1795109039075-HN35FP160DUQOX5WTZSN/1000003076.jpg",
       "age": "21+",
       "ticketer": null,
-      "id": 405
+      "id": 404
     },
     {
       "title": "LizaBanks Campagna (Neon Room)",
@@ -5590,7 +5571,7 @@
         "6:30 PM",
         "9:00 PM"
       ],
-      "id": 406
+      "id": 405
     },
     {
       "title": "Rhys Darby",
@@ -5610,7 +5591,7 @@
         "6:00 PM",
         "8:30 PM"
       ],
-      "id": 407
+      "id": 406
     },
     {
       "title": "Live DJ: DJ TBD",
@@ -5624,7 +5605,7 @@
       "age": "",
       "outOfTown": true,
       "ticketer": null,
-      "id": 408
+      "id": 407
     },
     {
       "title": "VROOM VROOM: A Charli XCX Dance Night ft: DJ sets by Mr. Harry & PLUS",
@@ -5638,7 +5619,7 @@
       "imageUrl": "https://cdn.etix.com/etix/performance-image/performance_image_1200w/8de3bfbad89af807e510c9ec1b2aa8a1.jpg",
       "age": "21+",
       "ticketer": "etix",
-      "id": 409
+      "id": 408
     },
     {
       "title": "Leah Farmer",
@@ -5651,7 +5632,7 @@
       "imageUrl": "https://popmenucloud.com/cdn-cgi/image/width%3D1200%2Cheight%3D1200%2Cfit%3Dscale-down%2Cformat%3Dauto%2Cquality%3D60/xlofcpny/970ae36c-639f-4155-96fb-7f5daf5e7be8.png",
       "ticketer": null,
       "age": "",
-      "id": 410
+      "id": 409
     },
     {
       "title": "BURLY-Q REVUE",
@@ -5665,7 +5646,7 @@
       "imageUrl": "https://i.ticketweb.com/i/00/12/77/00/04_Original.jpg?v=5",
       "age": "",
       "ticketer": "ticketweb",
-      "id": 411
+      "id": 410
     },
     {
       "title": "ONE WAY OUT – ALLMAN BROTHERS BAND TRIBUTE",
@@ -5680,7 +5661,7 @@
       "age": "21+",
       "price": "$26",
       "ticketer": "ticketweb",
-      "id": 412
+      "id": 411
     },
     {
       "title": "Breakfast with Santa",
@@ -5693,7 +5674,7 @@
       "imageUrl": "https://cdn.mcmenamins.com/system/uploads/MadborgAssets/_v/santabreakfast-1.jpg/gallery_preview.jpg",
       "age": "all-ages",
       "ticketer": "venue",
-      "id": 413
+      "id": 412
     },
     {
       "title": "Muscle Cats-One Drink and Other lies / Creature Party",
@@ -5706,7 +5687,7 @@
       "imageUrl": "",
       "ticketer": null,
       "age": "",
-      "id": 414
+      "id": 413
     },
     {
       "title": "Loose Threads",
@@ -5720,7 +5701,7 @@
       "age": "",
       "contentType": "comedy",
       "ticketer": "crowdwork",
-      "id": 415
+      "id": 414
     },
     {
       "title": "Real Housewives Of...?",
@@ -5734,7 +5715,7 @@
       "age": "",
       "contentType": "comedy",
       "ticketer": "crowdwork",
-      "id": 416
+      "id": 415
     },
     {
       "title": "Speculation Proposition",
@@ -5748,7 +5729,7 @@
       "age": "",
       "contentType": "comedy",
       "ticketer": "crowdwork",
-      "id": 417
+      "id": 416
     },
     {
       "title": "Reb & the Good News' \"Barn Party\"",
@@ -5762,7 +5743,7 @@
       "price": "$10",
       "ticketer": null,
       "age": "",
-      "id": 418
+      "id": 417
     },
     {
       "title": "The BBQ Boys",
@@ -5776,7 +5757,7 @@
       "age": "all-ages",
       "price": "Free",
       "ticketer": null,
-      "id": 419
+      "id": 418
     },
     {
       "title": "The Electric Stomp",
@@ -5790,7 +5771,7 @@
       "price": "Free",
       "ticketer": null,
       "age": "",
-      "id": 420
+      "id": 419
     },
     {
       "title": "Rockaway",
@@ -5804,7 +5785,7 @@
       "age": "all-ages",
       "outOfTown": true,
       "ticketer": null,
-      "id": 421
+      "id": 420
     },
     {
       "title": "Breakfast with Santa",
@@ -5817,7 +5798,7 @@
       "imageUrl": "https://cdn.mcmenamins.com/system/uploads/MadborgAssets/_v/santabreakfast-1.jpg/gallery_preview.jpg",
       "age": "all-ages",
       "ticketer": null,
-      "id": 422
+      "id": 421
     },
     {
       "title": "Sound & Vision starring The Christopher Brown Quartet including David Bowie classics and deep cuts with a visual narrative by VJ Gregarious",
@@ -5830,7 +5811,7 @@
       "imageUrl": "https://cdn.mcmenamins.com/system/uploads/MadborgAssets/_v/SoundVision26.jpg/gallery_preview.jpg",
       "age": "all-ages",
       "ticketer": "venue",
-      "id": 423
+      "id": 422
     },
     {
       "title": "Blue Factory Flame",
@@ -5843,7 +5824,7 @@
       "imageUrl": "https://mississippipizza.com/wp-content/uploads/2026/11/etix-Blue_346991793701362.jfif",
       "age": "",
       "ticketer": null,
-      "id": 424
+      "id": 423
     },
     {
       "title": "Sabrina Saed & Your Jack",
@@ -5856,7 +5837,7 @@
       "imageUrl": "https://mississippipizza.com/wp-content/uploads/2026/10/etix-Sabrina_340811791901577.jfif",
       "age": "",
       "ticketer": null,
-      "id": 425
+      "id": 424
     },
     {
       "title": "Tony Furtado Band 15th Annual Post-Thanksgiving Bash (w/ David Jacobs-Strain)",
@@ -5869,7 +5850,7 @@
       "imageUrl": "https://cdn.etix.com/etix/performance-image/performance_image_1200w/b5667eee1685346d0df5980342b0ab19.jpg",
       "ticketer": "etix",
       "age": "",
-      "id": 426
+      "id": 425
     },
     {
       "title": "Trans-Siberian Orchestra: The Ghosts of Christmas Eve",
@@ -5890,9 +5871,9 @@
         "3:30 PM",
         "8:00 PM"
       ],
-      "id": 427,
+      "id": 426,
       "pickable": true,
-      "buzz": 19940
+      "buzz": 19941
     },
     {
       "title": "That Fucking Ivan • Chain Taylor • Jaybee • Charley Haggard",
@@ -5905,7 +5886,7 @@
       "imageUrl": "https://images.squarespace-cdn.com/content/v1/65973d9d92af572923b87cfc/1792902563765-13AAKRG6YQSKV9HH8MAT/TFIVANfb.jpg",
       "age": "21+",
       "ticketer": null,
-      "id": 428
+      "id": 427
     },
     {
       "title": "Sap (w/ Sludge Mother , The Jewelry)",
@@ -5920,7 +5901,7 @@
       "resaleUrl": "https://vivid-seats.pxf.io/c/4969747/1017970/12730?prodsku=7617907&u=https%3A%2F%2Fwww.vividseats.com%2Fsap-tickets-portland-polaris-hall-11-28-2026%2Fproduction%2F7617907%3Futm_term%3Dproduction-7617907&intsrc=CATF_7904",
       "resaleFrom": "36.00",
       "age": "",
-      "id": 429
+      "id": 428
     },
     {
       "title": "Hickey Machine - 2 Year Anniversary — Max Bass, one-half NelSon b2b Lemix, Vignette",
@@ -5933,7 +5914,7 @@
       "imageUrl": "",
       "age": "21+",
       "ticketer": "ra",
-      "id": 430
+      "id": 429
     },
     {
       "title": "SEVEN LIONS (SOLD OUT)",
@@ -5943,11 +5924,11 @@
       "date": "2026-11-28",
       "time": "",
       "venueUrl": "https://realmpdx.com/sevenlions/",
-      "imageUrl": "",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/09/2026.11.28-SEVEN-LIONS-square-768x768.jpg",
       "age": "21+",
       "soldOut": true,
       "ticketer": "venue",
-      "id": 431
+      "id": 430
     },
     {
       "title": "Neurosis (w/ Blackwater Holylight, Trigger Object)",
@@ -5962,7 +5943,7 @@
       "ticketer": "etix",
       "resaleUrl": "https://vivid-seats.pxf.io/c/4969747/1017970/12730?prodsku=7536655&u=https%3A%2F%2Fwww.vividseats.com%2Fneurosis-tickets-portland-revolution-hall-portland-11-28-2026%2Fproduction%2F7536655%3Futm_term%3Dproduction-7536655&intsrc=CATF_7904",
       "resaleFrom": "85.00",
-      "id": 432,
+      "id": 431,
       "pickable": true,
       "buzz": 218
     },
@@ -5977,7 +5958,7 @@
       "imageUrl": "https://images.squarespace-cdn.com/content/v1/66f05b48bee947347e3cf89e/1787188191256-810OG9OYKILHR84U6K64/IMG_8264.JPG",
       "age": "",
       "ticketer": null,
-      "id": 433
+      "id": 432
     },
     {
       "title": "The Amity Affliction: HOUSE OF CARDS 2026 (w/ Blessthefall, Orthodox, Buried In Spring)",
@@ -5993,9 +5974,9 @@
       "ticketer": "etix",
       "resaleUrl": "https://vivid-seats.pxf.io/c/4969747/1017970/12730?prodsku=7287612&u=https%3A%2F%2Fwww.vividseats.com%2Fthe-amity-affliction-tickets-portland-roseland-theater-11-28-2026%2Fproduction%2F7287612%3Futm_term%3Dproduction-7287612&intsrc=CATF_7904",
       "resaleFrom": "71.00",
-      "id": 434,
+      "id": 433,
       "pickable": true,
-      "buzz": 66012
+      "buzz": 66014
     },
     {
       "title": "FRIENDS IN LOW PLACES ~ 90s Country Night",
@@ -6010,7 +5991,7 @@
       "age": "21+",
       "price": "$29",
       "ticketer": "ticketweb",
-      "id": 435
+      "id": 434
     },
     {
       "title": "Naomi & the Noise",
@@ -6023,7 +6004,7 @@
       "address": "4830 NE 42nd Ave",
       "ticketer": null,
       "age": "",
-      "id": 436
+      "id": 435
     },
     {
       "title": "QUEEN MOTHER with Kiss Me Kiss Me Kiss Me",
@@ -6038,7 +6019,7 @@
       "age": "21+",
       "price": "$30",
       "ticketer": "ticketweb",
-      "id": 437
+      "id": 436
     },
     {
       "title": "PepperKorns + Neek In The We's + ?",
@@ -6051,7 +6032,7 @@
       "imageUrl": "",
       "ticketer": null,
       "age": "21+",
-      "id": 438
+      "id": 437
     },
     {
       "title": "Vikings in the Basement",
@@ -6064,7 +6045,7 @@
       "imageUrl": "https://www.stollerwinebar.com/wp-content/uploads/2026/07/199A8796.jpg",
       "age": "",
       "ticketer": null,
-      "id": 439
+      "id": 438
     },
     {
       "title": "Sleaze Pleaze Saturdayz Music Video Dance Party",
@@ -6077,7 +6058,7 @@
       "imageUrl": "https://images.squarespace-cdn.com/content/v1/68f2a66eb54bb61e843997cc/1779235267395-AK5FH1GMF41OUHCMYRCO/Screenshot_20240925_152500.jpg",
       "age": "",
       "ticketer": null,
-      "id": 440
+      "id": 439
     },
     {
       "title": "Time Theft + Bonus Room + Slow Pony",
@@ -6090,7 +6071,7 @@
       "imageUrl": "https://images.squarespace-cdn.com/content/v1/68f2a66eb54bb61e843997cc/1793766390800-LILW5X7S7GAMOXVA5CXJ/Screenshot+2026-11-03+202610.png",
       "age": "",
       "ticketer": null,
-      "id": 441
+      "id": 440
     },
     {
       "title": "86d From Heaven",
@@ -6105,7 +6086,7 @@
       "price": "Free",
       "about": "After Melt In Your Mouth",
       "ticketer": null,
-      "id": 442
+      "id": 441
     },
     {
       "title": "Melts In Your Mouth",
@@ -6120,7 +6101,7 @@
       "price": "Free",
       "about": "Melt In Your Mouth! Really!",
       "ticketer": null,
-      "id": 443
+      "id": 442
     },
     {
       "title": "Taylor Kingman",
@@ -6133,7 +6114,7 @@
       "imageUrl": "https://drive.google.com/thumbnail?id=1QmLloXIV7JpeEdI92HTwzKDEZhQIvCSn&sz=w1000",
       "ticketer": null,
       "age": "",
-      "id": 444
+      "id": 443
     },
     {
       "title": "Smiley T and the Tall Trees",
@@ -6147,7 +6128,7 @@
       "age": "21+",
       "outOfTown": true,
       "ticketer": null,
-      "id": 445
+      "id": 444
     },
     {
       "title": "Charlie Brown III and Friends",
@@ -6160,7 +6141,7 @@
       "imageUrl": "https://assets-prod.turntabletickets.com/media/the1905/show-13238/IMG_1694.jpg",
       "age": "all-ages",
       "ticketer": "turntable",
-      "id": 446
+      "id": 445
     },
     {
       "title": "Food and Funds event for the Portland Rescue Mission",
@@ -6174,7 +6155,7 @@
       "age": "21+",
       "price": "$20",
       "ticketer": null,
-      "id": 447
+      "id": 446
     },
     {
       "title": "Tombstone Shadows",
@@ -6187,7 +6168,7 @@
       "imageUrl": "",
       "ticketer": null,
       "age": "",
-      "id": 448
+      "id": 447
     },
     {
       "title": "Garcia Birthday Band (Night 2 - 11/28)",
@@ -6201,7 +6182,7 @@
       "price": "$25",
       "ticketer": "tixr",
       "age": "",
-      "id": 449
+      "id": 448
     },
     {
       "title": "GET ON UP WITH TAKIMBA & FRIENDS (9pm Doors)",
@@ -6215,7 +6196,7 @@
       "about": "@ Takimba’s Get On Up is an evening of re-mixes and mash-ups of classic hiphop, funk, soul and electronic dance cuts. Come and shake it ’til the wee hours ! $12 Add to calendar Google Calendar iCalendar Outlook 365 Outlook Live",
       "ticketer": null,
       "age": "",
-      "id": 450
+      "id": 449
     },
     {
       "title": "Odyssey [Moody Blues tribute] – 4pm all ages matinee",
@@ -6228,7 +6209,7 @@
       "imageUrl": "https://theheadlinersclub.com/wp-content/uploads/2026/09/26-1128-HEADLINERS-odyssey-FB-Cover.jpg",
       "age": "all-ages",
       "ticketer": "venue",
-      "id": 451
+      "id": 450
     },
     {
       "title": "Slicker + Dance Your Boots Off line dance lesson",
@@ -6241,7 +6222,7 @@
       "imageUrl": "https://theheadlinersclub.com/wp-content/uploads/2026/09/26-1128-HEADLINERS-slicker-FB-Cover.avif",
       "age": "21+",
       "ticketer": "venue",
-      "id": 452
+      "id": 451
     },
     {
       "title": "The AM (Acoustic Minds)",
@@ -6254,7 +6235,7 @@
       "imageUrl": "https://images.squarespace-cdn.com/content/v1/663945bd4332ae7ee4ae6c61/1776273200792-RYNAN4NPT9RU4ORKWIRF/IMG_0709.jpeg",
       "age": "",
       "ticketer": null,
-      "id": 453
+      "id": 452
     },
     {
       "title": "Nobody's Sweetheart",
@@ -6267,7 +6248,7 @@
       "imageUrl": "",
       "age": "21+",
       "ticketer": null,
-      "id": 454
+      "id": 453
     },
     {
       "title": "Sunny South",
@@ -6280,7 +6261,7 @@
       "imageUrl": "",
       "ticketer": null,
       "age": "",
-      "id": 455
+      "id": 454
     },
     {
       "title": "Sweet Sam Band",
@@ -6293,7 +6274,7 @@
       "imageUrl": "",
       "age": "",
       "ticketer": null,
-      "id": 456
+      "id": 455
     },
     {
       "title": "Sea Shanty Sing Along",
@@ -6306,7 +6287,7 @@
       "imageUrl": "https://static.wixstatic.com/media/b929c6_5c9ff91330da453088668909b68b0566~mv2.png",
       "ticketer": null,
       "age": "",
-      "id": 457
+      "id": 456
     },
     {
       "title": "Countryside Ride's 4th Annual Bakersfield Bash",
@@ -6320,7 +6301,7 @@
       "outOfTown": true,
       "ticketer": "venue",
       "age": "",
-      "id": 458
+      "id": 457
     },
     {
       "title": "Cumbia Night!",
@@ -6333,7 +6314,7 @@
       "imageUrl": "https://cloudinary-a.akamaihd.net/holdmyticket/image/upload/w_600/uploads/flyers2/ynsipgjr1qnhry9dbvby",
       "ticketer": null,
       "age": "",
-      "id": 459
+      "id": 458
     },
     {
       "title": "Portland's New Wave Night",
@@ -6346,7 +6327,7 @@
       "imageUrl": "https://cdn.mcmenamins.com/system/uploads/MadborgAssets/_v/portland-new-wave-night-2022.jpg/gallery_preview.jpg",
       "age": "21+",
       "ticketer": "venue",
-      "id": 460
+      "id": 459
     },
     {
       "title": "Billie Eidson & Friends Thanksgiving Weekdend!",
@@ -6360,7 +6341,7 @@
       "age": "",
       "price": "$10",
       "ticketer": null,
-      "id": 461
+      "id": 460
     },
     {
       "title": "Live Music: Leo Moon Trio",
@@ -6373,7 +6354,7 @@
       "imageUrl": "https://img.evbuc.com/https%3A%2F%2Fcdn.evbuc.com%2Fimages%2F1196946280%2F3007588040904%2F1%2Foriginal.20261030-180159?crop=focalpoint&fit=crop&h=230&w=460&auto=format%2Ccompress&q=75&sharp=10&fp-x=0.5&fp-y=0.5&s=67c82848527722c75bb16c56a96d2135",
       "age": "",
       "ticketer": "eventbrite",
-      "id": 462
+      "id": 461
     },
     {
       "title": "J-Fell & Nite Wave present: The Cure, Depeche Mode & New Order Tribute Night",
@@ -6386,7 +6367,7 @@
       "imageUrl": "https://wonderballroom.com/wp-content/uploads/2026/06/j-fell-nite-wave-present-the-cure-depeche-mode-new-order-tribute-night.jfif",
       "age": "all-ages",
       "ticketer": "venue",
-      "id": 463
+      "id": 462
     },
     {
       "title": "Grand Theft Audio",
@@ -6400,7 +6381,7 @@
       "age": "21+",
       "about": "We are taking over the Factory for the ultimate GTA 6 Themed Party, Grand Theft Audio. Whether you're a high-rolling kingpin or a Leonida outlaw, it’s time to drop your GPS coordinates and report to the safehouse, because this event is not one to miss.",
       "ticketer": null,
-      "id": 464
+      "id": 463
     },
     {
       "title": "Busking for the Holidays with David Pollack",
@@ -6413,7 +6394,7 @@
       "imageUrl": "https://cdn.mcmenamins.com/system/uploads/MadborgAssets/_v/BuskingFortheHolidays26.jpg/gallery_preview.jpg",
       "age": "all-ages",
       "ticketer": null,
-      "id": 465
+      "id": 464
     },
     {
       "title": "Marc Maron: Yammering into the Void Tour",
@@ -6427,7 +6408,7 @@
       "age": "",
       "soldOut": true,
       "ticketer": "etix",
-      "id": 466
+      "id": 465
     },
     {
       "title": "Marc Maron: Yammering into the Void Tour (Early Show)",
@@ -6443,7 +6424,7 @@
       "ticketUrl": "https://www.ticketmaster.com/event/Z7r9jZ1A70ZOp",
       "contentType": "comedy",
       "ticketer": "etix",
-      "id": 467
+      "id": 466
     },
     {
       "title": "Black Nativity",
@@ -6456,7 +6437,7 @@
       "imageUrl": "https://images.squarespace-cdn.com/content/v1/5faf44b998d0ea21e2b0a786/1790708141969-HA9ZBCHK2Z1NN9X0JNWH/black-nativity-2026-1200x800.png",
       "age": "",
       "ticketer": "venue",
-      "id": 468
+      "id": 467
     },
     {
       "title": "The Next Waltz - 50th Anniversary Celebration",
@@ -6471,7 +6452,7 @@
       "resaleUrl": "https://vivid-seats.pxf.io/c/4969747/1017970/12730?prodsku=7809150&u=https%3A%2F%2Fwww.vividseats.com%2Fthe-next-waltz-live-tour-tickets-portland-alberta-rose-theatre-11-29-2026%2Fproduction%2F7809150%3Futm_term%3Dproduction-7809150&intsrc=CATF_7904",
       "resaleFrom": "85.00",
       "age": "",
-      "id": 469,
+      "id": 468,
       "pickable": true,
       "buzz": 0
     },
@@ -6486,7 +6467,7 @@
       "imageUrl": "https://images.squarespace-cdn.com/content/v1/54109e68e4b06b163549a8dc/1794527780489-24CR47T776ZH9X7PWAMN/IMG_7705.png",
       "ticketer": null,
       "age": "",
-      "id": 470
+      "id": 469
     },
     {
       "title": "Sunday Sessions featuring Santiago & Friends",
@@ -6499,7 +6480,7 @@
       "imageUrl": "https://images.squarespace-cdn.com/content/v1/54109e68e4b06b163549a8dc/1791018882336-B7V0SPXUB1TT1Z1N13QZ/IMG_1243.jpeg",
       "ticketer": null,
       "age": "",
-      "id": 471
+      "id": 470
     },
     {
       "title": "Oregon Symphony presents Music of Hans Zimmer",
@@ -6516,7 +6497,7 @@
       "ticketer": "evenue",
       "resaleUrl": "https://vivid-seats.pxf.io/c/4969747/1017970/12730?prodsku=6677878&u=https%3A%2F%2Fwww.vividseats.com%2Foregon-symphony-tickets-portland-arlene-schnitzer-concert-hall-11-29-2026--concerts-classical%2Fproduction%2F6677878%3Futm_term%3Dproduction-6677878&intsrc=CATF_7904",
       "resaleFrom": "55.00",
-      "id": 472,
+      "id": 471,
       "pickable": true,
       "buzz": 57
     },
@@ -6531,7 +6512,7 @@
       "imageUrl": "https://img.evbuc.com/https%3A%2F%2Fcdn.evbuc.com%2Fimages%2F1196647989%2F2792921854121%2F1%2Foriginal.20261027-005531?crop=focalpoint&fit=crop&h=200&w=450&auto=format%2Ccompress&q=75&sharp=10&fp-x=0.5&fp-y=0.5&s=951d46ae445242aab19a292566a5fc93",
       "ticketer": "eventbrite",
       "age": "",
-      "id": 473
+      "id": 472
     },
     {
       "title": "The Duos Gauntlet",
@@ -6545,7 +6526,7 @@
       "age": "",
       "contentType": "comedy",
       "ticketer": "crowdwork",
-      "id": 474
+      "id": 473
     },
     {
       "title": "SINFERNO CABARET",
@@ -6561,7 +6542,7 @@
       "ticketer": "ticketweb",
       "resaleUrl": "https://vivid-seats.pxf.io/c/4969747/1017970/12730?prodsku=7649030&u=https%3A%2F%2Fwww.vividseats.com%2Fsinferno-cabaret-tickets-portland-dantes-11-29-2026%2Fproduction%2F7649030%3Futm_term%3Dproduction-7649030&intsrc=CATF_7904",
       "resaleFrom": "36.00",
-      "id": 475
+      "id": 474
     },
     {
       "title": "TRISTAN DAMRON followed by Sinferno Cabaret",
@@ -6578,7 +6559,7 @@
       "ticketer": "ticketweb",
       "resaleUrl": "https://vivid-seats.pxf.io/c/4969747/1017970/12730?prodsku=7649030&u=https%3A%2F%2Fwww.vividseats.com%2Fsinferno-cabaret-tickets-portland-dantes-11-29-2026%2Fproduction%2F7649030%3Futm_term%3Dproduction-7649030&intsrc=CATF_7904",
       "resaleFrom": "36.00",
-      "id": 476
+      "id": 475
     },
     {
       "title": "Die Hard at Foster Theater",
@@ -6591,7 +6572,7 @@
       "imageUrl": "",
       "ticketer": null,
       "age": "",
-      "id": 477
+      "id": 476
     },
     {
       "title": "Village Music Makers Sunday Spotlight",
@@ -6604,7 +6585,7 @@
       "imageUrl": "https://images.squarespace-cdn.com/content/v1/64bad396e6ad2c1216a9ada5/1794418430809-OQ1PTW0I9PNTDDT4SDW0/863422012_28818722131131168_3644346037908666158_n.jpg",
       "ticketer": null,
       "age": "",
-      "id": 478
+      "id": 477
     },
     {
       "title": "KJ",
@@ -6617,7 +6598,7 @@
       "imageUrl": "https://images.squarespace-cdn.com/content/v1/69b36b755dde9e535451a4aa/ec75dff6-ec97-4d5f-b73a-a66e82f5b306/Haymaker%2BLogo-01.webp",
       "age": "21+",
       "ticketer": null,
-      "id": 479
+      "id": 478
     },
     {
       "title": "LizaBanks Campagna (Neon Room)",
@@ -6633,7 +6614,7 @@
       "ticketer": "helium",
       "resaleUrl": "https://vivid-seats.pxf.io/c/4969747/1017970/12730?prodsku=7170931&u=https%3A%2F%2Fwww.vividseats.com%2Flizabanks-campagna-tickets-portland-helium-comedy-club---portland-11-29-2026--theater-comedy%2Fproduction%2F7170931%3Futm_term%3Dproduction-7170931&intsrc=CATF_7904",
       "resaleFrom": "37.00",
-      "id": 480
+      "id": 479
     },
     {
       "title": "Rhys Darby",
@@ -6649,7 +6630,7 @@
       "ticketer": "helium",
       "resaleUrl": "https://vivid-seats.pxf.io/c/4969747/1017970/12730?prodsku=7073160&u=https%3A%2F%2Fwww.vividseats.com%2Frhys-darby-tickets-portland-helium-comedy-club---portland-11-29-2026--theater-comedy%2Fproduction%2F7073160%3Futm_term%3Dproduction-7073160&intsrc=CATF_7904",
       "resaleFrom": "59.00",
-      "id": 481
+      "id": 480
     },
     {
       "title": "Chai & Roses: Disco Tea Dance Party for QTBIPOC & Allies",
@@ -6663,6 +6644,19 @@
       "imageUrl": "https://cdn.etix.com/etix/performance-image/performance_image_1200w/8f9fe7ed671f7a6f71f31debe32224ea.jpg",
       "age": "21+",
       "ticketer": "etix",
+      "id": 481
+    },
+    {
+      "title": "Josh Cole",
+      "venue": "Hopworks Brewery",
+      "neighborhood": "Creston-Kenilworth",
+      "address": "2944 SE Powell Blvd, Portland, OR 97202",
+      "date": "2026-11-29",
+      "time": "4:00 PM",
+      "venueUrl": "https://www.hopworksbeer.com/live-music",
+      "imageUrl": "",
+      "ticketer": null,
+      "age": "",
       "id": 482
     },
     {
@@ -6821,7 +6815,7 @@
       "resaleFrom": "119.00",
       "id": 493,
       "pickable": true,
-      "buzz": 116152
+      "buzz": 116154
     },
     {
       "title": "Casual Eddie",
@@ -6951,7 +6945,7 @@
       "resaleFrom": "51.00",
       "id": 502,
       "pickable": true,
-      "buzz": 19039
+      "buzz": 19041
     },
     {
       "title": "Comedy & Monday Night Football Hosted by Hazel Dell Hottie",
@@ -7076,7 +7070,7 @@
       "resaleFrom": "102.00",
       "id": 511,
       "pickable": true,
-      "buzz": 7200
+      "buzz": 7201
     },
     {
       "title": "THE KILANS - COULD YOU KEEP IT DARK? TOUR (w/ Margot Sinclair)",
@@ -7108,7 +7102,7 @@
       "resaleFrom": "123.00",
       "id": 513,
       "pickable": true,
-      "buzz": 116152
+      "buzz": 116154
     },
     {
       "title": "Square Dancing / KARAOKE @ 9:30",
@@ -7240,7 +7234,7 @@
       "resaleFrom": "83.00",
       "id": 522,
       "pickable": true,
-      "buzz": 100518
+      "buzz": 100521
     },
     {
       "title": "This isn't Therapy",
@@ -7951,7 +7945,7 @@
       "resaleFrom": "52.00",
       "id": 572,
       "pickable": true,
-      "buzz": 14910
+      "buzz": 14911
     },
     {
       "title": "EasyFolk Open Mic Night",
@@ -8952,7 +8946,7 @@
       "date": "2026-12-04",
       "time": "",
       "venueUrl": "https://realmpdx.com/secondchance/",
-      "imageUrl": "",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/07/SABAIxHoang_Composite.png",
       "age": "21+",
       "ticketer": "venue",
       "resaleUrl": "https://vivid-seats.pxf.io/c/4969747/1017970/12730?prodsku=7459606&u=https%3A%2F%2Fwww.vividseats.com%2Fsabai-tickets-portland-realm-12-4-2026--concerts-dance-electronica%2Fproduction%2F7459606%3Futm_term%3Dproduction-7459606&intsrc=CATF_7904",
@@ -10047,7 +10041,7 @@
       "date": "2026-12-05",
       "time": "",
       "venueUrl": "https://realmpdx.com/tvboo/",
-      "imageUrl": "",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/07/MG_3634-2-768x768.jpg",
       "age": "21+",
       "ticketer": "venue",
       "resaleUrl": "https://vivid-seats.pxf.io/c/4969747/1017970/12730?prodsku=7359863&u=https%3A%2F%2Fwww.vividseats.com%2Ftvboo-tickets-portland-realm-12-5-2026--concerts-dance-electronica%2Fproduction%2F7359863%3Futm_term%3Dproduction-7359863&intsrc=CATF_7904",
@@ -10688,7 +10682,7 @@
       "neighborhood": "Hosford-Abernethy",
       "address": "2432 SE 11th Ave, Portland, OR 97214",
       "date": "2026-12-06",
-      "time": "6:45 PM",
+      "time": "2:00 PM",
       "venueUrl": "https://www.funhouselounge.com/calendar/",
       "imageUrl": "",
       "ticketer": null,
@@ -11061,7 +11055,7 @@
       "ticketUrl": "https://www.ticketmaster.com/event/Z7r9jZ1AAvz-f",
       "ticketer": "etix",
       "resaleUrl": "https://vivid-seats.pxf.io/c/4969747/1017970/12730?prodsku=7425997&u=https%3A%2F%2Fwww.vividseats.com%2Ffrost-children-tickets-portland-wonder-ballroom-12-6-2026%2Fproduction%2F7425997%3Futm_term%3Dproduction-7425997&intsrc=CATF_7904",
-      "resaleFrom": "44.00",
+      "resaleFrom": "42.00",
       "id": 792
     },
     {
@@ -13371,7 +13365,7 @@
       "date": "2026-12-11",
       "time": "",
       "venueUrl": "https://realmpdx.com/inzo/",
-      "imageUrl": "",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/08/2026.12.11-12-INZO-square-768x768.jpg",
       "age": "21+",
       "ticketer": "venue",
       "id": 955
@@ -14311,7 +14305,7 @@
       "date": "2026-12-12",
       "time": "",
       "venueUrl": "https://realmpdx.com/inzo/",
-      "imageUrl": "",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/08/2026.12.11-12-INZO-square-768x768.jpg",
       "age": "21+",
       "ticketer": "venue",
       "id": 1022
@@ -16877,7 +16871,7 @@
       "age": "",
       "contentType": "comedy",
       "ticketer": "helium",
-      "resaleUrl": "https://vivid-seats.pxf.io/c/4969747/1017970/12730?prodsku=7080409&u=https%3A%2F%2Fwww.vividseats.com%2Ftimmy-no-brakes-tickets-portland-helium-comedy-club---portland-12-18-2026--theater-comedy%2Fproduction%2F7080409%3Futm_term%3Dproduction-7080409&intsrc=CATF_7904",
+      "resaleUrl": "https://vivid-seats.pxf.io/c/4969747/1017970/12730?prodsku=7080419&u=https%3A%2F%2Fwww.vividseats.com%2Ftimmy-no-brakes-tickets-portland-helium-comedy-club---portland-12-18-2026--theater-comedy%2Fproduction%2F7080419%3Futm_term%3Dproduction-7080419&intsrc=CATF_7904",
       "resaleFrom": "63.00",
       "times": [
         "7:00 PM",
@@ -17087,7 +17081,7 @@
       "date": "2026-12-18",
       "time": "",
       "venueUrl": "https://realmpdx.com/hedex/",
-      "imageUrl": "",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/09/2026.12.18-HEDEX-square-1-768x767.jpg",
       "age": "21+",
       "ticketer": "venue",
       "resaleUrl": "https://vivid-seats.pxf.io/c/4969747/1017970/12730?prodsku=7626936&u=https%3A%2F%2Fwww.vividseats.com%2Fhedex-tickets-portland-realm-12-18-2026--concerts-dance-electronica%2Fproduction%2F7626936%3Futm_term%3Dproduction-7626936&intsrc=CATF_7904",
@@ -17963,7 +17957,7 @@
       "date": "2026-12-19",
       "time": "",
       "venueUrl": "https://realmpdx.com/beatsantique/",
-      "imageUrl": "",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/07/36469832_10155757524950669_2705325223154024448_n-768x768.jpg",
       "age": "21+",
       "ticketer": "venue",
       "id": 1284
@@ -18441,7 +18435,7 @@
       "neighborhood": "Hosford-Abernethy",
       "address": "2432 SE 11th Ave, Portland, OR 97214",
       "date": "2026-12-20",
-      "time": "2:00 PM",
+      "time": "6:45 PM",
       "venueUrl": "https://www.funhouselounge.com/calendar/",
       "imageUrl": "",
       "ticketer": null,
@@ -18475,7 +18469,7 @@
       "contentType": "comedy",
       "ticketer": "helium",
       "resaleUrl": "https://vivid-seats.pxf.io/c/4969747/1017970/12730?prodsku=7420578&u=https%3A%2F%2Fwww.vividseats.com%2Fheather-pasternak-tickets-portland-helium-comedy-club---portland-12-20-2026--theater-comedy%2Fproduction%2F7420578%3Futm_term%3Dproduction-7420578&intsrc=CATF_7904",
-      "resaleFrom": "65.00",
+      "resaleFrom": "64.00",
       "id": 1321
     },
     {
@@ -19904,7 +19898,7 @@
       "contentType": "comedy",
       "ticketer": "helium",
       "resaleUrl": "https://vivid-seats.pxf.io/c/4969747/1017970/12730?prodsku=7872168&u=https%3A%2F%2Fwww.vividseats.com%2Fkelly-ryan-tickets-portland-helium-comedy-club---portland-12-27-2026%2Fproduction%2F7872168%3Futm_term%3Dproduction-7872168&intsrc=CATF_7904",
-      "resaleFrom": "72.00",
+      "resaleFrom": "70.00",
       "id": 1425
     },
     {
@@ -20125,7 +20119,7 @@
       "contentType": "comedy",
       "ticketer": "helium",
       "resaleUrl": "https://vivid-seats.pxf.io/c/4969747/1017970/12730?prodsku=7872170&u=https%3A%2F%2Fwww.vividseats.com%2Fkelly-ryan-tickets-portland-helium-comedy-club---portland-12-28-2026%2Fproduction%2F7872170%3Futm_term%3Dproduction-7872170&intsrc=CATF_7904",
-      "resaleFrom": "72.00",
+      "resaleFrom": "70.00",
       "id": 1441
     },
     {
@@ -20141,7 +20135,7 @@
       "contentType": "comedy",
       "ticketer": "helium",
       "resaleUrl": "https://vivid-seats.pxf.io/c/4969747/1017970/12730?prodsku=7872170&u=https%3A%2F%2Fwww.vividseats.com%2Fkelly-ryan-tickets-portland-helium-comedy-club---portland-12-28-2026%2Fproduction%2F7872170%3Futm_term%3Dproduction-7872170&intsrc=CATF_7904",
-      "resaleFrom": "72.00",
+      "resaleFrom": "70.00",
       "id": 1442
     },
     {
@@ -20747,7 +20741,7 @@
       "age": "",
       "contentType": "comedy",
       "ticketer": "helium",
-      "resaleUrl": "https://vivid-seats.pxf.io/c/4969747/1017970/12730?prodsku=7813547&u=https%3A%2F%2Fwww.vividseats.com%2Flogan-guntzelman-tickets-portland-helium-comedy-club---portland-12-31-2026--theater-comedy%2Fproduction%2F7813547%3Futm_term%3Dproduction-7813547&intsrc=CATF_7904",
+      "resaleUrl": "https://vivid-seats.pxf.io/c/4969747/1017970/12730?prodsku=7813549&u=https%3A%2F%2Fwww.vividseats.com%2Flogan-guntzelman-tickets-portland-helium-comedy-club---portland-12-31-2026--theater-comedy%2Fproduction%2F7813549%3Futm_term%3Dproduction-7813549&intsrc=CATF_7904",
       "resaleFrom": "69.00",
       "times": [
         "7:00 PM",
@@ -20890,7 +20884,7 @@
       "date": "2026-12-31",
       "time": "",
       "venueUrl": "https://realmpdx.com/clozee/",
-      "imageUrl": "",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/09/2026.12.31-2027.01.01-CLOZEE-square-768x768.jpg",
       "age": "21+",
       "soldOut": true,
       "ticketer": "venue",
@@ -20911,7 +20905,7 @@
       "ticketUrl": "https://www.ticketmaster.com/event/Z7r9jZ1AAvN89",
       "ticketer": "etix",
       "resaleUrl": "https://vivid-seats.pxf.io/c/4969747/1017970/12730?prodsku=7532709&u=https%3A%2F%2Fwww.vividseats.com%2Fdisco-biscuits-tickets-portland-revolution-hall-portland-12-31-2026--concerts-rock%2Fproduction%2F7532709%3Futm_term%3Dproduction-7532709&intsrc=CATF_7904",
-      "resaleFrom": "111.00",
+      "resaleFrom": "110.00",
       "id": 1496
     },
     {
@@ -21224,7 +21218,7 @@
       "date": "2027-01-01",
       "time": "",
       "venueUrl": "https://realmpdx.com/clozee/",
-      "imageUrl": "",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/09/2026.12.31-2027.01.01-CLOZEE-square-768x768.jpg",
       "age": "21+",
       "soldOut": true,
       "ticketer": "venue",
@@ -22363,7 +22357,7 @@
       "date": "2027-01-08",
       "time": "",
       "venueUrl": "https://realmpdx.com/tgm/",
-      "imageUrl": "",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/11/TGM-20205-Vegas-10-768x768.jpg",
       "age": "21+",
       "ticketer": "venue",
       "id": 1600
@@ -22529,7 +22523,7 @@
       "age": "",
       "contentType": "comedy",
       "ticketer": "helium",
-      "resaleUrl": "https://vivid-seats.pxf.io/c/4969747/1017970/12730?prodsku=7604250&u=https%3A%2F%2Fwww.vividseats.com%2Fbeth-stelling-tickets-portland-helium-comedy-club---portland-1-9-2027%2Fproduction%2F7604250%3Futm_term%3Dproduction-7604250&intsrc=CATF_7904",
+      "resaleUrl": "https://vivid-seats.pxf.io/c/4969747/1017970/12730?prodsku=7604292&u=https%3A%2F%2Fwww.vividseats.com%2Fbeth-stelling-tickets-portland-helium-comedy-club---portland-1-9-2027%2Fproduction%2F7604292%3Futm_term%3Dproduction-7604292&intsrc=CATF_7904",
       "resaleFrom": "62.00",
       "times": [
         "7:00 PM",
@@ -22693,7 +22687,7 @@
       "date": "2027-01-09",
       "time": "",
       "venueUrl": "https://realmpdx.com/austeria/",
-      "imageUrl": "",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/09/2027.01.09-AUSTERIA-Square-768x768.jpg",
       "age": "21+",
       "ticketer": "venue",
       "resaleUrl": "https://vivid-seats.pxf.io/c/4969747/1017970/12730?prodsku=7626136&u=https%3A%2F%2Fwww.vividseats.com%2Fausteria-tickets-portland-realm-1-9-2027%2Fproduction%2F7626136%3Futm_term%3Dproduction-7626136&intsrc=CATF_7904",
@@ -23641,7 +23635,7 @@
       "date": "2027-01-15",
       "time": "",
       "venueUrl": "https://realmpdx.com/ydg/",
-      "imageUrl": "",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/11/1_MG_3568-2-768x768.jpg",
       "age": "21+",
       "ticketer": "venue",
       "resaleUrl": "https://vivid-seats.pxf.io/c/4969747/1017970/12730?prodsku=7860138&u=https%3A%2F%2Fwww.vividseats.com%2Fydg-tickets-portland-realm-1-15-2027%2Fproduction%2F7860138%3Futm_term%3Dproduction-7860138&intsrc=CATF_7904",
@@ -23943,7 +23937,7 @@
       "date": "2027-01-16",
       "time": "",
       "venueUrl": "https://realmpdx.com/marsh/",
-      "imageUrl": "",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/11/Marsh-2026-2600-Ben-Edit-768x768.jpg",
       "age": "21+",
       "ticketer": "venue",
       "id": 1710
@@ -25108,7 +25102,7 @@
       "date": "2027-01-23",
       "time": "",
       "venueUrl": "https://realmpdx.com/ghengar/",
-      "imageUrl": "",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/08/@SUSANGOMEZMEDIA_GHENGAR_FORBIDDENKINGDOM_04252026-43-768x768.jpg",
       "age": "21+",
       "ticketer": "venue",
       "resaleUrl": "https://vivid-seats.pxf.io/c/4969747/1017970/12730?prodsku=7481181&u=https%3A%2F%2Fwww.vividseats.com%2Fghengar-tickets-portland-realm-1-23-2027--concerts-dance-electronica%2Fproduction%2F7481181%3Futm_term%3Dproduction-7481181&intsrc=CATF_7904",
@@ -26059,7 +26053,7 @@
       "date": "2027-01-29",
       "time": "",
       "venueUrl": "https://realmpdx.com/effin/",
-      "imageUrl": "",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/10/2027.01.29-EFFIN-square-768x768.jpg",
       "age": "21+",
       "ticketer": "venue",
       "resaleUrl": "https://vivid-seats.pxf.io/c/4969747/1017970/12730?prodsku=7729737&u=https%3A%2F%2Fwww.vividseats.com%2Feffin-tickets-portland-realm-1-29-2027%2Fproduction%2F7729737%3Futm_term%3Dproduction-7729737&intsrc=CATF_7904",
@@ -26319,7 +26313,7 @@
       "date": "2027-01-30",
       "time": "",
       "venueUrl": "https://realmpdx.com/riordan/",
-      "imageUrl": "",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/10/2027.01.30-RIORDAN-Square-768x768.jpg",
       "age": "21+",
       "ticketer": "venue",
       "resaleUrl": "https://vivid-seats.pxf.io/c/4969747/1017970/12730?prodsku=7714782&u=https%3A%2F%2Fwww.vividseats.com%2Friordan-tickets-portland-realm-1-30-2027%2Fproduction%2F7714782%3Futm_term%3Dproduction-7714782&intsrc=CATF_7904",
@@ -27177,7 +27171,7 @@
       "date": "2027-02-05",
       "time": "",
       "venueUrl": "https://realmpdx.com/purityring/",
-      "imageUrl": "",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/11/2027.02.05-PURITY-RING-square-768x768.jpg",
       "age": "21+",
       "ticketer": "venue",
       "resaleUrl": "https://vivid-seats.pxf.io/c/4969747/1017970/12730?prodsku=7819148&u=https%3A%2F%2Fwww.vividseats.com%2Fpurity-ring-tickets-portland-realm-2-5-2027%2Fproduction%2F7819148%3Futm_term%3Dproduction-7819148&intsrc=CATF_7904",
@@ -27360,7 +27354,7 @@
       "age": "",
       "contentType": "comedy",
       "ticketer": "helium",
-      "resaleUrl": "https://vivid-seats.pxf.io/c/4969747/1017970/12730?prodsku=7813589&u=https%3A%2F%2Fwww.vividseats.com%2Fvladimir-caamano-tickets-portland-helium-comedy-club---portland-2-6-2027--theater-comedy%2Fproduction%2F7813589%3Futm_term%3Dproduction-7813589&intsrc=CATF_7904",
+      "resaleUrl": "https://vivid-seats.pxf.io/c/4969747/1017970/12730?prodsku=7813591&u=https%3A%2F%2Fwww.vividseats.com%2Fvladimir-caamano-tickets-portland-helium-comedy-club---portland-2-6-2027--theater-comedy%2Fproduction%2F7813591%3Futm_term%3Dproduction-7813591&intsrc=CATF_7904",
       "resaleFrom": "62.00",
       "times": [
         "7:30 PM",
@@ -27492,7 +27486,7 @@
       "date": "2027-02-06",
       "time": "",
       "venueUrl": "https://realmpdx.com/moontricks/",
-      "imageUrl": "",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/11/Moontricks_08-21Promo_LouisBockner-8102446-768x768.jpg",
       "age": "21+",
       "ticketer": "venue",
       "resaleUrl": "https://vivid-seats.pxf.io/c/4969747/1017970/12730?prodsku=7836656&u=https%3A%2F%2Fwww.vividseats.com%2Fmoontricks-tickets-portland-realm-2-6-2027%2Fproduction%2F7836656%3Futm_term%3Dproduction-7836656&intsrc=CATF_7904",
@@ -28280,7 +28274,7 @@
       "date": "2027-02-12",
       "time": "",
       "venueUrl": "https://realmpdx.com/troyboi/",
-      "imageUrl": "",
+      "imageUrl": "https://realmpdx.com/wp-content/uploads/2026/11/10-768x768.jpg",
       "age": "21+",
       "ticketer": "venue",
       "id": 2010
@@ -28624,6 +28618,8 @@
       "ticketUrl": "https://www.ticketmaster.com/event/Z7r9jZ1AA7APo",
       "contentType": "comedy",
       "ticketer": "etix",
+      "resaleUrl": "https://vivid-seats.pxf.io/c/4969747/1017970/12730?prodsku=7674046&u=https%3A%2F%2Fwww.vividseats.com%2Fcolin-mochrie-tickets-portland-aladdin-theater-2-14-2027%2Fproduction%2F7674046%3Futm_term%3Dproduction-7674046&intsrc=CATF_7904",
+      "resaleFrom": "88.00",
       "id": 2034
     },
     {
@@ -29861,14 +29857,14 @@
     "checked": "2026-11-20",
     "items": [
       {
-        "venue": "Realm",
+        "venue": "Beach Hut Deli Tigard",
         "kind": "zero",
         "scraped": 0,
-        "shown": 23,
-        "since": "2026-11-19",
-        "drops": "2026-11-27",
-        "days": 1,
-        "why": "chrome: ChallengeError · safari: ChallengeError · browser: 0 rows · chrome retry: ChallengeError · safari retry: ChallengeError"
+        "shown": 5,
+        "since": "2026-11-20",
+        "drops": "2026-11-28",
+        "days": 0,
+        "why": "ReadTimeout: HTTPSConnectionPool(host='beachhutdeli.com', port=443): Read timed out. (read timeout=30)"
       },
       {
         "venue": "Chehalem Valley Brewing",
