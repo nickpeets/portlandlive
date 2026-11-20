@@ -4,6 +4,10 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### cd069ad72 — Realm posters past lazy-load placeholders
+
+Nov 20 2026 (daily feed-health auto-repair). Realm scraped 0 since Nov 19 (Cloudflare ChallengeError on chrome, safari and the windowed browser, both rounds; safety net holding 23 rows till Nov 27) — the same runner-only flap it cleared on its own after Sep 25 and Nov 1, and no alternate door could be checked from the sandbox, so the source is unchanged. Separately, all 23 held rows (and every Realm row back to at least Nov 8) had no poster: the reader took img src first, so a lazy-load placeholder beat data-src. _realm_poster now prefers data-src / data-lazy-src / data-srcset, then srcset, src, the noscript copy and inline background-image, skipping data: URIs and the logo; test realm_poster_check. Takes effect the next time Realm clears. Chehalem Valley Brewing, The Reser and Theater of the Clouds (dark) and Ashland Armory (quiet, nothing posted after Nov 17) left alone.
+
 ### 8c4c3ca9 — Alberta Rose reads multi-night runs
 
 Nov 19 2026 (Nick: The Next Waltz missing). Alberta Rose run cards carry no .singleEventDate — just a range ("Fri, Nov 20 - sun, Nov 29") and one .rhp-event-series-dates line per night — so parse_albertarose skipped every run whole: The Next Waltz (Nov 20, 21, 28, 29), White Album Xmas (10 nights), Live Wire, Nitemare B4 Xmas and others. Each night is now its own row with its own show time (Next Waltz Sun Nov 29 is 5 PM); two shows on one night keep the first. Run cards link a /calendar/category/series/ page that the /event/ poster map never keys, so their poster comes from the card's own image. Captured fixture 51 → 80 rows, 80/80 posters; new fixture alberta-rose-series.html.
