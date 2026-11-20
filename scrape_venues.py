@@ -4300,6 +4300,34 @@ _REALM_DAY = re.compile(r"(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)?\s*([A-Z][a-z]{2})\s+(
 _REALM_MULTI = re.compile(r"\b([A-Z]{3})\s+(\d{1,2})\s*\+\s*([A-Z]{3})\s+(\d{1,2})\b", re.I)
 
 
+def _realm_poster(it):
+    """First real poster URL on a Realm card. Nov 20 2026: every live Realm
+    row had come through without a poster since at least Nov 8 while the
+    Sep capture had one per card -- a lazy-load placeholder in src (data: URI
+    or a 1x1 gif) beats data-src under the old src-first read. Check the
+    lazy attributes first, then srcset, src, the <noscript> copy and any
+    inline background-image; skip data: URIs and the site logo."""
+    cands = []
+    for im in it.select("img"):
+        for k in ("data-src", "data-lazy-src", "data-original", "data-srcset", "srcset", "src"):
+            v = (im.get(k) or "").strip()
+            if v:
+                cands.append(v.split(",")[0].split()[0] if "srcset" in k else v)
+    for ns in it.select("noscript"):
+        cands += re.findall(r'src=["\']([^"\']+)', ns.decode_contents())
+    for el in [it] + it.select("[style]"):
+        m = re.search(r"background-image\s*:\s*url\(['\"]?([^'\")]+)", el.get("style") or "")
+        if m:
+            cands.append(m.group(1))
+    for c in cands:
+        c = c.strip()
+        if c.startswith("//"):
+            c = "https:" + c
+        if c.startswith("http") and "LOGO" not in c.upper().split("/")[-1]:
+            return c
+    return ""
+
+
 def parse_realm(html, today):
     """Realm (realmpdx.com, 615 SE Alder) -- electronic club. Elementor
     "ue-event-list-item" per event: .ue-event-list-item-details-title, then
@@ -4337,8 +4365,7 @@ def parse_realm(html, today):
             continue
         a = it.select_one(".ue-event-list-item-details-cta a[href]")
         url = a["href"] if a and a.get("href", "").startswith("http") else "https://realmpdx.com/events/"
-        im = it.select_one("img")
-        img = ((im.get("src") or im.get("data-src") or "").strip()) if im else ""
+        img = _realm_poster(it)
         # A run can straddle New Year, so infer each night's year on its own.
         for mon, day in dates:
             try:

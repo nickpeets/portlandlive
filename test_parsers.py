@@ -483,6 +483,37 @@ def talk_page_check():
     print("  ok   alberta-rose-event.html       author talk (Oregon Humanities, Stephanie Land) read as a talk")
 
 
+def realm_poster_check():
+    """Realm posters (Nov 20 2026): live rows had none since Nov 8. Cards in the
+    Sep capture's markup with a lazy-load placeholder in src must still yield
+    the real poster (data-src, noscript, srcset, background-image), never the
+    data: URI or the site logo."""
+    card = ('<div class="ue-event-list-item"><div class="ue-event-list-item-image">{img}</div>'
+            '<div class="ue-event-list-item-details"><div class="ue-event-list-item-details-title">ACT {n}</div>'
+            '<div class="ue-event-list-item-details-attributes"><div class="ue-event-list-item-details-attributes-label">House</div>'
+            '<div class="ue-event-list-item-details-attributes-label--date">Fri  Dec {n}</div></div></div>'
+            '<div class="ue-event-list-item-details-cta"><a class="ue-btn" href="https://realmpdx.com/act{n}/">Get Tickets</a></div></div>')
+    P = "https://realmpdx.com/wp-content/uploads/2026/11/act-{n}-768x768.webp"
+    imgs = [
+        '<img class="lazyload" src="data:image/svg+xml;base64,PHN2Zz4=" data-src="' + P + '">',
+        '<img src="data:image/gif;base64,R0lGOD=="><noscript><img src="' + P + '"></noscript>',
+        '<img src="data:image/gif;base64,R0lGOD==" data-srcset="' + P + ' 768w, https://x/y-300.webp 300w">',
+        '<div style="background-image: url(\'' + P + '\')"></div>',
+        '<img src="' + P + '">',
+        '<img src="https://realmpdx.com/wp-content/uploads/2025/06/REALM-LOGO-NEW-WHITE-300x78.webp">',
+    ]
+    html = "".join(card.format(img=im.replace("{n}", str(i + 1)), n=i + 1) for i, im in enumerate(imgs))
+    rows = sv.parse_realm(html, datetime.date(2026, 11, 20))
+    got = {r["title"]: r["imageUrl"] for r in rows}
+    want = {f"ACT {i}": P.format(n=i) for i in range(1, 6)}
+    want["ACT 6"] = ""
+    if got != want:
+        print(f"  FAIL realm posters               {got}")
+        print("GATE FAILURE")
+        sys.exit(1)
+    print("  ok   realm posters                 placeholder src skipped; data-src/noscript/srcset/background read; logo ignored")
+
+
 def multi_time_check():
     """Early and late shows (Sep 22 2026): Helium's 9:30 must survive dedupe."""
     bspec = importlib.util.spec_from_file_location("bs", os.path.join(HERE, "build_shows.py"))
@@ -1236,6 +1267,7 @@ if __name__ == "__main__":
     main()
     talk_page_check()
     multi_time_check()
+    realm_poster_check()
     submission_fold_check()
     tm_same_act_check()
     tm_guard_check()
