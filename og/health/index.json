@@ -1,16 +1,16 @@
 {
- "captured": "2026-11-20T17:36Z",
+ "captured": "2026-11-21T14:11Z",
  "sources": [
-  {
-   "source": "Beach Hut Deli Tigard (beachhutdeli.com)",
-   "note": "ReadTimeout: HTTPSConnectionPool(host='beachhutdeli.com', port=443): Read timed out. (read timeout=30)",
-   "file": ""
-  },
   {
    "source": "Ashland Armory (liveatthearmory.com)",
    "note": "",
    "file": "ashland-armory-liveatthearmory-com.html",
-   "bytes": 394637
+   "bytes": 401670
+  },
+  {
+   "source": "Jack London Revue",
+   "note": "ConnectionError: HTTPSConnectionPool(host='www.jacklondonrevue.com', port=443): Max retries exceeded with url: /calendar/ (Caused by Name",
+   "file": ""
   }
  ]
 }
