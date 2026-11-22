@@ -1,17 +1,11 @@
 {
- "captured": "2026-11-22T14:10Z",
+ "captured": "2026-11-22T17:40Z",
  "sources": [
   {
-   "source": "Arbor Beer Lodge (arborbeerlodge.com)",
-   "note": "",
-   "file": "arbor-beer-lodge-arborbeerlodge-com.html",
-   "bytes": 19310
-  },
-  {
-   "source": "Ashland Armory (liveatthearmory.com)",
-   "note": "",
-   "file": "ashland-armory-liveatthearmory-com.html",
-   "bytes": 401670
+   "source": "The Goodfoot",
+   "note": "attempt 1 (thegoodfoot.com, native UA): HeadlessChallengeError [Just a moment...] \u00b7 attempt 2 (www.thegoodfoot.com, native UA): HeadlessChallengeError [Just a moment...] \u00b7 attempt 3 (thegoodfoot.com, fixed UA): HeadlessChallengeError [Just a moment...] \u00b7 attempt 4 (www.thegoodfoot.com, fixed UA): He",
+   "file": "the-goodfoot.html",
+   "bytes": 44775
   }
  ]
 }
