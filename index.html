@@ -2160,6 +2160,13 @@ function ordinalDate(iso){
   const s=(n%10==1&&n!=11)?'st':(n%10==2&&n!=12)?'nd':(n%10==3&&n!=13)?'rd':'th';
   return fmtDay(iso).replace(String(n), n+s);
 }
+// "January 9, 2027" (giveaway rules) and "Jan 9" (giveaway banner), Nov 22 2026.
+function longDate(iso){
+  return new Date(iso + "T12:00:00").toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+}
+function shortMonthDay(iso){
+  return new Date(iso + "T12:00:00").toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
 
 // ===== CONTENT-TYPE CLASSIFIER =====================================
 // Tags each show with a content TYPE: 'music' | 'comedy' | 'trivia' | 'other'.
@@ -5199,7 +5206,10 @@ async function mountStoryStrip(wrap){
 }
 
 // ===== TICKET GIVEAWAY (Sep 22 2026, Nick + Anita) =====
-// A pair to The Brothers Comatose (Aladdin, Oct 31). 1 entry for tapping
+// Giveaway #1 was The Brothers Comatose (Aladdin, Oct 31 2026); #2 is Dogs In
+// A Pile (Revolution Hall, Jan 9 2027, schema-giveaway-dogs.sql). The page
+// reads title, show, dates and venue from the database and the show record,
+// so a new giveaway is a new row, not a code change. 1 entry for tapping
 // "I'm going" on any show during the window; +1 for each friend who joins
 // through your invite link (?ref=inv-<handle>) and taps "I'm going" too.
 // Everything is counted by the database (schema-giveaway.sql).
@@ -5232,7 +5242,10 @@ async function mountGiveawayBanner(wrap){
   wrap.insertBefore(host, wrap.firstChild);
   const g = await giveawayLoad();
   if(!host.isConnected || !giveawayOpen(g)) { host.remove(); return; }
-  host.innerHTML = '<span class="gw-ticket">&#127903;&#65039;</span><span class="gw-text"><b>Win a pair to ' + esc(g.title) + '</b><span class="gw-sub"> \u00b7 Halloween at the Aladdin</span></span><span class="gw-go">Enter &rarr;</span>';
+  // Sub line from the show itself (Nov 22 2026): "Revolution Hall, Jan 9".
+  const gs = state.shows.find(function(s){ return s._slug === g.show_slug; });
+  const sub = gs ? esc(gs.venue) + ', ' + esc(shortMonthDay(gs.date)) : '';
+  host.innerHTML = '<span class="gw-ticket">&#127903;&#65039;</span><span class="gw-text"><b>Win a pair to ' + esc(g.title) + '</b>' + (sub ? '<span class="gw-sub"> \u00b7 ' + sub + '</span>' : '') + '</span><span class="gw-go">Enter &rarr;</span>';
   host.hidden = false;
 }
 // A line on the giveaway show's own page.
@@ -5257,6 +5270,10 @@ async function renderGiveawayRoute(){
   const show = state.shows.find(function(s){ return s._slug === g.show_slug; });
   const open = giveawayOpen(g);
   const showHref = '#/show/' + esc(g.show_slug);
+  // The rules name the date and room from the show record (Nov 22 2026), so
+  // the next giveaway only needs a new row in the giveaways table.
+  const showWhen = show ? longDate(show.date) : 'the show date';
+  const showWhere = show ? show.venue : 'the venue';
   const poster = show && show.imageUrl ? '<a href="' + showHref + '"><img class="gw-poster" src="' + esc(show.imageUrl) + '" alt="' + esc(g.title) + ' poster"></a>' : '';
   let html = '<div class="sub-page gw-page">'
     + '<div class="gw-kicker">&#127903;&#65039; Ticket giveaway</div>'
@@ -5276,10 +5293,12 @@ async function renderGiveawayRoute(){
     + '<li><b>Tap \u201cI\u2019m going\u201d</b> on any show before entries close. That\u2019s your first entry.</li>'
     + '<li><b>Share your invite link.</b> Every friend who joins through it and taps \u201cI\u2019m going\u201d on a show earns you one more entry.</li>'
     // Photos and clips count (Sep 24 2026, Nick): one entry per show.
-    + '<li><b>Post a photo or clip</b> from a show you went to. Each show you post from is one more entry, however many you post from it.</li></ol>'
+    + '<li><b>Post a photo or clip</b> from a show you went to. Each show you post from is one more entry, however many you post from it.</li>'
+    // Going to the giveaway show itself (Nov 22 2026, Nick): one more.
+    + '<li><b>Tap \u201cI\u2019m going\u201d on <a href="' + showHref + '">this show</a></b> for one more entry.</li></ol>'
     + '<div class="gw-me" data-gw-me></div>'
     + '<h3 class="gw-h">The rules</h3>'
-    + '<div class="gw-rules"><p>Free to enter; no purchase necessary. Open to anyone 18 or older who can attend the show in Portland on October 31, 2026. One winner, drawn at random after entries close, with each entry counting once. The prize is one pair of tickets to ' + esc(g.title) + ' at the Aladdin Theater on October 31, 2026; it can\u2019t be exchanged for cash, and the winner must meet the show\u2019s own age rules. We\u2019ll message the winner on Rain Or Shows and by email; if we don\u2019t hear back within 48 hours we\u2019ll draw again. Rain Or Shows moderators can\u2019t win. Questions: <a href="mailto:giveaway@rainorshows.com">giveaway@rainorshows.com</a>.</p></div>'
+    + '<div class="gw-rules"><p>Free to enter; no purchase necessary. Open to anyone 18 or older who can attend the show in Portland on ' + esc(showWhen) + '. One winner, drawn at random after entries close, with each entry counting once. The prize is one pair of tickets to ' + esc(g.title) + ' at ' + esc(showWhere) + ' on ' + esc(showWhen) + '; it can\u2019t be exchanged for cash, and the winner must meet the show\u2019s own age rules. We\u2019ll message the winner on Rain Or Shows and by email; if we don\u2019t hear back within 48 hours we\u2019ll draw again. Rain Or Shows moderators can\u2019t win. Questions: <a href="mailto:giveaway@rainorshows.com">giveaway@rainorshows.com</a>.</p></div>'
     + '</div>';
   wrap.innerHTML = html;
   const me = wrap.querySelector('[data-gw-me]');
@@ -5338,6 +5357,7 @@ async function renderGiveawayRoute(){
     + '<li>' + (st.invites | 0) + ' friend' + ((st.invites | 0) === 1 ? '' : 's') + ' joined and marked going \u2014 ' + (st.invites | 0) + ' more</li>'
     + ((st.pending | 0) ? '<li>' + st.pending + ' joined but haven\u2019t tapped \u201cI\u2019m going\u201d yet</li>' : '')
     + '<li>' + (st.photos | 0) + ' show' + ((st.photos | 0) === 1 ? '' : 's') + ' with your photos or clips \u2014 ' + (st.photos | 0) + ' more</li>'
+    + '<li>' + ((st.showgoing | 0) ? '&#10003; You\u2019re going to ' + esc(g.title) + ' \u2014 1 more' : 'Tap \u201cI\u2019m going\u201d on <a href="' + showHref + '">' + esc(g.title) + '</a> for 1 more') + '</li>'
     + '</ul>'
     + (st.handle && open ? '<div class="gw-invite"><label>Your invite link</label><div class="gw-linkrow"><input type="text" readonly value="' + esc(link) + '"><button type="button" class="gw-copy" data-gw-copy>Copy</button></div></div>' : '')
     + (!st.handle ? '<p>Pick a handle in the bookmark menu to get your invite link.</p>' : '')
@@ -11576,6 +11596,7 @@ a.inbox-thread-who:hover{text-decoration:underline}
 .gw-h{font-family:'Alfa Slab One',serif;font-weight:400;font-size:19px;color:var(--cream);margin:22px 0 8px}
 .gw-steps{margin:0 0 14px;padding-left:20px;color:var(--cream);font-family:'Bitter',Georgia,serif;font-size:15px;line-height:1.55}
 .gw-steps li{margin-bottom:6px}
+.gw-steps a,.gw-break a{color:inherit;text-decoration:underline;text-underline-offset:2px}
 .gw-box{background:var(--cream);color:var(--ink);border-radius:12px;padding:14px 16px;margin:10px 0;font-family:'Bitter',Georgia,serif;font-size:14.5px;line-height:1.5}
 .gw-box p{margin:0 0 10px}
 .gw-count{font-family:'Alfa Slab One',serif;font-size:18px;margin-bottom:6px}
