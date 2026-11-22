@@ -1,16 +1,17 @@
 {
- "captured": "2026-11-21T14:11Z",
+ "captured": "2026-11-22T14:10Z",
  "sources": [
+  {
+   "source": "Arbor Beer Lodge (arborbeerlodge.com)",
+   "note": "",
+   "file": "arbor-beer-lodge-arborbeerlodge-com.html",
+   "bytes": 19310
+  },
   {
    "source": "Ashland Armory (liveatthearmory.com)",
    "note": "",
    "file": "ashland-armory-liveatthearmory-com.html",
    "bytes": 401670
-  },
-  {
-   "source": "Jack London Revue",
-   "note": "ConnectionError: HTTPSConnectionPool(host='www.jacklondonrevue.com', port=443): Max retries exceeded with url: /calendar/ (Caused by Name",
-   "file": ""
   }
  ]
 }
