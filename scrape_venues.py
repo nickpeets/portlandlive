@@ -7463,7 +7463,11 @@ SOURCES = [
     {"name": "Kelly's Olympian (kellysolympian.com)", "parser": parse_kellys_olympian, "tls": True,
      "urls": ["https://kellysolympian.com/shows"]},
         {"name": "Barrel Room (Eventbrite)", "parser": parse_barrelroom, "urls": ["https://www.eventbrite.com/o/barrel-room-80388668013"]},
-    {"name": "Arbor Beer Lodge (arborbeerlodge.com)", "parser": parse_arbor, "urls": ["https://www.arborbeerlodge.com/events?format=json"]},
+    # may_be_empty (Nov 22 2026, auto-repair): the runner's capture of /events
+    # renders the card section but reads "No upcoming events are currently
+    # scheduled." -- nothing posted, not a parser break (the Nov 7 card reader
+    # still matches the page).
+    {"name": "Arbor Beer Lodge (arborbeerlodge.com)", "parser": parse_arbor, "may_be_empty": True, "urls": ["https://www.arborbeerlodge.com/events?format=json"]},
     {"name": "Artichoke Music (artichokemusic.org)", "parser": parse_artichoke, "urls": ["https://www.eventbrite.com/cc/live-music-artichoke-4657563"]},
     {"name": "Starday Tavern (stardaytavern.com / Genghis Records)", "parser": parse_starday, "urls": ["https://calendar.google.com/calendar/ical/m59vjhvcv0iflpv2iknoqlmuqo%40group.calendar.google.com/public/basic.ics"]},
     {"name": "McMenamins (White Eagle/Al's Den/Mission)", "parser": parse_mcmenamins,
@@ -7483,7 +7487,10 @@ SOURCES = [
     {"name": "Trout Lake Hall (troutlakehall.com)", "parser": parse_troutlakehall, "urls": [_TLH_HOME]},
     {"name": "The Ruins (theruins.org)", "parser": parse_theruins, "urls": [_RUINS_PAGE]},
     # Southern Oregon (Sep 29 2026)
-    {"name": "Ashland Armory (liveatthearmory.com)", "parser": parse_armory, "urls": [_ARMORY_BASE + "?format=json"]},
+    # may_be_empty (Nov 22 2026, auto-repair): the runner's capture lists one
+    # upcoming show (Dirtwire, Mar 3 2027) -- past the 90-day window, so the
+    # room is quiet for the winter, not broken.
+    {"name": "Ashland Armory (liveatthearmory.com)", "parser": parse_armory, "may_be_empty": True, "urls": [_ARMORY_BASE + "?format=json"]},
     {"name": "Talent Club (talentclublive.com)", "parser": parse_talentclub, "tls": True, "urls": [_TALENT_PAGE]},
     # Open-air, June to September: empty the rest of the year is normal.
     {"name": "Britt Pavilion (britt.org)", "parser": parse_britt, "may_be_empty": True, "tls": True, "urls": [_BRITT_PAGE]},
