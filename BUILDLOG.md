@@ -4,6 +4,10 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### 8119597b — Arbor Beer Lodge and Ashland Armory may_be_empty
+
+Nov 22 2026 (daily feed-health auto-repair). Arbor Beer Lodge and Ashland Armory flagged "empty". The runner captures in og/health/ show both pages working with nothing to list: Arbor's /events reads "No upcoming events are currently scheduled." (the Nov 7 card reader still matches the page), and the Armory's Squarespace JSON holds one upcoming show, Dirtwire on Mar 3 2027, past the 90-day window. Both marked may_be_empty with dated comments; parsers unchanged. Vino Veritas (dark 8 days, already may_be_empty), Chehalem Valley Brewing, The Reser and Theater of the Clouds (dark) left alone; the sandbox's web reader couldn't reach any venue page this run.
+
 ### cd069ad72 — Realm posters past lazy-load placeholders
 
 Nov 20 2026 (daily feed-health auto-repair). Realm scraped 0 since Nov 19 (Cloudflare ChallengeError on chrome, safari and the windowed browser, both rounds; safety net holding 23 rows till Nov 27) — the same runner-only flap it cleared on its own after Sep 25 and Nov 1, and no alternate door could be checked from the sandbox, so the source is unchanged. Separately, all 23 held rows (and every Realm row back to at least Nov 8) had no poster: the reader took img src first, so a lazy-load placeholder beat data-src. _realm_poster now prefers data-src / data-lazy-src / data-srcset, then srcset, src, the noscript copy and inline background-image, skipping data: URIs and the logo; test realm_poster_check. Takes effect the next time Realm clears. Chehalem Valley Brewing, The Reser and Theater of the Clouds (dark) and Ashland Armory (quiet, nothing posted after Nov 17) left alone.
