@@ -4,6 +4,10 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### 167656ca — Mississippi/Polaris reads every calendar page
+
+Nov 22 2026 (Nick: December shows missing at Polaris). mississippistudios.com's homepage is page 1 of a paged list (~60 events, about three weeks across both rooms); /full-view/2 through /full-view/6 hold the rest. The source read only page 1, so Polaris Hall stopped at Dec 12 and Mississippi Studios at Dec 11. Source now reads pages 1-8 (enough for the 90-day horizon); pages 2-8 are optional_urls so a page past the end is a quiet note, not a WARN. Parser unchanged; build_shows dedupes across pages.
+
 ### 8119597b — Arbor Beer Lodge and Ashland Armory may_be_empty
 
 Nov 22 2026 (daily feed-health auto-repair). Arbor Beer Lodge and Ashland Armory flagged "empty". The runner captures in og/health/ show both pages working with nothing to list: Arbor's /events reads "No upcoming events are currently scheduled." (the Nov 7 card reader still matches the page), and the Armory's Squarespace JSON holds one upcoming show, Dirtwire on Mar 3 2027, past the 90-day window. Both marked may_be_empty with dated comments; parsers unchanged. Vino Veritas (dark 8 days, already may_be_empty), Chehalem Valley Brewing, The Reser and Theater of the Clouds (dark) left alone; the sandbox's web reader couldn't reach any venue page this run.
