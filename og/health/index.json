@@ -1,11 +1,11 @@
 {
- "captured": "2026-11-23T14:14Z",
+ "captured": "2026-11-23T19:04Z",
  "sources": [
   {
-   "source": "Showdown Saloon",
-   "note": "39 rows, 4 of 5 pages; failed 3x: 3 (HTTPError: 504 Server Error: Gateway Timeout for url: https://www.showdownpdx.com/page/3/)",
-   "file": "showdown-saloon.html",
-   "bytes": 296902
+   "source": "The Goodfoot",
+   "note": "attempt 1 (thegoodfoot.com, native UA): HeadlessChallengeError [Just a moment...] \u00b7 attempt 2 (www.thegoodfoot.com, native UA): HeadlessChallengeError [Just a moment...] \u00b7 attempt 3 (thegoodfoot.com, fixed UA): HeadlessChallengeError [Just a moment...] \u00b7 attempt 4 (www.thegoodfoot.com, fixed UA): He",
+   "file": "the-goodfoot.html",
+   "bytes": 44775
   }
  ]
 }
