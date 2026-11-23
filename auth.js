@@ -552,6 +552,8 @@
       if (i.kind === "dark") return v + "no shows on the site since " + md(i.since) + " (" + i.days + " days).";
       if (i.kind === "empty") return v + "page loaded but found nothing" + (i.why ? " (" + esc(i.why) + ")" : "") + ".";
       if (i.kind === "tm") return v + "got " + i.scraped + " of ~" + i.usual + "; kept " + i.added + " from " + md(i.since) + ".";
+      if (i.kind === "short") return v + i.scraped + " upcoming but nothing past " + md(i.furthest) + " (" + i.days + " days out). Calendar may be paged or behind a next-month button.";
+      if (i.kind === "stale") return v + "no newly announced show since " + md(i.since) + " (" + i.days + " days). Reader may be stuck.";
       if (i.kind === "note") return v + esc(i.text || "");
       return v + esc(i.kind);
     };

@@ -1263,8 +1263,39 @@ def wonderlove_check():
     print(f"  ok   wonderlove                    {len(rows)} rows -- {titles}")
 
 
+def coverage_check():
+    # Nov 23 2026: Polaris read page 1 of a paged calendar (15 shows, 3 weeks).
+    import datetime as _d
+    t = _d.date(2026, 11, 20)
+    day = lambda n: (t + _d.timedelta(days=n)).isoformat()
+    rows = ([{"venue": "Polaris Hall", "date": day(n), "title": f"P{n}"} for n in range(0, 19, 1)][:15]
+            + [{"venue": "Wonder Ballroom", "date": day(n * 6), "title": f"W{n}"} for n in range(15)]
+            + [{"venue": "Tigardville Station", "date": day(n * 3), "title": f"T{n}"} for n in range(8)]
+            + [{"venue": "Spare Room", "date": day(n), "title": f"S{n}"} for n in range(4)])
+    prev = [r for r in rows if r["title"] != "W14"]
+    ln = sv.update_last_new({"Tigardville Station": "2026-10-03", "Wonder Ballroom": "2026-10-01"}, prev, rows, t)
+    bad = []
+    if ln["Wonder Ballroom"] != "2026-11-20":
+        bad.append(f"new show not recorded {ln['Wonder Ballroom']}")
+    if ln["Tigardville Station"] != "2026-10-03":
+        bad.append("old date overwritten")
+    got = {(i["venue"], i["kind"]) for i in sv.coverage_items(rows, ln, t)}
+    want = {("Polaris Hall", "short"), ("Tigardville Station", "stale")}
+    if got != want:
+        bad.append(f"items {sorted(got)} want {sorted(want)}")
+    h = sv.net_health({}, {}, rows, t, last_new=ln)
+    if {(i["venue"], i["kind"]) for i in h["items"]} != want:
+        bad.append("not in net_health")
+    if bad:
+        print("  FAIL coverage audit                " + "; ".join(bad))
+        print("GATE FAILURE")
+        sys.exit(1)
+    print("  ok   coverage audit                a paged 3-week calendar flags 'short'; no new announcements in 21+ days flags 'stale'; small/weekly rooms and busy long calendars stay quiet")
+
+
 if __name__ == "__main__":
     main()
+    coverage_check()
     talk_page_check()
     multi_time_check()
     realm_poster_check()

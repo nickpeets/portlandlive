@@ -8008,7 +8008,94 @@ def safety_net(scraped, prev_rows, prev_last_good, hist, today):
 DARK_REPORT_DAYS = 30   # a venue gone dark stays on the report this long, then drops off
 
 
-def net_health(net, last_good, scraped, today, zero_reports=(), notes=None):
+# Coverage audit (Nov 23 2026). Polaris Hall and Mississippi Studios read only
+# page 1 of a paged calendar for over a month: ~15 shows each, never more than
+# ~3 weeks out, so Grass with Class (Polaris, Dec 19) and everything after it
+# were missing. Nothing fired -- no zero, no drop: the count was steady because
+# the page size was. Two checks catch that shape, every night, in the health
+# report the daily auto-repair run reads:
+#   short -- a busy room (SHORT_MIN_SHOWS+ upcoming) whose furthest show is under
+#            SHORT_HORIZON_DAYS out. Busy rooms book months ahead; a calendar
+#            that stops at 3 weeks is usually a paged list, a "next month"
+#            button, or a load-more the reader never presses.
+#   stale -- a venue still scraping shows but with no NEWLY announced show for
+#            STALE_DAYS. Venues announce every week or two; a list that only
+#            shrinks means the reader is stuck on old data or a cached page.
+# Both are "go look at the venue's own site" flags, not alarms by themselves.
+# A room that really works month-to-month goes in the OK sets with a dated note.
+SHORT_MIN_SHOWS = 10
+SHORT_HORIZON_DAYS = 30
+STALE_DAYS = 21
+SHORT_HORIZON_OK = {}   # venue -> dated reason it's fine (verified on the venue's site)
+STALE_OK = {}           # venue -> dated reason it's fine
+# Last day each venue gained a never-seen show, worked out from the git history
+# of shows.json on Nov 23 2026 (history starts Sep 29, so "2026-09-29" means
+# "that day or earlier"). Only used for a venue with no "_last_new" yet in
+# manual_shows.json, so the stale check works from the first run instead of
+# three weeks later. Venues not listed start at the day they are first seen.
+LAST_NEW_SEED = {
+    "45 East": "2026-11-07", "Al's Den": "2026-10-31", "Alberta Abbey": "2026-11-05",
+    "Beach Hut Deli Tigard": "2026-11-07", "Bernese Mountain Series": "2026-10-17",
+    "Birch Street Uptown Lounge": "2026-10-23", "Bunk Bar": "2026-11-15", "CORNER14": "2026-11-11",
+    "Domino Room": "2026-11-12", "Hawthorne Lounge": "2026-10-23", "HiFi Wine Bar": "2026-10-24",
+    "Keller Auditorium": "2026-11-15", "Lola's Room": "2026-11-15", "Music Millennium": "2026-11-07",
+    "NOVA PDX": "2026-11-10", "Old Liberty Theater": "2026-10-25", "Portland Art Museum": "2026-11-11",
+    "Roseland Theater": "2026-11-14", "Spare Room": "2026-11-07", "Strum PDX": "2026-11-07",
+    "Talent Club": "2026-11-10", "The Cazadero": "2026-10-02", "The Goodfoot": "2026-11-16",
+    "The Off Beat": "2026-11-14", "The Scout Wine Bar": "2026-10-27", "The Wild Hare Saloon": "2026-10-21",
+    "Tigardville Station": "2026-10-03", "Tomorrow Theater": "2026-10-28", "Volcanic Theatre Pub": "2026-11-12",
+    "Walters Cultural Arts Center": "2026-11-13", "Wilfs": "2026-11-07", "Winningstad Theatre": "2026-11-16",
+    "Winona Grange": "2026-11-12", "ilani": "2026-11-10",
+}
+
+
+def _show_key(s):
+    return (s.get("venue", ""), (s.get("date") or "")[:10],
+            re.sub(r"[^a-z0-9]", "", (s.get("title") or "").lower()))
+
+
+def update_last_new(prev_last_new, prev_rows, scraped, today):
+    """Pure: venue -> ISO day it last gained a show the previous run did not have."""
+    out = dict(LAST_NEW_SEED)
+    out.update(prev_last_new or {})
+    seen = {_show_key(s) for s in prev_rows}
+    t = today.isoformat()
+    for s in scraped:
+        v = s.get("venue", "")
+        if not v:
+            continue
+        if seen and _show_key(s) not in seen:
+            out[v] = t
+        out.setdefault(v, t)
+    return out
+
+
+def coverage_items(scraped, last_new, today, skip=()):
+    """Pure: 'short' and 'stale' health rows (see the comment above)."""
+    from collections import defaultdict
+    up = defaultdict(list)
+    for s in scraped:
+        d = (s.get("date") or "")[:10]
+        if s.get("venue") and d >= today.isoformat():
+            up[s["venue"]].append(d)
+    items = []
+    for v, ds in sorted(up.items()):
+        if v in skip or v in SEASONAL_VENUES:
+            continue
+        far = max(ds)
+        out = (datetime.date.fromisoformat(far) - today).days
+        if len(ds) >= SHORT_MIN_SHOWS and out < SHORT_HORIZON_DAYS and v not in SHORT_HORIZON_OK:
+            items.append({"venue": v, "kind": "short", "scraped": len(ds), "furthest": far, "days": out})
+            continue
+        since = (last_new or {}).get(v)
+        if since and len(ds) >= 3 and v not in STALE_OK:
+            age = (today - datetime.date.fromisoformat(since)).days
+            if age >= STALE_DAYS:
+                items.append({"venue": v, "kind": "stale", "scraped": len(ds), "since": since, "days": age})
+    return items
+
+
+def net_health(net, last_good, scraped, today, zero_reports=(), notes=None, last_new=None):
     """Pure: the safety net's report as JSON-able rows, worst first."""
     from collections import Counter
     counts = Counter(s.get("venue", "") for s in scraped)
@@ -8044,6 +8131,8 @@ def net_health(net, last_good, scraped, today, zero_reports=(), notes=None):
         # one line per venue, not two (Sep 25 2026).
         if not any(name == v or name.startswith(v + " (") for v in reported):
             items.append({"venue": name, "kind": "quiet" if why.startswith("nothing upcoming") else "empty", "why": why})
+    if last_new is not None:
+        items.extend(coverage_items(scraped, last_new, today, skip=reported))
     return {"checked": today.isoformat(), "items": items}
 
 
@@ -8095,12 +8184,23 @@ def main():
             note = "seasonal venue, off-season" if v in SEASONAL_VENUES else "source likely dead -- fix or remove the parser"
             print(f"  EXPIRED: {v} ({age} days) -- {note}")
 
+    last_new = update_last_new(prev.get("_last_new", {}) if isinstance(prev, dict) else {},
+                               [s for s in prev_all if not s.get("_hand")], scraped, today)
+    for i in coverage_items(scraped, last_new, today):
+        if i["kind"] == "short":
+            print(f"COVERAGE SHORT: {i['venue']} -- {i['scraped']} upcoming but the furthest is "
+                  f"{i['furthest']} ({i['days']} days out); check the venue's own calendar for later months")
+        else:
+            print(f"COVERAGE STALE: {i['venue']} -- no newly announced show since {i['since']} "
+                  f"({i['days']} days); check the venue's own calendar for new announcements")
+
     hand = [s for s in prev_all if s.get("_hand")]
     merged = hand + keep + scraped
     with open(target, "w") as f:
         json.dump({"_comment": "Auto-generated by scrape_venues.py + hand-added shows.",
                    "_last_good": last_good,
-                   "_health": net_health(net, last_good, scraped, today, zero_reports, FETCH_NOTES),
+                   "_last_new": last_new,
+                   "_health": net_health(net, last_good, scraped, today, zero_reports, FETCH_NOTES, last_new),
                    "shows": merged}, f, indent=2, ensure_ascii=False)
     print(f"Wrote {len(merged)} shows to manual_shows.json "
           f"({len(scraped)} scraped, {len(keep)} kept by the safety net, {len(hand)} hand-added)")
