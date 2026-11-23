@@ -7514,8 +7514,14 @@ SOURCES = [
      "urls": ["https://www.holocene.org/events/"]},
     {"name": "Wonder Ballroom", "parser": parse_wonder,
      "urls": ["https://wonderballroom.com/events/"]},
+    # The homepage is page 1 of a paged list (~60 events, about three weeks
+    # for both rooms). Pages /full-view/2.. carry the rest; reading only page
+    # 1 cut Polaris and Mississippi off at Dec 11-12 (Nov 22 2026). Eight
+    # pages covers the 90-day horizon; pages past the end are optional.
     {"name": "Mississippi/Polaris", "parser": parse_msstudios,
-     "urls": ["https://mississippistudios.com/"]},
+     "urls": ["https://mississippistudios.com/"]
+             + [f"https://mississippistudios.com/full-view/{n}" for n in range(2, 9)],
+     "optional_urls": tuple(f"https://mississippistudios.com/full-view/{n}" for n in range(2, 9))},
     {"name": "Mammoth NW", "parser": parse_mammoth,
      "urls": ["https://roselandpdx.com/events/"]},
     # Same RHP template and parser as Roseland. The Mammoth feed at
