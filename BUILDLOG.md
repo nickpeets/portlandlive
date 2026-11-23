@@ -4,6 +4,10 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### 23a684e44 — Nightly coverage audit (short / stale calendars)
+
+Nov 23 2026 (Nick: "We are missing shows... this should be part of your nightly check"). Polaris and Mississippi sat at ~15 shows, never past 3 weeks, for a month because only page 1 of a paged calendar was read; no alarm fired because the count was steady. Two new health kinds every night: `short` (10+ upcoming, furthest under 30 days out) and `stale` (no newly announced show in 21 days, tracked as `_last_new` in manual_shows.json, seeded from shows.json git history). Dry run: on Nov 20's data it flags Polaris and Mississippi; on Nov 23 it flags Al's Den, Havalina, Haymaker, The Cazadero, The Scout Wine Bar, The Wild Hare Saloon, Tigardville Station for the auto-repair run to check against each venue's own site. Verified-fine rooms go in SHORT_HORIZON_OK / STALE_OK with a dated reason.
+
 ### 167656ca — Mississippi/Polaris reads every calendar page
 
 Nov 22 2026 (Nick: December shows missing at Polaris). mississippistudios.com's homepage is page 1 of a paged list (~60 events, about three weeks across both rooms); /full-view/2 through /full-view/6 hold the rest. The source read only page 1, so Polaris Hall stopped at Dec 12 and Mississippi Studios at Dec 11. Source now reads pages 1-8 (enough for the 90-day horizon); pages 2-8 are optional_urls so a page past the end is a quiet note, not a WARN. Parser unchanged; build_shows dedupes across pages.
