@@ -456,7 +456,11 @@ def main():
             ("Open Jam and Games", False), ("Sea Shanty Sing Along", False), ("PJCE Happy Hour Jazz w/ Christopher Brown Trio", False), ("Oktoberfest", True),
             ("10th Annual Kennedy School Oktoberfest Brewfest", True), ("Oktoberfest with The Polka Kings", False),
             ("Oktoberfest: Alpine Dave & the Lederhosen", False), ("Octoberfest Music Festival", True),
-            ("OMSI Science Pub: Smoke and Mirrors OMSI Science Pub", True), ("OMSI Science Pub", True)]
+            ("OMSI Science Pub: Smoke and Mirrors OMSI Science Pub", True), ("OMSI Science Pub", True),
+            # Nov 24 2026: closure notices and bare holiday names on venue calendars
+            ("Closed for Thanksgiving", True), ("Thanksgiving Restaurant Specials To Go", True), ("Christmas Eve Early Closing\U0001F332", True),
+            ("Thanksgiving Day", True), ("Christmas Eve", True), ("New Year's Eve", True), ("New Years Day", True),
+            ("New Year's Eve w/ Bottleneck Blues Band", False), ("Christmas Double Feature", False), ("Closed Casket Funeral", False)]
     _bad = [f"{ti!r} -> {bs.is_not_a_show(ti)}" for ti, want in _nas if bs.is_not_a_show(ti) != want]
     if _bad:
         fails += 1

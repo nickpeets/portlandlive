@@ -918,6 +918,9 @@ _NOT_A_SHOW = re.compile(r"""(?ix)
   | \b(movie\s+night|film\s+screening|screening\s+of|cinema\s+night|documentary)\b
   | \b(networking|mixer|job\s+fair|blood\s+drive|vaccine\s+clinic|town\s+hall|community\s+meeting)\b
   | ^\s*(?:beginner|intermediate|advanced|group)?\s*[\w\s'&-]{0,24}?\b(lessons?|classes?)\b
+  | \b(?:closed|closing)\s+(?:for|on|early)\b|\bearly\s+closing\b|\bspecials\s+to[\s-]go\b|\brestaurant\s+specials\b
+  | ^\W*(?:thanksgiving|christmas|xmas|new\s+years?'?s?|halloween|easter|memorial|labor|independence|mother'?s|father'?s)
+      (?:\s+(?:day|eve))?\W*$
 """)
 _MUSIC_SIGNAL = re.compile(r"""(?ix)
     \b(band|live\s+music|music|musical|dj|djs|jam|open\s+mic|concert|orchestra|symphony|quartet|trio|quintet|ensemble|choir|chorus
