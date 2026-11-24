@@ -4,6 +4,10 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### 802e3bf56 — Closure notices and bare holidays aren't shows
+
+Nov 24 2026 (daily feed-health auto-repair). 29 rows in the feed were venue closure notices or bare holiday names ("Closed for Thanksgiving" at Havalina and Haymaker, The 1905's "CLOSED FOR THE HOLIDAYS" run, Tigardville's "Christmas Day"/"New Years Day", McMenamins' "Restaurant Specials To Go", Wild Hare's "Christmas Eve Early Closing"). The not-a-show gate now drops closures, to-go specials and holiday-only titles; music words still rescue a row. Coverage items (short: Havalina, Haymaker, Hopworks; stale: Al's Den, The Cazadero, The Scout Wine Bar, The Wild Hare Saloon, Tigardville Station; dark: The Reser, Theater of the Clouds, Vino Veritas) NOT verified: every web-reader fetch of the venues' own pages was refused this run (permission prompt unanswered), and no health captures exist for these kinds, so nothing was added to SHORT_HORIZON_OK / STALE_OK. shows.json history suggests Havalina/Haymaker/Hopworks post about a month at a time (Haymaker sat at Nov 30 until mid-Nov, then jumped to Dec), but that is not a check of their sites.
+
 ### 23a684e44 — Nightly coverage audit (short / stale calendars)
 
 Nov 23 2026 (Nick: "We are missing shows... this should be part of your nightly check"). Polaris and Mississippi sat at ~15 shows, never past 3 weeks, for a month because only page 1 of a paged calendar was read; no alarm fired because the count was steady. Two new health kinds every night: `short` (10+ upcoming, furthest under 30 days out) and `stale` (no newly announced show in 21 days, tracked as `_last_new` in manual_shows.json, seeded from shows.json git history). Dry run: on Nov 20's data it flags Polaris and Mississippi; on Nov 23 it flags Al's Den, Havalina, Haymaker, The Cazadero, The Scout Wine Bar, The Wild Hare Saloon, Tigardville Station for the auto-repair run to check against each venue's own site. Verified-fine rooms go in SHORT_HORIZON_OK / STALE_OK with a dated reason.
