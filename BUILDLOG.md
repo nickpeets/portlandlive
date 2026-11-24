@@ -4,6 +4,10 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### 4070ac206 — Bare "Closed" rows dropped too
+
+Nov 24 2026 (auto-repair, second pass). After 802e3bf5's build the feed still had Starday's "Closed" (Nov 26) and Funhouse Lounge's "CLOSED" (Dec 24); a title that is only "closed" now goes through the gate as well.
+
 ### 802e3bf56 — Closure notices and bare holidays aren't shows
 
 Nov 24 2026 (daily feed-health auto-repair). 29 rows in the feed were venue closure notices or bare holiday names ("Closed for Thanksgiving" at Havalina and Haymaker, The 1905's "CLOSED FOR THE HOLIDAYS" run, Tigardville's "Christmas Day"/"New Years Day", McMenamins' "Restaurant Specials To Go", Wild Hare's "Christmas Eve Early Closing"). The not-a-show gate now drops closures, to-go specials and holiday-only titles; music words still rescue a row. Coverage items (short: Havalina, Haymaker, Hopworks; stale: Al's Den, The Cazadero, The Scout Wine Bar, The Wild Hare Saloon, Tigardville Station; dark: The Reser, Theater of the Clouds, Vino Veritas) NOT verified: every web-reader fetch of the venues' own pages was refused this run (permission prompt unanswered), and no health captures exist for these kinds, so nothing was added to SHORT_HORIZON_OK / STALE_OK. shows.json history suggests Havalina/Haymaker/Hopworks post about a month at a time (Haymaker sat at Nov 30 until mid-Nov, then jumped to Dec), but that is not a check of their sites.
