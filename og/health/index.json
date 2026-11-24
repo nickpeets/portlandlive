@@ -1,0 +1,27 @@
+{
+ "captured": "2026-11-24T17:46Z",
+ "sources": [
+  {
+   "source": "Realm (realmpdx.com)",
+   "note": "chrome: ChallengeError \u00b7 safari: ChallengeError \u00b7 browser: 0 rows \u00b7 chrome retry: ChallengeError \u00b7 safari retry: ChallengeError",
+   "file": ""
+  },
+  {
+   "source": "Laurelthirst (laurelthirst.com)",
+   "note": "ConnectTimeout: HTTPSConnectionPool(host='laurelthirst.com', port=443): Max retries exceeded with url: /music-calendar/ (Caused by Conne",
+   "file": ""
+  },
+  {
+   "source": "Showdown Saloon",
+   "note": "20 rows, 2 of 5 pages; failed 3x: 3 (HTTPError: 504 Server Error: Gateway Timeout for url: https://www.showdownpdx.com/page/3/); 4 (HTTPError: 504 Server Error: Gateway Timeout for url: https://www.showdownpdx.com/page/4/); stopped at 4",
+   "file": "showdown-saloon.html",
+   "bytes": 296036
+  },
+  {
+   "source": "The Goodfoot",
+   "note": "attempt 1 (thegoodfoot.com, native UA): HeadlessChallengeError [Just a moment...] \u00b7 attempt 2 (www.thegoodfoot.com, native UA): HeadlessChallengeError [Just a moment...] \u00b7 attempt 3 (thegoodfoot.com, fixed UA): HeadlessChallengeError [Just a moment...] \u00b7 attempt 4 (www.thegoodfoot.com, fixed UA): He",
+   "file": "the-goodfoot.html",
+   "bytes": 44775
+  }
+ ]
+}
