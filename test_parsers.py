@@ -460,7 +460,7 @@ def main():
             # Nov 24 2026: closure notices and bare holiday names on venue calendars
             ("Closed for Thanksgiving", True), ("Thanksgiving Restaurant Specials To Go", True), ("Christmas Eve Early Closing\U0001F332", True),
             ("Thanksgiving Day", True), ("Christmas Eve", True), ("New Year's Eve", True), ("New Years Day", True),
-            ("New Year's Eve w/ Bottleneck Blues Band", False), ("Christmas Double Feature", False), ("Closed Casket Funeral", False)]
+            ("New Year's Eve w/ Bottleneck Blues Band", False), ("Christmas Double Feature", False), ("Closed Casket Funeral", False), ("CLOSED", True)]
     _bad = [f"{ti!r} -> {bs.is_not_a_show(ti)}" for ti, want in _nas if bs.is_not_a_show(ti) != want]
     if _bad:
         fails += 1
