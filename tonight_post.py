@@ -34,6 +34,11 @@ SKIP = re.compile(r"""(?ix)\b(
 )""")
 
 
+# Still skipped for a huge comedy night: not stand-up.
+HARD_SKIP = re.compile(r"(?i)\b(in\s+concert|cirque|circus|nutcracker|ballet|podcast|"
+                       r"the\s+moth\b|wait\s+wait|live\s+wire|movie|screening|magic)\b")
+
+
 def _tier(venue):
     for i, names in enumerate(TIERS):
         if any(n.lower() in (venue or "").lower() for n in names):
@@ -67,19 +72,26 @@ def pick(shows, day, recent_acts=()):
     for s in shows:
         if s.get("date") != day or s.get("outOfTown"):
             continue
-        if s.get("contentType") in ("comedy", "other"):
+        comedy = s.get("contentType") == "comedy"
+        if s.get("contentType") == "other":
+            continue
+        # Comedy only when it's a huge act: a top-tier room (Moda, Coliseum,
+        # Keller, Schnitz). Nick, Nov 25 2026. Music wins a tie.
+        if comedy and _tier(s.get("venue")) > 0:
             continue
         blob = f"{s.get('title', '')} {s.get('venue', '')}"
-        if SKIP.search(blob):
+        if SKIP.search(blob) and not comedy:
+            continue
+        if comedy and HARD_SKIP.search(blob):
             continue
         act = headline(s.get("title")).split(" w/ ")[0].lower()
         if act in recent_acts:
             continue
-        cands.append((_tier(s.get("venue")), -(s.get("buzz") or 0), s.get("title", ""), s))
+        cands.append((_tier(s.get("venue")), comedy, -(s.get("buzz") or 0), s.get("title", ""), s))
     if not cands:
         return None
-    cands.sort(key=lambda c: c[:3])
-    return cands[0][3]
+    cands.sort(key=lambda c: c[:4])
+    return cands[0][4]
 
 
 def build(shows, make_slug, here, today=None, days=8):
@@ -94,7 +106,8 @@ def build(shows, make_slug, here, today=None, days=8):
         recent.append(act.split(" w/ ")[0].lower())
         link = f"{SITE}/show/{make_slug(s)}/"
         out.append({"date": day, "act": act, "venue": s.get("venue", ""), "link": link,
-                    "message": f"TONIGHT: {act} at {s.get('venue', '')}! GO SEE LIVE MUSIC!"})
+                    "message": f"TONIGHT: {act} at {s.get('venue', '')}! GO SEE LIVE "
+                               + ("COMEDY!" if s.get("contentType") == "comedy" else "MUSIC!")})
     d = os.path.join(here, "og", "tonight")
     os.makedirs(d, exist_ok=True)
     with open(os.path.join(d, "posts.json"), "w", encoding="utf-8") as f:
