@@ -4,6 +4,10 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### 6356cdf5a — Daily TONIGHT Facebook post
+
+Nov 25 2026. The daily TONIGHT posts were a hand-queued Planner batch that ran out after Nov 20, so Nov 21-24 were missed; Nick: "We don't want to ever miss a day." tonight_post.py runs in the nightly build and writes og/tonight/posts.json (next 8 nights; biggest room first, then buzz; comedy, talk shows, ballet, movie-in-concert, karaoke etc. left out; no act repeated within 14 nights). supabase/schema-fb-tonight.sql: fb_tonight_tick() on pg_cron every 5 min posts today's entry to the Page through the Graph API at noon PT (app "Rain Or Shows Poster", id 1139798711980377), retries 6x, emails nickpeets@gmail.com via Resend if not up by 1pm or no show. Page key lives only in the vault (fb_page_token), made by fb_setup() from the Graph Explorer key.
+
 ### 4070ac206 — Bare "Closed" rows dropped too
 
 Nov 24 2026 (auto-repair, second pass). After 802e3bf5's build the feed still had Starday's "Closed" (Nov 26) and Funhouse Lounge's "CLOSED" (Dec 24); a title that is only "closed" now goes through the gate as well.
