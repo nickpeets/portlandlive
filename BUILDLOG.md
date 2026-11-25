@@ -4,6 +4,10 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### cd6ad7291 — TONIGHT post: huge comedy
+
+Nov 25 2026. Nick: "put in comedy if it's a huge act." tonight_post.py now lets a comedy show be the pick when it's in a top-tier room (Moda, Coliseum, Keller, Schnitz); music wins a tie, and the post ends "GO SEE LIVE COMEDY!". Circus, magic, movie-in-concert and podcasts stay out. Next picks: Jinkx & DeLa (Dec 17), Brad Williams (Jan 8), Nurse John (Jan 15), Jeff Arcuri (Jan 27).
+
 ### 6356cdf5a — Daily TONIGHT Facebook post
 
 Nov 25 2026. The daily TONIGHT posts were a hand-queued Planner batch that ran out after Nov 20, so Nov 21-24 were missed; Nick: "We don't want to ever miss a day." tonight_post.py runs in the nightly build and writes og/tonight/posts.json (next 8 nights; biggest room first, then buzz; comedy, talk shows, ballet, movie-in-concert, karaoke etc. left out; no act repeated within 14 nights). supabase/schema-fb-tonight.sql: fb_tonight_tick() on pg_cron every 5 min posts today's entry to the Page through the Graph API at noon PT (app "Rain Or Shows Poster", id 1139798711980377), retries 6x, emails nickpeets@gmail.com via Resend if not up by 1pm or no show. Page key lives only in the vault (fb_page_token), made by fb_setup() from the Graph Explorer key.
