@@ -4679,9 +4679,30 @@ def fetch_tls(url, timeout=30, impersonate="chrome"):
     # nothing" on the same build). Call it what it is.
     why = _challenged(r)
     if why:
-        raise ChallengeError(f"challenge {why} from {url}")
-    r.raise_for_status()
+        e = ChallengeError(f"challenge {why} from {url}")
+        e.status, e.body = r.status_code, r.text or ""
+        raise e
+    if r.status_code >= 400:
+        # Nov 26 2026: Talent Club went to 0 with every tier reading just
+        # "HTTPError", so the repair run couldn't tell a 404 (page moved) from
+        # a 5xx (server down). Name the status and keep the body for og/health/.
+        raise TLSHTTPError(r.status_code, url, r.text or "")
     return r.text
+
+
+class TLSHTTPError(Exception):
+    """A TLS-tier fetch that came back 4xx/5xx (not a challenge)."""
+    def __init__(self, status, url, body=""):
+        super().__init__(f"HTTP {status} from {url}")
+        self.status, self.body = status, body
+
+
+def _tls_why(e):
+    """Health-note label for a failed TLS fetch: the class name, plus the
+    HTTP status when there is one ("HTTPError 404", "ChallengeError 403")."""
+    name = "HTTPError" if isinstance(e, TLSHTTPError) else type(e).__name__
+    st = getattr(e, "status", None)
+    return f"{name} {st}" if st else name
 
 
 # What each fetch tier got, per source, this run -- "chrome: ChallengeError ·
@@ -4711,16 +4732,21 @@ def tls_rows(src, url, today):
                     return rows
                 why = "0 events"
             except Exception as e:
-                why = type(e).__name__
+                why = _tls_why(e)
+                if getattr(e, "body", ""):
+                    # The page the runner was served, for og/health/.
+                    EARLY_STOP_PAGES[src["name"]] = e.body
             tried.append(f"{imp}{tag}: {why}")
             print(f"  note: {src['name']}: {imp} handshake{tag} gave {why}")
         return []
 
     rows = handshakes()
     if rows:
+        EARLY_STOP_PAGES.pop(src["name"], None)
         return rows
     if src.get("may_be_empty"):
         FETCH_NOTES[src["name"]] = " \u00b7 ".join(tried)
+        EARLY_STOP_PAGES.pop(src["name"], None)
         return []
     from fetch_headless import fetch_headless, fetch_headless_json
     try:
@@ -4739,11 +4765,14 @@ def tls_rows(src, url, today):
         print(f"  note: {src['name']}: browser fallback gave {type(e).__name__}: {e}")
     if rows:
         FETCH_NOTES[src["name"]] = " \u00b7 ".join(tried)
+        EARLY_STOP_PAGES.pop(src["name"], None)
         return rows
     time.sleep(TLS_RETRY_PAUSE_S)
     rows = handshakes(" retry")
     if not rows:
         FETCH_NOTES[src["name"]] = " \u00b7 ".join(tried)
+    else:
+        EARLY_STOP_PAGES.pop(src["name"], None)
     return rows
 
 

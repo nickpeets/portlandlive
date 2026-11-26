@@ -719,6 +719,25 @@ def safety_net_check():
         print("GATE FAILURE")
         sys.exit(1)
     print("  ok   tls fallback                  challenged chrome -> safari -> browser; quiet source stops at the handshakes; one health line per venue")
+    # Nov 26 2026 (Talent Club, every tier "HTTPError"): the note names the
+    # status and the served page is kept for og/health/.
+    def _tls404(url, timeout=30, impersonate="chrome"):
+        raise sv.TLSHTTPError(404, url, "<html>Page not found</html>")
+    _real_tls, _real_hl = sv.fetch_tls, _fh.fetch_headless
+    sv.fetch_tls, _fh.fetch_headless = _tls404, lambda url, headed=False: ""
+    _pause, sv.TLS_RETRY_PAUSE_S = sv.TLS_RETRY_PAUSE_S, 0
+    try:
+        sv.FETCH_NOTES.pop("Talent (test)", None)
+        got404 = sv.tls_rows({"name": "Talent (test)", "parser": lambda t, d: []}, "https://x.example/live-music/", datetime.date(2026, 11, 26))
+    finally:
+        sv.fetch_tls, _fh.fetch_headless, sv.TLS_RETRY_PAUSE_S = _real_tls, _real_hl, _pause
+    note = sv.FETCH_NOTES.get("Talent (test)", "")
+    page = sv.EARLY_STOP_PAGES.pop("Talent (test)", "")
+    if got404 != [] or "chrome: HTTPError 404" not in note or "safari retry: HTTPError 404" not in note or "Page not found" not in page:
+        print(f"  FAIL tls http status              got {got404} note {note!r} page {page[:40]!r}")
+        print("GATE FAILURE")
+        sys.exit(1)
+    print("  ok   tls http status               4xx/5xx named in the health note; served page kept for og/health/")
     # Sold out (Sep 25 2026): only the venue's own structured signals count.
     _d = datetime.date(2026, 9, 14)
     _fx = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fixtures")
