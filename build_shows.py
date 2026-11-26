@@ -2835,6 +2835,17 @@ def write_clean_urls(shows, venues):
         tonight_post.build(shows, make_slug, HERE)
     except Exception as e:  # noqa: BLE001
         print(f"WARN tonight_post: {e}")
+    # Weekly email (Nov 25 2026): og/newsletter/latest.html, sent Thursdays
+    # 9am by Supabase (supabase/schema-newsletter.sql). Never breaks the build.
+    try:
+        import newsletter
+        try:
+            _stories = _story_rpc("stories_list", {}) or []
+        except Exception:
+            _stories = []
+        newsletter.build(shows, make_slug, HERE, stories=_stories)
+    except Exception as e:  # noqa: BLE001
+        print(f"WARN newsletter: {e}")
     # Real pages a search engine can read (Oct 30 2026) -- see seo_pages.py.
     # The old _shell() redirected everyone, Google included, to /#/..., so
     # every show and venue page folded into the homepage.
