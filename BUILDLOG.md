@@ -4,6 +4,10 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### cd20a794e — Miracle alert emails
+
+Nov 25 2026. Nick wants every account holder emailed when a miracle goes up, linking to that show's page. supabase/schema-miracle-alerts.sql (run Nov 25): members mirrored into the Resend "Members" segment (trigger + backfill + resend-contact-drain cron), miracle_alert_sweep() every 5 min sends a Resend broadcast (not the 100/day transactional cap) for free posts 10+ min old, one per show, max 3/day, giver account 24h+ old, future shows only, unsubscribe + footer address. The post form now sends show_title/show_venue. Needs vault secrets resend_full_key (Full access key) and resend_members_segment.
+
 ### cd6ad7291 — TONIGHT post: huge comedy
 
 Nov 25 2026. Nick: "put in comedy if it's a huge act." tonight_post.py now lets a comedy show be the pick when it's in a top-tier room (Moda, Coliseum, Keller, Schnitz); music wins a tie, and the post ends "GO SEE LIVE COMEDY!". Circus, magic, movie-in-concert and podcasts stay out. Next picks: Jinkx & DeLa (Dec 17), Brad Williams (Jan 8), Nurse John (Jan 15), Jeff Arcuri (Jan 27).
