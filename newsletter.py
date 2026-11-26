@@ -98,11 +98,13 @@ def build(shows, make_slug, here, stories=None, today=None):
     a(f'<body style="margin:0;padding:0;background:{CREAM}">')
     a(f'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:{CREAM}"><tr><td align="center" style="padding:16px 8px">')
     a('<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#fff;border-radius:14px;overflow:hidden;font-family:Georgia,\'Times New Roman\',serif;color:' + INK + '">')
-    # Header
-    a(f'<tr><td style="background:{FOREST};padding:22px 24px;text-align:center">'
-      f'<a href="{SITE}/?ref=newsletter"><img src="{SITE}/logo_trans.png" width="84" height="84" alt="Rain Or Shows" style="display:block;margin:0 auto 8px;border:0"></a>'
-      f'<div style="font-family:Arial,Helvetica,sans-serif;color:{CREAM};font-size:13px;letter-spacing:2px;text-transform:uppercase">Portland live music</div>'
-      f'<div style="color:#fff;font-size:26px;font-weight:bold;margin-top:4px">This week: {_e(rng)}</div></td></tr>')
+    # Header: the Rain Or Shows name, no logo image (Nick, Nov 25 2026).
+    a(f'<tr><td style="background:{FOREST};padding:26px 24px 22px;text-align:center">'
+      f'<a href="{SITE}/?ref=newsletter" style="text-decoration:none">'
+      f'<div style="font-family:Rockwell,\'Rockwell Extra Bold\',\'Alfa Slab One\',Georgia,serif;font-size:40px;line-height:1;font-weight:bold;color:{CREAM};letter-spacing:.5px">Rain Or Shows</div></a>'
+      f'<div style="font-family:Arial,Helvetica,sans-serif;color:#cfe0d6;font-size:12px;letter-spacing:2px;text-transform:uppercase;margin-top:10px">Portland live music</div>'
+      f'<div style="height:2px;width:56px;background:{RUST};margin:14px auto"></div>'
+      f'<div style="color:#fff;font-size:22px;font-weight:bold">This week: {_e(rng)}</div></td></tr>')
     # Featured cards
     if feat:
         a('<tr><td style="padding:20px 16px 4px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>')
