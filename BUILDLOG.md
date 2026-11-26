@@ -4,6 +4,10 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### f8eb9724d — TLS tier names the HTTP status
+
+Nov 26 2026 (daily feed-health auto-repair). Talent Club scraped 0 for the first time (safety net holding 3 rows till Dec 4) with every tier reading only "HTTPError" and no capture, so 404 vs 5xx couldn't be told apart. TLS-tier fetches now name the status ("HTTPError 404", "ChallengeError 403") and the page the runner was served is saved to og/health/; parser unchanged, left to self-heal or be fixed from tomorrow's capture. The Goodfoot (Cloudflare on the runner, held till Dec 3) is still on the 7-day net: its web-reader snapshot is from Nov 10 (stale after 3 days) and could not be refreshed. Coverage items (short: Haymaker, Hopworks; stale: Al's Den, The Cazadero, The Scout Wine Bar, The Wild Hare Saloon, Tigardville Station) and dark rooms (Ashland Armory, The Reser, Theater of the Clouds, Vino Veritas) NOT verified: every web-reader fetch of the venues' own pages was refused again (permission prompt unanswered), so nothing was added to SHORT_HORIZON_OK / STALE_OK. Not a Monday, no spot audit.
+
 ### daf28e4da — Newsletter readability, MOVED TO cleanup
 
 Nov 25 2026. Nick: three shows a night has to be easy to read; a Polaris listing said MOVED TO ALADDIN; not sure about the Night by night heading. Newsletter nights are now a cream day bar then one show per row (18px act, venue and time under it); heading gone; header is the torn-flyer image (og/newsletter/header.jpg). build_shows.fix_moved_shows() runs after title cleanup: a "MOVED TO <venue>" listing is dropped if that room already lists the show that night, otherwise it moves there with the note stripped. headline() uses the part after "present(s):".
