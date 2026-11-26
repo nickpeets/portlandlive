@@ -4,6 +4,10 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### 26f877269 — Weekly newsletter (for real)
+
+Nov 25 2026. The Nov 19 newsletter never reached main. newsletter.py (nightly build) writes og/newsletter/latest.html: next 7 nights, 3 photo cards, up to 3 music shows a night (biggest rooms first, comedy and the TONIGHT-post skip list left out, an act only once a week), Liner Notes published in the last 7 days, See every show button, Resend unsubscribe link, footer address. supabase/schema-newsletter.sql: newsletter_tick() (cron every 5 min, acts Thursday 9-11am PT) fetches the page, refuses it unless ros-week is today, sends a Resend broadcast to the Members segment, emails Nick if not out by 10:30.
+
 ### cd20a794e — Miracle alert emails
 
 Nov 25 2026. Nick wants every account holder emailed when a miracle goes up, linking to that show's page. supabase/schema-miracle-alerts.sql (run Nov 25): members mirrored into the Resend "Members" segment (trigger + backfill + resend-contact-drain cron), miracle_alert_sweep() every 5 min sends a Resend broadcast (not the 100/day transactional cap) for free posts 10+ min old, one per show, max 3/day, giver account 24h+ old, future shows only, unsubscribe + footer address. The post form now sends show_title/show_venue. Needs vault secrets resend_full_key (Full access key) and resend_members_segment.
