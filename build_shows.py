@@ -2682,7 +2682,10 @@ def build_og_cards(shows):
     for slug, src in want.items():
         path = os.path.join(OG_DIR, slug + ".jpg")
         e = idx.get(slug)
-        if not (isinstance(e, dict) and e.get("src") == src and (not e.get("card") or os.path.exists(path))):
+        # Every show with a poster gets a self-hosted JPEG (Nov 26 2026): Facebook
+        # wouldn't show some posters straight from venue sites (AVIF/WebP files,
+        # hotlink blocks), so link previews came up with no picture.
+        if not (isinstance(e, dict) and e.get("src") == src and e.get("card") and os.path.exists(path)):
             try:
                 r = sess.get(src, timeout=20)
                 r.raise_for_status()
@@ -2693,7 +2696,13 @@ def build_og_cards(shows):
                     e = {"src": src, "card": True}
                     made += 1
                 else:
-                    e = {"src": src, "card": False}
+                    cp = ImageOps.fit(im, (1200, 630), Image.LANCZOS)  # wide already; light crop
+                    buf = BytesIO()
+                    cp.save(buf, "JPEG", quality=85, optimize=True, progressive=True)
+                    with open(path, "wb") as f:
+                        f.write(buf.getvalue())
+                    e = {"src": src, "card": True, "copy": True}
+                    made += 1
             except Exception:
                 failed += 1
                 continue          # not recorded: retried next build
