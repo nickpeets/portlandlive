@@ -4,6 +4,10 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### daf28e4da — Newsletter readability, MOVED TO cleanup
+
+Nov 25 2026. Nick: three shows a night has to be easy to read; a Polaris listing said MOVED TO ALADDIN; not sure about the Night by night heading. Newsletter nights are now a cream day bar then one show per row (18px act, venue and time under it); heading gone; header is the torn-flyer image (og/newsletter/header.jpg). build_shows.fix_moved_shows() runs after title cleanup: a "MOVED TO <venue>" listing is dropped if that room already lists the show that night, otherwise it moves there with the note stripped. headline() uses the part after "present(s):".
+
 ### 26f877269 — Weekly newsletter (for real)
 
 Nov 25 2026. The Nov 19 newsletter never reached main. newsletter.py (nightly build) writes og/newsletter/latest.html: next 7 nights, 3 photo cards, up to 3 music shows a night (biggest rooms first, comedy and the TONIGHT-post skip list left out, an act only once a week), Liner Notes published in the last 7 days, See every show button, Resend unsubscribe link, footer address. supabase/schema-newsletter.sql: newsletter_tick() (cron every 5 min, acts Thursday 9-11am PT) fetches the page, refuses it unless ros-week is today, sends a Resend broadcast to the Members segment, emails Nick if not out by 10:30.
