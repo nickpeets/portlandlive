@@ -6432,8 +6432,13 @@ function bindExchange(host, slug){
       submit.disabled = true;
       msg.hidden = true;
       // user_id and display_name are set by the insert trigger.
+      // Title and venue ride along for the miracle alert email (the
+      // database has no shows table). Plain text; the server escapes it.
+      const shw = ((typeof state !== 'undefined' && state.shows) || []).find(function(s){ return s._slug === slug; }) || {};
       const { error } = await sb.from('ticket_posts')
-        .insert({ show_slug: slug, price_type: priceType, quantity: qty });
+        .insert({ show_slug: slug, price_type: priceType, quantity: qty,
+                  show_title: shw.title ? String(shw.title).slice(0, 160) : null,
+                  show_venue: shw.venue ? String(shw.venue).slice(0, 80) : null });
       if(error){
         msg.textContent = 'Couldn’t post that. Try again.';
         msg.hidden = false;
