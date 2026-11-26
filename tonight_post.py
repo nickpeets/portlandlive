@@ -71,7 +71,7 @@ def headline(title):
     return f"{t} w/ {openers}" if openers else t
 
 
-def pick(shows, day, recent_acts=()):
+def pick(shows, day, recent_acts=(), need_image=False):
     cands = []
     for s in shows:
         if s.get("date") != day or s.get("outOfTown"):
@@ -91,6 +91,8 @@ def pick(shows, day, recent_acts=()):
         act = headline(s.get("title")).split(" w/ ")[0].lower()
         if act in recent_acts:
             continue
+        if need_image and not s.get("imageUrl"):
+            continue
         cands.append((_tier(s.get("venue")), comedy, -(s.get("buzz") or 0), s.get("title", ""), s))
     if not cands:
         return None
@@ -108,25 +110,38 @@ def _http_get(url):
 
 def build(shows, make_slug, here, today=None, days=8, fetch=_http_get):
     today = today or (datetime.datetime.utcnow() - datetime.timedelta(hours=8)).date()
-    out, recent = [], []
+    out, recent, recent_ig = [], [], []
+
+    def msg(s, act):
+        return (f"TONIGHT: {act} at {s.get('venue', '')}! GO SEE LIVE "
+                + ("COMEDY!" if s.get("contentType") == "comedy" else "MUSIC!"))
+
     for i in range(days):
         day = (today + datetime.timedelta(days=i)).isoformat()
-        s = pick(shows, day, recent[-14:])
+        s = pick(shows, day, recent[-14:] + recent_ig[-14:]) or pick(shows, day, recent[-14:])
         if not s:
             continue
         act = headline(s["title"])
-        recent.append(act.split(" w/ ")[0].lower())
-        link = f"{SITE}/show/{make_slug(s)}/"
-        img = None
-        try:
-            os.makedirs(os.path.join(here, "og", "tonight"), exist_ok=True)
-            make_card(s, act, os.path.join(here, "og", "tonight", f"{day}.jpg"), fetch=fetch)
-            img = f"{SITE}/og/tonight/{day}.jpg"
-        except Exception as e:  # noqa: BLE001
-            print(f"WARN tonight card {day}: {e}")
-        out.append({"date": day, "act": act, "venue": s.get("venue", ""), "link": link, "image": img,
-                    "message": f"TONIGHT: {act} at {s.get('venue', '')}! GO SEE LIVE "
-                               + ("COMEDY!" if s.get("contentType") == "comedy" else "MUSIC!")})
+        fb_key = act.split(" w/ ")[0].lower()
+        recent.append(fb_key)
+        entry = {"date": day, "act": act, "venue": s.get("venue", ""),
+                 "link": f"{SITE}/show/{make_slug(s)}/", "message": msg(s, act), "image": None}
+        # Instagram features a DIFFERENT show than Facebook (Nick, Nov 26
+        # 2026): the next-biggest show that night with a poster.
+        g = (pick(shows, day, recent_ig[-14:] + recent[-14:], need_image=True)
+             or pick(shows, day, recent_ig[-14:] + recent[-14:]))
+        if g:
+            ig_act = headline(g["title"])
+            recent_ig.append(ig_act.split(" w/ ")[0].lower())
+            entry.update(ig_act=ig_act, ig_venue=g.get("venue", ""),
+                         ig_link=f"{SITE}/show/{make_slug(g)}/", ig_message=msg(g, ig_act))
+            try:
+                os.makedirs(os.path.join(here, "og", "tonight"), exist_ok=True)
+                make_card(g, ig_act, os.path.join(here, "og", "tonight", f"{day}.jpg"), fetch=fetch)
+                entry["image"] = f"{SITE}/og/tonight/{day}.jpg"
+            except Exception as e:  # noqa: BLE001
+                print(f"WARN tonight card {day}: {e}")
+        out.append(entry)
     d = os.path.join(here, "og", "tonight")
     os.makedirs(d, exist_ok=True)
     keep = {f"{p['date']}.jpg" for p in out}

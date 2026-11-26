@@ -14,6 +14,7 @@
 -- Safe to re-run.
 
 alter table public.fb_tonight add column if not exists image text;
+alter table public.fb_tonight add column if not exists ig_message text;  -- Instagram features a different show (Nick, Nov 26 2026)
 alter table public.fb_tonight add column if not exists ig_status text;   -- null|container|publishing|posted|failed
 alter table public.fb_tonight add column if not exists ig_req bigint;
 alter table public.fb_tonight add column if not exists ig_container text;
@@ -107,6 +108,7 @@ begin
       select p into v_post from jsonb_array_elements(r.content::jsonb -> 'posts') p
         where p ->> 'date' = new.day::text limit 1;
       new.image := v_post ->> 'image';
+      new.ig_message := v_post ->> 'ig_message';
     end if;
   end if;
   return new;
@@ -128,19 +130,19 @@ declare
 begin
   if v_mins < 12 * 60 or v_mins >= 14 * 60 or v_token is null or v_ig is null then return; end if;
   select * into v_row from public.fb_tonight where day = v_day;
-  if not found or v_row.message is null or v_row.image is null then return; end if;
+  if not found or coalesce(v_row.ig_message, v_row.message) is null or v_row.image is null then return; end if;
   if v_row.ig_status in ('posted', 'failed') then return; end if;
 
   if (v_mins >= 13 * 60 or v_row.ig_tries >= 4) and not v_row.ig_alerted then
     update public.fb_tonight set ig_alerted = true, ig_status = 'failed' where day = v_day;
     perform public._fb_alert('Instagram TONIGHT post did NOT go up (' || v_day || ')',
       'Today''s Instagram post failed: ' || coalesce(v_row.ig_note, 'no reason given') || E'\n\n'
-      || 'Picture: ' || v_row.image || E'\nCaption: ' || v_row.message);
+      || 'Picture: ' || v_row.image || E'\nCaption: ' || coalesce(v_row.ig_message, v_row.message));
     return;
   end if;
 
   if v_row.ig_status is null then
-    v_caption := v_row.message || E'\n\nTickets + every Portland show: link in bio → rainorshows.com'
+    v_caption := coalesce(v_row.ig_message, v_row.message) || E'\n\nTickets + every Portland show: link in bio → rainorshows.com'
                  || E'\n\n#portlandmusic #pdxmusic #livemusic #portlandoregon #pdx';
     update public.fb_tonight set ig_status = 'container', ig_tries = ig_tries + 1,
       ig_req = net.http_post(url := 'https://graph.facebook.com/v25.0/' || v_ig || '/media',
