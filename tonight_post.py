@@ -58,6 +58,10 @@ def headline(title):
         t = (t[:m.start()] + t[m.end():]).strip()
     elif re.search(r"\sw/\s", t):
         t, openers = re.split(r"\sw/\s", t, maxsplit=1)
+    # "X present(s): The Real Show" -> the part after the colon.
+    m2 = re.match(r"^.{2,60}?\spresents?\s*[:\-–—]\s*(.+)$", t, re.I)
+    if m2:
+        t = m2.group(1).strip()
     # Tour names / subtitles after ':' or a spaced dash.
     t = re.split(r"\s*:\s|\s+[-–—]\s+", t, maxsplit=1)[0].strip()
     t = re.sub(r"^.{2,40}?\spresents:?\s+", "", t, flags=re.I).strip()

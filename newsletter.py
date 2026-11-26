@@ -118,15 +118,19 @@ def build(shows, make_slug, here, stories=None, today=None):
               f'<div style="font-size:16px;font-weight:bold;color:{FOREST};line-height:1.2;margin-top:2px">{_e(tonight_post.headline(s["title"]).split(" w/ ")[0])}</div>'
               f'<div style="font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#777;margin-top:2px">{_e(s.get("venue"))}</div></a></td>')
         a('</tr></table></td></tr>')
-    # Night by night
-    a(f'<tr><td style="padding:18px 24px 4px"><div style="font-size:20px;font-weight:bold;color:{FOREST};border-bottom:2px solid {CREAM};padding-bottom:6px">Night by night</div></td></tr>')
+    # The nights: a day bar, then one show per row -- act on its own line,
+    # venue and time under it (Nick, Nov 25 2026: easy to read).
+    a('<tr><td style="padding:14px 0 0"></td></tr>')
     for d, picks in nights:
-        a(f'<tr><td style="padding:12px 24px 0"><div style="font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:bold;color:{RUST};text-transform:uppercase;letter-spacing:1px">{_e(d.strftime("%A, %b %-d"))}</div>')
-        for s in picks:
-            t = f" · {_e(s['time'])}" if s.get("time") else ""
-            a(f'<div style="margin:5px 0 0;font-size:15px;line-height:1.35">'
-              f'<a href="{_e(_show_url(s, make_slug))}" style="color:{INK};font-weight:bold;text-decoration:none">{_e(tonight_post.headline(s["title"]))}</a>'
-              f'<span style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#777"> — {_e(s.get("venue"))}{t}</span></div>')
+        a(f'<tr><td style="padding:14px 20px 0">'
+          f'<div style="background:{CREAM};border-left:5px solid {RUST};padding:8px 12px;font-family:Arial,Helvetica,sans-serif;'
+          f'font-size:14px;font-weight:bold;color:{FOREST};text-transform:uppercase;letter-spacing:2px">{_e(d.strftime("%A, %b %-d"))}</div>')
+        for k, s in enumerate(picks):
+            line = _e(s.get("venue")) + (f" \u00b7 {_e(s['time'])}" if s.get("time") else "")
+            border = "" if k == len(picks) - 1 else f"border-bottom:1px solid {CREAM};"
+            a(f'<a href="{_e(_show_url(s, make_slug))}" style="display:block;text-decoration:none;padding:11px 12px;{border}">'
+              f'<div style="font-size:18px;line-height:1.25;font-weight:bold;color:{INK}">{_e(tonight_post.headline(s["title"]))}</div>'
+              f'<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#6f6253;margin-top:3px">{line}</div></a>')
         a('</td></tr>')
     # Liner Notes
     for r in notes:

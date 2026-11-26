@@ -138,6 +138,34 @@ _ARCHIVE_FIELDS = ("title", "venue", "neighborhood", "address",
                    "date", "time", "times", "venueUrl", "ticketUrl", "imageUrl", "age", "contentType", "price")
 
 
+def fix_moved_shows(shows):
+    """'MOVED TO ALADDIN THEATER: Emma Ruth Rundle' listed at Polaris Hall
+    (Nick, Nov 25 2026). If the new room already lists that night's show, drop
+    the old listing; otherwise move it there and strip the note."""
+    venues = sorted({x.get("venue", "") for x in shows if x.get("venue")}, key=len, reverse=True)
+    out = []
+    for x in shows:
+        m = re.match(r"^[\W_]*moved\s+to\s+(?:the\s+)?(.+)$", x.get("title") or "", re.I)
+        if not m:
+            out.append(x)
+            continue
+        rest = m.group(1)
+        new_v = next((v for v in venues if rest.lower().startswith(v.lower())), None)
+        if not new_v:
+            out.append(x)
+            continue
+        act = re.sub(r"^[\s:*\-\u2013\u2014!]+", "", rest[len(new_v):]).strip()
+        key = re.sub(r"[^a-z0-9]", "", act.lower())[:8]
+        dup = any(y is not x and y.get("venue") == new_v and y.get("date") == x.get("date")
+                  and key and re.sub(r"[^a-z0-9]", "", (y.get("title") or "").lower()).startswith(key)
+                  for y in shows)
+        if dup:
+            continue
+        x = dict(x, venue=new_v, title=act or x.get("title"))
+        out.append(x)
+    return out
+
+
 def dedupe_shows(shows):
     """One row per (title, venue, date); extra show times go in `times`.
     Returns (deduped, time_collisions)."""
@@ -2447,6 +2475,8 @@ def main():
     for s in shows:
         if s.get("title"):
             s["title"] = clean_title(s["title"])
+
+    shows = fix_moved_shows(shows)
 
     # Derive the age restriction from the (already sanitized) title. Additive:
     # a show with no age information gets "", meaning UNKNOWN, and the title
