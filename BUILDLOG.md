@@ -4,6 +4,10 @@ Project history for **portlandlive**, newest first. Append a new entry at the to
 
 ## Changelog
 
+### c5db852c0 — TONIGHT post on Instagram
+
+Nov 26 2026. Nick wanted the daily TONIGHT post on Instagram too. tonight_post.make_card() draws a 1080x1350 picture per night (og/tonight/<date>.jpg: TONIGHT torn banner, poster, act, venue/time, link-in-bio strip; Alfa Slab One in assets/). supabase/schema-ig-tonight.sql: the fb_tonight row keeps the picture URL; ig_tonight_tick() (cron every 5 min, noon-2pm PT) creates the media container and publishes it to the Instagram account linked to the Page (ig_user_id, found by fb_setup_step), retries 4x, emails Nick if not up by 1pm. Needs a Page key with instagram_basic + instagram_content_publish (re-run fb_setup with the app secret left null).
+
 ### f8eb9724d — TLS tier names the HTTP status
 
 Nov 26 2026 (daily feed-health auto-repair). Talent Club scraped 0 for the first time (safety net holding 3 rows till Dec 4) with every tier reading only "HTTPError" and no capture, so 404 vs 5xx couldn't be told apart. TLS-tier fetches now name the status ("HTTPError 404", "ChallengeError 403") and the page the runner was served is saved to og/health/; parser unchanged, left to self-heal or be fixed from tomorrow's capture. The Goodfoot (Cloudflare on the runner, held till Dec 3) is still on the 7-day net: its web-reader snapshot is from Nov 10 (stale after 3 days) and could not be refreshed. Coverage items (short: Haymaker, Hopworks; stale: Al's Den, The Cazadero, The Scout Wine Bar, The Wild Hare Saloon, Tigardville Station) and dark rooms (Ashland Armory, The Reser, Theater of the Clouds, Vino Veritas) NOT verified: every web-reader fetch of the venues' own pages was refused again (permission prompt unanswered), so nothing was added to SHORT_HORIZON_OK / STALE_OK. Not a Monday, no spot audit.
