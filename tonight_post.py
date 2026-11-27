@@ -200,28 +200,25 @@ def _wrap(draw, text, font, width, max_lines):
     return lines
 
 
+def _logo(size, color):
+    from PIL import Image
+    here = os.path.dirname(os.path.abspath(__file__))
+    src = Image.open(os.path.join(here, "logo_trans.png")).convert("RGBA")
+    src.thumbnail((size, size), Image.LANCZOS)
+    out = Image.new("RGBA", src.size, color + (0,))
+    out.putalpha(src.getchannel("A"))
+    return out
+
+
 def make_card(show, act, path, fetch=None):
-    import random
+    """1080x1350 Instagram picture, v3 (Nick, Nov 27 2026: too much empty
+    space, odd torn border, no logo). Blurred poster fills the background;
+    logo + name and the date up top, TONIGHT, the poster as big as the space
+    allows, act and venue, GO SEE LIVE MUSIC! / link-in-bio strip; grain."""
+    import datetime as _dt
     from io import BytesIO
-    from PIL import Image, ImageDraw, ImageFilter, ImageOps
+    from PIL import Image, ImageDraw, ImageEnhance, ImageFilter, ImageOps
     W, H = 1080, 1350
-    im = Image.new("RGB", (W, H), CREAM)
-    d = ImageDraw.Draw(im)
-    # Torn forest banner with TONIGHT
-    rnd = random.Random(show.get("date", ""))
-    pts = [(0, 0), (W, 0), (W, 190)]
-    x = W
-    while x > 0:
-        x -= rnd.randint(30, 70)
-        pts.append((max(x, 0), 190 + rnd.randint(-22, 22)))
-    pts.append((0, 190))
-    d.polygon(pts, fill=FOREST)
-    f = _font(150)
-    tw = d.textlength("TONIGHT", font=f)
-    d.text(((W - tw) / 2 + 6, 24 + 6), "TONIGHT", font=f, fill=RUST)
-    d.text(((W - tw) / 2, 24), "TONIGHT", font=f, fill=CREAM)
-    # Poster
-    top, box_w, box_h = 250, 900, 720
     poster = None
     if fetch and show.get("imageUrl"):
         try:
@@ -229,38 +226,101 @@ def make_card(show, act, path, fetch=None):
         except Exception:
             poster = None
     if poster:
-        poster.thumbnail((box_w, box_h), Image.LANCZOS)
-        px, py = (W - poster.width) // 2, top + (box_h - poster.height) // 2
-        sh = Image.new("RGBA", (poster.width + 40, poster.height + 40), (0, 0, 0, 0))
-        ImageDraw.Draw(sh).rectangle((20, 20, poster.width + 20, poster.height + 20), fill=(40, 30, 20, 110))
-        im.paste(sh.filter(ImageFilter.GaussianBlur(12)), (px - 8, py), sh.filter(ImageFilter.GaussianBlur(12)))
-        im.paste(poster, (px, py))
-        d.rectangle((px - 1, py - 1, px + poster.width, py + poster.height), outline=FOREST, width=4)
+        bg = ImageOps.fit(poster, (W, H), Image.LANCZOS).filter(ImageFilter.GaussianBlur(40))
+        im = ImageEnhance.Brightness(bg).enhance(0.38)
     else:
-        d.rectangle((90, top, W - 90, top + box_h), outline=FOREST, width=6)
-        fl = _font(110)
-        for i, ln in enumerate(_wrap(d, act, fl, box_w - 80, 4)):
-            lw = d.textlength(ln, font=fl)
-            d.text(((W - lw) / 2, top + 120 + i * 130), ln, font=fl, fill=FOREST)
-    # Act + venue
-    y = top + box_h + 40
-    fa = _font(76 if len(act) < 28 else 60)
-    for ln in _wrap(d, act, fa, W - 120, 2):
-        lw = d.textlength(ln, font=fa)
-        d.text(((W - lw) / 2, y), ln, font=fa, fill=FOREST)
-        y += fa.size + 10
+        im = Image.new("RGB", (W, H), FOREST)
+        big = _logo(620, (62, 88, 74))  # no poster: big faint logo fills the middle
+        im.paste(big, ((W - big.width) // 2, (H - big.height) // 2 - 20), big)
+    d = ImageDraw.Draw(im)
+    AMBER = (233, 160, 102)
+
+    # Top bar: logo + RAIN OR SHOWS, date pill on the right.
+    lg = _logo(92, CREAM)
+    im.paste(lg, (44, 34), lg)
+    fn = _font(40)
+    d.text((150, 58), "RAIN OR SHOWS", font=fn, fill=CREAM)
+    try:
+        ds = _dt.date.fromisoformat(show.get("date", "")).strftime("%a %b %-d").upper()
+    except ValueError:
+        ds = ""
+    if ds:
+        fd = _sans(30)
+        dw = d.textlength(ds, font=fd)
+        d.rounded_rectangle((W - 44 - dw - 36, 52, W - 44, 104), radius=26, fill=RUST)
+        d.text((W - 44 - dw - 18, 61), ds, font=fd, fill=CREAM)
+
+    # Fixed pieces, measured first.
+    ft = _font(158)
     fv = _sans(40)
-    v = f"{show.get('venue', '')}" + (f"  ·  {show['time']}" if show.get("time") else "")
+    head, _, opens = act.partition(" w/ ")
+    fa = _font(76 if len(head) < 22 else 62 if len(head) < 32 else 52)
+    act_lines = _wrap(d, head, fa, W - 100, 2)
+    fo = _font(40)
+    open_lines = _wrap(d, "with " + opens, fo, W - 120, 1) if opens else []
+    v = f"{show.get('venue', '')}" + (f"  \u00b7  {show['time']}" if show.get("time") else "")
+    FOOT = 118
+    top, t_h = 140, 150
+    text_h = len(act_lines) * (fa.size + 6) + len(open_lines) * (fo.size + 8) + 56
+    avail = H - FOOT - top - t_h - 30 - 34 - text_h - 30  # poster space
+    if poster:
+        pw = W  # full bleed for wide posters
+        ph = int(poster.height * pw / poster.width)
+        if ph < avail:  # wide poster: trim the sides a little to fill more height
+            ph = min(avail, int(ph * 1.3))
+            poster = ImageOps.fit(poster, (pw, ph), Image.LANCZOS, centering=(0.5, 0.4))
+        if ph > avail:
+            ph = avail
+            pw = int(poster.width * ph / poster.height)
+        poster = poster.resize((pw, ph), Image.LANCZOS)
+    else:
+        pw, ph = 0, 0
+    block = t_h + 30 + ph + 34 + text_h
+    y = top + max(0, (H - FOOT - top - block - 20) // 2)
+
+    tw = d.textlength("TONIGHT", font=ft)
+    d.text(((W - tw) / 2 + 8, y + 8), "TONIGHT", font=ft, fill=RUST)
+    d.text(((W - tw) / 2, y), "TONIGHT", font=ft, fill=CREAM)
+    y += t_h + 30
+    if poster:
+        px = (W - pw) // 2
+        if pw < W:
+            sh = Image.new("L", (pw + 60, ph + 60), 0)
+            ImageDraw.Draw(sh).rectangle((30, 30, pw + 30, ph + 30), fill=190)
+            im.paste((0, 0, 0), (px - 20, y - 16), sh.filter(ImageFilter.GaussianBlur(16)))
+        im.paste(poster, (px, y))
+        if pw < W:
+            d.rectangle((px - 5, y - 5, px + pw + 4, y + ph + 4), outline=CREAM, width=5)
+        else:
+            d.line((0, y - 3, W, y - 3), fill=CREAM, width=5)
+            d.line((0, y + ph + 2, W, y + ph + 2), fill=CREAM, width=5)
+        y += ph + 34
+    for ln in act_lines:
+        lw = d.textlength(ln, font=fa)
+        d.text(((W - lw) / 2 + 4, y + 4), ln, font=fa, fill=(0, 0, 0))
+        d.text(((W - lw) / 2, y), ln, font=fa, fill=CREAM)
+        y += fa.size + 6
+    for ln in open_lines:
+        lw = d.textlength(ln, font=fo)
+        d.text(((W - lw) / 2, y + 2), ln, font=fo, fill=CREAM)
+        y += fo.size + 8
     vw = d.textlength(v, font=fv)
-    d.text(((W - vw) / 2, y + 8), v, font=fv, fill=INK)
-    # Footer strip
-    d.rectangle((0, H - 92, W, H), fill=RUST)
-    fb = _sans(36)
-    t = "RAINOROSHOWS.COM  ·  LINK IN BIO".replace("RAINORO", "RAINOR")
+    d.text(((W - vw) / 2, y + 8), v, font=fv, fill=AMBER)
+
+    # Footer: tagline + link in bio.
+    d.rectangle((0, H - FOOT, W, H), fill=RUST)
+    fg = _font(52)
+    g = "GO SEE LIVE MUSIC!"
+    gw = d.textlength(g, font=fg)
+    d.text(((W - gw) / 2 + 3, H - FOOT + 14 + 3), g, font=fg, fill=(120, 50, 22))
+    d.text(((W - gw) / 2, H - FOOT + 14), g, font=fg, fill=CREAM)
+    fb = _sans(24)
+    t = "RAINORSHOWS.COM  \u00b7  LINK IN BIO"
     bw = d.textlength(t, font=fb)
-    d.text(((W - bw) / 2, H - 70), t, font=fb, fill=CREAM)
+    d.text(((W - bw) / 2, H - FOOT + 78), t, font=fb, fill=(250, 226, 205))
+
     # Grain
-    noise = Image.effect_noise((W, H), 28).convert("L")
-    im = Image.composite(im, Image.new("RGB", (W, H), (60, 45, 30)), noise.point(lambda p: 255 if p > 22 else 235))
+    noise = Image.effect_noise((W, H), 40).convert("L").point(lambda p: 255 if p > 70 else 0)
+    im = Image.composite(im, ImageEnhance.Brightness(im).enhance(0.86), noise)
     im.save(path, "JPEG", quality=88, optimize=True, progressive=True)
     return path
